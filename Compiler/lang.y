@@ -7,22 +7,23 @@
 	static ParseNode *tree;
 	
 	ParseNode *addChild(ParseNode *node, ParseNode *child);
-	ParseNode *newNode(ParseNodeType type);
+	ParseNode *newNode(ParseNodeType type, ...);
 %}
 
 %union {
 	ParseNode *_node;
 	int _int;
+	char *_id;
 };
 
 %token PRINT
 %token <_int> INT
+%token <_id> ID
 %token NEWL
 %token END
 %start s
 
-%type <_node> statementlist statement expression term factor
-
+%type <_node> statementlist statement expression term factor id
 %%
 s: statementlist END
 	{ tree = $1; }
@@ -36,7 +37,9 @@ statementlist:	statementlist NEWL statement
 
 statement: PRINT expression
 	{ $$ = newNode(ParseNodePrint, $2, NULL); }
-	
+	     | id id
+	{ $$ = newNode(ParseNodeVarDecl, $1, $2, NULL); }
+
 expression: expression '+' term
 	{ $$ = newNode(ParseNodeAdd, $1, $3, NULL); }
 		  | term
@@ -49,8 +52,13 @@ term: term '*' factor
 	
 factor: INT
 	{ $$ = newNode(ParseNodeInt, NULL); $$->lexVal._int = $1; }
+	  | id
+	{ $$ = $1; }
 	  | '(' expression ')'
 	{ $$ = $2; }
+
+id: ID
+	{ $$ = newNode(ParseNodeId, NULL); $$->lexVal._id = $1; }
 
 %%
 

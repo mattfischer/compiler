@@ -4,6 +4,7 @@
 
 enum LexValType {
 	LexValInt,
+	LexValId,
 	LexValNone
 };
 
@@ -11,11 +12,13 @@ struct {
 	SyntaxNode::NodeType nodeType;
 	LexValType	lexType;
 } convertTable[] = {
-	{ /* ParseNodeStatementList	*/	SyntaxNode::NodeTypeStatementList,		LexValNone },
-	{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		LexValNone },
-	{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeMultiply,			LexValNone },
-	{ /* ParseNodeAdd			*/	SyntaxNode::NodeTypeAdd,				LexValNone },
-	{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			LexValInt }
+	{ /* ParseNodeStatementList	*/	SyntaxNode::NodeTypeStatementList,		LexValNone	},
+	{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		LexValNone	},
+	{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			LexValNone	},
+	{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeMultiply,			LexValNone	},
+	{ /* ParseNodeAdd			*/	SyntaxNode::NodeTypeAdd,				LexValNone	},
+	{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			LexValInt	},
+	{ /* ParseNodeId			*/	SyntaxNode::NodeTypeId,					LexValId	}
 };
 
 SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)
@@ -31,6 +34,10 @@ SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)
 		case LexValInt:
 			node->lexVal._int = tree->lexVal._int;
 			node->type = TypeInt;
+			break;
+
+		case LexValId:
+			node->lexVal._id = tree->lexVal._id;
 			break;
 
 		case LexValNone:

@@ -8,9 +8,11 @@ struct SyntaxNode {
 	enum NodeType {
 		NodeTypeStatementList,
 		NodeTypePrintStatement,
+		NodeTypeVarDecl,
 		NodeTypeAdd,
 		NodeTypeMultiply,
-		NodeTypeConstant
+		NodeTypeConstant,
+		NodeTypeId
 	};
 
 	NodeType nodeType;
@@ -19,6 +21,7 @@ struct SyntaxNode {
 	Type *type;
 	union {
 		int _int;
+		char *_id;
 	} lexVal;
 
 	static SyntaxNode *fromParseTree(ParseNode *tree);

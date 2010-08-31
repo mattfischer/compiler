@@ -4,9 +4,11 @@
 typedef enum {
 	ParseNodeStatementList,
 	ParseNodePrint,
+	ParseNodeVarDecl,
 	ParseNodeMultiply,
 	ParseNodeAdd,
-	ParseNodeInt
+	ParseNodeInt,
+	ParseNodeId
 } ParseNodeType;
 
 struct _ParseNode;
@@ -17,6 +19,7 @@ struct _ParseNode {
 	ParseNode **children;
 	union {
 		int _int;
+		char *_id;
 	} lexVal;
 };
 

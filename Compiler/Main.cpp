@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "Type.h"
 #include "ParseNode.h"
 #include "SyntaxNode.h"
 #include "TypeChecker.h"
@@ -9,14 +10,17 @@ extern "C" ParseNode *parseLang(const char *filename);
 
 int main(int arg, char *argv[])
 {
+	Type::init();
+
 	ParseNode *parseTree = parseLang("input.lang");
 	SyntaxNode *syntaxTree = SyntaxNode::fromParseTree(parseTree);
 	TypeChecker typeChecker;
-	typeChecker.check(syntaxTree);
+	bool result = typeChecker.check(syntaxTree);
 
-	Interpreter interpreter(syntaxTree);
-
-	interpreter.run();
+	if(result) {
+		Interpreter interpreter(syntaxTree);
+		interpreter.run();
+	}
 
 	return 0;
 }
