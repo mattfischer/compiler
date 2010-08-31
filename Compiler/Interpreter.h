@@ -1,21 +1,21 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#include "ParseNode.h"
+#include "SyntaxNode.h"
 
 class Interpreter
 {
 public:
-	Interpreter(ParseNode *tree);
+	Interpreter(SyntaxNode *tree);
 
 	void run();
 
 private:
-	ParseNode *mTree;
+	SyntaxNode *mTree;
 
-	void evaluateStatementList(ParseNode *node);
-	void evaluateStatement(ParseNode *node);
-	int evaluateExpression(ParseNode *node);
+	void evaluateStatementList(SyntaxNode *node);
+	void evaluateStatement(SyntaxNode *node);
+	int evaluateExpression(SyntaxNode *node);
 };
 
 #endif
