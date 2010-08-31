@@ -3,6 +3,8 @@
 
 #include "SyntaxNode.h"
 
+#include <vector>
+
 class Interpreter
 {
 public:
@@ -15,7 +17,12 @@ private:
 
 	void evaluateStatementList(SyntaxNode *node);
 	void evaluateStatement(SyntaxNode *node);
-	int evaluateExpression(SyntaxNode *node);
+	void evaluateExpression(SyntaxNode *node);
+
+	void push(void *data, int size);
+	void pop(void *data, int size);
+
+	std::vector<char> mStack;
 };
 
 #endif

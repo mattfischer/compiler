@@ -222,6 +222,10 @@
 				RelativePath=".\Type.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TypeChecker.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -246,6 +250,10 @@
 			</File>
 			<File
 				RelativePath=".\Type.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TypeChecker.h"
 				>
 			</File>
 		</Filter>

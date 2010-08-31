@@ -26,6 +26,8 @@
 %%
 s: statementlist END
 	{ tree = $1; }
+ | statementlist NEWL END
+	{ tree = $1; }
 
 statementlist:	statementlist NEWL statement
 	{ $$ = addChild($1, $3); }
