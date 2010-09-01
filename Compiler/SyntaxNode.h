@@ -9,6 +9,7 @@ struct SyntaxNode {
 		NodeTypeStatementList,
 		NodeTypePrintStatement,
 		NodeTypeVarDecl,
+		NodeTypeAssign,
 		NodeTypeAdd,
 		NodeTypeMultiply,
 		NodeTypeConstant,

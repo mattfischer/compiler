@@ -5,6 +5,7 @@ typedef enum {
 	ParseNodeStatementList,
 	ParseNodePrint,
 	ParseNodeVarDecl,
+	ParseNodeAssign,
 	ParseNodeMultiply,
 	ParseNodeAdd,
 	ParseNodeInt,

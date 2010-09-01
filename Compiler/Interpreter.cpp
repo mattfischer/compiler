@@ -32,6 +32,21 @@ void Interpreter::evaluateStatement(SyntaxNode *node)
 				printf("%i\n", result);
 				break;
 			}
+		case SyntaxNode::NodeTypeVarDecl:
+			{
+				Type *type = Type::find(node->children[0]->lexVal._id);
+				addVariable(node->children[1]->lexVal._id, type);
+				break;
+			}
+
+		case SyntaxNode::NodeTypeAssign:
+			{
+				Variable *variable = findVariable(node->children[0]->lexVal._id);
+				evaluateExpression(node->children[1]);
+
+				pop(variable->data, node->children[1]->type->size);
+				break;
+			}
 	}
 }
 
@@ -41,6 +56,13 @@ void Interpreter::evaluateExpression(SyntaxNode *node)
 		case SyntaxNode::NodeTypeConstant:
 			push(&node->lexVal._int, sizeof(int));
 			break;
+
+		case SyntaxNode::NodeTypeId:
+			{
+				Variable *variable = findVariable(node->lexVal._id);
+				push(variable->data, node->type->size);
+				break;
+			}
 
 		case SyntaxNode::NodeTypeAdd:
 			{
@@ -89,4 +111,25 @@ void Interpreter::pop(void *data, int size)
 		c[i] = mStack.back();
 		mStack.pop_back();
 	}
+}
+
+void Interpreter::addVariable(const std::string &name, Type *type)
+{
+	Variable *variable = new Variable;
+
+	variable->name = name;
+	variable->data = new char[type->size];
+
+	mVariables.push_back(variable);
+}
+
+Interpreter::Variable *Interpreter::findVariable(const std::string &name)
+{
+	for(int i=0; i<mVariables.size(); i++) {
+		if(mVariables[i]->name == name) {
+			return mVariables[i];
+		}
+	}
+
+	return NULL;
 }

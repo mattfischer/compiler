@@ -1,5 +1,9 @@
-print (1+5)*b
-print 6
-print 1+2+3+4+5
-
+int b
+int c
+b = 5
+print b
+b = b + 7
+print b
+c = b + 3
+print c
 

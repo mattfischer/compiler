@@ -10,14 +10,16 @@ struct Type {
 		TypeNone
 	};
 
-	Type(TypeType _type, std::string _name)
+	Type(TypeType _type, std::string _name, int _size)
 		: type(_type),
-		  name(_name)
+		  name(_name),
+		  size(_size)
 	{
 	}
 
 	TypeType type;
 	std::string name;
+	int size;
 
 	static void init();
 	static Type *find(const std::string& name);
@@ -31,8 +33,8 @@ struct TypeIntrinsic : public Type {
 		Int
 	};
 
-	TypeIntrinsic(IntrinsicType _intrinsicType, std::string _name)
-		: Type(Type::TypeIntrinsic, _name),
+	TypeIntrinsic(IntrinsicType _intrinsicType, std::string _name, int _size)
+		: Type(Type::TypeIntrinsic, _name, _size),
 		  intrinsicType(_intrinsicType)
 	{
 	}

@@ -1,9 +1,9 @@
 #include "Type.h"
 
-TypeIntrinsic _TypeInt(TypeIntrinsic::Int, "int");
+TypeIntrinsic _TypeInt(TypeIntrinsic::Int, "int", 4);
 Type *TypeInt = &_TypeInt;
 
-Type _TypeNone(Type::TypeNone, "");
+Type _TypeNone(Type::TypeNone, "", 0);
 Type *TypeNone = &_TypeNone;
 
 std::vector<Type*> Type::sTypes;

@@ -17,6 +17,17 @@ bool TypeChecker::check(SyntaxNode *tree)
 			result = addSymbol(tree->children[0]->lexVal._id, tree->children[1]->lexVal._id);
 			break;
 
+		case SyntaxNode::NodeTypeAssign:
+			result = check(tree->children[1]);
+			if(result) {
+				Symbol *symbol = findSymbol(tree->children[0]->lexVal._id);
+				if(symbol->type != tree->children[1]->type) {
+					printf("Error: Type mismatch\n");
+					return false;
+				}
+			}
+			break;
+
 		case SyntaxNode::NodeTypeAdd:
 		case SyntaxNode::NodeTypeMultiply:
 			result = checkChildren(tree);

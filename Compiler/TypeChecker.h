@@ -14,7 +14,7 @@ private:
 		Type *type;
 		std::string name;
 
-		Symbol(Type *_type, const std::string &_name) : type(type), name(_name) {}
+		Symbol(Type *_type, const std::string &_name) : type(_type), name(_name) {}
 	};
 
 	std::vector<Symbol*> mSymbols;

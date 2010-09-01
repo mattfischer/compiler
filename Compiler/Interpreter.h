@@ -23,6 +23,16 @@ private:
 	void pop(void *data, int size);
 
 	std::vector<char> mStack;
+
+	struct Variable {
+		std::string name;
+		char *data;
+	};
+
+	std::vector<Variable*> mVariables;
+
+	void addVariable(const std::string &name, Type *type);
+	Variable *findVariable(const std::string &name);
 };
 
 #endif

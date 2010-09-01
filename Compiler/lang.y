@@ -39,6 +39,8 @@ statement: PRINT expression
 	{ $$ = newNode(ParseNodePrint, $2, NULL); }
 	     | id id
 	{ $$ = newNode(ParseNodeVarDecl, $1, $2, NULL); }
+		 | id '=' expression
+    { $$ = newNode(ParseNodeAssign, $1, $3, NULL); }
 
 expression: expression '+' term
 	{ $$ = newNode(ParseNodeAdd, $1, $3, NULL); }

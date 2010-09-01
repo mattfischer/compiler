@@ -15,6 +15,7 @@ struct {
 	{ /* ParseNodeStatementList	*/	SyntaxNode::NodeTypeStatementList,		LexValNone	},
 	{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		LexValNone	},
 	{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			LexValNone	},
+	{ /* ParseNodeAssign		*/	SyntaxNode::NodeTypeAssign,				LexValNone	},
 	{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeMultiply,			LexValNone	},
 	{ /* ParseNodeAdd			*/	SyntaxNode::NodeTypeAdd,				LexValNone	},
 	{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			LexValInt	},
