@@ -30,7 +30,8 @@ private:
 
 struct TypeIntrinsic : public Type {
 	enum IntrinsicType {
-		Int
+		Int,
+		Bool
 	};
 
 	TypeIntrinsic(IntrinsicType _intrinsicType, std::string _name, int _size)
@@ -44,5 +45,5 @@ struct TypeIntrinsic : public Type {
 
 extern Type *TypeNone;
 extern Type *TypeInt;
-
+extern Type *TypeBool;
 #endif

@@ -16,8 +16,9 @@ struct {
 	{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		LexValNone	},
 	{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			LexValNone	},
 	{ /* ParseNodeAssign		*/	SyntaxNode::NodeTypeAssign,				LexValNone	},
-	{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeMultiply,			LexValNone	},
+	{ /* ParseNodeEqual			*/	SyntaxNode::NodeTypeEqual,				LexValNone	},
 	{ /* ParseNodeAdd			*/	SyntaxNode::NodeTypeAdd,				LexValNone	},
+	{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeMultiply,			LexValNone	},
 	{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			LexValInt	},
 	{ /* ParseNodeId			*/	SyntaxNode::NodeTypeId,					LexValId	}
 };
@@ -25,6 +26,7 @@ struct {
 SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)
 {
 	SyntaxNode *node = new SyntaxNode;
+	node->line = tree->line;
 	node->numChildren = tree->numChildren;
 	node->children = new SyntaxNode*[node->numChildren];
 

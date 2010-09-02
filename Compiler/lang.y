@@ -19,20 +19,18 @@
 %token PRINT
 %token <_int> INT
 %token <_id> ID
-%token NEWL
+%token EQUAL
 %token END
 %start s
 
-%type <_node> statementlist statement expression term factor id
+%type <_node> statementlist statement expression add_expr mult_expr base_expr id
 %%
 s: statementlist END
 	{ tree = $1; }
- | statementlist NEWL END
-	{ tree = $1; }
 
-statementlist:	statementlist NEWL statement
-	{ $$ = addChild($1, $3); }
-			  | statement
+statementlist:	statementlist statement ';'
+	{ $$ = addChild($1, $2); }
+			  | statement ';'
 	{ $$ = newNode(ParseNodeStatementList, $1, NULL);	}
 
 statement: PRINT expression
@@ -42,17 +40,22 @@ statement: PRINT expression
 		 | id '=' expression
     { $$ = newNode(ParseNodeAssign, $1, $3, NULL); }
 
-expression: expression '+' term
+expression: add_expr EQUAL add_expr
+	{ $$ = newNode(ParseNodeEqual, $1, $3, NULL); }
+		  | add_expr
+	{ $$ = $1; }
+	
+add_expr: add_expr '+' mult_expr
 	{ $$ = newNode(ParseNodeAdd, $1, $3, NULL); }
-		  | term
+		  | mult_expr
 	{ $$ = $1; }
 	
-term: term '*' factor
+mult_expr: mult_expr '*' base_expr
 	{ $$ = newNode(ParseNodeMultiply, $1, $3, NULL); }
-	| factor
+	| base_expr
 	{ $$ = $1; }
 	
-factor: INT
+base_expr: INT
 	{ $$ = newNode(ParseNodeInt, NULL); $$->lexVal._int = $1; }
 	  | id
 	{ $$ = $1; }
@@ -65,6 +68,7 @@ id: ID
 %%
 
 extern FILE *langin;
+extern int langline;
 
 ParseNode *parseLang(const char *filename)
 {
@@ -93,6 +97,7 @@ ParseNode *newNode(ParseNodeType type)
     
     node = (ParseNode*)malloc(sizeof(ParseNode));
     node->type = type;
+    node->line = langline;
     node->children = (ParseNode**)malloc(sizeof(ParseNode*) * numArgs);
     node->numChildren = numArgs;
     for(i = 0; i < numArgs; i++)

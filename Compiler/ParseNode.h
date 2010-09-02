@@ -6,8 +6,9 @@ typedef enum {
 	ParseNodePrint,
 	ParseNodeVarDecl,
 	ParseNodeAssign,
-	ParseNodeMultiply,
+	ParseNodeEqual,
 	ParseNodeAdd,
+	ParseNodeMultiply,
 	ParseNodeInt,
 	ParseNodeId
 } ParseNodeType;
@@ -16,6 +17,7 @@ struct _ParseNode;
 typedef struct _ParseNode ParseNode;
 struct _ParseNode {
 	ParseNodeType type;
+	int line;
 	int numChildren;
 	ParseNode **children;
 	union {

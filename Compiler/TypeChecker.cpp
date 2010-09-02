@@ -1,6 +1,7 @@
 #include "TypeChecker.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 
 bool TypeChecker::check(SyntaxNode *tree)
 {
@@ -14,7 +15,7 @@ bool TypeChecker::check(SyntaxNode *tree)
 			break;
 
 		case SyntaxNode::NodeTypeVarDecl:
-			result = addSymbol(tree->children[0]->lexVal._id, tree->children[1]->lexVal._id);
+			result = addSymbol(tree->children[0]->lexVal._id, tree->children[1]->lexVal._id, tree);
 			break;
 
 		case SyntaxNode::NodeTypeAssign:
@@ -22,9 +23,22 @@ bool TypeChecker::check(SyntaxNode *tree)
 			if(result) {
 				Symbol *symbol = findSymbol(tree->children[0]->lexVal._id);
 				if(symbol->type != tree->children[1]->type) {
-					printf("Error: Type mismatch\n");
+					error(tree, "Type mismatch");
 					return false;
 				}
+			}
+			break;
+
+		case SyntaxNode::NodeTypeEqual:
+			result = checkChildren(tree);
+
+			if(result) {
+				if(tree->children[0]->type != TypeInt ||
+					tree->children[1]->type != TypeInt) {
+						error(tree, "Type mismatch");
+						return false;
+				}
+				tree->type = TypeBool;
 			}
 			break;
 
@@ -35,7 +49,7 @@ bool TypeChecker::check(SyntaxNode *tree)
 			if(result) {
 				if(tree->children[0]->type != TypeInt ||
 					tree->children[1]->type != TypeInt) {
-						printf("Error: Type mismatch\n");
+						error(tree, "Type mismatch");
 						return false;
 				}
 				tree->type = TypeInt;
@@ -47,7 +61,7 @@ bool TypeChecker::check(SyntaxNode *tree)
 				const char *name = tree->lexVal._id;
 				Symbol *symbol = findSymbol(name);
 				if(symbol == NULL) {
-					printf("Error: Undefined variable '%s'\n", name);
+					error(tree, "Undefined variable '%s'", name);
 					return false;
 				}
 
@@ -70,11 +84,11 @@ bool TypeChecker::checkChildren(SyntaxNode *tree)
 	return true;
 }
 
-bool TypeChecker::addSymbol(const std::string &typeName, const std::string &name)
+bool TypeChecker::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree)
 {
 	Type *type = Type::find(typeName);
 	if(type == NULL) {
-		printf("Error: Type '%s' not found.\n", typeName.c_str());
+		error(tree, "Error: Type '%s' not found.\n", typeName.c_str());
 		return false;
 	}
 	
@@ -93,4 +107,16 @@ TypeChecker::Symbol *TypeChecker::findSymbol(const std::string &name)
 	}
 
 	return NULL;
+}
+
+void TypeChecker::error(SyntaxNode *node, char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+
+	printf("Error, line %i: ", node->line);
+	vprintf(fmt, args);
+	printf("\n");
+
+	va_end(args);
 }

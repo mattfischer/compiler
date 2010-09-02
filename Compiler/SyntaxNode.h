@@ -10,6 +10,7 @@ struct SyntaxNode {
 		NodeTypePrintStatement,
 		NodeTypeVarDecl,
 		NodeTypeAssign,
+		NodeTypeEqual,
 		NodeTypeAdd,
 		NodeTypeMultiply,
 		NodeTypeConstant,
@@ -17,6 +18,7 @@ struct SyntaxNode {
 	};
 
 	NodeType nodeType;
+	int line;
 	int numChildren;
 	SyntaxNode **children;
 	Type *type;

@@ -1,9 +1,9 @@
-int b
-int c
-b = 5
-print b
-b = b + 7
-print b
-c = b + 3
-print c
+int a;
+int b;
+bool c;
 
+a = 5;
+b = 6;
+c = a == b;
+
+print a == c;

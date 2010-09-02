@@ -20,7 +20,9 @@ private:
 	std::vector<Symbol*> mSymbols;
 
 	bool checkChildren(SyntaxNode *tree);
-	bool addSymbol(const std::string &typeName, const std::string &name);
+	bool addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree);
 	Symbol *findSymbol(const std::string &name);
+
+	void error(SyntaxNode *node, char *fmt, ...);
 };
 #endif

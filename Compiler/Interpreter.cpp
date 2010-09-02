@@ -29,7 +29,12 @@ void Interpreter::evaluateStatement(SyntaxNode *node)
 				evaluateExpression(node->children[0]);
 				pop(&result, sizeof(result));
 
-				printf("%i\n", result);
+				Type *type = node->children[0]->type;
+				if(type == TypeInt)
+					printf("%i\n", result);
+				else if(type == TypeBool)
+					printf("%s\n", (result == 1) ? "true" : "false");
+
 				break;
 			}
 		case SyntaxNode::NodeTypeVarDecl:
@@ -61,6 +66,21 @@ void Interpreter::evaluateExpression(SyntaxNode *node)
 			{
 				Variable *variable = findVariable(node->lexVal._id);
 				push(variable->data, node->type->size);
+				break;
+			}
+
+		case SyntaxNode::NodeTypeEqual:
+			{
+				int a, b, c;
+
+				evaluateExpression(node->children[0]);
+				pop(&a, sizeof(a));
+
+				evaluateExpression(node->children[1]);
+				pop(&b, sizeof(b));
+
+				c = (a == b) ? 1 : 0;
+				push(&c, sizeof(c));
 				break;
 			}
 
