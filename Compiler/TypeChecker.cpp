@@ -3,69 +3,90 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-bool TypeChecker::check(SyntaxNode *tree)
+bool TypeChecker::check(SyntaxNode *node)
 {
 	bool result = true;
 
-	switch(tree->nodeType) {
+	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeStatementList:
 		case SyntaxNode::NodeTypePrintStatement:
-			result = checkChildren(tree);
-			tree->type = TypeNone;
+			result = checkChildren(node);
+			node->type = TypeNone;
 			break;
 
 		case SyntaxNode::NodeTypeVarDecl:
-			result = addSymbol(tree->children[0]->lexVal._id, tree->children[1]->lexVal._id, tree);
+			result = addSymbol(node->children[0]->lexVal._id, node->children[1]->lexVal._id, node);
+			node->type = TypeNone;
 			break;
 
 		case SyntaxNode::NodeTypeAssign:
-			result = check(tree->children[1]);
+			result = check(node->children[1]);
 			if(result) {
-				Symbol *symbol = findSymbol(tree->children[0]->lexVal._id);
-				if(symbol->type != tree->children[1]->type) {
-					error(tree, "Type mismatch");
-					return false;
+				char *name = node->children[0]->lexVal._id;
+				Symbol *symbol = findSymbol(name);
+				if(symbol) {
+					if(symbol->type != node->children[1]->type) {
+						error(node, "Type mismatch");
+						result = false;
+					}
+				} else {
+					error(node, "Undeclared variable '%s'", name);
+					result = false;
 				}
+
+				node->type = TypeNone;
 			}
 			break;
 
-		case SyntaxNode::NodeTypeEqual:
-			result = checkChildren(tree);
-
+		case SyntaxNode::NodeTypeIf:
+		case SyntaxNode::NodeTypeWhile:
+			result = checkChildren(node);
 			if(result) {
-				if(tree->children[0]->type != TypeInt ||
-					tree->children[1]->type != TypeInt) {
-						error(tree, "Type mismatch");
-						return false;
+				if(node->children[0]->type != TypeBool) {
+					error(node, "Type mismatch");
+					result = false;
 				}
-				tree->type = TypeBool;
+
+				node->type = TypeNone;
 			}
 			break;
 
-		case SyntaxNode::NodeTypeAdd:
-		case SyntaxNode::NodeTypeMultiply:
-			result = checkChildren(tree);
+		case SyntaxNode::NodeTypeCompare:
+			result = checkChildren(node);
 
 			if(result) {
-				if(tree->children[0]->type != TypeInt ||
-					tree->children[1]->type != TypeInt) {
-						error(tree, "Type mismatch");
-						return false;
+				if(node->children[0]->type != TypeInt ||
+					node->children[1]->type != TypeInt) {
+						error(node, "Type mismatch");
+						result = false;
 				}
-				tree->type = TypeInt;
+				node->type = TypeBool;
+			}
+			break;
+
+		case SyntaxNode::NodeTypeArith:
+			result = checkChildren(node);
+
+			if(result) {
+				if(node->children[0]->type != TypeInt ||
+					node->children[1]->type != TypeInt) {
+						error(node, "Type mismatch");
+						result = false;
+				}
+				node->type = TypeInt;
 			}
 			break;
 
 		case SyntaxNode::NodeTypeId:
 			{
-				const char *name = tree->lexVal._id;
+				const char *name = node->lexVal._id;
 				Symbol *symbol = findSymbol(name);
 				if(symbol == NULL) {
-					error(tree, "Undefined variable '%s'", name);
+					error(node, "Undefined variable '%s'", name);
 					return false;
 				}
 
-				tree->type = symbol->type;
+				node->type = symbol->type;
 				break;
 			}
 	}
@@ -73,10 +94,10 @@ bool TypeChecker::check(SyntaxNode *tree)
 	return result;
 }
 
-bool TypeChecker::checkChildren(SyntaxNode *tree)
+bool TypeChecker::checkChildren(SyntaxNode *node)
 {
-	for(int i=0; i<tree->numChildren; i++) {
-		bool result = check(tree->children[i]);
+	for(int i=0; i<node->numChildren; i++) {
+		bool result = check(node->children[i]);
 		if(!result) {
 			return false;
 		}
@@ -84,11 +105,11 @@ bool TypeChecker::checkChildren(SyntaxNode *tree)
 	return true;
 }
 
-bool TypeChecker::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree)
+bool TypeChecker::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *node)
 {
 	Type *type = Type::find(typeName);
 	if(type == NULL) {
-		error(tree, "Error: Type '%s' not found.\n", typeName.c_str());
+		error(node, "Error: Type '%s' not found.\n", typeName.c_str());
 		return false;
 	}
 	

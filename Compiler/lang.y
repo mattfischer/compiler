@@ -19,29 +19,52 @@
 %token PRINT
 %token <_int> INT
 %token <_id> ID
+%token IF
+%token ELSE
+%token WHILE
 %token EQUAL
+%token NEQUAL
 %token END
 %start s
 
-%type <_node> statementlist statement expression add_expr mult_expr base_expr id
+%type <_node> statementlist statement if_statement while_statement clause expression add_expr mult_expr base_expr id
 %%
 s: statementlist END
 	{ tree = $1; }
 
-statementlist:	statementlist statement ';'
+statementlist:	statementlist statement
 	{ $$ = addChild($1, $2); }
-			  | statement ';'
+			  | statement
 	{ $$ = newNode(ParseNodeStatementList, $1, NULL);	}
 
-statement: PRINT expression
+statement: PRINT expression ';'
 	{ $$ = newNode(ParseNodePrint, $2, NULL); }
-	     | id id
+	     | id id ';'
 	{ $$ = newNode(ParseNodeVarDecl, $1, $2, NULL); }
-		 | id '=' expression
+		 | id '=' expression ';'
     { $$ = newNode(ParseNodeAssign, $1, $3, NULL); }
+		 | if_statement
+	{ $$ = $1; }
+		 | while_statement
+	{ $$ = $1; }
+	
+if_statement: IF '(' expression ')' clause
+	{ $$ = newNode(ParseNodeIf, $3, $5, NULL); }
+			| IF '(' expression ')' clause ELSE clause
+	{ $$ = newNode(ParseNodeIf, $3, $5, $7, NULL); }
 
+while_statement: WHILE '(' expression ')' clause
+	{ $$ = newNode(ParseNodeWhile, $3, $5, NULL); }
+
+clause: statement
+	{ $$ = $1; }
+		 | '{' statementlist '}'
+	{ $$ = $2; }
+	
 expression: add_expr EQUAL add_expr
 	{ $$ = newNode(ParseNodeEqual, $1, $3, NULL); }
+		  | add_expr NEQUAL add_expr
+	{ $$ = newNode(ParseNodeNequal, $1, $3, NULL); }
 		  | add_expr
 	{ $$ = $1; }
 	

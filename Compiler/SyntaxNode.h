@@ -10,14 +10,26 @@ struct SyntaxNode {
 		NodeTypePrintStatement,
 		NodeTypeVarDecl,
 		NodeTypeAssign,
-		NodeTypeEqual,
-		NodeTypeAdd,
-		NodeTypeMultiply,
+		NodeTypeIf,
+		NodeTypeWhile,
+		NodeTypeCompare,
+		NodeTypeArith,
 		NodeTypeConstant,
 		NodeTypeId
 	};
 
+	enum NodeSubtype {
+		NodeSubtypeNone,
+
+		NodeSubtypeAdd,
+		NodeSubtypeMultiply,
+
+		NodeSubtypeEqual,
+		NodeSubtypeNequal
+	};
+
 	NodeType nodeType;
+	NodeSubtype nodeSubtype;
 	int line;
 	int numChildren;
 	SyntaxNode **children;

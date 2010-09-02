@@ -9,19 +9,18 @@ Interpreter::Interpreter(SyntaxNode *tree)
 
 void Interpreter::run()
 {
-	evaluateStatementList(mTree);
-}
-
-void Interpreter::evaluateStatementList(SyntaxNode *node)
-{
-	for(int i=0; i<node->numChildren; i++) {
-		evaluateStatement(node->children[i]);
-	}
+	evaluateStatement(mTree);
 }
 
 void Interpreter::evaluateStatement(SyntaxNode *node)
 {
 	switch(node->nodeType) {
+		case SyntaxNode::NodeTypeStatementList:
+			for(int i=0; i<node->numChildren; i++) {
+				evaluateStatement(node->children[i]);
+			}
+			break;
+
 		case SyntaxNode::NodeTypePrintStatement:
 			{
 				int result;
@@ -52,6 +51,34 @@ void Interpreter::evaluateStatement(SyntaxNode *node)
 				pop(variable->data, node->children[1]->type->size);
 				break;
 			}
+
+		case SyntaxNode::NodeTypeIf:
+			{
+				int a;
+				evaluateExpression(node->children[0]);
+				pop(&a, sizeof(a));
+
+				if(a == 1) {
+					evaluateStatement(node->children[1]);
+				} else if(node->numChildren == 3) {
+					evaluateStatement(node->children[2]);
+				}
+				break;
+			}
+
+		case SyntaxNode::NodeTypeWhile:
+			for(;;) {
+				int a;
+				evaluateExpression(node->children[0]);
+				pop(&a, sizeof(a));
+
+				if(a == 0) {
+					break;
+				}
+
+				evaluateStatement(node->children[1]);
+			}
+			break;
 	}
 }
 
@@ -69,7 +96,7 @@ void Interpreter::evaluateExpression(SyntaxNode *node)
 				break;
 			}
 
-		case SyntaxNode::NodeTypeEqual:
+		case SyntaxNode::NodeTypeCompare:
 			{
 				int a, b, c;
 
@@ -79,12 +106,21 @@ void Interpreter::evaluateExpression(SyntaxNode *node)
 				evaluateExpression(node->children[1]);
 				pop(&b, sizeof(b));
 
-				c = (a == b) ? 1 : 0;
+				switch(node->nodeSubtype) {
+					case SyntaxNode::NodeSubtypeEqual:
+						c = (a == b) ? 1 : 0;
+						break;
+
+					case SyntaxNode::NodeSubtypeNequal:
+						c = (a != b) ? 1 : 0;
+						break;
+				}
+
 				push(&c, sizeof(c));
 				break;
 			}
 
-		case SyntaxNode::NodeTypeAdd:
+		case SyntaxNode::NodeTypeArith:
 			{
 				int a, b, c;
 				evaluateExpression(node->children[0]);
@@ -93,21 +129,16 @@ void Interpreter::evaluateExpression(SyntaxNode *node)
 				evaluateExpression(node->children[1]);
 				pop(&b, sizeof(b));
 
-				c = a + b;
-				push(&c, sizeof(c));
-				break;
-			}
+				switch(node->nodeSubtype) {
+					case SyntaxNode::NodeSubtypeAdd:
+						c = a + b;
+						break;
 
-		case SyntaxNode::NodeTypeMultiply:
-			{
-				int a, b, c;
-				evaluateExpression(node->children[0]);
-				pop(&a, sizeof(a));
+					case SyntaxNode::NodeSubtypeMultiply:
+						c = a * b;
+						break;
+				}
 
-				evaluateExpression(node->children[1]);
-				pop(&b, sizeof(b));
-
-				c = a * b;
 				push(&c, sizeof(c));
 				break;
 			}
