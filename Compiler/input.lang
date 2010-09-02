@@ -1,7 +1,8 @@
-print 5;
-int a;
-a = 5;
-print a;
-int b;
-b = a;
-print b;
+int i;
+i = 0;
+
+while(i != 5) {
+	print i;
+	i = i + 1;
+	if(i == 3) print i+20;
+}

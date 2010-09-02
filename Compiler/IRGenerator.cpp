@@ -2,6 +2,59 @@
 
 #include <sstream>
 
+static char* names[] = {
+	/* TypeLoad		*/	"load   ",
+	/* TypeLoadImm	*/	"loadi  ",
+	/* TypeAdd		*/	"add    ",
+	/* TypeMult		*/	"mult   ",
+	/* TypePrint	*/	"print  ",
+	/* TypeEqual	*/	"equ    ",
+	/* TypeNequal	*/	"neq    ",
+	/* TypeJump		*/	"jmp    ",
+	/* TypeCJump	*/	"cjmp   ",
+	/* TypeNCJump	*/	"ncjmp  "
+};
+
+static void printLine(const IRLine *line)
+{
+	printf("%s ", names[line->type]);
+
+	switch(line->type) {
+		case IRLine::TypePrint:
+			printf("%s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str());
+			break;
+
+		case IRLine::TypeLoadImm:
+			printf("%s, %i", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(), line->rhs1);
+			break;
+
+		case IRLine::TypeLoad:
+			printf("%s, %s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
+							 ((IRGenerator::List::Symbol*)line->rhs1)->name.c_str());
+			break;
+
+		case IRLine::TypeAdd:
+		case IRLine::TypeMult:
+		case IRLine::TypeEqual:
+		case IRLine::TypeNequal:
+			printf("%s, %s, %s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
+								 ((IRGenerator::List::Symbol*)line->rhs1)->name.c_str(),
+								 ((IRGenerator::List::Symbol*)line->rhs2)->name.c_str());
+			break;
+
+		case IRLine::TypeJump:
+			printf("%s", ((IRGenerator::List::Block*)line->lhs)->name.c_str());
+			break;
+
+		case IRLine::TypeCJump:
+		case IRLine::TypeNCJump:
+			printf("%s, %s", ((IRGenerator::List::Block*)line->lhs)->name.c_str(),
+							 ((IRGenerator::List::Symbol*)line->rhs1)->name.c_str());
+			break;
+	}
+	printf("\n");
+}
+
 void IRGenerator::List::print() const
 {
 	printf("Symbols:\n");
@@ -10,8 +63,13 @@ void IRGenerator::List::print() const
 	}
 	printf("\n");
 	printf("Lines:\n");
-	for(int i=0; i<lines.size(); i++) {
-		lines[i]->print();
+	for(int i=0; i<blocks.size(); i++) {
+		List::Block *block = blocks[i];
+		printf("%s:\n", block->name.c_str());
+		for(int j=0; j<block->lines.size(); j++) {
+			printf("  ");
+			printLine(block->lines[j]);
+		}
 	}
 }
 
@@ -19,6 +77,8 @@ IRGenerator::IRGenerator(SyntaxNode *tree)
 {
 	mTree = tree;
 	mNextTemp = 0;
+	mNextBlock = 0;
+	mCurrentBlock = newBlock();
 }
 
 const IRGenerator::List &IRGenerator::generate()
@@ -29,7 +89,7 @@ const IRGenerator::List &IRGenerator::generate()
 
 void IRGenerator::processNode(SyntaxNode *node)
 {
-	IRSymbol *lhs, *rhs;
+	List::Symbol *lhs, *rhs;
 
 	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeStatementList:
@@ -56,19 +116,83 @@ void IRGenerator::processNode(SyntaxNode *node)
 				emit(IRLine::TypeLoad, lhs, rhs);
 			}
 			break;
+
+		case SyntaxNode::NodeTypeIf:
+			lhs = processRValue(node->children[0]);
+			if(node->numChildren == 2) {
+				List::Block *oldBlock = mCurrentBlock;
+
+				List::Block *trueBlock = newBlock();
+				emit(IRLine::TypeCJump, lhs, trueBlock);
+				
+				setCurrentBlock(trueBlock);
+				processNode(node->children[1]);
+
+				List::Block *nextBlock = newBlock();
+				setCurrentBlock(oldBlock);
+				emit(IRLine::TypeJump, nextBlock);
+				setCurrentBlock(trueBlock);
+				emit(IRLine::TypeJump, nextBlock);
+
+				setCurrentBlock(nextBlock);
+			} else {
+				List::Block *oldBlock = mCurrentBlock;
+
+				List::Block *trueBlock = newBlock();
+				emit(IRLine::TypeCJump, lhs, trueBlock);
+
+				setCurrentBlock(trueBlock);
+				processNode(node->children[1]);
+
+				List::Block *falseBlock = newBlock();
+				setCurrentBlock(falseBlock);
+				processNode(node->children[2]);
+				setCurrentBlock(oldBlock);
+				emit(IRLine::TypeJump, falseBlock);
+
+				List::Block *nextBlock = newBlock();
+				setCurrentBlock(trueBlock);
+				emit(IRLine::TypeJump, nextBlock);
+				setCurrentBlock(falseBlock);
+				emit(IRLine::TypeJump, nextBlock);
+
+				setCurrentBlock(nextBlock);
+			}
+			break;
+
+		case SyntaxNode::NodeTypeWhile:
+			{
+				List::Block *testBlock = newBlock();
+				emit(IRLine::TypeJump, testBlock);
+				setCurrentBlock(testBlock);
+				lhs = processRValue(node->children[0]);
+
+				List::Block *mainBlock = newBlock();
+				setCurrentBlock(mainBlock);
+				processNode(node->children[1]);
+				emit(IRLine::TypeJump, testBlock);
+
+				List::Block *nextBlock = newBlock();
+				setCurrentBlock(testBlock);
+				emit(IRLine::TypeNCJump, lhs, nextBlock);
+				emit(IRLine::TypeJump, mainBlock);
+				
+				setCurrentBlock(nextBlock);
+				break;
+			}
 	}
 }
 
 void IRGenerator::emit(IRLine::Type type, long lhs, long rhs1, long rhs2)
 {
 	IRLine *line = new IRLine(type, lhs, rhs1, rhs2);
-	mList.lines.push_back(line);
+	mCurrentBlock->lines.push_back(line);
 }
 
-IRSymbol *IRGenerator::processRValue(SyntaxNode *node)
+IRGenerator::List::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 {
-	IRSymbol *result;
-	IRSymbol *a, *b;
+	List::Symbol *result;
+	List::Symbol *a, *b;
 
 	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeConstant:
@@ -94,12 +218,27 @@ IRSymbol *IRGenerator::processRValue(SyntaxNode *node)
 					break;
 			}
 			break;
+
+		case SyntaxNode::NodeTypeCompare:
+			result = newTemp(node->type);
+			a = processRValue(node->children[0]);
+			b = processRValue(node->children[1]);
+			switch(node->nodeSubtype) {
+				case SyntaxNode::NodeSubtypeEqual:
+					emit(IRLine::TypeEqual, result, a, b);
+					break;
+
+				case SyntaxNode::NodeSubtypeNequal:
+					emit(IRLine::TypeNequal, result, a, b);
+					break;
+			}
+			break;
 	}
 
 	return result;
 }
 
-IRSymbol *IRGenerator::newTemp(Type *type)
+IRGenerator::List::Symbol *IRGenerator::newTemp(Type *type)
 {
 	std::stringstream ss;
 	ss << mNextTemp++;
@@ -108,15 +247,15 @@ IRSymbol *IRGenerator::newTemp(Type *type)
 	return addSymbol(name, type);
 }
 
-IRSymbol *IRGenerator::addSymbol(const std::string &name, Type *type)
+IRGenerator::List::Symbol *IRGenerator::addSymbol(const std::string &name, Type *type)
 {
-	IRSymbol *symbol = new IRSymbol(name, type);
+	List::Symbol *symbol = new List::Symbol(name, type);
 	mList.symbols.push_back(symbol);
 
 	return symbol;
 }
 
-IRSymbol *IRGenerator::findSymbol(const std::string &name)
+IRGenerator::List::Symbol *IRGenerator::findSymbol(const std::string &name)
 {
 	for(int i=0; i<mList.symbols.size(); i++) {
 		if(mList.symbols[i]->name == name) {
@@ -125,4 +264,21 @@ IRSymbol *IRGenerator::findSymbol(const std::string &name)
 	}
 
 	return NULL;
+}
+
+IRGenerator::List::Block *IRGenerator::newBlock()
+{
+	std::stringstream ss;
+	ss << mNextBlock++;
+	std::string name = "bb" + ss.str();
+
+	List::Block *block = new List::Block(name);
+	mList.blocks.push_back(block);
+
+	return block;
+}
+
+void IRGenerator::setCurrentBlock(List::Block *block)
+{
+	mCurrentBlock = block;
 }
