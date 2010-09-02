@@ -16,10 +16,10 @@ struct IRLine {
 	};
 
 	Type type;
-	long lhs;
-	long rhs1;
-	long rhs2;
+	void *lhs;
+	void *rhs1;
+	void *rhs2;
 
-	IRLine(Type _type, long _lhs, long _rhs1, long _rhs2) : type(_type), lhs(_lhs), rhs1(_rhs1), rhs2(_rhs2) {}
+	IRLine(Type _type, void *_lhs, void *_rhs1, void *_rhs2) : type(_type), lhs(_lhs), rhs1(_rhs1), rhs2(_rhs2) {}
 };
 #endif

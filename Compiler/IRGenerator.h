@@ -43,13 +43,7 @@ private:
 	List mList;
 
 	void processNode(SyntaxNode *node);
-	void emit(IRLine::Type type, List::Block *lhs) { emit(type, (long)lhs, 0, 0); }
-	void emit(IRLine::Type type, List::Symbol *lhs, List::Block *rhs) { emit(type, (long)lhs, (long)rhs, 0); }
-	void emit(IRLine::Type type, List::Symbol *lhs) { emit(type, (long)lhs, 0, 0); }
-	void emit(IRLine::Type type, List::Symbol *lhs, List::Symbol *rhs) { emit(type, (long)lhs, (long)rhs, 0); }
-	void emit(IRLine::Type type, List::Symbol *lhs, List::Symbol *rhs1, List::Symbol *rhs2) { emit(type, (long)lhs, (long)rhs1, (long)rhs2); }
-	void emit(IRLine::Type type, List::Symbol *lhs, int rhs) { emit(type, (long)lhs, (long)rhs, 0); }
-	void emit(IRLine::Type type, long lhs, long rhs1, long rhs2);
+	void emit(IRLine::Type type, void *lhs, void *rhs1 = 0, void *rhs2 = 0);
 	List::Symbol *processRValue(SyntaxNode *node);
 	List::Symbol *newTemp(Type *type);
 	List::Symbol *addSymbol(const std::string &name, Type *type);
