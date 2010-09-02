@@ -195,6 +195,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IR.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IRGenerator.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\lang.l"
 				>
 			</File>
@@ -234,6 +242,14 @@
 			>
 			<File
 				RelativePath=".\Interpreter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IR.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IRGenerator.h"
 				>
 			</File>
 			<File

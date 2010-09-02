@@ -1,10 +1,7 @@
-int i;
-i = 0;
-
+print 5;
 int a;
-
-a = 6;
-while(i != 5) {
-	print i;
-	i = i + 1;
-}
+a = 5;
+print a;
+int b;
+b = a;
+print b;

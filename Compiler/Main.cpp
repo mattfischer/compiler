@@ -5,6 +5,7 @@
 #include "SyntaxNode.h"
 #include "TypeChecker.h"
 #include "Interpreter.h"
+#include "IRGenerator.h"
 
 extern "C" ParseNode *parseLang(const char *filename);
 
@@ -18,8 +19,12 @@ int main(int arg, char *argv[])
 	bool result = typeChecker.check(syntaxTree);
 
 	if(result) {
-		Interpreter interpreter(syntaxTree);
-		interpreter.run();
+		/*Interpreter interpreter(syntaxTree);
+		interpreter.run();*/
+
+		IRGenerator generator(syntaxTree);
+		const IRGenerator::List &list = generator.generate();
+		list.print();
 	}
 
 	return 0;
