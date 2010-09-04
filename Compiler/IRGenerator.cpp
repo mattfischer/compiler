@@ -42,13 +42,13 @@ static void printLine(const IRLine *line)
 			break;
 
 		case IRLine::TypeJump:
-			printf("%s", ((IRGenerator::List::Block*)line->lhs)->name.c_str());
+			printf("bb%i", ((IRGenerator::List::Block*)line->lhs)->number);
 			break;
 
 		case IRLine::TypeCJump:
-			printf("%s, %s, %s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
-								 ((IRGenerator::List::Block*)line->rhs1)->name.c_str(),
-								 ((IRGenerator::List::Block*)line->rhs2)->name.c_str());
+			printf("%s, bb%i, bb%i", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
+								 ((IRGenerator::List::Block*)line->rhs1)->number,
+								 ((IRGenerator::List::Block*)line->rhs2)->number);
 			break;
 	}
 	printf("\n");
@@ -64,11 +64,23 @@ void IRGenerator::List::print() const
 	printf("Lines:\n");
 	for(int i=0; i<blocks.size(); i++) {
 		List::Block *block = blocks[i];
-		printf("%s:\n", block->name.c_str());
+		printf("bb%i%s:\n", block->number, (block == start)?" (start)" : (block == end) ? " (end)" : "");
 		for(int j=0; j<block->lines.size(); j++) {
 			printf("  ");
 			printLine(block->lines[j]);
 		}
+	}
+}
+
+void IRGenerator::List::printGraph() const
+{
+	printf("Graph:\n");
+	for(int i=0; i<blocks.size(); i++) {
+		List::Block *block = blocks[i];
+		printf("%i -> ", block->number);
+		for(int j=0; j<block->succ.size(); j++)
+			printf("%i ", block->succ[j]->number);
+		printf("\n");
 	}
 }
 
@@ -77,12 +89,18 @@ IRGenerator::IRGenerator(SyntaxNode *tree)
 	mTree = tree;
 	mNextTemp = 0;
 	mNextBlock = 0;
-	mCurrentBlock = newBlock();
+	mList.start = newBlock();
+	mCurrentBlock = mList.start;
 }
 
 const IRGenerator::List &IRGenerator::generate()
 {
 	processNode(mTree);
+	mList.end = newBlock();
+	emit(IRLine::TypeJump, mList.end);
+
+	topoSort();
+
 	return mList;
 }
 
@@ -171,6 +189,20 @@ void IRGenerator::emit(IRLine::Type type, void *lhs, void *rhs1, void *rhs2)
 {
 	IRLine *line = new IRLine(type, lhs, rhs1, rhs2);
 	mCurrentBlock->lines.push_back(line);
+
+	if(type == IRLine::TypeJump) {
+		List::Block *block = (List::Block*)lhs;
+		mCurrentBlock->succ.push_back(block);
+		block->pred.push_back(mCurrentBlock);
+	} else if(type == IRLine::TypeCJump) {
+		List::Block *block = (List::Block*)rhs1;
+		mCurrentBlock->succ.push_back(block);
+		block->pred.push_back(mCurrentBlock);
+
+		block = (List::Block*)rhs2;
+		mCurrentBlock->succ.push_back(block);
+		block->pred.push_back(mCurrentBlock);
+	}
 }
 
 IRGenerator::List::Symbol *IRGenerator::processRValue(SyntaxNode *node)
@@ -252,11 +284,7 @@ IRGenerator::List::Symbol *IRGenerator::findSymbol(const std::string &name)
 
 IRGenerator::List::Block *IRGenerator::newBlock()
 {
-	std::stringstream ss;
-	ss << mNextBlock++;
-	std::string name = "bb" + ss.str();
-
-	List::Block *block = new List::Block(name);
+	List::Block *block = new List::Block(mNextBlock++);
 	mList.blocks.push_back(block);
 
 	return block;
@@ -265,4 +293,33 @@ IRGenerator::List::Block *IRGenerator::newBlock()
 void IRGenerator::setCurrentBlock(List::Block *block)
 {
 	mCurrentBlock = block;
+}
+
+void IRGenerator::topoSortRecurse(List::Block *block, std::vector<bool> &seen, std::vector<int> &output)
+{
+	if(seen[block->number]) 
+		return;
+
+	seen[block->number] = true;
+
+	for(int i=0; i<block->succ.size(); i++)
+		topoSortRecurse(block->succ[i], seen, output);
+
+	output.push_back(block->number);
+}
+
+void IRGenerator::topoSort()
+{
+	std::vector<bool> seen(mList.blocks.size());
+	std::vector<int> output;
+	std::vector<List::Block*> blocks = mList.blocks;
+
+	topoSortRecurse(mList.start, seen, output);
+
+	mList.blocks.clear();
+	for(int i=0; i<blocks.size(); i++) {
+		List::Block *block = blocks[output[blocks.size() - i - 1]];
+		mList.blocks.push_back(block);
+		block->number = i;
+	}
 }

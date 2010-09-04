@@ -22,15 +22,20 @@ public:
 		std::vector<Symbol*> symbols;
 
 		struct Block {
-			std::string name;
+			int number;
 			std::vector<IRLine*> lines;
+			std::vector<Block*> pred;
+			std::vector<Block*> succ;
 
-			Block(const std::string &_name) : name(_name) {}
+			Block(int _number) : number(_number) {}
 		};
 
 		std::vector<Block*> blocks;
+		Block *start;
+		Block *end;
 
 		void print() const;
+		void printGraph() const;
 	};
 
 	const List &generate();
@@ -50,6 +55,9 @@ private:
 	List::Symbol *findSymbol(const std::string &name);
 	List::Block *newBlock();
 	void setCurrentBlock(List::Block *block);
+	void topoSortRecurse(List::Block *block, std::vector<bool> &seen, std::vector<int> &output);
+	void topoSort();
+
 };
 
 #endif

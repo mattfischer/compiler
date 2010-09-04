@@ -25,6 +25,8 @@ int main(int arg, char *argv[])
 		IRGenerator generator(syntaxTree);
 		const IRGenerator::List &list = generator.generate();
 		list.print();
+		printf("\n");
+		list.printGraph();
 	}
 
 	return 0;
