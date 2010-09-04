@@ -23,10 +23,8 @@ int main(int arg, char *argv[])
 		interpreter.run();*/
 
 		IRGenerator generator(syntaxTree);
-		const IRGenerator::List &list = generator.generate();
-		list.print();
-		printf("\n");
-		list.printGraph();
+		IR *ir = generator.generate();
+		ir->print();
 	}
 
 	return 0;

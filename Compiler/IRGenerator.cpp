@@ -1,112 +1,25 @@
 #include "IRGenerator.h"
 
-#include <sstream>
-
-static char* names[] = {
-	/* TypeLoad		*/	"load   ",
-	/* TypeLoadImm	*/	"loadi  ",
-	/* TypeAdd		*/	"add    ",
-	/* TypeMult		*/	"mult   ",
-	/* TypePrint	*/	"print  ",
-	/* TypeEqual	*/	"equ    ",
-	/* TypeNequal	*/	"neq    ",
-	/* TypeJump		*/	"jmp    ",
-	/* TypeCJump	*/	"cjmp   "
-};
-
-static void printLine(const IRLine *line)
-{
-	printf("%s ", names[line->type]);
-
-	switch(line->type) {
-		case IRLine::TypePrint:
-			printf("%s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str());
-			break;
-
-		case IRLine::TypeLoadImm:
-			printf("%s, %i", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(), (int)line->rhs1);
-			break;
-
-		case IRLine::TypeLoad:
-			printf("%s, %s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
-							 ((IRGenerator::List::Symbol*)line->rhs1)->name.c_str());
-			break;
-
-		case IRLine::TypeAdd:
-		case IRLine::TypeMult:
-		case IRLine::TypeEqual:
-		case IRLine::TypeNequal:
-			printf("%s, %s, %s", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
-								 ((IRGenerator::List::Symbol*)line->rhs1)->name.c_str(),
-								 ((IRGenerator::List::Symbol*)line->rhs2)->name.c_str());
-			break;
-
-		case IRLine::TypeJump:
-			printf("bb%i", ((IRGenerator::List::Block*)line->lhs)->number);
-			break;
-
-		case IRLine::TypeCJump:
-			printf("%s, bb%i, bb%i", ((IRGenerator::List::Symbol*)line->lhs)->name.c_str(),
-								 ((IRGenerator::List::Block*)line->rhs1)->number,
-								 ((IRGenerator::List::Block*)line->rhs2)->number);
-			break;
-	}
-	printf("\n");
-}
-
-void IRGenerator::List::print() const
-{
-	printf("Symbols:\n");
-	for(int i=0; i<symbols.size(); i++) {
-		printf("%s %s\n", symbols[i]->type->name.c_str(), symbols[i]->name.c_str());
-	}
-	printf("\n");
-	printf("Lines:\n");
-	for(int i=0; i<blocks.size(); i++) {
-		List::Block *block = blocks[i];
-		printf("bb%i%s:\n", block->number, (block == start)?" (start)" : (block == end) ? " (end)" : "");
-		for(int j=0; j<block->lines.size(); j++) {
-			printf("  ");
-			printLine(block->lines[j]);
-		}
-	}
-}
-
-void IRGenerator::List::printGraph() const
-{
-	printf("Graph:\n");
-	for(int i=0; i<blocks.size(); i++) {
-		List::Block *block = blocks[i];
-		printf("%i -> ", block->number);
-		for(int j=0; j<block->succ.size(); j++)
-			printf("%i ", block->succ[j]->number);
-		printf("\n");
-	}
-}
-
 IRGenerator::IRGenerator(SyntaxNode *tree)
 {
 	mTree = tree;
-	mNextTemp = 0;
-	mNextBlock = 0;
-	mList.start = newBlock();
-	mCurrentBlock = mList.start;
+	mIR = new IR;
+	mCurrentProcedure = mIR->main();
 }
 
-const IRGenerator::List &IRGenerator::generate()
+IR *IRGenerator::generate()
 {
 	processNode(mTree);
-	mList.end = newBlock();
-	emit(IRLine::TypeJump, mList.end);
+	emit(IR::Entry::TypeJump, mCurrentProcedure->end());
 
-	topoSort();
+	mCurrentProcedure->topoSort();
 
-	return mList;
+	return mIR;
 }
 
 void IRGenerator::processNode(SyntaxNode *node)
 {
-	List::Symbol *lhs, *rhs;
+	IR::Symbol *lhs, *rhs;
 
 	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeStatementList:
@@ -117,48 +30,48 @@ void IRGenerator::processNode(SyntaxNode *node)
 
 		case SyntaxNode::NodeTypePrintStatement:
 			lhs = processRValue(node->children[0]);
-			emit(IRLine::TypePrint, lhs);
+			emit(IR::Entry::TypePrint, lhs);
 			break;
 
 		case SyntaxNode::NodeTypeVarDecl:
-			addSymbol(node->children[1]->lexVal._id, Type::find(node->children[0]->lexVal._id));
+			mCurrentProcedure->addSymbol(node->children[1]->lexVal._id, Type::find(node->children[0]->lexVal._id));
 			break;
 
 		case SyntaxNode::NodeTypeAssign:
-			lhs = findSymbol(node->children[0]->lexVal._id);
+			lhs = mCurrentProcedure->findSymbol(node->children[0]->lexVal._id);
 			rhs = processRValue(node->children[1]);
-			emit(IRLine::TypeLoad, lhs, rhs);
+			emit(IR::Entry::TypeLoad, lhs, rhs);
 			break;
 
 		case SyntaxNode::NodeTypeIf:
 			lhs = processRValue(node->children[0]);
 			if(node->numChildren == 2) {
-				List::Block *trueBlock = newBlock();
-				List::Block *nextBlock = newBlock();
+				IR::Block *trueBlock = mCurrentProcedure->newBlock();
+				IR::Block *nextBlock = mCurrentProcedure->newBlock();
 
-				emit(IRLine::TypeCJump, lhs, trueBlock, nextBlock);
+				emit(IR::Entry::TypeCJump, lhs, trueBlock, nextBlock);
 				
 				setCurrentBlock(trueBlock);
 				processNode(node->children[1]);
 
 				setCurrentBlock(trueBlock);
-				emit(IRLine::TypeJump, nextBlock);
+				emit(IR::Entry::TypeJump, nextBlock);
 
 				setCurrentBlock(nextBlock);
 			} else {
-				List::Block *trueBlock = newBlock();
-				List::Block *falseBlock = newBlock();
-				List::Block *nextBlock = newBlock();
+				IR::Block *trueBlock = mCurrentProcedure->newBlock();
+				IR::Block *falseBlock = mCurrentProcedure->newBlock();
+				IR::Block *nextBlock = mCurrentProcedure->newBlock();
 
-				emit(IRLine::TypeCJump, lhs, trueBlock, falseBlock);
+				emit(IR::Entry::TypeCJump, lhs, trueBlock, falseBlock);
 
 				setCurrentBlock(trueBlock);
 				processNode(node->children[1]);
-				emit(IRLine::TypeJump, nextBlock);
+				emit(IR::Entry::TypeJump, nextBlock);
 
 				setCurrentBlock(falseBlock);
 				processNode(node->children[2]);
-				emit(IRLine::TypeJump, nextBlock);
+				emit(IR::Entry::TypeJump, nextBlock);
 
 				setCurrentBlock(nextBlock);
 			}
@@ -166,18 +79,18 @@ void IRGenerator::processNode(SyntaxNode *node)
 
 		case SyntaxNode::NodeTypeWhile:
 			{
-				List::Block *testBlock = newBlock();
-				List::Block *mainBlock = newBlock();
-				List::Block *nextBlock = newBlock();
+				IR::Block *testBlock = mCurrentProcedure->newBlock();
+				IR::Block *mainBlock = mCurrentProcedure->newBlock();
+				IR::Block *nextBlock = mCurrentProcedure->newBlock();
 
-				emit(IRLine::TypeJump, testBlock);
+				emit(IR::Entry::TypeJump, testBlock);
 				setCurrentBlock(testBlock);
 				lhs = processRValue(node->children[0]);
-				emit(IRLine::TypeCJump, lhs, mainBlock, nextBlock);
+				emit(IR::Entry::TypeCJump, lhs, mainBlock, nextBlock);
 
 				setCurrentBlock(mainBlock);
 				processNode(node->children[1]);
-				emit(IRLine::TypeJump, testBlock);
+				emit(IR::Entry::TypeJump, testBlock);
 
 				setCurrentBlock(nextBlock);
 				break;
@@ -185,67 +98,52 @@ void IRGenerator::processNode(SyntaxNode *node)
 	}
 }
 
-void IRGenerator::emit(IRLine::Type type, void *lhs, void *rhs1, void *rhs2)
+void IRGenerator::emit(IR::Entry::Type type, void *lhs, void *rhs1, void *rhs2)
 {
-	IRLine *line = new IRLine(type, lhs, rhs1, rhs2);
-	mCurrentBlock->lines.push_back(line);
-
-	if(type == IRLine::TypeJump) {
-		List::Block *block = (List::Block*)lhs;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
-	} else if(type == IRLine::TypeCJump) {
-		List::Block *block = (List::Block*)rhs1;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
-
-		block = (List::Block*)rhs2;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
-	}
+	mCurrentProcedure->emit(type, lhs, rhs1, rhs2);
 }
 
-IRGenerator::List::Symbol *IRGenerator::processRValue(SyntaxNode *node)
+IR::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 {
-	List::Symbol *result;
-	List::Symbol *a, *b;
+	IR::Symbol *result;
+	IR::Symbol *a, *b;
 
 	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeConstant:
-			result = newTemp(node->type);
-			emit(IRLine::TypeLoadImm, result, (void*)node->lexVal._int);
+			result = mCurrentProcedure->newTemp(node->type);
+			emit(IR::Entry::TypeLoadImm, result, (void*)node->lexVal._int);
 			break;
 
 		case SyntaxNode::NodeTypeId:
-			result = findSymbol(node->lexVal._id);
+			result = mCurrentProcedure->findSymbol(node->lexVal._id);
 			break;
 
 		case SyntaxNode::NodeTypeArith:
-			result = newTemp(node->type);
+			result = mCurrentProcedure->newTemp(node->type);
 			a = processRValue(node->children[0]);
 			b = processRValue(node->children[1]);
 			switch(node->nodeSubtype) {
 				case SyntaxNode::NodeSubtypeAdd:
-					emit(IRLine::TypeAdd, result, a, b);
+					emit(IR::Entry::TypeAdd, result, a, b);
 					break;
 
 				case SyntaxNode::NodeSubtypeMultiply:
-					emit(IRLine::TypeMult, result, a, b);
+					emit(IR::Entry::TypeMult, result, a, b);
 					break;
 			}
 			break;
 
 		case SyntaxNode::NodeTypeCompare:
-			result = newTemp(node->type);
+			result = mCurrentProcedure->newTemp(node->type);
 			a = processRValue(node->children[0]);
 			b = processRValue(node->children[1]);
 			switch(node->nodeSubtype) {
 				case SyntaxNode::NodeSubtypeEqual:
-					emit(IRLine::TypeEqual, result, a, b);
+					emit(IR::Entry::TypeEqual, result, a, b);
 					break;
 
 				case SyntaxNode::NodeSubtypeNequal:
-					emit(IRLine::TypeNequal, result, a, b);
+					emit(IR::Entry::TypeNequal, result, a, b);
 					break;
 			}
 			break;
@@ -254,72 +152,7 @@ IRGenerator::List::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 	return result;
 }
 
-IRGenerator::List::Symbol *IRGenerator::newTemp(Type *type)
+void IRGenerator::setCurrentBlock(IR::Block *block)
 {
-	std::stringstream ss;
-	ss << mNextTemp++;
-	std::string name = "temp" + ss.str();
-
-	return addSymbol(name, type);
-}
-
-IRGenerator::List::Symbol *IRGenerator::addSymbol(const std::string &name, Type *type)
-{
-	List::Symbol *symbol = new List::Symbol(name, type);
-	mList.symbols.push_back(symbol);
-
-	return symbol;
-}
-
-IRGenerator::List::Symbol *IRGenerator::findSymbol(const std::string &name)
-{
-	for(int i=0; i<mList.symbols.size(); i++) {
-		if(mList.symbols[i]->name == name) {
-			return mList.symbols[i];
-		}
-	}
-
-	return NULL;
-}
-
-IRGenerator::List::Block *IRGenerator::newBlock()
-{
-	List::Block *block = new List::Block(mNextBlock++);
-	mList.blocks.push_back(block);
-
-	return block;
-}
-
-void IRGenerator::setCurrentBlock(List::Block *block)
-{
-	mCurrentBlock = block;
-}
-
-void IRGenerator::topoSortRecurse(List::Block *block, std::vector<bool> &seen, std::vector<int> &output)
-{
-	if(seen[block->number]) 
-		return;
-
-	seen[block->number] = true;
-
-	for(int i=0; i<block->succ.size(); i++)
-		topoSortRecurse(block->succ[i], seen, output);
-
-	output.push_back(block->number);
-}
-
-void IRGenerator::topoSort()
-{
-	std::vector<bool> seen(mList.blocks.size());
-	std::vector<int> output;
-	std::vector<List::Block*> blocks = mList.blocks;
-
-	topoSortRecurse(mList.start, seen, output);
-
-	mList.blocks.clear();
-	for(int i=0; i<blocks.size(); i++) {
-		List::Block *block = blocks[output[blocks.size() - i - 1]];
-		mList.blocks.push_back(block);
-		block->number = i;
-	}
+	mCurrentProcedure->setCurrentBlock(block);
 }

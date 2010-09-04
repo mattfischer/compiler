@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IR.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IRGenerator.cpp"
 				>
 			</File>
