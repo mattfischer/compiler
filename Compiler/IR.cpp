@@ -100,10 +100,9 @@ void IR::Procedure::print() const
 			block->entries[j]->print();
 		}
 	}
-}
+	printf("\n");
 
-void IR::Procedure::printGraph() const
-{
+	/*	
 	printf("Graph:\n");
 	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		Block *block = mBlocks[i];
@@ -112,16 +111,31 @@ void IR::Procedure::printGraph() const
 			printf("%i ", block->succ[j]->number);
 		printf("\n");
 	}
-}
+	printf("\n");
+	*/
 
-void IR::Procedure::printDominatorTree() const
-{
+	/*	
 	printf("Dominator tree:\n");
 	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		Block *block = mBlocks[i];
 
 		printf("%i -> %i\n", block->number, block->idom->number);
 	}
+	printf("\n");
+	*/
+
+	/*
+	printf("Dominance frontiers:\n");
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
+		Block *block = mBlocks[i];
+
+		printf("%i -> ", block->number);
+		for(unsigned int j=0; j<block->domFrontiers.size(); j++)
+			printf("%i ", block->domFrontiers[j]->number);
+		printf("\n");
+	}
+	printf("\n");
+	*/
 }
 
 IR::Symbol *IR::Procedure::newTemp(Type *type)
@@ -217,6 +231,13 @@ void IR::Procedure::emitCJump(Symbol *pred, Block *trueTarget, Block *falseTarge
 	falseTarget->pred.push_back(mCurrentBlock);
 }
 
+void IR::Procedure::computeDominance()
+{
+	topologicalSort();
+	computeDominatorTree();
+	computeDominanceFrontiers();
+}
+
 static void topoSortRecurse(IR::Block *block, std::vector<bool> &seen, std::vector<int> &output)
 {
 	if(seen[block->number]) 
@@ -268,10 +289,10 @@ void IR::Procedure::computeDominatorTree()
 	bool changed;
 	do {
 		changed = false;
-		for(int i=1; i<mBlocks.size(); i++) {
+		for(unsigned int i=1; i<mBlocks.size(); i++) {
 			Block *block = mBlocks[i];
 			Block *newIdom = 0;
-			for(int j=0; j<block->pred.size(); j++) {
+			for(unsigned int j=0; j<block->pred.size(); j++) {
 				Block *pred = block->pred[j];
 
 				if(pred->idom != 0) {
@@ -290,6 +311,35 @@ void IR::Procedure::computeDominatorTree()
 	} while(changed);
 }
 
+void IR::Procedure::computeDominanceFrontiers()
+{
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
+		Block *block = mBlocks[i];
+
+		if(block->pred.size() < 2)
+			continue;
+
+		for(unsigned int j=0; j<block->pred.size(); j++) {
+			Block *runner = block->pred[j];
+			while(runner != block->idom) {
+				bool found = false;
+				for(unsigned int k=0; k<runner->domFrontiers.size(); k++) {
+					if(runner->domFrontiers[k] == block) {
+						found = true;
+						break;
+					}
+				}
+
+				if(!found) {
+					runner->domFrontiers.push_back(block);
+				}
+
+				runner = runner->idom;
+			}
+		}
+	}
+}
+
 IR::IR()
 {
 	mMain = new Procedure("main");
@@ -301,9 +351,12 @@ void IR::print() const
 	for(unsigned int i=0; i<mProcedures.size(); i++) {
 		printf("%s:\n", mProcedures[i]->name().c_str());
 		mProcedures[i]->print();
-		printf("\n");
-		mProcedures[i]->printGraph();
-		printf("\n");
-		mProcedures[i]->printDominatorTree();
+	}
+}
+
+void IR::computeDominance()
+{
+	for(unsigned int i=0; i<mProcedures.size(); i++) {
+		mProcedures[i]->computeDominance();
 	}
 }
