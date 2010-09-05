@@ -114,6 +114,15 @@ void IR::Procedure::printGraph() const
 	}
 }
 
+void IR::Procedure::printDominatorTree() const
+{
+	printf("Dominator tree:\n");
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
+		Block *block = mBlocks[i];
+
+		printf("%i -> %i\n", block->number, block->idom->number);
+	}
+}
 
 IR::Symbol *IR::Procedure::newTemp(Type *type)
 {
@@ -221,7 +230,7 @@ static void topoSortRecurse(IR::Block *block, std::vector<bool> &seen, std::vect
 	output.push_back(block->number);
 }
 
-void IR::Procedure::topoSort()
+void IR::Procedure::topologicalSort()
 {
 	std::vector<bool> seen(mBlocks.size());
 	std::vector<int> output;
@@ -235,6 +244,50 @@ void IR::Procedure::topoSort()
 		mBlocks.push_back(block);
 		block->number = i;
 	}
+}
+
+static IR::Block *domIntersect(IR::Block *a, IR::Block *b)
+{
+	while(a != b) {
+		while(a->number > b->number)
+			a = a->idom;
+		while(b->number > a->number)
+			b = b->idom;
+	}
+
+	return a;
+}
+
+void IR::Procedure::computeDominatorTree()
+{
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
+		mBlocks[i]->idom = 0;
+	}
+	mBlocks[0]->idom = mBlocks[0];
+
+	bool changed;
+	do {
+		changed = false;
+		for(int i=1; i<mBlocks.size(); i++) {
+			Block *block = mBlocks[i];
+			Block *newIdom = 0;
+			for(int j=0; j<block->pred.size(); j++) {
+				Block *pred = block->pred[j];
+
+				if(pred->idom != 0) {
+					if(newIdom)
+						newIdom = domIntersect(pred, newIdom);
+					else
+						newIdom = pred;
+				}
+			}
+
+			if(newIdom != block->idom) {
+				block->idom = newIdom;
+				changed = true;
+			}
+		}
+	} while(changed);
 }
 
 IR::IR()
@@ -251,5 +304,6 @@ void IR::print() const
 		printf("\n");
 		mProcedures[i]->printGraph();
 		printf("\n");
+		mProcedures[i]->printDominatorTree();
 	}
 }

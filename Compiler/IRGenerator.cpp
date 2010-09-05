@@ -12,7 +12,8 @@ IR *IRGenerator::generate()
 	processNode(mTree);
 	mProc->emitJump(mProc->end());
 
-	mProc->topoSort();
+	mProc->topologicalSort();
+	mProc->computeDominatorTree();
 
 	return mIR;
 }

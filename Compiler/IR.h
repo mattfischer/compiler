@@ -68,6 +68,8 @@ public:
 		std::vector<Block*> pred;
 		std::vector<Block*> succ;
 
+		Block *idom;
+
 		Block(int _number) : number(_number) {}
 	};
 
@@ -77,7 +79,8 @@ public:
 
 		void print() const;
 		void printGraph() const;
-		
+		void printDominatorTree() const;
+
 		Block *start() const { return mStart; }
 		Block *end() const { return mEnd; }
 		const std::string &name() const { return mName; }
@@ -89,7 +92,8 @@ public:
 
 		void setCurrentBlock(Block *block);
 
-		void topoSort();
+		void topologicalSort();
+		void computeDominatorTree();
 
 		void emitThreeAddr(Entry::Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
 		void emitImm(Entry::Type type, Symbol *lhs, int rhs);
