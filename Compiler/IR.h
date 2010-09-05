@@ -52,7 +52,7 @@ public:
 			Block *falseTarget;
 		};
 
-		void print();
+		void print(const std::string &prefix = "");
 	};
 
 	struct Symbol {
@@ -72,17 +72,26 @@ public:
 		std::vector<Block*> domFrontiers;
 
 		Block(int _number) : number(_number) {}
+
+		void addPred(Block *block);
+		void removePred(Block *block);
+
+		void addSucc(Block *block);
+		void removeSucc(Block *block);
 	};
 
 	class Procedure {
 	public:
 		Procedure(const std::string &name);
 
-		void print() const;
+		void print(const std::string &prefix = "") const;
 		
 		Block *start() const { return mStart; }
 		Block *end() const { return mEnd; }
 		const std::string &name() const { return mName; }
+		std::vector<Block*> &blocks() { return mBlocks; }
+
+		void removeBlock(Block *block);
 
 		Symbol *newTemp(Type *type);
 		Symbol *addSymbol(const std::string &name, Type *type);
@@ -106,7 +115,6 @@ public:
 		Block *mEnd;
 
 		int mNextTemp;
-		int mNextBlock;
 
 		Block *mCurrentBlock;
 
@@ -118,6 +126,7 @@ public:
 	IR();
 
 	Procedure *main() { return mMain; }
+	std::vector<Procedure*> procedures() { return mProcedures; }
 
 	void print() const;
 

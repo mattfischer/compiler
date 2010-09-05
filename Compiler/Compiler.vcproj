@@ -223,6 +223,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Optimizer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassDce.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassJumps.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SyntaxNode.cpp"
 				>
 			</File>
@@ -254,6 +266,18 @@
 			</File>
 			<File
 				RelativePath=".\lang.tab.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Optimizer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassDce.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassJumps.h"
 				>
 			</File>
 			<File

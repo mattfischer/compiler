@@ -6,6 +6,7 @@
 #include "TypeChecker.h"
 #include "Interpreter.h"
 #include "IRGenerator.h"
+#include "Optimizer.h"
 
 extern "C" ParseNode *parseLang(const char *filename);
 
@@ -24,7 +25,9 @@ int main(int arg, char *argv[])
 
 		IRGenerator generator(syntaxTree);
 		IR *ir = generator.generate();
-		ir->print();
+		
+		Optimizer opt(ir);
+		opt.optimize();
 	}
 
 	return 0;

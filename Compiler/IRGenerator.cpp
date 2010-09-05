@@ -12,8 +12,6 @@ IR *IRGenerator::generate()
 	processNode(mTree);
 	mProc->emitJump(mProc->end());
 
-	mIR->computeDominance();
-
 	return mIR;
 }
 

@@ -14,10 +14,10 @@ static char* names[] = {
 	/* TypeCJump	*/	"cjmp   "
 };
 
-void IR::Entry::print()
+void IR::Entry::print(const std::string &prefix)
 {
 	Imm *imm = (Imm*)this;
-	printf("%s ", names[type]);
+	printf("%s%s ", prefix.c_str(), names[type]);
 
 	switch(type) {
 		case TypePrint:
@@ -73,10 +73,59 @@ void IR::Entry::print()
 	printf("\n");
 }
 
+void IR::Block::addPred(Block *block)
+{
+	bool found = false;
+
+	for(unsigned int i=0; i<pred.size(); i++) {
+		if(pred[i] == block) {
+			found = true;
+			break;
+		}
+	}
+
+	if(!found)
+		pred.push_back(block);
+}
+
+void IR::Block::removePred(Block *block)
+{
+	for(unsigned int i=0; i<pred.size(); i++) {
+		if(pred[i] == block) {
+			pred.erase(pred.begin() + i);
+			break;
+		}
+	}
+}
+
+void IR::Block::addSucc(Block *block)
+{
+	bool found = false;
+
+	for(unsigned int i=0; i<succ.size(); i++) {
+		if(succ[i] == block) {
+			found = true;
+			break;
+		}
+	}
+
+	if(!found)
+		succ.push_back(block);
+}
+
+void IR::Block::removeSucc(Block *block)
+{
+	for(unsigned int i=0; i<succ.size(); i++) {
+		if(succ[i] == block) {
+			succ.erase(succ.begin() + i);
+			break;
+		}
+	}
+}
+
 IR::Procedure::Procedure(const std::string &name)
 {
 	mNextTemp = 0;
-	mNextBlock = 0;
 
 	mName = name;
 	mStart = newBlock();
@@ -84,23 +133,21 @@ IR::Procedure::Procedure(const std::string &name)
 	mCurrentBlock = mStart;
 }
 
-void IR::Procedure::print() const
+void IR::Procedure::print(const std::string &prefix) const
 {
-	printf("Symbols:\n");
+	printf("%sSymbols:\n", prefix.c_str());
 	for(unsigned int i=0; i<mSymbols.size(); i++) {
-		printf("%s %s\n", mSymbols[i]->type->name.c_str(), mSymbols[i]->name.c_str());
+		printf("%s%s %s\n", (prefix + "  ").c_str(), mSymbols[i]->type->name.c_str(), mSymbols[i]->name.c_str());
 	}
-	printf("\n");
-	printf("Body:\n");
+	printf("%s\n", prefix.c_str());
+	printf("%sBody:\n", prefix.c_str());
 	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		Block *block = mBlocks[i];
-		printf("bb%i%s:\n", block->number, (block == mStart)?" (start)" : (block == mEnd) ? " (end)" : "");
-		for(unsigned int j=0; j<block->entries.size(); j++) {
-			printf("  ");
-			block->entries[j]->print();
-		}
+		printf("%sbb%i%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : (block == mEnd) ? " (end)" : "");
+		for(unsigned int j=0; j<block->entries.size(); j++)
+			block->entries[j]->print(prefix + "  ");
 	}
-	printf("\n");
+	printf("%s\n", prefix.c_str());
 
 	/*	
 	printf("Graph:\n");
@@ -168,7 +215,7 @@ IR::Symbol *IR::Procedure::findSymbol(const std::string &name)
 
 IR::Block *IR::Procedure::newBlock()
 {
-	Block *block = new Block(mNextBlock++);
+	Block *block = new Block((int)mBlocks.size());
 	mBlocks.push_back(block);
 
 	return block;
@@ -340,6 +387,18 @@ void IR::Procedure::computeDominanceFrontiers()
 	}
 }
 
+void IR::Procedure::removeBlock(Block *block)
+{
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
+		if(mBlocks[i] == block) {
+			mBlocks.erase(mBlocks.begin() + i);
+			break;
+		}
+	}
+
+	delete block;
+}
+
 IR::IR()
 {
 	mMain = new Procedure("main");
@@ -349,8 +408,8 @@ IR::IR()
 void IR::print() const
 {
 	for(unsigned int i=0; i<mProcedures.size(); i++) {
-		printf("%s:\n", mProcedures[i]->name().c_str());
-		mProcedures[i]->print();
+		printf("<%s>\n", mProcedures[i]->name().c_str());
+		mProcedures[i]->print("  ");
 	}
 }
 
