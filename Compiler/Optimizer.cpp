@@ -17,7 +17,11 @@ void Optimizer::optimize()
 	printf("\n");
 
 	for(unsigned int i=0; i<mPasses.size(); i++) {
-		mPasses[i]->optimize(mIR);
+		if(mPasses[i]->procedures()) {
+			for(int j=0; j<mIR->procedures().size(); j++) {
+				mPasses[i]->optimizeProcedure(mIR->procedures()[j]);
+			}
+		}
 
 		printf("PASS \"%s\":\n", mPasses[i]->name().c_str());
 		mIR->print();

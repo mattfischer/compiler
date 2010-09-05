@@ -14,7 +14,9 @@ public:
 
 		const std::string &name() const { return mName; }
 
-		virtual void optimize(IR *ir) = 0;
+		virtual bool procedures() { return false; }
+
+		virtual void optimizeProcedure(IR::Procedure *proc) {}
 
 	private:
 		std::string mName;
