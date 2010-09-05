@@ -8,6 +8,9 @@
 
 struct IR {
 public:
+	struct Symbol;
+	struct Block;
+
 	struct Entry {
 		enum Type {
 			TypeLoad,
@@ -23,11 +26,31 @@ public:
 		};
 
 		Type type;
-		void *lhs;
-		void *rhs1;
-		void *rhs2;
 
-		Entry(Type _type, void *_lhs, void *_rhs1, void *_rhs2) : type(_type), lhs(_lhs), rhs1(_rhs1), rhs2(_rhs2) {}
+		struct ThreeAddr {
+			Type type;
+			Symbol *lhs;
+			Symbol *rhs1;
+			Symbol *rhs2;
+		};
+
+		struct Imm {
+			Type type;
+			Symbol *lhs;
+			int rhs;
+		};
+
+		struct Jump {
+			Type type;
+			Block *target;
+		};
+
+		struct CJump {
+			Type type;
+			Symbol *pred;
+			Block *trueTarget;
+			Block *falseTarget;
+		};
 
 		void print();
 	};
@@ -68,7 +91,10 @@ public:
 
 		void topoSort();
 
-		void emit(Entry::Type type, void *lhs, void *rhs1 = 0, void *rhs2 = 0);
+		void emitThreeAddr(Entry::Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
+		void emitImm(Entry::Type type, Symbol *lhs, int rhs);
+		void emitJump(Block *target);
+		void emitCJump(Symbol *pred, Block *trueTarget, Block *falseTarget);
 
 	private:
 		std::string mName;

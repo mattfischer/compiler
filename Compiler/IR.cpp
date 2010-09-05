@@ -16,40 +16,59 @@ static char* names[] = {
 
 void IR::Entry::print()
 {
+	Imm *imm = (Imm*)this;
 	printf("%s ", names[type]);
 
 	switch(type) {
 		case TypePrint:
-			printf("%s", ((Symbol*)lhs)->name.c_str());
+		{
+			ThreeAddr *threeAddr = (ThreeAddr*)this;
+			printf("%s", threeAddr->lhs->name.c_str());
 			break;
+		}
 
 		case TypeLoadImm:
-			printf("%s, %i", ((Symbol*)lhs)->name.c_str(), (int)rhs1);
+		{
+			Imm *imm = (Imm*)this;
+			printf("%s, %i", imm->lhs->name.c_str(), imm->rhs);
 			break;
+		}
 
 		case TypeLoad:
-			printf("%s, %s", ((Symbol*)lhs)->name.c_str(),
-							 ((Symbol*)rhs1)->name.c_str());
+		{
+			ThreeAddr *threeAddr = (ThreeAddr*)this;
+			printf("%s, %s", threeAddr->lhs->name.c_str(),
+							 threeAddr->rhs1->name.c_str());
 			break;
+		}
 
 		case TypeAdd:
 		case TypeMult:
 		case TypeEqual:
 		case TypeNequal:
-			printf("%s, %s, %s", ((Symbol*)lhs)->name.c_str(),
-								 ((Symbol*)rhs1)->name.c_str(),
-								 ((Symbol*)rhs2)->name.c_str());
+		{
+			ThreeAddr *threeAddr = (ThreeAddr*)this;
+			printf("%s, %s, %s", threeAddr->lhs->name.c_str(),
+								 threeAddr->rhs1->name.c_str(),
+								 threeAddr->rhs2->name.c_str());
 			break;
+		}
 
 		case TypeJump:
-			printf("bb%i", ((Block*)lhs)->number);
+		{
+			Jump *jump = (Jump*)this;
+			printf("bb%i", jump->target->number);
 			break;
+		}
 
 		case TypeCJump:
-			printf("%s, bb%i, bb%i", ((Symbol*)lhs)->name.c_str(),
-								 ((Block*)rhs1)->number,
-								 ((Block*)rhs2)->number);
+		{
+			CJump *cJump = (CJump*)this;
+			printf("%s, bb%i, bb%i", cJump->pred->name.c_str(),
+								 cJump->trueTarget->number,
+								 cJump->falseTarget->number);
 			break;
+		}
 	}
 	printf("\n");
 }
@@ -137,24 +156,56 @@ void IR::Procedure::setCurrentBlock(Block *block)
 	mCurrentBlock = block;
 }
 
-void IR::Procedure::emit(Entry::Type type, void *lhs, void *rhs1, void *rhs2)
+void IR::Procedure::emitThreeAddr(Entry::Type type, Symbol *lhs, Symbol *rhs1, Symbol *rhs2)
 {
-	Entry *entry = new Entry(type, lhs, rhs1, rhs2);
-	mCurrentBlock->entries.push_back(entry);
+	IR::Entry::ThreeAddr *entry = new IR::Entry::ThreeAddr;
 
-	if(type == IR::Entry::TypeJump) {
-		IR::Block *block = (IR::Block*)lhs;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
-	} else if(type == IR::Entry::TypeCJump) {
-		IR::Block *block = (IR::Block*)rhs1;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
+	entry->type = type;
+	entry->lhs = lhs;
+	entry->rhs1 = rhs1;
+	entry->rhs2 = rhs2;
 
-		block = (IR::Block*)rhs2;
-		mCurrentBlock->succ.push_back(block);
-		block->pred.push_back(mCurrentBlock);
-	}
+	mCurrentBlock->entries.push_back((Entry*)entry);
+}
+
+void IR::Procedure::emitImm(Entry::Type type, Symbol *lhs, int rhs)
+{
+	IR::Entry::Imm *entry = new IR::Entry::Imm;
+
+	entry->type = type;
+	entry->lhs = lhs;
+	entry->rhs = rhs;
+	
+	mCurrentBlock->entries.push_back((Entry*)entry);
+}
+
+void IR::Procedure::emitJump(Block *target)
+{
+	IR::Entry::Jump *entry = new IR::Entry::Jump;
+
+	entry->type = Entry::TypeJump;
+	entry->target = target;
+
+	mCurrentBlock->entries.push_back((Entry*)entry);
+	mCurrentBlock->succ.push_back(target);
+	target->pred.push_back(mCurrentBlock);
+}
+
+void IR::Procedure::emitCJump(Symbol *pred, Block *trueTarget, Block *falseTarget)
+{
+	IR::Entry::CJump *entry = new IR::Entry::CJump;
+
+	entry->type = Entry::TypeCJump;
+	entry->pred = pred;
+	entry->trueTarget = trueTarget;
+	entry->falseTarget = falseTarget;
+	
+	mCurrentBlock->entries.push_back((Entry*)entry);
+	mCurrentBlock->succ.push_back(trueTarget);
+	trueTarget->pred.push_back(mCurrentBlock);
+
+	mCurrentBlock->succ.push_back(falseTarget);
+	falseTarget->pred.push_back(mCurrentBlock);
 }
 
 static void topoSortRecurse(IR::Block *block, std::vector<bool> &seen, std::vector<int> &output)
@@ -195,7 +246,7 @@ IR::IR()
 void IR::print() const
 {
 	for(unsigned int i=0; i<mProcedures.size(); i++) {
-		printf("%s:\n", mProcedures[i]->name());
+		printf("%s:\n", mProcedures[i]->name().c_str());
 		mProcedures[i]->print();
 		printf("\n");
 		mProcedures[i]->printGraph();

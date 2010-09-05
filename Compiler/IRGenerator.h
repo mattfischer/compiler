@@ -16,10 +16,9 @@ public:
 private:
 	SyntaxNode *mTree;
 	IR *mIR;
-	IR::Procedure *mCurrentProcedure;
+	IR::Procedure *mProc;
 
 	void processNode(SyntaxNode *node);
-	void emit(IR::Entry::Type type, void *lhs, void *rhs1 = 0, void *rhs2 = 0);
 	IR::Symbol *processRValue(SyntaxNode *node);
 	void setCurrentBlock(IR::Block *block);
 };
