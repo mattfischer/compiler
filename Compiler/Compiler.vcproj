@@ -199,7 +199,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IREntry.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IRGenerator.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IRProcedure.cpp"
 				>
 			</File>
 			<File

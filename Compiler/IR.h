@@ -12,6 +12,14 @@ public:
 	struct Block;
 
 	struct Entry {
+		enum Class {
+			ClassThreeAddr,
+			ClassImm,
+			ClassJump,
+			ClassCJump,
+			ClassPhi
+		};
+
 		enum Type {
 			TypeLoad,
 			TypeLoadImm,
@@ -69,6 +77,9 @@ public:
 		bool uses(Symbol *symbol);
 		void replaceUse(Symbol *symbol, Symbol *newSymbol);
 
+		Class getClass();
+		void clear();
+
 		static Entry *newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
 		static Entry *newImm(Type type, Symbol *lhs, int rhs);
 		static Entry *newJump(Block *target);
@@ -79,8 +90,9 @@ public:
 	struct Symbol {
 		std::string name;
 		Type *type;
+		int uses;
 
-		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type) {}
+		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type), uses(0) {}
 	};
 
 	struct Block {

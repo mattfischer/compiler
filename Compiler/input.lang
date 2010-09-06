@@ -1,5 +1,6 @@
 int i;
 int b;
+i = 3;
 i = 0;
 b = 7;
 

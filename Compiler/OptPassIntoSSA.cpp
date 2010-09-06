@@ -82,6 +82,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 					for(unsigned int l=0; l<succ->pred.size(); l++) {
 						if(succ->pred[l] == block) {
 							((IR::Entry::Phi*)head)->args[l] = active;
+							active->uses++;
 							break;
 						}
 					}
