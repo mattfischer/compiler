@@ -12,14 +12,6 @@ public:
 	struct Block;
 
 	struct Entry {
-		enum Class {
-			ClassThreeAddr,
-			ClassImm,
-			ClassJump,
-			ClassCJump,
-			ClassPhi
-		};
-
 		enum Type {
 			TypeLoad,
 			TypeLoadImm,
@@ -36,55 +28,82 @@ public:
 
 		Type type;
 
-		struct ThreeAddr {
-			Type type;
-			Symbol *lhs;
-			Symbol *rhs1;
-			Symbol *rhs2;
-		};
+		Entry(Type _type) : type(_type) {}
+		virtual ~Entry() {}
 
-		struct Imm {
-			Type type;
-			Symbol *lhs;
-			int rhs;
-		};
+		virtual void print(const std::string &prefix = "") {}
 
-		struct Jump {
-			Type type;
-			Block *target;
-		};
+		virtual bool assigns(Symbol *symbol) { return false; }
+		virtual bool uses(Symbol *symbol) { return false; }
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol) {}
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol) {}
+	};
 
-		struct CJump {
-			Type type;
-			Symbol *pred;
-			Block *trueTarget;
-			Block *falseTarget;
-		};
+	struct EntryThreeAddr : public Entry {
+		Symbol *lhs;
+		Symbol *rhs1;
+		Symbol *rhs2;
 
-		struct Phi {
-			Type type;
-			Symbol *base;
-			Symbol *lhs;
-			int numArgs;
-			Symbol *args[1];
-		};
+		EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1 = 0, Symbol *_rhs2 = 0);
+		virtual ~EntryThreeAddr();
 
-		void print(const std::string &prefix = "");
+		virtual void print(const std::string &prefix);
 
-		bool assigns(Symbol *symbol);
-		void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual bool assigns(Symbol *symbol);
+		virtual bool uses(Symbol *symbol);
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+	};
 
-		bool uses(Symbol *symbol);
-		void replaceUse(Symbol *symbol, Symbol *newSymbol);
+	struct EntryImm : public Entry {
+		Symbol *lhs;
+		int rhs;
 
-		Class getClass();
-		void clear();
+		EntryImm(Type _type, Symbol *_lhs, int _rhs);
 
-		static Entry *newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
-		static Entry *newImm(Type type, Symbol *lhs, int rhs);
-		static Entry *newJump(Block *target);
-		static Entry *newCJump(Symbol *pred, Block *trueTarget, Block *falseTarget);
-		static Entry *newPhi(Symbol *base, Symbol *lhs, int numArgs);
+		virtual void print(const std::string &prefix);
+
+		virtual bool assigns(Symbol *symbol);
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+	};
+
+	struct EntryJump : public Entry {
+		Block *target;
+
+		EntryJump(Block *_target);
+
+		virtual void print(const std::string &prefix);
+	};
+
+	struct EntryCJump : public Entry {
+		Symbol *pred;
+		Block *trueTarget;
+		Block *falseTarget;
+
+		EntryCJump(Symbol *_pred, Block *_trueTarget, Block *_falseTarget);
+		virtual ~EntryCJump();
+
+		virtual void print(const std::string &prefix);
+
+		virtual bool uses(Symbol *symbol);
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+	};
+
+	struct EntryPhi : public Entry {
+		Symbol *base;
+		Symbol *lhs;
+		int numArgs;
+		Symbol **args;
+
+		EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs);
+		virtual ~EntryPhi();
+
+		virtual void print(const std::string &prefix);
+
+		virtual bool assigns(Symbol *symbol);
+		virtual bool uses(Symbol *symbol);
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 
 	struct Symbol {

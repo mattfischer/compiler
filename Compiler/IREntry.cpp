@@ -12,305 +12,190 @@ static char* names[] = {
 	/* TypeCJump	*/	"cjmp   "
 };
 
-void IR::Entry::print(const std::string &prefix)
+IR::EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
+	: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2)
 {
-	if(type == TypePhi) {
-		Phi *phi = (Phi*)this;
-		printf("%s%s = PHI(", prefix.c_str(), phi->lhs->name.c_str());
-		for(int i=0; i<phi->numArgs; i++) {
-			Symbol *arg = phi->args[i];
-			printf("%s%s", arg ? arg->name.c_str() : "<none>", (i < phi->numArgs - 1) ? ", " : "");
-		}
-		printf(")\n");
-		return;
-	}
-
-	printf("%s%s ", prefix.c_str(), names[type]);
-
-	switch(type) {
-		case TypePrint:
-		{
-			ThreeAddr *threeAddr = (ThreeAddr*)this;
-			printf("%s", threeAddr->lhs->name.c_str());
-			break;
-		}
-
-		case TypeLoadImm:
-		{
-			Imm *imm = (Imm*)this;
-			printf("%s, %i", imm->lhs->name.c_str(), imm->rhs);
-			break;
-		}
-
-		case TypeLoad:
-		{
-			ThreeAddr *threeAddr = (ThreeAddr*)this;
-			printf("%s, %s", threeAddr->lhs->name.c_str(),
-							 threeAddr->rhs1->name.c_str());
-			break;
-		}
-
-		case TypeAdd:
-		case TypeMult:
-		case TypeEqual:
-		case TypeNequal:
-		{
-			ThreeAddr *threeAddr = (ThreeAddr*)this;
-			printf("%s, %s, %s", threeAddr->lhs->name.c_str(),
-								 threeAddr->rhs1->name.c_str(),
-								 threeAddr->rhs2->name.c_str());
-			break;
-		}
-
-		case TypeJump:
-		{
-			Jump *jump = (Jump*)this;
-			printf("bb%i", jump->target->number);
-			break;
-		}
-
-		case TypeCJump:
-		{
-			CJump *cJump = (CJump*)this;
-			printf("%s, bb%i, bb%i", cJump->pred->name.c_str(),
-								 cJump->trueTarget->number,
-								 cJump->falseTarget->number);
-			break;
-		}
-	}
-	printf("\n");
-}
-
-IR::Entry::Class IR::Entry::getClass()
-{
-	switch(type) {
-		case TypeAdd:
-		case TypeMult:
-		case TypeEqual:
-		case TypeNequal:
-		case TypeLoad:
-			return ClassThreeAddr;
-
-		case TypeLoadImm:
-			return ClassImm;
-
-		case TypeJump:
-			return ClassJump;
-
-		case TypeCJump:
-			return ClassCJump;
-
-		case TypePhi:
-			return ClassPhi;
-	}
-}
-
-IR::Entry *IR::Entry::newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1, Symbol *rhs2)
-{
-	ThreeAddr *entry = new ThreeAddr;
-
-	entry->type = type;
-	entry->lhs = lhs;
-	entry->rhs1 = rhs1;
-	entry->rhs2 = rhs2;
-
 	if(rhs1)
 		rhs1->uses++;
 	if(rhs2)
 		rhs2->uses++;
-
-	return (Entry*)entry;
 }
 
-IR::Entry *IR::Entry::newImm(Entry::Type type, Symbol *lhs, int rhs)
+IR::EntryThreeAddr::~EntryThreeAddr()
 {
-	Imm *entry = new Imm;
+	if(rhs1)
+		rhs1->uses--;
 
-	entry->type = type;
-	entry->lhs = lhs;
-	entry->rhs = rhs;
-	
-	return (Entry*)entry;
+	if(rhs2)
+		rhs2->uses--;
 }
 
-IR::Entry *IR::Entry::newJump(Block *target)
+void IR::EntryThreeAddr::print(const std::string &prefix)
 {
-	Jump *entry = new Jump;
+	bool needComma = false;
+	printf("%s%s", prefix.c_str(), names[type]);
 
-	entry->type = TypeJump;
-	entry->target = target;
+	if(lhs) {
+		printf("%s", lhs->name.c_str());
+		needComma = true;
+	}
 
-	return (Entry*)entry;
+	if(rhs1) {
+		printf("%s%s", needComma ? ", " : "", rhs1->name.c_str());
+		needComma = true;
+	}
+
+	if(rhs2)
+		printf("%s%s", needComma ? ", " : "", rhs2->name.c_str());
+
+	printf("\n");
 }
 
-IR::Entry *IR::Entry::newCJump(Symbol *pred, Block *trueTarget, Block *falseTarget)
+bool IR::EntryThreeAddr::assigns(Symbol *symbol)
 {
-	CJump *entry = new CJump;
+	return (lhs == symbol);
+}
 
-	entry->type = TypeCJump;
-	entry->pred = pred;
-	entry->trueTarget = trueTarget;
-	entry->falseTarget = falseTarget;
-	
+void IR::EntryThreeAddr::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+{
+	lhs = newSymbol;
+}
+
+bool IR::EntryThreeAddr::uses(Symbol *symbol)
+{
+	return (rhs1 == symbol || rhs2 == symbol);
+}
+
+void IR::EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
+{
+	if(rhs1 == symbol) {
+		rhs1->uses--;
+		rhs1 = newSymbol;
+		newSymbol->uses++;
+	}
+
+	if(rhs2 == symbol) {
+		rhs2->uses--;
+		rhs2 = newSymbol;
+		newSymbol->uses++;
+	}
+}
+
+IR::EntryImm::EntryImm(Type _type, Symbol *_lhs, int _rhs)
+	: Entry(_type), lhs(_lhs), rhs(_rhs)
+{
+}
+
+void IR::EntryImm::print(const std::string &prefix)
+{
+	printf("%s%s%s, %i\n", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
+}
+
+bool IR::EntryImm::assigns(Symbol *symbol)
+{
+	return (lhs == symbol);
+}
+
+void IR::EntryImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+{
+	lhs = newSymbol;
+}
+
+IR::EntryJump::EntryJump(Block *_target)
+	: Entry(TypeJump), target(_target)
+{
+}
+
+void IR::EntryJump::print(const std::string &prefix)
+{
+	printf("%s%sbb%i\n", prefix.c_str(), names[type], target->number);
+}
+
+IR::EntryCJump::EntryCJump(Symbol *_pred, Block *_trueTarget, Block *_falseTarget)
+	: Entry(TypeCJump), pred(_pred), trueTarget(_trueTarget), falseTarget(_falseTarget)
+{
 	pred->uses++;
-
-	return (Entry*)entry;
 }
 
-IR::Entry *IR::Entry::newPhi(Symbol *base, Symbol *lhs, int numArgs)
+IR::EntryCJump::~EntryCJump()
 {
-	int size = sizeof(Phi) + (numArgs - 1) * sizeof(Symbol*);
-	Phi *entry = (Phi*)new char[size];
-
-	entry->type = TypePhi;
-	entry->base = base;
-	entry->lhs = lhs;
-	entry->numArgs = numArgs;
-	memset(entry->args, 0, numArgs * sizeof(Symbol*));
-
-	return (Entry*)entry;
+	pred->uses--;
 }
 
-bool IR::Entry::assigns(Symbol *symbol)
+void IR::EntryCJump::print(const std::string &prefix)
 {
-	switch(getClass()) {
-		case ClassThreeAddr:
-			if(((ThreeAddr*)this)->lhs == symbol)
-				return true;
-			break;
+	printf("%s%s%s, bb%i, bb%i\n", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->number, falseTarget->number);
+}
 
-		case ClassImm:
-			if(((Imm*)this)->lhs == symbol)
-				return true;
-			break;
+bool IR::EntryCJump::uses(Symbol *symbol)
+{
+	return (pred == symbol);
+}
 
-		case ClassPhi:
-			if(((Phi*)this)->lhs == symbol)
-				return true;
-			break;
+void IR::EntryCJump::replaceUse(Symbol *symbol, Symbol *newSymbol)
+{
+	if(pred == symbol) {
+		pred->uses--;
+		pred = newSymbol;
+		newSymbol->uses++;
+	}
+}
 
-		default:
-			break;
+IR::EntryPhi::EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs)
+	: Entry(TypePhi), base(_base), lhs(_lhs), numArgs(_numArgs)
+{
+	args = new Symbol*[numArgs];
+	memset(args, 0, numArgs * sizeof(Symbol*));
+}
+
+IR::EntryPhi::~EntryPhi()
+{
+	for(int i=0; i<numArgs; i++) {
+		if(args[i])
+			args[i]->uses--;
+	}
+
+	delete[] args;
+}
+
+void IR::EntryPhi::print(const std::string &prefix)
+{
+	printf("%s%s = PHI(", prefix.c_str(), lhs->name.c_str());
+	for(int i=0; i<numArgs; i++) {
+		printf("%s%s", args[i] ? args[i]->name.c_str() : "<none>", (i < numArgs - 1) ? ", " : "");
+	}
+	printf(")\n");
+}
+
+bool IR::EntryPhi::assigns(Symbol *symbol)
+{
+	return (lhs == symbol);
+}
+
+void IR::EntryPhi::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+{
+	lhs = newSymbol;
+}
+
+bool IR::EntryPhi::uses(Symbol *symbol)
+{
+	for(int i=0; i<numArgs; i++) {
+		if(args[i] == symbol)
+			return true;
 	}
 
 	return false;
 }
 
-void IR::Entry::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+void IR::EntryPhi::replaceUse(Symbol *symbol, Symbol *newSymbol)
 {
-	switch(getClass()) {
-		case ClassThreeAddr:
-			((ThreeAddr*)this)->lhs = newSymbol;
+	for(int i=0; i<numArgs; i++) {
+		if(args[i] == symbol)
+		{
+			args[i]->uses--;
+			args[i] = newSymbol;
+			newSymbol->uses++;
 			break;
-
-		case ClassImm:
-			((Imm*)this)->lhs = newSymbol;
-			break;
-
-		case ClassPhi:
-			((Phi*)this)->lhs = newSymbol;
-
-		default:
-			break;
-	}
-}
-
-bool IR::Entry::uses(Symbol *symbol)
-{
-	switch(getClass()) {
-		case ClassThreeAddr:
-			if(((ThreeAddr*)this)->rhs1 == symbol ||
-			   ((ThreeAddr*)this)->rhs2 == symbol)
-				return true;
-			break;
-
-		case ClassCJump:
-			if(((CJump*)this)->pred == symbol)
-				return true;
-			break;
-
-		case ClassPhi:
-			{
-				Phi *phi = (Phi*)this;
-				for(int i=0; i<phi->numArgs; i++) {
-					if(phi->args[i] == symbol)
-						return true;
-				}
-				break;
-			}
-
-		default:
-			break;
-	}
-
-	return false;
-}
-
-void IR::Entry::replaceUse(Symbol *symbol, Symbol *newSymbol)
-{
-	switch(getClass()) {
-		case ClassThreeAddr:
-			{
-				ThreeAddr *threeAddr = (ThreeAddr*)this;
-
-				if(threeAddr->rhs1 == symbol) {
-					threeAddr->rhs1->uses--;
-					threeAddr->rhs1 = newSymbol;
-					newSymbol->uses++;
-				}
-
-				if(threeAddr->rhs2 == symbol) {
-					threeAddr->rhs2->uses--;
-					threeAddr->rhs2 = newSymbol;
-					newSymbol->uses++;
-				}
-			}
-			break;
-
-		case ClassCJump:
-			{
-				CJump *cjump = (CJump*)this;
-
-				cjump->pred->uses--;
-				cjump->pred = newSymbol;
-				newSymbol->uses++;
-			}
-			break;
-
-		default:
-			break;
-	}
-}
-
-void IR::Entry::clear()
-{
-	switch(getClass()) {
-		case ClassThreeAddr:
-			{
-				ThreeAddr *threeAddr = (ThreeAddr*)this;
-
-				if(threeAddr->rhs1) {
-					threeAddr->rhs1->uses--;
-					threeAddr->rhs1 = 0;
-				}
-
-				if(threeAddr->rhs2) {
-					threeAddr->rhs2->uses--;
-					threeAddr->rhs2 = 0;
-				}
-			}
-			break;
-
-		case ClassCJump:
-			{
-				CJump *cjump = (CJump*)this;
-
-				cjump->pred->uses--;
-				cjump->pred = 0;
-			}
-			break;
-
-		default:
-			break;
+		}
 	}
 }

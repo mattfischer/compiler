@@ -4,6 +4,7 @@ void OptPassDce::optimizeProcedure(IR::Procedure *proc)
 {
 	bool changed;
 
+	// Remove unreferenced blocks
 	do {
 		changed = false;
 		for(unsigned int j=0; j<proc->blocks().size(); j++) {
@@ -19,6 +20,7 @@ void OptPassDce::optimizeProcedure(IR::Procedure *proc)
 		}
 	} while(changed);
 
+	// Remove unused variables
 	do {
 		changed = false;
 		for(unsigned int i=0; i<proc->symbols().size(); i++) {
@@ -31,8 +33,8 @@ void OptPassDce::optimizeProcedure(IR::Procedure *proc)
 					for(unsigned int k=0; k<block->entries.size(); k++) {
 						IR::Entry *entry = block->entries[k];
 						if(entry->assigns(symbol)) {
-							entry->clear();
 							block->entries.erase(block->entries.begin() + k);
+							delete entry;
 							found = true;
 							break;
 						}

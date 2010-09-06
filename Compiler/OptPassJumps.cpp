@@ -8,7 +8,7 @@ static IR::Block *getJumpTarget(IR::Block *block)
 		if(!entry || entry->type != IR::Entry::TypeJump)
 			break;
 		
-		block = ((IR::Entry::Jump*)entry)->target;
+		block = ((IR::EntryJump*)entry)->target;
 	}
 
 	return block;
@@ -24,7 +24,7 @@ void OptPassJumps::optimizeProcedure(IR::Procedure *proc)
 			continue;
 
 		if(entry->type == IR::Entry::TypeJump) {
-			IR::Entry::Jump *jump = (IR::Entry::Jump*)entry;
+			IR::EntryJump *jump = (IR::EntryJump*)entry;
 			IR::Block *target = getJumpTarget(jump->target);
 
 			if(target != jump->target) {
@@ -33,7 +33,7 @@ void OptPassJumps::optimizeProcedure(IR::Procedure *proc)
 				jump->target = target;
 			}
 		} else if(entry->type == IR::Entry::TypeCJump) {
-			IR::Entry::CJump *jump = (IR::Entry::CJump*)entry;
+			IR::EntryCJump *jump = (IR::EntryCJump*)entry;
 			IR::Block *trueTarget = getJumpTarget(jump->trueTarget);
 			IR::Block *falseTarget = getJumpTarget(jump->falseTarget);
 

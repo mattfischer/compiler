@@ -21,6 +21,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 		IR::Symbol *symbol = proc->symbols()[i];
 		std::queue<IR::Block*> blocks;
 
+		// Initialize queue with variable assignments
 		for(unsigned int j=0; j<proc->blocks().size(); j++) {
 			IR::Block *block = proc->blocks()[j];
 
@@ -33,6 +34,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 			}
 		}
 
+		// Insert Phi functions
 		while(!blocks.empty()) {
 			IR::Block *block = blocks.front();
 			blocks.pop();
@@ -41,13 +43,14 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 				IR::Block *frontier = block->domFrontiers[j];
 				IR::Entry *head = frontier->head();
 				
-				if(!head || head->type != IR::Entry::TypePhi || ((IR::Entry::Phi*)head)->lhs != symbol) {
-					frontier->prependEntry(IR::Entry::newPhi(symbol, symbol, (int)frontier->pred.size()));
+				if(!head || head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
+					frontier->prependEntry(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 					blocks.push(frontier);
 				}
 			}
 		}
 
+		// Rename variables
 		int nextVersion = 0;
 		std::vector<IR::Symbol*> activeList(proc->blocks().size());
 		activeList[0] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
@@ -65,6 +68,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 					entry->replaceUse(symbol, active);
 				}
 
+				// Create a new version of the variable for each assignment
 				if(entry->assigns(symbol)) {
 					IR::Symbol *newSymbol = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
 					newSymbols.push_back(newSymbol);
@@ -74,14 +78,15 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 				}
 			}
 
+			// Propagate variable uses into Phi functions
 			for(unsigned int k=0; k<block->succ.size(); k++) {
 				IR::Block *succ = block->succ[k];
 				IR::Entry *head = succ->head();
 
-				if(head && head->type == IR::Entry::TypePhi && ((IR::Entry::Phi*)head)->base == symbol) {
+				if(head && head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 					for(unsigned int l=0; l<succ->pred.size(); l++) {
 						if(succ->pred[l] == block) {
-							((IR::Entry::Phi*)head)->args[l] = active;
+							((IR::EntryPhi*)head)->args[l] = active;
 							active->uses++;
 							break;
 						}
@@ -91,6 +96,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 		}
 	}
 
+	// Add newly-created symbols into symbol table
 	for(unsigned int i=0; i<newSymbols.size(); i++) {
 		proc->addSymbol(newSymbols[i]);
 	}

@@ -115,12 +115,12 @@ void IR::Procedure::emit(Entry *entry)
 	mCurrentBlock->appendEntry(entry);
 
 	if(entry->type == Entry::TypeJump) {
-		Entry::Jump *jump = (Entry::Jump*)entry;
+		EntryJump *jump = (EntryJump*)entry;
 
 		mCurrentBlock->succ.push_back(jump->target);
 		jump->target->pred.push_back(mCurrentBlock);
 	} else if(entry->type == Entry::TypeCJump) {
-		Entry::CJump *cjump = (Entry::CJump*)entry;
+		EntryCJump *cjump = (EntryCJump*)entry;
 
 		mCurrentBlock->succ.push_back(cjump->trueTarget);
 		cjump->trueTarget->pred.push_back(mCurrentBlock);
