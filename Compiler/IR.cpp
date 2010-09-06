@@ -16,7 +16,17 @@ static char* names[] = {
 
 void IR::Entry::print(const std::string &prefix)
 {
-	Imm *imm = (Imm*)this;
+	if(type == TypePhi) {
+		Phi *phi = (Phi*)this;
+		printf("%s = PHI(", phi->lhs->name.c_str());
+		for(int i=0; i<phi->numArgs; i++) {
+			Symbol *arg = phi->args[i];
+			printf("%s%s", arg ? arg->name.c_str() : "<none>", (i < phi->numArgs - 1) ? ", " : "");
+		}
+		printf(")\n");
+		return;
+	}
+
 	printf("%s%s ", prefix.c_str(), names[type]);
 
 	switch(type) {
@@ -71,6 +81,65 @@ void IR::Entry::print(const std::string &prefix)
 		}
 	}
 	printf("\n");
+}
+
+IR::Entry *IR::Entry::newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1, Symbol *rhs2)
+{
+	ThreeAddr *entry = new ThreeAddr;
+
+	entry->type = type;
+	entry->lhs = lhs;
+	entry->rhs1 = rhs1;
+	entry->rhs2 = rhs2;
+
+	return (Entry*)entry;
+}
+
+IR::Entry *IR::Entry::newImm(Entry::Type type, Symbol *lhs, int rhs)
+{
+	Imm *entry = new Imm;
+
+	entry->type = type;
+	entry->lhs = lhs;
+	entry->rhs = rhs;
+	
+	return (Entry*)entry;
+}
+
+IR::Entry *IR::Entry::newJump(Block *target)
+{
+	Jump *entry = new Jump;
+
+	entry->type = TypeJump;
+	entry->target = target;
+
+	return (Entry*)entry;
+}
+
+IR::Entry *IR::Entry::newCJump(Symbol *pred, Block *trueTarget, Block *falseTarget)
+{
+	CJump *entry = new CJump;
+
+	entry->type = TypeCJump;
+	entry->pred = pred;
+	entry->trueTarget = trueTarget;
+	entry->falseTarget = falseTarget;
+	
+	return (Entry*)entry;
+}
+
+IR::Entry *IR::Entry::newPhi(Symbol *base, Symbol *lhs, int numArgs)
+{
+	int size = sizeof(Phi) + (numArgs - 1) * sizeof(Symbol*);
+	Phi *entry = (Phi*)new char[size];
+
+	entry->type = TypePhi;
+	entry->base = base;
+	entry->lhs = lhs;
+	entry->numArgs = numArgs;
+	memset(entry->args, 0, numArgs * sizeof(Symbol*));
+
+	return (Entry*)entry;
 }
 
 void IR::Block::addPred(Block *block)
@@ -226,56 +295,24 @@ void IR::Procedure::setCurrentBlock(Block *block)
 	mCurrentBlock = block;
 }
 
-void IR::Procedure::emitThreeAddr(Entry::Type type, Symbol *lhs, Symbol *rhs1, Symbol *rhs2)
+void IR::Procedure::emit(Entry *entry)
 {
-	IR::Entry::ThreeAddr *entry = new IR::Entry::ThreeAddr;
+	mCurrentBlock->appendEntry(entry);
 
-	entry->type = type;
-	entry->lhs = lhs;
-	entry->rhs1 = rhs1;
-	entry->rhs2 = rhs2;
+	if(entry->type == Entry::TypeJump) {
+		Entry::Jump *jump = (Entry::Jump*)entry;
 
-	mCurrentBlock->entries.push_back((Entry*)entry);
-}
+		mCurrentBlock->succ.push_back(jump->target);
+		jump->target->pred.push_back(mCurrentBlock);
+	} else if(entry->type == Entry::TypeCJump) {
+		Entry::CJump *cjump = (Entry::CJump*)entry;
 
-void IR::Procedure::emitImm(Entry::Type type, Symbol *lhs, int rhs)
-{
-	IR::Entry::Imm *entry = new IR::Entry::Imm;
+		mCurrentBlock->succ.push_back(cjump->trueTarget);
+		cjump->trueTarget->pred.push_back(mCurrentBlock);
 
-	entry->type = type;
-	entry->lhs = lhs;
-	entry->rhs = rhs;
-	
-	mCurrentBlock->entries.push_back((Entry*)entry);
-}
-
-void IR::Procedure::emitJump(Block *target)
-{
-	IR::Entry::Jump *entry = new IR::Entry::Jump;
-
-	entry->type = Entry::TypeJump;
-	entry->target = target;
-
-	mCurrentBlock->entries.push_back((Entry*)entry);
-	mCurrentBlock->succ.push_back(target);
-	target->pred.push_back(mCurrentBlock);
-}
-
-void IR::Procedure::emitCJump(Symbol *pred, Block *trueTarget, Block *falseTarget)
-{
-	IR::Entry::CJump *entry = new IR::Entry::CJump;
-
-	entry->type = Entry::TypeCJump;
-	entry->pred = pred;
-	entry->trueTarget = trueTarget;
-	entry->falseTarget = falseTarget;
-	
-	mCurrentBlock->entries.push_back((Entry*)entry);
-	mCurrentBlock->succ.push_back(trueTarget);
-	trueTarget->pred.push_back(mCurrentBlock);
-
-	mCurrentBlock->succ.push_back(falseTarget);
-	falseTarget->pred.push_back(mCurrentBlock);
+		mCurrentBlock->succ.push_back(cjump->falseTarget);
+		cjump->falseTarget->pred.push_back(mCurrentBlock);
+	}
 }
 
 void IR::Procedure::computeDominance()
@@ -303,6 +340,9 @@ void IR::Procedure::topologicalSort()
 	std::vector<bool> seen(mBlocks.size());
 	std::vector<int> output;
 	std::vector<IR::Block*> newBlocks = mBlocks;
+
+	for(unsigned int i=0; i<mBlocks.size(); i++)
+		mBlocks[i]->number = i;
 
 	topoSortRecurse(start(), seen, output);
 

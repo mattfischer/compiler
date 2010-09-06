@@ -10,7 +10,7 @@ IRGenerator::IRGenerator(SyntaxNode *tree)
 IR *IRGenerator::generate()
 {
 	processNode(mTree);
-	mProc->emitJump(mProc->end());
+	mProc->emit(IR::Entry::newJump(mProc->end()));
 
 	return mIR;
 }
@@ -28,7 +28,7 @@ void IRGenerator::processNode(SyntaxNode *node)
 
 		case SyntaxNode::NodeTypePrintStatement:
 			lhs = processRValue(node->children[0]);
-			mProc->emitThreeAddr(IR::Entry::TypePrint, lhs);
+			mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypePrint, lhs));
 			break;
 
 		case SyntaxNode::NodeTypeVarDecl:
@@ -38,7 +38,7 @@ void IRGenerator::processNode(SyntaxNode *node)
 		case SyntaxNode::NodeTypeAssign:
 			lhs = mProc->findSymbol(node->children[0]->lexVal._id);
 			rhs = processRValue(node->children[1]);
-			mProc->emitThreeAddr(IR::Entry::TypeLoad, lhs, rhs);
+			mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypeLoad, lhs, rhs));
 			break;
 
 		case SyntaxNode::NodeTypeIf:
@@ -47,13 +47,13 @@ void IRGenerator::processNode(SyntaxNode *node)
 				IR::Block *trueBlock = mProc->newBlock();
 				IR::Block *nextBlock = mProc->newBlock();
 
-				mProc->emitCJump(lhs, trueBlock, nextBlock);
+				mProc->emit(IR::Entry::newCJump(lhs, trueBlock, nextBlock));
 				
 				setCurrentBlock(trueBlock);
 				processNode(node->children[1]);
 
 				setCurrentBlock(trueBlock);
-				mProc->emitJump(nextBlock);
+				mProc->emit(IR::Entry::newJump(nextBlock));
 
 				setCurrentBlock(nextBlock);
 			} else {
@@ -61,15 +61,15 @@ void IRGenerator::processNode(SyntaxNode *node)
 				IR::Block *falseBlock = mProc->newBlock();
 				IR::Block *nextBlock = mProc->newBlock();
 
-				mProc->emitCJump(lhs, trueBlock, falseBlock);
+				mProc->emit(IR::Entry::newCJump(lhs, trueBlock, falseBlock));
 
 				setCurrentBlock(trueBlock);
 				processNode(node->children[1]);
-				mProc->emitJump(nextBlock);
+				mProc->emit(IR::Entry::newJump(nextBlock));
 
 				setCurrentBlock(falseBlock);
 				processNode(node->children[2]);
-				mProc->emitJump(nextBlock);
+				mProc->emit(IR::Entry::newJump(nextBlock));
 
 				setCurrentBlock(nextBlock);
 			}
@@ -81,14 +81,14 @@ void IRGenerator::processNode(SyntaxNode *node)
 				IR::Block *mainBlock = mProc->newBlock();
 				IR::Block *nextBlock = mProc->newBlock();
 
-				mProc->emitJump(testBlock);
+				mProc->emit(IR::Entry::newJump(testBlock));
 				setCurrentBlock(testBlock);
 				lhs = processRValue(node->children[0]);
-				mProc->emitCJump(lhs, mainBlock, nextBlock);
+				mProc->emit(IR::Entry::newCJump(lhs, mainBlock, nextBlock));
 
 				setCurrentBlock(mainBlock);
 				processNode(node->children[1]);
-				mProc->emitJump(testBlock);
+				mProc->emit(IR::Entry::newJump(testBlock));
 
 				setCurrentBlock(nextBlock);
 				break;
@@ -104,7 +104,7 @@ IR::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 	switch(node->nodeType) {
 		case SyntaxNode::NodeTypeConstant:
 			result = mProc->newTemp(node->type);
-			mProc->emitImm(IR::Entry::TypeLoadImm, result, node->lexVal._int);
+			mProc->emit(IR::Entry::newImm(IR::Entry::TypeLoadImm, result, node->lexVal._int));
 			break;
 
 		case SyntaxNode::NodeTypeId:
@@ -117,11 +117,11 @@ IR::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 			b = processRValue(node->children[1]);
 			switch(node->nodeSubtype) {
 				case SyntaxNode::NodeSubtypeAdd:
-					mProc->emitThreeAddr(IR::Entry::TypeAdd, result, a, b);
+					mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypeAdd, result, a, b));
 					break;
 
 				case SyntaxNode::NodeSubtypeMultiply:
-					mProc->emitThreeAddr(IR::Entry::TypeMult, result, a, b);
+					mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypeMult, result, a, b));
 					break;
 			}
 			break;
@@ -132,11 +132,11 @@ IR::Symbol *IRGenerator::processRValue(SyntaxNode *node)
 			b = processRValue(node->children[1]);
 			switch(node->nodeSubtype) {
 				case SyntaxNode::NodeSubtypeEqual:
-					mProc->emitThreeAddr(IR::Entry::TypeEqual, result, a, b);
+					mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypeEqual, result, a, b));
 					break;
 
 				case SyntaxNode::NodeSubtypeNequal:
-					mProc->emitThreeAddr(IR::Entry::TypeNequal, result, a, b);
+					mProc->emit(IR::Entry::newThreeAddr(IR::Entry::TypeNequal, result, a, b));
 					break;
 			}
 			break;

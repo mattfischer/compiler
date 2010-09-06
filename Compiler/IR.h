@@ -22,7 +22,8 @@ public:
 			TypeNequal,
 			TypeJump,
 			TypeCJump,
-			TypeNCJump
+			TypeNCJump,
+			TypePhi
 		};
 
 		Type type;
@@ -52,7 +53,21 @@ public:
 			Block *falseTarget;
 		};
 
+		struct Phi {
+			Type type;
+			Symbol *base;
+			Symbol *lhs;
+			int numArgs;
+			Symbol *args[1];
+		};
+
 		void print(const std::string &prefix = "");
+
+		static Entry *newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
+		static Entry *newImm(Type type, Symbol *lhs, int rhs);
+		static Entry *newJump(Block *target);
+		static Entry *newCJump(Symbol *pred, Block *trueTarget, Block *falseTarget);
+		static Entry *newPhi(Symbol *base, Symbol *lhs, int numArgs);
 	};
 
 	struct Symbol {
@@ -78,6 +93,12 @@ public:
 
 		void addSucc(Block *block);
 		void removeSucc(Block *block);
+
+		void appendEntry(Entry *entry) { entries.push_back(entry); }
+		void prependEntry(Entry *entry) { entries.insert(entries.begin(), entry); }
+
+		Entry *head() const { return entries.size() > 0 ? entries[0] : 0; }
+		Entry *tail() const { return entries.size() > 0 ? entries[entries.size() - 1] : 0; }
 	};
 
 	class Procedure {
@@ -93,6 +114,7 @@ public:
 
 		void removeBlock(Block *block);
 
+		std::vector<Symbol*> &symbols() { return mSymbols; }
 		Symbol *newTemp(Type *type);
 		Symbol *addSymbol(const std::string &name, Type *type);
 		Symbol *findSymbol(const std::string &name);
@@ -102,10 +124,7 @@ public:
 
 		void computeDominance();
 
-		void emitThreeAddr(Entry::Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
-		void emitImm(Entry::Type type, Symbol *lhs, int rhs);
-		void emitJump(Block *target);
-		void emitCJump(Symbol *pred, Block *trueTarget, Block *falseTarget);
+		void emit(Entry *entry);
 
 	private:
 		std::string mName;

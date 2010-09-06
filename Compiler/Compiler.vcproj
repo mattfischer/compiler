@@ -231,6 +231,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OptPassIntoSSA.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OptPassJumps.cpp"
 				>
 			</File>
@@ -274,6 +278,10 @@
 			</File>
 			<File
 				RelativePath=".\OptPassDce.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassIntoSSA.h"
 				>
 			</File>
 			<File

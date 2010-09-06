@@ -2,6 +2,7 @@
 
 #include "OptPassJumps.h"
 #include "OptPassDce.h"
+#include "OptPassIntoSSA.h"
 
 Optimizer::Optimizer(IR *ir)
 {
@@ -18,7 +19,7 @@ void Optimizer::optimize()
 
 	for(unsigned int i=0; i<mPasses.size(); i++) {
 		if(mPasses[i]->procedures()) {
-			for(int j=0; j<mIR->procedures().size(); j++) {
+			for(unsigned int j=0; j<mIR->procedures().size(); j++) {
 				mPasses[i]->optimizeProcedure(mIR->procedures()[j]);
 			}
 		}
@@ -33,4 +34,5 @@ void Optimizer::initPasses()
 {
 	mPasses.push_back(new OptPassJumps);
 	mPasses.push_back(new OptPassDce);
+	mPasses.push_back(new OptPassIntoSSA);
 }

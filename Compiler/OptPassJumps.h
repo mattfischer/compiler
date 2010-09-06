@@ -7,9 +7,9 @@ class OptPassJumps : public Optimizer::Pass {
 public:
 	OptPassJumps() : Pass("Jumps") {}
 
-	bool procedures() { return true; }
+	virtual bool procedures() { return true; }
 
-	void optimizeProcedure(IR::Procedure *proc);
+	virtual void optimizeProcedure(IR::Procedure *proc);
 };
 
 #endif

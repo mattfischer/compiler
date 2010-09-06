@@ -3,15 +3,12 @@
 static IR::Block *getJumpTarget(IR::Block *block)
 {
 	for(;;) {
-		if(block->entries.size() == 0)
+		IR::Entry *entry = block->head();
+		
+		if(!entry || entry->type != IR::Entry::TypeJump)
 			break;
 		
-		IR::Entry *entry = block->entries[0];
-		
-		if(entry->type == IR::Entry::TypeJump)
-			block = ((IR::Entry::Jump*)entry)->target;
-		else
-			break;
+		block = ((IR::Entry::Jump*)entry)->target;
 	}
 
 	return block;
@@ -21,11 +18,10 @@ void OptPassJumps::optimizeProcedure(IR::Procedure *proc)
 {
 	for(unsigned int j=0; j<proc->blocks().size(); j++) {
 		IR::Block *block = proc->blocks()[j];
+		IR::Entry *entry = block->tail();
 
-		if(block->entries.size() == 0)
+		if(!entry)
 			continue;
-
-		IR::Entry *entry = block->entries[block->entries.size() - 1];
 
 		if(entry->type == IR::Entry::TypeJump) {
 			IR::Entry::Jump *jump = (IR::Entry::Jump*)entry;

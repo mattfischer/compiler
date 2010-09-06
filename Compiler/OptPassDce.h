@@ -7,7 +7,7 @@ class OptPassDce : public Optimizer::Pass {
 public:
 	OptPassDce() : Pass("Dce") {}
 
-	bool procedures() { return true; }
+	virtual bool procedures() { return true; }
 
 	virtual void optimizeProcedure(IR::Procedure *proc);
 };
