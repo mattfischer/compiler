@@ -18,7 +18,7 @@ void IR::Entry::print(const std::string &prefix)
 {
 	if(type == TypePhi) {
 		Phi *phi = (Phi*)this;
-		printf("%s = PHI(", phi->lhs->name.c_str());
+		printf("%s%s = PHI(", prefix.c_str(), phi->lhs->name.c_str());
 		for(int i=0; i<phi->numArgs; i++) {
 			Symbol *arg = phi->args[i];
 			printf("%s%s", arg ? arg->name.c_str() : "<none>", (i < phi->numArgs - 1) ? ", " : "");
@@ -140,6 +140,121 @@ IR::Entry *IR::Entry::newPhi(Symbol *base, Symbol *lhs, int numArgs)
 	memset(entry->args, 0, numArgs * sizeof(Symbol*));
 
 	return (Entry*)entry;
+}
+
+bool IR::Entry::assigns(Symbol *symbol)
+{
+	switch(type) {
+		case TypeAdd:
+		case TypeMult:
+		case TypeEqual:
+		case TypeNequal:
+		case TypeLoad:
+			if(((ThreeAddr*)this)->lhs == symbol)
+				return true;
+			break;
+
+		case TypeLoadImm:
+			if(((Imm*)this)->lhs == symbol)
+				return true;
+			break;
+
+		case TypePhi:
+			if(((Phi*)this)->lhs == symbol)
+				return true;
+			break;
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
+void IR::Entry::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+{
+	switch(type) {
+		case TypeAdd:
+		case TypeMult:
+		case TypeEqual:
+		case TypeNequal:
+		case TypeLoad:
+			((ThreeAddr*)this)->lhs = newSymbol;
+			break;
+
+		case TypeLoadImm:
+			((Imm*)this)->lhs = newSymbol;
+			break;
+
+		case TypePhi:
+			((Phi*)this)->lhs = newSymbol;
+
+		default:
+			break;
+	}
+}
+
+bool IR::Entry::uses(Symbol *symbol)
+{
+	switch(type) {
+		case TypeAdd:
+		case TypeMult:
+		case TypeEqual:
+		case TypeNequal:
+		case TypeLoad:
+			if(((ThreeAddr*)this)->rhs1 == symbol ||
+			   ((ThreeAddr*)this)->rhs2 == symbol)
+				return true;
+			break;
+
+		case TypeCJump:
+			if(((CJump*)this)->pred == symbol)
+				return true;
+			break;
+
+		case TypePhi:
+			{
+				Phi *phi = (Phi*)this;
+				for(int i=0; i<phi->numArgs; i++) {
+					if(phi->args[i] == symbol)
+						return true;
+				}
+				break;
+			}
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
+void IR::Entry::replaceUse(Symbol *symbol, Symbol *newSymbol)
+{
+	switch(type) {
+		case TypeAdd:
+		case TypeMult:
+		case TypeEqual:
+		case TypeNequal:
+		case TypeLoad:
+			{
+				ThreeAddr *threeAddr = (ThreeAddr*)this;
+
+				if(threeAddr->rhs1 == symbol)
+					threeAddr->rhs1 = newSymbol;
+
+				if(threeAddr->rhs2 == symbol)
+					threeAddr->rhs2 = newSymbol;
+			}
+			break;
+
+		case TypeCJump:
+			((CJump*)this)->pred = newSymbol;
+			break;
+
+		default:
+			break;
+	}
 }
 
 void IR::Block::addPred(Block *block)
@@ -266,9 +381,14 @@ IR::Symbol *IR::Procedure::newTemp(Type *type)
 IR::Symbol *IR::Procedure::addSymbol(const std::string &name, Type *type)
 {
 	Symbol *symbol = new Symbol(name, type);
-	mSymbols.push_back(symbol);
+	addSymbol(symbol);
 
 	return symbol;
+}
+
+void IR::Procedure::addSymbol(Symbol *symbol)
+{
+	mSymbols.push_back(symbol);
 }
 
 IR::Symbol *IR::Procedure::findSymbol(const std::string &name)

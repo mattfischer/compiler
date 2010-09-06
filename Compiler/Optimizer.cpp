@@ -35,4 +35,5 @@ void Optimizer::initPasses()
 	mPasses.push_back(new OptPassJumps);
 	mPasses.push_back(new OptPassDce);
 	mPasses.push_back(new OptPassIntoSSA);
+	mPasses.push_back(new OptPassDce);
 }

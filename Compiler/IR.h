@@ -63,6 +63,12 @@ public:
 
 		void print(const std::string &prefix = "");
 
+		bool assigns(Symbol *symbol);
+		void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+
+		bool uses(Symbol *symbol);
+		void replaceUse(Symbol *symbol, Symbol *newSymbol);
+
 		static Entry *newThreeAddr(Type type, Symbol *lhs, Symbol *rhs1 = 0, Symbol *rhs2 = 0);
 		static Entry *newImm(Type type, Symbol *lhs, int rhs);
 		static Entry *newJump(Block *target);
@@ -117,6 +123,7 @@ public:
 		std::vector<Symbol*> &symbols() { return mSymbols; }
 		Symbol *newTemp(Type *type);
 		Symbol *addSymbol(const std::string &name, Type *type);
+		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
 		Block *newBlock();
 
