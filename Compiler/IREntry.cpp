@@ -1,6 +1,31 @@
 #include "IR.h"
 
+void IR::Entry::insertAfter(Entry *entry)
+{
+	next = entry->next;
+	prev = entry;
+	if(next)
+		next->prev = this;
+	entry->next = this;
+}
+
+void IR::Entry::insertBefore(Entry *entry)
+{
+	next = entry;
+	prev = entry->prev;
+	if(prev)
+		prev->next = this;
+	entry->prev = this;
+}
+
+void IR::Entry::remove()
+{
+	next->prev = prev;
+	prev->next = next;
+}
+
 static char* names[] = {
+	/* TypeNone		*/	"none	",
 	/* TypeLoad		*/	"load   ",
 	/* TypeLoadImm	*/	"loadi  ",
 	/* TypeAdd		*/	"add    ",
@@ -15,6 +40,8 @@ static char* names[] = {
 IR::EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
 	: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2)
 {
+	if(lhs)
+		lhs->addAssign(this);
 	if(rhs1)
 		rhs1->uses++;
 	if(rhs2)
@@ -23,6 +50,9 @@ IR::EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symb
 
 IR::EntryThreeAddr::~EntryThreeAddr()
 {
+	if(lhs)
+		lhs->removeAssign(this);
+
 	if(rhs1)
 		rhs1->uses--;
 
@@ -58,7 +88,11 @@ bool IR::EntryThreeAddr::assigns(Symbol *symbol)
 
 void IR::EntryThreeAddr::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 {
+	if(lhs)
+		lhs->removeAssign(this);
+
 	lhs = newSymbol;
+	lhs->addAssign(this);
 }
 
 bool IR::EntryThreeAddr::uses(Symbol *symbol)
@@ -84,6 +118,14 @@ void IR::EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
 IR::EntryImm::EntryImm(Type _type, Symbol *_lhs, int _rhs)
 	: Entry(_type), lhs(_lhs), rhs(_rhs)
 {
+	if(lhs)
+		lhs->addAssign(this);
+}
+
+IR::EntryImm::~EntryImm()
+{
+	if(lhs)
+		lhs->removeAssign(this);
 }
 
 void IR::EntryImm::print(const std::string &prefix)
@@ -98,7 +140,11 @@ bool IR::EntryImm::assigns(Symbol *symbol)
 
 void IR::EntryImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 {
+	if(lhs)
+		lhs->removeAssign(this);
+
 	lhs = newSymbol;
+	lhs->addAssign(this);
 }
 
 IR::EntryJump::EntryJump(Block *_target)
@@ -144,18 +190,32 @@ void IR::EntryCJump::replaceUse(Symbol *symbol, Symbol *newSymbol)
 IR::EntryPhi::EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs)
 	: Entry(TypePhi), base(_base), lhs(_lhs), numArgs(_numArgs)
 {
+	if(lhs)
+		lhs->addAssign(this);
 	args = new Symbol*[numArgs];
 	memset(args, 0, numArgs * sizeof(Symbol*));
 }
 
 IR::EntryPhi::~EntryPhi()
 {
+	if(lhs)
+		lhs->removeAssign(this);
+
 	for(int i=0; i<numArgs; i++) {
 		if(args[i])
 			args[i]->uses--;
 	}
 
 	delete[] args;
+}
+
+void IR::EntryPhi::setArg(int num, Symbol *symbol)
+{
+	if(args[num])
+		args[num]->uses--;
+
+	args[num] = symbol;
+	args[num]->uses++;
 }
 
 void IR::EntryPhi::print(const std::string &prefix)
@@ -174,7 +234,11 @@ bool IR::EntryPhi::assigns(Symbol *symbol)
 
 void IR::EntryPhi::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 {
+	if(lhs)
+		lhs->removeAssign(this);
+
 	lhs = newSymbol;
+	lhs->addAssign(this);
 }
 
 bool IR::EntryPhi::uses(Symbol *symbol)

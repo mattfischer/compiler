@@ -25,9 +25,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 		for(unsigned int j=0; j<proc->blocks().size(); j++) {
 			IR::Block *block = proc->blocks()[j];
 
-			for(unsigned int k=0; k<block->entries.size(); k++) {
-				IR::Entry *entry = block->entries[k];
-
+			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
 				if(entry->assigns(symbol)) {
 					blocks.push(block);
 				}
@@ -41,9 +39,9 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 
 			for(unsigned int j=0; j<block->domFrontiers.size(); j++) {
 				IR::Block *frontier = block->domFrontiers[j];
-				IR::Entry *head = frontier->head();
+				IR::Entry *head = frontier->head()->next;
 				
-				if(!head || head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
+				if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
 					frontier->prependEntry(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 					blocks.push(frontier);
 				}
@@ -61,9 +59,7 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 				activeList[j] = activeList[block->idom->number];
 			IR::Symbol *active = activeList[j];
 
-			for(unsigned int k=0; k<block->entries.size(); k++) {
-				IR::Entry *entry = block->entries[k];
-
+			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
 				if(entry->uses(symbol)) {
 					entry->replaceUse(symbol, active);
 				}
@@ -81,13 +77,12 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 			// Propagate variable uses into Phi functions
 			for(unsigned int k=0; k<block->succ.size(); k++) {
 				IR::Block *succ = block->succ[k];
-				IR::Entry *head = succ->head();
+				IR::Entry *head = succ->head()->next;
 
-				if(head && head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
+				if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 					for(unsigned int l=0; l<succ->pred.size(); l++) {
 						if(succ->pred[l] == block) {
-							((IR::EntryPhi*)head)->args[l] = active;
-							active->uses++;
+							((IR::EntryPhi*)head)->setArg(l, active);
 							break;
 						}
 					}

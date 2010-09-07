@@ -13,6 +13,7 @@ public:
 
 	struct Entry {
 		enum Type {
+			TypeNone,
 			TypeLoad,
 			TypeLoadImm,
 			TypeAdd,
@@ -28,7 +29,14 @@ public:
 
 		Type type;
 
-		Entry(Type _type) : type(_type) {}
+		Entry *prev;
+		Entry *next;
+
+		void insertAfter(Entry *entry);
+		void insertBefore(Entry *entry);
+		void remove();
+
+		Entry(Type _type) : type(_type), prev(0), next(0) {}
 		virtual ~Entry() {}
 
 		virtual void print(const std::string &prefix = "") {}
@@ -60,6 +68,7 @@ public:
 		int rhs;
 
 		EntryImm(Type _type, Symbol *_lhs, int _rhs);
+		virtual ~EntryImm();
 
 		virtual void print(const std::string &prefix);
 
@@ -98,6 +107,8 @@ public:
 		EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs);
 		virtual ~EntryPhi();
 
+		void setArg(int num, Symbol *symbol);
+
 		virtual void print(const std::string &prefix);
 
 		virtual bool assigns(Symbol *symbol);
@@ -110,20 +121,27 @@ public:
 		std::string name;
 		Type *type;
 		int uses;
+		std::vector<Entry*> assigns;
 
 		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type), uses(0) {}
+
+		void addAssign(Entry *entry);
+		void removeAssign(Entry *entry);
 	};
 
 	struct Block {
 		int number;
-		std::vector<Entry*> entries;
 		std::vector<Block*> pred;
 		std::vector<Block*> succ;
 
 		Block *idom;
 		std::vector<Block*> domFrontiers;
 
-		Block(int _number) : number(_number) {}
+		Block(int _number) : number(_number), headEntry(Entry::TypeNone), tailEntry(Entry::TypeNone) 
+		{
+			headEntry.next = &tailEntry;
+			tailEntry.prev = &headEntry;
+		}
 
 		void addPred(Block *block);
 		void removePred(Block *block);
@@ -131,11 +149,14 @@ public:
 		void addSucc(Block *block);
 		void removeSucc(Block *block);
 
-		void appendEntry(Entry *entry) { entries.push_back(entry); }
-		void prependEntry(Entry *entry) { entries.insert(entries.begin(), entry); }
+		void appendEntry(Entry *entry) { entry->insertBefore(tail());}
+		void prependEntry(Entry *entry) { entry->insertAfter(head());}
 
-		Entry *head() const { return entries.size() > 0 ? entries[0] : 0; }
-		Entry *tail() const { return entries.size() > 0 ? entries[entries.size() - 1] : 0; }
+		Entry *head() { return &headEntry; }
+		Entry *tail() { return &tailEntry; }
+
+		Entry headEntry;
+		Entry tailEntry;
 	};
 
 	class Procedure {
