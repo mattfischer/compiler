@@ -3,6 +3,8 @@
 #include "OptPassJumps.h"
 #include "OptPassDce.h"
 #include "OptPassIntoSSA.h"
+#include "OptPassCopy.h"
+#include "OptPassConstant.h"
 
 Optimizer::Optimizer(IR *ir)
 {
@@ -35,5 +37,7 @@ void Optimizer::initPasses()
 	mPasses.push_back(new OptPassJumps);
 	mPasses.push_back(new OptPassDce);
 	mPasses.push_back(new OptPassIntoSSA);
+	mPasses.push_back(new OptPassCopy);
+	mPasses.push_back(new OptPassConstant);
 	mPasses.push_back(new OptPassDce);
 }

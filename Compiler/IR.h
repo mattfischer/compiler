@@ -35,6 +35,7 @@ public:
 		void insertAfter(Entry *entry);
 		void insertBefore(Entry *entry);
 		void remove();
+		void replace(Entry *entry);
 
 		Entry(Type _type) : type(_type), prev(0), next(0) {}
 		virtual ~Entry() {}
@@ -45,6 +46,7 @@ public:
 		virtual bool uses(Symbol *symbol) { return false; }
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol) {}
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol) {}
+		virtual int value(bool &constant) { constant = false; return 0; }
 	};
 
 	struct EntryThreeAddr : public Entry {
@@ -61,6 +63,7 @@ public:
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+		virtual int value(bool &constant);
 	};
 
 	struct EntryImm : public Entry {
@@ -74,6 +77,7 @@ public:
 
 		virtual bool assigns(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual int value(bool &constant);
 	};
 
 	struct EntryJump : public Entry {
@@ -115,6 +119,7 @@ public:
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+		virtual int value(bool &constant);
 	};
 
 	struct Symbol {
@@ -123,7 +128,8 @@ public:
 		int uses;
 		std::vector<Entry*> assigns;
 
-		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type), uses(0) {}
+		int *value;
+		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type), uses(0), value(0) {}
 
 		void addAssign(Entry *entry);
 		void removeAssign(Entry *entry);

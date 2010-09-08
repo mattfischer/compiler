@@ -1,8 +1,9 @@
 int i;
 int b;
-i = 3;
-i = 0;
-b = 7;
+
+i = 0 + 1;
+b = i;
+print b;
 
 while(i != 5) {
 	print i;

@@ -1,11 +1,12 @@
-#ifndef OPT_PASS_DCE_H
-#define OPT_PASS_DCE_H
+#ifndef OPT_PASS_COPY_H
+#define OPT_PASS_COPY_H
 
 #include "Optimizer.h"
 
-class OptPassDce : public Optimizer::Pass {
+class OptPassCopy : public Optimizer::Pass
+{
 public:
-	OptPassDce() : Pass("DCE") {}
+	OptPassCopy() : Pass("Copy") {}
 
 	virtual bool procedures() { return true; }
 

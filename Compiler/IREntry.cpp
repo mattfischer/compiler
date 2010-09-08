@@ -24,6 +24,14 @@ void IR::Entry::remove()
 	prev->next = next;
 }
 
+void IR::Entry::replace(Entry *entry)
+{
+	entry->next = next;
+	entry->prev = prev;
+	next->prev = entry;
+	prev->next = entry;
+}
+
 static char* names[] = {
 	/* TypeNone		*/	"none	",
 	/* TypeLoad		*/	"load   ",
@@ -115,6 +123,40 @@ void IR::EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
 	}
 }
 
+int IR::EntryThreeAddr::value(bool &constant)
+{
+	int result = 0;
+	constant = false;
+
+	switch(type) {
+		case Entry::TypeAdd:
+			if(rhs1->value && rhs2->value) {
+				constant = true;
+				result = *rhs1->value + *rhs2->value;
+			}
+			break;
+
+		case Entry::TypeMult:
+			if(rhs1->value && rhs2->value) {
+				constant = true;
+				result = *rhs1->value * *rhs2->value;
+			}
+			break;
+			
+		case Entry::TypeLoad:
+			if(rhs1->value) {
+				constant = true;
+				result = *rhs1->value;
+			}
+			break;
+
+		default:
+			break;
+	}
+
+	return result;
+}
+
 IR::EntryImm::EntryImm(Type _type, Symbol *_lhs, int _rhs)
 	: Entry(_type), lhs(_lhs), rhs(_rhs)
 {
@@ -145,6 +187,21 @@ void IR::EntryImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 
 	lhs = newSymbol;
 	lhs->addAssign(this);
+}
+
+int IR::EntryImm::value(bool &constant)
+{
+	int result = 0;
+	constant = false;
+
+	switch(type) {
+		case Entry::TypeLoadImm:
+			constant = true;
+			result = rhs;
+			break;
+	}
+
+	return result;
 }
 
 IR::EntryJump::EntryJump(Block *_target)
@@ -262,4 +319,22 @@ void IR::EntryPhi::replaceUse(Symbol *symbol, Symbol *newSymbol)
 			break;
 		}
 	}
+}
+
+int IR::EntryPhi::value(bool &constant)
+{
+	int result = 0;
+	constant = false;
+
+	for(int i=0; i<numArgs; i++)
+		if(!args[i]->value)
+			return result;
+
+	result = *args[0]->value;
+	for(int i=1; i<numArgs; i++)
+		if(*args[i]->value != result)
+			return result;
+
+	constant = true;
+	return result;
 }

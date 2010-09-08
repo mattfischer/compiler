@@ -235,6 +235,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OptPassConstant.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassCopy.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OptPassDce.cpp"
 				>
 			</File>
@@ -282,6 +290,14 @@
 			</File>
 			<File
 				RelativePath=".\Optimizer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassConstant.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptPassCopy.h"
 				>
 			</File>
 			<File
