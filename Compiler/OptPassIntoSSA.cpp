@@ -11,7 +11,7 @@ static std::string newSymbolName(IR::Symbol *base, int version)
 	return ss.str();
 }
 
-void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
+bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 {
 	std::vector<IR::Symbol*> newSymbols;
 
@@ -95,4 +95,6 @@ void OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 	for(unsigned int i=0; i<newSymbols.size(); i++) {
 		proc->addSymbol(newSymbols[i]);
 	}
+
+	return false;
 }

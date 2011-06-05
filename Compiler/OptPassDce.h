@@ -9,7 +9,7 @@ public:
 
 	virtual bool procedures() { return true; }
 
-	virtual void optimizeProcedure(IR::Procedure *proc);
+	virtual bool optimizeProcedure(IR::Procedure *proc);
 };
 
 #endif

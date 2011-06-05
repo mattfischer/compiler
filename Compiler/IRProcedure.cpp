@@ -22,7 +22,7 @@ void IR::Procedure::print(const std::string &prefix) const
 	printf("%sBody:\n", prefix.c_str());
 	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		Block *block = mBlocks[i];
-		printf("%sbb%i%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : (block == mEnd) ? " (end)" : "");
+		printf("%sbb%i%s%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : "", (block == mEnd) ? " (end)" : "");
 		for(Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next)
 			entry->print(prefix + "  ");
 	}
@@ -252,4 +252,9 @@ void IR::Procedure::removeBlock(Block *block)
 	}
 
 	delete block;
+}
+
+void IR::Procedure::replaceEnd(Block *block)
+{
+	mEnd = block;
 }

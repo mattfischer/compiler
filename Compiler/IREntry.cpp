@@ -150,6 +150,20 @@ int IR::EntryThreeAddr::value(bool &constant)
 			}
 			break;
 
+		case Entry::TypeEqual:
+			if(rhs1->value && rhs2->value) {
+				constant = true;
+				result = *rhs1->value == *rhs2->value;
+			}
+			break;
+
+		case Entry::TypeNequal:
+			if(rhs1->value && rhs2->value) {
+				constant = true;
+				result = *rhs1->value != *rhs2->value;
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -273,6 +287,17 @@ void IR::EntryPhi::setArg(int num, Symbol *symbol)
 
 	args[num] = symbol;
 	args[num]->uses++;
+}
+
+void IR::EntryPhi::removeArg(int num)
+{
+	args[num]->uses--;
+
+	for(int i=num; i<numArgs - 1; i++) {
+		args[i] = args[i+1];
+	}
+
+	numArgs--;
 }
 
 void IR::EntryPhi::print(const std::string &prefix)

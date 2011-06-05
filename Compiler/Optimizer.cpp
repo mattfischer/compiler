@@ -19,25 +19,53 @@ void Optimizer::optimize()
 	mIR->print();
 	printf("\n");
 
-	for(unsigned int i=0; i<mPasses.size(); i++) {
-		if(mPasses[i]->procedures()) {
-			for(unsigned int j=0; j<mIR->procedures().size(); j++) {
-				mPasses[i]->optimizeProcedure(mIR->procedures()[j]);
-			}
-		}
+	repeatPasses(mPreSSAPasses);
 
-		printf("PASS \"%s\":\n", mPasses[i]->name().c_str());
-		mIR->print();
-		printf("\n");
+	optimizeProcedures(new OptPassIntoSSA);
+	printf("INTO SSA:\n");
+	mIR->print();
+	printf("\n");
+
+	repeatPasses(mPostSSAPasses);
+}
+
+void Optimizer::repeatPasses(std::vector<Pass*> &passes)
+{
+	bool changed;
+	do {
+		changed = false;
+		
+		for(unsigned int i=0; i<passes.size(); i++) {
+			if(optimizeProcedures(passes[i])) {
+				changed = true;
+			}
+
+			printf("PASS \"%s\":\n", passes[i]->name().c_str());
+			mIR->print();
+			printf("\n");
+		}
+	} while(changed);
+}
+
+bool Optimizer::optimizeProcedures(Pass *pass)
+{
+	bool changed = false;
+	for(unsigned int j=0; j<mIR->procedures().size(); j++) {
+		while(pass->optimizeProcedure(mIR->procedures()[j])) {
+			changed = true;
+		}
 	}
+
+	return changed;
 }
 
 void Optimizer::initPasses()
 {
-	mPasses.push_back(new OptPassJumps);
-	mPasses.push_back(new OptPassDce);
-	mPasses.push_back(new OptPassIntoSSA);
-	mPasses.push_back(new OptPassCopy);
-	mPasses.push_back(new OptPassConstant);
-	mPasses.push_back(new OptPassDce);
+	mPreSSAPasses.push_back(new OptPassJumps);
+	mPreSSAPasses.push_back(new OptPassDce);
+
+	mPostSSAPasses.push_back(new OptPassCopy);
+	mPostSSAPasses.push_back(new OptPassConstant);
+	mPostSSAPasses.push_back(new OptPassJumps);
+	mPostSSAPasses.push_back(new OptPassDce);
 }

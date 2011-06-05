@@ -112,6 +112,7 @@ public:
 		virtual ~EntryPhi();
 
 		void setArg(int num, Symbol *symbol);
+		void removeArg(int num);
 
 		virtual void print(const std::string &prefix);
 
@@ -151,9 +152,11 @@ public:
 
 		void addPred(Block *block);
 		void removePred(Block *block);
+		void replacePred(Block *block, Block *newBlock);
 
 		void addSucc(Block *block);
 		void removeSucc(Block *block);
+		void replaceSucc(Block *block, Block *newBlock);
 
 		void appendEntry(Entry *entry) { entry->insertBefore(tail());}
 		void prependEntry(Entry *entry) { entry->insertAfter(head());}
@@ -177,6 +180,7 @@ public:
 		std::vector<Block*> &blocks() { return mBlocks; }
 
 		void removeBlock(Block *block);
+		void replaceEnd(Block *block);
 
 		std::vector<Symbol*> &symbols() { return mSymbols; }
 		Symbol *newTemp(Type *type);

@@ -1,12 +1,19 @@
-int i;
+int a;
 int b;
+int c;
+int d;
 
-i = 0 + 1;
-b = i;
-print b;
+a = 5;
+b = 10;
+c = a * b * 3;
+d = 0;
 
-while(i != 5) {
-	print i;
-	i = i + 1;
-	if(i == 3) print i+20;
+if(a == 5) {
+  b = 20;  
 }
+
+if(c == 150) {
+  d = c * b;
+}
+
+print d;

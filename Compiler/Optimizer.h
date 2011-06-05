@@ -16,7 +16,7 @@ public:
 
 		virtual bool procedures() { return false; }
 
-		virtual void optimizeProcedure(IR::Procedure *proc) {}
+		virtual bool optimizeProcedure(IR::Procedure *proc) { return false; }
 
 	private:
 		std::string mName;
@@ -30,9 +30,12 @@ public:
 
 private:
 	IR *mIR;
-	std::vector<Pass*> mPasses;
+	std::vector<Pass*> mPreSSAPasses;
+	std::vector<Pass*> mPostSSAPasses;
 
 	void initPasses();
+	void repeatPasses(std::vector<Pass*> &passes);
+	bool optimizeProcedures(Pass *pass);
 };
 
 #endif

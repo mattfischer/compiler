@@ -20,6 +20,22 @@ void IR::Block::removePred(Block *block)
 	for(unsigned int i=0; i<pred.size(); i++) {
 		if(pred[i] == block) {
 			pred.erase(pred.begin() + i);
+			for(Entry *entry = head()->next; entry != tail(); entry = entry->next) {
+				if(entry->type == Entry::TypePhi) {
+					EntryPhi *phi = (EntryPhi*)entry;
+					phi->removeArg(i);
+				}
+			}
+			break;
+		}
+	}
+}
+
+void IR::Block::replacePred(Block *block, Block *newBlock)
+{
+	for(unsigned int i=0; i<pred.size(); i++) {
+		if(pred[i] == block) {
+			pred[i] = newBlock;
 			break;
 		}
 	}
@@ -45,6 +61,16 @@ void IR::Block::removeSucc(Block *block)
 	for(unsigned int i=0; i<succ.size(); i++) {
 		if(succ[i] == block) {
 			succ.erase(succ.begin() + i);
+			break;
+		}
+	}
+}
+
+void IR::Block::replaceSucc(Block *block, Block *newBlock)
+{
+	for(unsigned int i=0; i<succ.size(); i++) {
+		if(succ[i] == block) {
+			succ[i] = newBlock;
 			break;
 		}
 	}
