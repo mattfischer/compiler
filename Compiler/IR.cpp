@@ -103,10 +103,3 @@ void IR::print() const
 		mProcedures[i]->print("  ");
 	}
 }
-
-void IR::computeDominance()
-{
-	for(unsigned int i=0; i<mProcedures.size(); i++) {
-		mProcedures[i]->computeDominance();
-	}
-}

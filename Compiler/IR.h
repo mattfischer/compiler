@@ -141,9 +141,6 @@ public:
 		std::vector<Block*> pred;
 		std::vector<Block*> succ;
 
-		Block *idom;
-		std::vector<Block*> domFrontiers;
-
 		Block(int _number) : number(_number), headEntry(Entry::TypeNone), tailEntry(Entry::TypeNone) 
 		{
 			headEntry.next = &tailEntry;
@@ -191,8 +188,6 @@ public:
 
 		void setCurrentBlock(Block *block);
 
-		void computeDominance();
-
 		void emit(Entry *entry);
 
 	private:
@@ -205,10 +200,6 @@ public:
 		int mNextTemp;
 
 		Block *mCurrentBlock;
-
-		void topologicalSort();
-		void computeDominatorTree();
-		void computeDominanceFrontiers();
 	};
 
 	IR();

@@ -1,7 +1,11 @@
 #include "OptPassIntoSSA.h"
 
+#include "Dominance.h"
+
 #include <queue>
 #include <sstream>
+#include <vector>
+#include <set>
 
 static std::string newSymbolName(IR::Symbol *base, int version)
 {
@@ -15,7 +19,8 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 {
 	std::vector<IR::Symbol*> newSymbols;
 
-	proc->computeDominance();
+	DominatorTree domTree(proc->blocks());
+	DominanceFrontiers domFrontiers(domTree);
 
 	for(unsigned int i=0; i<proc->symbols().size(); i++) {
 		IR::Symbol *symbol = proc->symbols()[i];
@@ -37,8 +42,9 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 			IR::Block *block = blocks.front();
 			blocks.pop();
 
-			for(unsigned int j=0; j<block->domFrontiers.size(); j++) {
-				IR::Block *frontier = block->domFrontiers[j];
+			const std::set<IR::Block*> &frontiers = domFrontiers.frontiers(block);
+			for(std::set<IR::Block*>::const_iterator it = frontiers.begin(); it != frontiers.end(); it++) {
+				IR::Block *frontier = *it;
 				IR::Entry *head = frontier->head()->next;
 				
 				if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
@@ -50,14 +56,14 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 
 		// Rename variables
 		int nextVersion = 0;
-		std::vector<IR::Symbol*> activeList(proc->blocks().size());
-		activeList[0] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
-		newSymbols.push_back(activeList[0]);
+		std::map<IR::Block*, IR::Symbol*> activeList;
+		activeList[proc->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
+		newSymbols.push_back(activeList[proc->start()]);
 		for(unsigned int j=0; j<proc->blocks().size(); j++) {
 			IR::Block *block = proc->blocks()[j];
-			if(!activeList[j])
-				activeList[j] = activeList[block->idom->number];
-			IR::Symbol *active = activeList[j];
+			if(activeList.find(block) == activeList.end())
+				activeList[block] = activeList[domTree.idom(block)];
+			IR::Symbol *active = activeList[block];
 
 			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
 				if(entry->uses(symbol)) {
@@ -70,7 +76,7 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 					newSymbols.push_back(newSymbol);
 					entry->replaceAssign(active, newSymbol);
 					active = newSymbol;
-					activeList[j] = active;
+					activeList[block] = active;
 				}
 			}
 
