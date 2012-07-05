@@ -8,6 +8,8 @@
 #include "IRGenerator.h"
 #include "Optimizer.h"
 
+#include "ReachingDefs.h"
+
 extern "C" ParseNode *parseLang(const char *filename);
 
 int main(int arg, char *argv[])
@@ -25,9 +27,19 @@ int main(int arg, char *argv[])
 
 		IRGenerator generator(syntaxTree);
 		IR *ir = generator.generate();
-		
-		Optimizer opt(ir);
-		opt.optimize();
+
+		printf("REACHING DEFS:\n");
+	
+		for(int i=0; i<ir->procedures().size(); i++) {
+			IR::Procedure *procedure = ir->procedures()[i];
+			ReachingDefs defs(procedure->blocks());
+			printf("%s:\n", procedure->name().c_str());
+			defs.print();
+		}
+		printf("\n");
+
+		//Optimizer opt(ir);
+		//opt.optimize();
 	}
 
 	return 0;

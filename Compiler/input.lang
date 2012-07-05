@@ -1,19 +1,14 @@
 int a;
 int b;
 int c;
-int d;
 
 a = 5;
+a = 6;
 b = 10;
-c = a * b * 3;
-d = 0;
 
 if(a == 5) {
-  b = 20;  
+	b = 3;
 }
 
-if(c == 150) {
-  d = c * b;
-}
-
-print d;
+c = a * b;
+print c;

@@ -85,8 +85,6 @@ void IR::EntryThreeAddr::print(const std::string &prefix)
 
 	if(rhs2)
 		printf("%s%s", needComma ? ", " : "", rhs2->name.c_str());
-
-	printf("\n");
 }
 
 bool IR::EntryThreeAddr::assigns(Symbol *symbol)
@@ -171,6 +169,11 @@ int IR::EntryThreeAddr::value(bool &constant)
 	return result;
 }
 
+IR::Symbol *IR::EntryThreeAddr::assignSymbol()
+{
+	return lhs;
+}
+
 IR::EntryImm::EntryImm(Type _type, Symbol *_lhs, int _rhs)
 	: Entry(_type), lhs(_lhs), rhs(_rhs)
 {
@@ -186,7 +189,7 @@ IR::EntryImm::~EntryImm()
 
 void IR::EntryImm::print(const std::string &prefix)
 {
-	printf("%s%s%s, %i\n", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
+	printf("%s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
 }
 
 bool IR::EntryImm::assigns(Symbol *symbol)
@@ -218,6 +221,11 @@ int IR::EntryImm::value(bool &constant)
 	return result;
 }
 
+IR::Symbol *IR::EntryImm::assignSymbol()
+{
+	return lhs;
+}
+
 IR::EntryJump::EntryJump(Block *_target)
 	: Entry(TypeJump), target(_target)
 {
@@ -225,7 +233,7 @@ IR::EntryJump::EntryJump(Block *_target)
 
 void IR::EntryJump::print(const std::string &prefix)
 {
-	printf("%s%sbb%i\n", prefix.c_str(), names[type], target->number);
+	printf("%s%sbb%i", prefix.c_str(), names[type], target->number);
 }
 
 IR::EntryCJump::EntryCJump(Symbol *_pred, Block *_trueTarget, Block *_falseTarget)
@@ -241,7 +249,7 @@ IR::EntryCJump::~EntryCJump()
 
 void IR::EntryCJump::print(const std::string &prefix)
 {
-	printf("%s%s%s, bb%i, bb%i\n", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->number, falseTarget->number);
+	printf("%s%s%s, bb%i, bb%i", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->number, falseTarget->number);
 }
 
 bool IR::EntryCJump::uses(Symbol *symbol)
@@ -306,7 +314,7 @@ void IR::EntryPhi::print(const std::string &prefix)
 	for(int i=0; i<numArgs; i++) {
 		printf("%s%s", args[i] ? args[i]->name.c_str() : "<none>", (i < numArgs - 1) ? ", " : "");
 	}
-	printf(")\n");
+	printf(")");
 }
 
 bool IR::EntryPhi::assigns(Symbol *symbol)
@@ -362,4 +370,9 @@ int IR::EntryPhi::value(bool &constant)
 
 	constant = true;
 	return result;
+}
+
+IR::Symbol *IR::EntryPhi::assignSymbol()
+{
+	return lhs;
 }

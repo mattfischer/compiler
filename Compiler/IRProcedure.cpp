@@ -23,8 +23,10 @@ void IR::Procedure::print(const std::string &prefix) const
 	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		Block *block = mBlocks[i];
 		printf("%sbb%i%s%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : "", (block == mEnd) ? " (end)" : "");
-		for(Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next)
+		for(Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
 			entry->print(prefix + "  ");
+			printf("\n");
+		}
 	}
 	printf("%s\n", prefix.c_str());
 

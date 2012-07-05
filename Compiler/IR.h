@@ -47,6 +47,7 @@ public:
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol) {}
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol) {}
 		virtual int value(bool &constant) { constant = false; return 0; }
+		virtual Symbol *assignSymbol() { return 0; }
 	};
 
 	struct EntryThreeAddr : public Entry {
@@ -64,6 +65,7 @@ public:
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 		virtual int value(bool &constant);
+		virtual Symbol *assignSymbol();
 	};
 
 	struct EntryImm : public Entry {
@@ -78,6 +80,7 @@ public:
 		virtual bool assigns(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual int value(bool &constant);
+		virtual Symbol *assignSymbol();
 	};
 
 	struct EntryJump : public Entry {
@@ -121,6 +124,7 @@ public:
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 		virtual int value(bool &constant);
+		virtual Symbol *assignSymbol();
 	};
 
 	struct Symbol {
