@@ -1,15 +1,14 @@
 #include "Dominance.h"
 
+#include "BlockSort.h"
 #include <algorithm>
+
+static DominanceFrontiers::BlockSet emptyBlockSet;
 
 DominatorTree::DominatorTree(BlockVector &blocks)
 {
-	mBlocks = topologicalSort(blocks);
-	std::map<IR::Block*, int> sortOrder;
-
-	for(unsigned int i=0; i<mBlocks.size(); i++) {
-		sortOrder[mBlocks[i]] = i;
-	}
+	BlockSort sort(blocks);
+	mBlocks = sort.sorted();
 
 	mIDoms[mBlocks[0]] = mBlocks[0];
 
@@ -30,9 +29,9 @@ DominatorTree::DominatorTree(BlockVector &blocks)
 					IR::Block *a = pred;
 					IR::Block *b = newDom;
 					while(a != b) {
-						while(sortOrder[a] > sortOrder[b])
+						while(sort.position(a) > sort.position(b))
 							a = mIDoms[a];
-						while(sortOrder[b] > sortOrder[a])
+						while(sort.position(b) > sort.position(a))
 							b = mIDoms[b];
 					}
 					newDom = a;
@@ -54,38 +53,9 @@ IR::Block *DominatorTree::idom(IR::Block *block)
 	return mIDoms[block];
 }
 
-const DominatorTree::BlockVector &DominatorTree::blocks()
+const DominatorTree::BlockVector &DominatorTree::blocks() const
 {
 	return mBlocks;
-}
-
-void DominatorTree::topoSortRecurse(IR::Block *block, BlockVector &blocks, BlockSet &seenBlocks)
-{
-	if(seenBlocks.find(block) != seenBlocks.end()) {
-		return;
-	}
-
-	seenBlocks.insert(block);
-
-	for(unsigned int i=0; i<block->succ.size(); i++) {
-		topoSortRecurse(block->succ[i], blocks, seenBlocks);
-	}
-
-	blocks.push_back(block);
-}
-
-DominatorTree::BlockVector DominatorTree::topologicalSort(BlockVector &blocks)
-{
-	BlockSet seenBlocks;
-	std::vector<IR::Block*> result;
-
-	for(unsigned int i=0; i<blocks.size(); i++) {
-		topoSortRecurse(blocks[i], result, seenBlocks);
-	}
-
-	std::reverse(result.begin(), result.end());
-
-	return result;
 }
 
 DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
@@ -106,7 +76,12 @@ DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
 	}
 }
 
-const DominanceFrontiers::BlockSet DominanceFrontiers::frontiers(IR::Block *block)
+const DominanceFrontiers::BlockSet &DominanceFrontiers::frontiers(IR::Block *block) const
 {
-	return mFrontiers[block];
+	std::map<IR::Block*, BlockSet>::const_iterator it = mFrontiers.find(block);
+	if(it != mFrontiers.end()) {
+		return it->second;
+	} else {
+		return emptyBlockSet;
+	}
 }

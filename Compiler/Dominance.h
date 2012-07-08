@@ -13,7 +13,7 @@ public:
 
 	DominatorTree(BlockVector &blocks);
 
-	const BlockVector &blocks();
+	const BlockVector &blocks() const;
 	IR::Block *idom(IR::Block *block);
 
 private:
@@ -31,7 +31,7 @@ public:
 
 	typedef std::set<IR::Block*> BlockSet;
 	typedef std::vector<IR::Block*> BlockVector;
-	const BlockSet frontiers(IR::Block *block);
+	const BlockSet &frontiers(IR::Block *block) const;
 
 private:
 	std::map<IR::Block*, BlockSet> mFrontiers;

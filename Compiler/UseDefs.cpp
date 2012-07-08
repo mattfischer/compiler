@@ -67,19 +67,31 @@ void UseDefs::print() const
 			printf("%i: ", lineMap[entry]);
 			entry->print();
 
-			printf(" || Uses: ");
-			const EntrySet &u = mUses.find(entry)->second;
-			for(EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
-				IR::Entry *e = *it;
-				printf("%i ", lineMap[e]);
+			printf(" || ");
+
+			{
+				std::map<IR::Entry*, EntrySet>::const_iterator it = mUses.find(entry);
+				if(it != mUses.end()) {
+					printf("Uses: ");
+					const EntrySet &u = it->second;
+					for(EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
+						IR::Entry *e = *it;
+						printf("%i ", lineMap[e]);
+					}
+				}
 			}
 
-			const SymbolToEntrySetMap &defs = mDefines.find(entry)->second;
-			for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
-				printf(" | Defs (%s): ", it->first->name.c_str());
-				for(EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-					IR::Entry *e = *it2;
-					printf("%i ", lineMap[e]);
+			{
+				std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(entry);
+				if(it != mDefines.end()) {
+					const SymbolToEntrySetMap &defs = it->second;
+					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
+						printf(" | Defs (%s): ", it->first->name.c_str());
+						for(EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+							IR::Entry *e = *it2;
+							printf("%i ", lineMap[e]);
+						}
+					}
 				}
 			}
 
