@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-DominatorTree::DominatorTree(std::vector<IR::Block*> &blocks)
+DominatorTree::DominatorTree(BlockVector &blocks)
 {
 	mBlocks = topologicalSort(blocks);
 	std::map<IR::Block*, int> sortOrder;
@@ -54,12 +54,12 @@ IR::Block *DominatorTree::idom(IR::Block *block)
 	return mIDoms[block];
 }
 
-const std::vector<IR::Block*> &DominatorTree::blocks()
+const DominatorTree::BlockVector &DominatorTree::blocks()
 {
 	return mBlocks;
 }
 
-void DominatorTree::topoSortRecurse(IR::Block *block, std::vector<IR::Block*> &blocks, std::set<IR::Block*> &seenBlocks)
+void DominatorTree::topoSortRecurse(IR::Block *block, BlockVector &blocks, BlockSet &seenBlocks)
 {
 	if(seenBlocks.find(block) != seenBlocks.end()) {
 		return;
@@ -74,9 +74,9 @@ void DominatorTree::topoSortRecurse(IR::Block *block, std::vector<IR::Block*> &b
 	blocks.push_back(block);
 }
 
-std::vector<IR::Block*> DominatorTree::topologicalSort(std::vector<IR::Block*> &blocks)
+DominatorTree::BlockVector DominatorTree::topologicalSort(BlockVector &blocks)
 {
-	std::set<IR::Block*> seenBlocks;
+	BlockSet seenBlocks;
 	std::vector<IR::Block*> result;
 
 	for(unsigned int i=0; i<blocks.size(); i++) {
@@ -106,7 +106,7 @@ DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
 	}
 }
 
-const std::set<IR::Block*> DominanceFrontiers::frontiers(IR::Block *block)
+const DominanceFrontiers::BlockSet DominanceFrontiers::frontiers(IR::Block *block)
 {
 	return mFrontiers[block];
 }

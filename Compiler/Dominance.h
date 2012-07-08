@@ -9,16 +9,19 @@
 
 class DominatorTree {
 public:
-	DominatorTree(std::vector<IR::Block*> &blocks);
+	typedef std::vector<IR::Block*> BlockVector;
 
-	const std::vector<IR::Block*> &blocks();
+	DominatorTree(BlockVector &blocks);
+
+	const BlockVector &blocks();
 	IR::Block *idom(IR::Block *block);
 
 private:
-	void topoSortRecurse(IR::Block *block, std::vector<IR::Block*> &blocks, std::set<IR::Block*> &seenBlocks);
-	std::vector<IR::Block*> topologicalSort(std::vector<IR::Block*> &blocks);
+	typedef std::set<IR::Block*> BlockSet;
+	void topoSortRecurse(IR::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
+	BlockVector topologicalSort(BlockVector &blocks);
 
-	std::vector<IR::Block*> mBlocks;
+	BlockVector mBlocks;
 	std::map<IR::Block*, IR::Block*> mIDoms;
 };
 
@@ -26,10 +29,12 @@ class DominanceFrontiers {
 public:
 	DominanceFrontiers(DominatorTree &tree);
 
-	const std::set<IR::Block*> frontiers(IR::Block *block);
+	typedef std::set<IR::Block*> BlockSet;
+	typedef std::vector<IR::Block*> BlockVector;
+	const BlockSet frontiers(IR::Block *block);
 
 private:
-	std::map<IR::Block*, std::set<IR::Block*> > mFrontiers;
+	std::map<IR::Block*, BlockSet> mFrontiers;
 };
 
 #endif
