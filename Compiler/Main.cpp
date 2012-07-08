@@ -9,6 +9,7 @@
 #include "Optimizer.h"
 
 #include "ReachingDefs.h"
+#include "UseDefs.h"
 
 extern "C" ParseNode *parseLang(const char *filename);
 
@@ -33,8 +34,8 @@ int main(int arg, char *argv[])
 		for(int i=0; i<ir->procedures().size(); i++) {
 			IR::Procedure *procedure = ir->procedures()[i];
 			ReachingDefs defs(procedure->blocks());
-			printf("%s:\n", procedure->name().c_str());
-			defs.print();
+			UseDefs ud(procedure->blocks(), defs);
+			ud.print();
 		}
 		printf("\n");
 
