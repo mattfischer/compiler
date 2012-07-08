@@ -1,11 +1,13 @@
 #ifndef ANALYSIS_DOMINANCE_H
 #define ANALYSIS_DOMINANCE_H
 
-#include "IR.h"
-
 #include <vector>
 #include <map>
 #include <set>
+
+namespace IR {
+	struct Block;
+}
 
 namespace Analysis {
 	class DominatorTree {

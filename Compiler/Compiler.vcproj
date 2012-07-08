@@ -196,19 +196,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IR.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IREntry.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\IRGenerator.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IRProcedure.cpp"
 				>
 			</File>
 			<File
@@ -287,6 +275,30 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="IR"
+				>
+				<File
+					RelativePath=".\IR\Block.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Entry.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Procedure.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Program.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Symbol.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -295,10 +307,6 @@
 			>
 			<File
 				RelativePath=".\Interpreter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IR.h"
 				>
 			</File>
 			<File
@@ -373,7 +381,23 @@
 				Name="IR"
 				>
 				<File
-					RelativePath=".\Entry.h"
+					RelativePath=".\IR\Block.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Entry.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Procedure.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Program.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\Symbol.h"
 					>
 				</File>
 			</Filter>

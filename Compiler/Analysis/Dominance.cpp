@@ -1,6 +1,8 @@
 #include "Dominance.h"
 
-#include "BlockSort.h"
+#include "Analysis/BlockSort.h"
+#include "IR/Block.h"
+
 #include <algorithm>
 
 namespace Analysis {

@@ -1,15 +1,11 @@
-#ifndef IR_H
-#define IR_H
+#ifndef IR_ENTRY_H
+#define IR_ENTRY_H
 
-#include <vector>
 #include <string>
 
-#include "Type.h"
-
-struct IR {
-public:
-	struct Symbol;
+namespace IR {
 	struct Block;
+	struct Symbol;
 
 	struct Entry {
 		enum Type {
@@ -126,97 +122,6 @@ public:
 		virtual int value(bool &constant);
 		virtual Symbol *assignSymbol();
 	};
+}
 
-	struct Symbol {
-		std::string name;
-		Type *type;
-		int uses;
-		std::vector<Entry*> assigns;
-
-		int *value;
-		Symbol(const std::string &_name, Type *_type) : name(_name), type(_type), uses(0), value(0) {}
-
-		void addAssign(Entry *entry);
-		void removeAssign(Entry *entry);
-	};
-
-	struct Block {
-		int number;
-		std::vector<Block*> pred;
-		std::vector<Block*> succ;
-
-		Block(int _number) : number(_number), headEntry(Entry::TypeNone), tailEntry(Entry::TypeNone) 
-		{
-			headEntry.next = &tailEntry;
-			tailEntry.prev = &headEntry;
-		}
-
-		void addPred(Block *block);
-		void removePred(Block *block);
-		void replacePred(Block *block, Block *newBlock);
-
-		void addSucc(Block *block);
-		void removeSucc(Block *block);
-		void replaceSucc(Block *block, Block *newBlock);
-
-		void appendEntry(Entry *entry) { entry->insertBefore(tail());}
-		void prependEntry(Entry *entry) { entry->insertAfter(head());}
-
-		Entry *head() { return &headEntry; }
-		Entry *tail() { return &tailEntry; }
-
-		Entry headEntry;
-		Entry tailEntry;
-	};
-
-	class Procedure {
-	public:
-		Procedure(const std::string &name);
-
-		void print(const std::string &prefix = "") const;
-		
-		Block *start() const { return mStart; }
-		Block *end() const { return mEnd; }
-		const std::string &name() const { return mName; }
-		std::vector<Block*> &blocks() { return mBlocks; }
-
-		void removeBlock(Block *block);
-		void replaceEnd(Block *block);
-
-		std::vector<Symbol*> &symbols() { return mSymbols; }
-		Symbol *newTemp(Type *type);
-		Symbol *addSymbol(const std::string &name, Type *type);
-		void addSymbol(Symbol *symbol);
-		Symbol *findSymbol(const std::string &name);
-		Block *newBlock();
-
-		void setCurrentBlock(Block *block);
-
-		void emit(Entry *entry);
-
-	private:
-		std::string mName;
-		std::vector<Symbol*> mSymbols;
-		std::vector<Block*> mBlocks;
-		Block *mStart;
-		Block *mEnd;
-
-		int mNextTemp;
-
-		Block *mCurrentBlock;
-	};
-
-	IR();
-
-	Procedure *main() { return mMain; }
-	std::vector<Procedure*> procedures() { return mProcedures; }
-
-	void print() const;
-
-	void computeDominance();
-
-private:
-	std::vector<Procedure*> mProcedures;
-	Procedure *mMain;
-};
 #endif

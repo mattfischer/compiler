@@ -1,5 +1,11 @@
 #include "UseDefs.h"
 
+#include "IR/Entry.h"
+#include "IR/Symbol.h"
+#include "IR/Block.h"
+
+#include "Analysis/ReachingDefs.h"
+
 #include <stdio.h>
 
 namespace Analysis {

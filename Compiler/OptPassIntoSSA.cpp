@@ -2,6 +2,11 @@
 
 #include "Analysis/Dominance.h"
 
+#include "IR/Symbol.h"
+#include "IR/Procedure.h"
+#include "IR/Entry.h"
+#include "IR/Block.h"
+
 #include <queue>
 #include <sstream>
 #include <vector>
@@ -42,8 +47,8 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 			IR::Block *block = blocks.front();
 			blocks.pop();
 
-			const std::set<IR::Block*> &frontiers = domFrontiers.frontiers(block);
-			for(std::set<IR::Block*>::const_iterator it = frontiers.begin(); it != frontiers.end(); it++) {
+			const Analysis::DominanceFrontiers::BlockSet &frontiers = domFrontiers.frontiers(block);
+			for(Analysis::DominanceFrontiers::BlockSet::const_iterator it = frontiers.begin(); it != frontiers.end(); it++) {
 				IR::Block *frontier = *it;
 				IR::Entry *head = frontier->head()->next;
 				

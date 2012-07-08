@@ -1,11 +1,14 @@
 #ifndef ANALYSIS_REACHING_DEFS_H
 #define ANALYSIS_REACHING_DEFS_H
 
-#include "IR.h"
-
 #include <vector>
 #include <set>
 #include <map>
+
+namespace IR {
+	struct Block;
+	struct Entry;
+}
 
 namespace Analysis {
 	class ReachingDefs {

@@ -1,5 +1,10 @@
 #include "OptPassConstant.h"
 
+#include "IR/Procedure.h"
+#include "IR/Symbol.h"
+#include "IR/Entry.h"
+#include "IR/Block.h"
+
 bool OptPassConstant::optimizeProcedure(IR::Procedure *proc)
 {
 	bool changed = false;

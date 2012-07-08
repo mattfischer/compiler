@@ -1,10 +1,13 @@
 #ifndef OPTIMIZER_H
 #define OPTIMIZER_H
 
-#include "IR.h"
-
 #include <string>
 #include <vector>
+
+namespace IR {
+	struct Program;
+	class Procedure;
+}
 
 class Optimizer {
 public:
@@ -22,14 +25,14 @@ public:
 		std::string mName;
 	};
 
-	Optimizer(IR *ir);
+	Optimizer(IR::Program *ir);
 
 	void optimize();
 
-	IR *ir() { return mIR; }
+	IR::Program *ir() { return mIR; }
 
 private:
-	IR *mIR;
+	IR::Program *mIR;
 	std::vector<Pass*> mPreSSAPasses;
 	std::vector<Pass*> mPostSSAPasses;
 

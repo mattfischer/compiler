@@ -1,5 +1,9 @@
 #include "OptPassJumps.h"
 
+#include "IR/Block.h"
+#include "IR/Entry.h"
+#include "IR/Procedure.h"
+
 static IR::Block *getJumpTarget(IR::Block *block)
 {
 	for(;;) {
@@ -92,7 +96,7 @@ bool OptPassJumps::optimizeProcedure(IR::Procedure *proc)
 		succ->head()->next = succ->tail();
 		succ->tail()->prev = succ->head();
 
-		for(int k=0; k<succ->succ.size(); k++) {
+		for(unsigned int k=0; k<succ->succ.size(); k++) {
 			IR::Block *succSucc = succ->succ[k];
 			succSucc->replacePred(succ, block);
 			succ->removeSucc(succSucc);

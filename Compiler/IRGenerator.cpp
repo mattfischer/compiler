@@ -1,13 +1,18 @@
 #include "IRGenerator.h"
 
+#include "IR/Program.h"
+#include "IR/Procedure.h"
+#include "IR/Block.h"
+#include "IR/Entry.h"
+
 IRGenerator::IRGenerator(SyntaxNode *tree)
 {
 	mTree = tree;
-	mIR = new IR;
+	mIR = new IR::Program;
 	mProc = mIR->main();
 }
 
-IR *IRGenerator::generate()
+IR::Program *IRGenerator::generate()
 {
 	processNode(mTree);
 	mProc->emit(new IR::EntryJump(mProc->end()));

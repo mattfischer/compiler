@@ -11,6 +11,9 @@
 #include "Analysis/ReachingDefs.h"
 #include "Analysis/UseDefs.h"
 
+#include "IR/Program.h"
+#include "IR/Procedure.h"
+
 extern "C" ParseNode *parseLang(const char *filename);
 
 int main(int arg, char *argv[])
@@ -27,11 +30,11 @@ int main(int arg, char *argv[])
 		interpreter.run();*/
 
 		IRGenerator generator(syntaxTree);
-		IR *ir = generator.generate();
+		IR::Program *ir = generator.generate();
 
 		printf("REACHING DEFS:\n");
 	
-		for(int i=0; i<ir->procedures().size(); i++) {
+		for(unsigned int i=0; i<ir->procedures().size(); i++) {
 			IR::Procedure *procedure = ir->procedures()[i];
 			Analysis::ReachingDefs defs(procedure->blocks());
 			Analysis::UseDefs ud(procedure->blocks(), defs);

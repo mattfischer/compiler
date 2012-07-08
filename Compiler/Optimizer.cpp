@@ -1,12 +1,14 @@
 #include "Optimizer.h"
 
+#include "IR/Program.h"
+
 #include "OptPassJumps.h"
 #include "OptPassDce.h"
 #include "OptPassIntoSSA.h"
 #include "OptPassCopy.h"
 #include "OptPassConstant.h"
 
-Optimizer::Optimizer(IR *ir)
+Optimizer::Optimizer(IR::Program *ir)
 {
 	mIR = ir;
 

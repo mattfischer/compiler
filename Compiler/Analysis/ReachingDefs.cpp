@@ -1,5 +1,8 @@
 #include "ReachingDefs.h"
 
+#include "IR/Entry.h"
+#include "IR/Block.h"
+
 #include <queue>
 
 namespace Analysis {

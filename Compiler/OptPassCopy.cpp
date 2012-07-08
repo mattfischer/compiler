@@ -1,5 +1,10 @@
 #include "OptPassCopy.h"
 
+#include "IR/Symbol.h"
+#include "IR/Procedure.h"
+#include "IR/Entry.h"
+#include "IR/Block.h"
+
 bool OptPassCopy::optimizeProcedure(IR::Procedure *proc)
 {
 	bool changed = false;

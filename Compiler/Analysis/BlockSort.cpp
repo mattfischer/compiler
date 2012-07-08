@@ -1,5 +1,7 @@
 #include "BlockSort.h"
 
+#include "IR/Block.h"
+
 #include <algorithm>
 
 namespace Analysis {

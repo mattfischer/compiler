@@ -1,14 +1,19 @@
 #ifndef ANALYSIS_USE_DEFS_H
 #define ANALYSIS_USE_DEFS_H
 
-#include "IR.h"
-#include "ReachingDefs.h"
-
 #include <map>
 #include <set>
 #include <vector>
 
+namespace IR {
+	struct Block;
+	struct Entry;
+	struct Symbol;
+}
+
 namespace Analysis {
+	class ReachingDefs;
+
 	class UseDefs
 	{
 	public:

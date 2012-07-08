@@ -1,11 +1,13 @@
 #ifndef ANALYSIS_BLOCK_SORT_H
 #define ANALYSIS_BLOCK_SORT_H
 
-#include "IR.h"
-
 #include <vector>
 #include <set>
 #include <map>
+
+namespace IR {
+	struct Block;
+}
 
 namespace Analysis {
 	class BlockSort {
