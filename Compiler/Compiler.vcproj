@@ -50,6 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -191,14 +192,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\BlockSort.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Dominance.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Interpreter.cpp"
 				>
 			</File>
@@ -263,10 +256,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReachingDefs.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\SyntaxNode.cpp"
 				>
 			</File>
@@ -278,24 +267,32 @@
 				RelativePath=".\TypeChecker.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\UseDefs.cpp"
+			<Filter
+				Name="Analysis"
 				>
-			</File>
+				<File
+					RelativePath=".\Analysis\BlockSort.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\Dominance.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\ReachingDefs.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\UseDefs.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\BlockSort.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Dominance.h"
-				>
-			</File>
 			<File
 				RelativePath=".\Interpreter.h"
 				>
@@ -341,10 +338,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReachingDefs.h"
-				>
-			</File>
-			<File
 				RelativePath=".\SyntaxNode.h"
 				>
 			</File>
@@ -356,10 +349,34 @@
 				RelativePath=".\TypeChecker.h"
 				>
 			</File>
-			<File
-				RelativePath=".\UseDefs.h"
+			<Filter
+				Name="Analysis"
 				>
-			</File>
+				<File
+					RelativePath=".\Analysis\BlockSort.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\Dominance.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\ReachingDefs.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\UseDefs.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="IR"
+				>
+				<File
+					RelativePath=".\Entry.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

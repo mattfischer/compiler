@@ -1,6 +1,6 @@
 #include "OptPassIntoSSA.h"
 
-#include "Dominance.h"
+#include "Analysis/Dominance.h"
 
 #include <queue>
 #include <sstream>
@@ -19,8 +19,8 @@ bool OptPassIntoSSA::optimizeProcedure(IR::Procedure *proc)
 {
 	std::vector<IR::Symbol*> newSymbols;
 
-	DominatorTree domTree(proc->blocks());
-	DominanceFrontiers domFrontiers(domTree);
+	Analysis::DominatorTree domTree(proc->blocks());
+	Analysis::DominanceFrontiers domFrontiers(domTree);
 
 	for(unsigned int i=0; i<proc->symbols().size(); i++) {
 		IR::Symbol *symbol = proc->symbols()[i];

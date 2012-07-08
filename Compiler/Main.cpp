@@ -8,8 +8,8 @@
 #include "IRGenerator.h"
 #include "Optimizer.h"
 
-#include "ReachingDefs.h"
-#include "UseDefs.h"
+#include "Analysis/ReachingDefs.h"
+#include "Analysis/UseDefs.h"
 
 extern "C" ParseNode *parseLang(const char *filename);
 
@@ -33,8 +33,8 @@ int main(int arg, char *argv[])
 	
 		for(int i=0; i<ir->procedures().size(); i++) {
 			IR::Procedure *procedure = ir->procedures()[i];
-			ReachingDefs defs(procedure->blocks());
-			UseDefs ud(procedure->blocks(), defs);
+			Analysis::ReachingDefs defs(procedure->blocks());
+			Analysis::UseDefs ud(procedure->blocks(), defs);
 			ud.print();
 		}
 		printf("\n");
