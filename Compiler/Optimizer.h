@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace IR {
-	struct Program;
+	class Program;
 	class Procedure;
 }
 

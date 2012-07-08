@@ -4,7 +4,7 @@
 #include <string>
 
 namespace IR {
-	struct Program;
+	class Program;
 }
 
 namespace Front {

@@ -6,8 +6,8 @@
 #include <map>
 
 namespace IR {
-	struct Block;
-	struct Entry;
+	class Block;
+	class Entry;
 }
 
 namespace Analysis {

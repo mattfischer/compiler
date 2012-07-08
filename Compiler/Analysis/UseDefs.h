@@ -6,9 +6,9 @@
 #include <vector>
 
 namespace IR {
-	struct Block;
-	struct Entry;
-	struct Symbol;
+	class Block;
+	class Entry;
+	class Symbol;
 }
 
 namespace Analysis {

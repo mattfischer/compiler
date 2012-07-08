@@ -6,7 +6,8 @@
 #include <vector>
 
 namespace IR {
-	struct Block {
+	class Block {
+	public:
 		int number;
 		std::vector<Block*> pred;
 		std::vector<Block*> succ;

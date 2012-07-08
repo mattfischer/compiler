@@ -6,7 +6,7 @@
 namespace IR {
 	class Procedure;
 
-	struct Program {
+	class Program {
 	public:
 		Program();
 

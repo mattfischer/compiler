@@ -6,7 +6,7 @@
 #include <set>
 
 namespace IR {
-	struct Block;
+	class Block;
 }
 
 namespace Analysis {

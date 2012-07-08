@@ -4,10 +4,11 @@
 #include <string>
 
 namespace IR {
-	struct Block;
-	struct Symbol;
+	class Block;
+	class Symbol;
 
-	struct Entry {
+	class Entry {
+	public:
 		enum Type {
 			TypeNone,
 			TypeLoad,

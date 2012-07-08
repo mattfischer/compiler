@@ -6,7 +6,7 @@
 
 namespace Front {
 	struct SyntaxNode;
-	struct Type;
+	class Type;
 
 	class TypeChecker
 	{

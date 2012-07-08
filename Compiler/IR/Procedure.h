@@ -5,13 +5,13 @@
 #include <vector>
 
 namespace Front {
-	struct Type;
+	class Type;
 }
 
 namespace IR {
-	struct Block;
-	struct Symbol;
-	struct Entry;
+	class Block;
+	class Symbol;
+	class Entry;
 
 	class Procedure {
 	public:

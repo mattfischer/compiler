@@ -5,7 +5,8 @@
 #include <vector>
 
 namespace Front {
-	struct Type {
+	class Type {
+	public:
 		enum TypeType {
 			TypeIntrinsic,
 			TypeNone
@@ -29,7 +30,8 @@ namespace Front {
 		static std::vector<Type*> sTypes;
 	};
 
-	struct TypeIntrinsic : public Type {
+	class TypeIntrinsic : public Type {
+	public:
 		enum IntrinsicType {
 			Int,
 			Bool

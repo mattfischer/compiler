@@ -4,10 +4,10 @@
 #include <string>
 
 namespace IR {
-	struct Block;
-	struct Program;
+	class Block;
+	class Program;
 	class Procedure;
-	struct Symbol;
+	class Symbol;
 }
 
 namespace Front {

@@ -413,6 +413,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Transform"
+				>
+				<File
+					RelativePath=".\ConstantProp.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

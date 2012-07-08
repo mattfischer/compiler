@@ -4,7 +4,7 @@
 #include "Front/ParseNode.h"
 
 namespace Front {
-	struct Type;
+	class Type;
 
 	struct SyntaxNode {
 		enum NodeType {

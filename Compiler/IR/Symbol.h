@@ -5,13 +5,14 @@
 #include <vector>
 
 namespace Front {
-	struct Type;
+	class Type;
 }
 
 namespace IR {
-	struct Entry;
+	class Entry;
 
-	struct Symbol {
+	class Symbol {
+	public:
 		std::string name;
 		Front::Type *type;
 		int uses;
