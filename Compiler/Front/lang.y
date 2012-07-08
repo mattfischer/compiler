@@ -2,7 +2,7 @@
 	#include <stdio.h>
 	#include <stdarg.h>
 	
-	#include "ParseNode.h"
+	#include "Front/ParseNode.h"
 	
 	static ParseNode *tree;
 	

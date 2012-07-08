@@ -3,7 +3,7 @@
 #include "IR/Block.h"
 #include "IR/Symbol.h"
 
-#include "Type.h"
+#include "Front/Type.h"
 
 #include <sstream>
 
@@ -72,7 +72,7 @@ namespace IR {
 		*/
 	}
 
-	Symbol *Procedure::newTemp(Type *type)
+	Symbol *Procedure::newTemp(Front::Type *type)
 	{
 		std::stringstream ss;
 		ss << mNextTemp++;
@@ -81,7 +81,7 @@ namespace IR {
 		return addSymbol(name, type);
 	}
 
-	Symbol *Procedure::addSymbol(const std::string &name, Type *type)
+	Symbol *Procedure::addSymbol(const std::string &name, Front::Type *type)
 	{
 		Symbol *symbol = new Symbol(name, type);
 		addSymbol(symbol);

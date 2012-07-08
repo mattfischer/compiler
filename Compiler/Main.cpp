@@ -1,12 +1,6 @@
 #include <stdio.h>
 
-#include "Type.h"
-#include "ParseNode.h"
-#include "SyntaxNode.h"
-#include "TypeChecker.h"
-#include "Interpreter.h"
-#include "IRGenerator.h"
-#include "Optimizer.h"
+#include "Front/Parser.h"
 
 #include "Analysis/ReachingDefs.h"
 #include "Analysis/UseDefs.h"
@@ -14,24 +8,11 @@
 #include "IR/Program.h"
 #include "IR/Procedure.h"
 
-extern "C" ParseNode *parseLang(const char *filename);
-
 int main(int arg, char *argv[])
 {
-	Type::init();
-
-	ParseNode *parseTree = parseLang("input.lang");
-	SyntaxNode *syntaxTree = SyntaxNode::fromParseTree(parseTree);
-	TypeChecker typeChecker;
-	bool result = typeChecker.check(syntaxTree);
-
-	if(result) {
-		/*Interpreter interpreter(syntaxTree);
-		interpreter.run();*/
-
-		IRGenerator generator(syntaxTree);
-		IR::Program *ir = generator.generate();
-
+	Front::Parser parser("input.lang");
+	IR::Program *ir = parser.ir();
+	if(ir) {
 		printf("REACHING DEFS:\n");
 	
 		for(unsigned int i=0; i<ir->procedures().size(); i++) {

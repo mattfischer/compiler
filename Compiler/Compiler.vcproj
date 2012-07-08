@@ -192,30 +192,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Interpreter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IRGenerator.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\lang.l"
-				>
-			</File>
-			<File
-				RelativePath=".\lang.tab.c"
-				>
-			</File>
-			<File
-				RelativePath=".\lang.y"
-				>
-			</File>
-			<File
-				RelativePath=".\lex.lang.c"
-				>
-			</File>
-			<File
 				RelativePath=".\Main.cpp"
 				>
 			</File>
@@ -241,18 +217,6 @@
 			</File>
 			<File
 				RelativePath=".\OptPassJumps.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SyntaxNode.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Type.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TypeChecker.cpp"
 				>
 			</File>
 			<Filter
@@ -299,24 +263,56 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Front"
+				>
+				<File
+					RelativePath=".\Front\Interpreter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\IRGenerator.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\lang.l"
+					>
+				</File>
+				<File
+					RelativePath=".\lang.tab.c"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\lang.y"
+					>
+				</File>
+				<File
+					RelativePath=".\lex.lang.c"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\Parser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\SyntaxNode.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\Type.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\TypeChecker.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\Interpreter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IRGenerator.h"
-				>
-			</File>
-			<File
-				RelativePath=".\lang.tab.h"
-				>
-			</File>
 			<File
 				RelativePath=".\Optimizer.h"
 				>
@@ -339,22 +335,6 @@
 			</File>
 			<File
 				RelativePath=".\OptPassJumps.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ParseNode.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SyntaxNode.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Type.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TypeChecker.h"
 				>
 			</File>
 			<Filter
@@ -398,6 +378,38 @@
 				</File>
 				<File
 					RelativePath=".\IR\Symbol.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Front"
+				>
+				<File
+					RelativePath=".\Front\Interpreter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\IRGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\ParseNode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\Parser.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\SyntaxNode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\Type.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\TypeChecker.h"
 					>
 				</File>
 			</Filter>

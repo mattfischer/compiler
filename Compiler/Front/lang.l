@@ -5,7 +5,7 @@
 	#include <stdlib.h>
 	#include <string.h>
 
-	#include "ParseNode.h"
+	#include "Front/ParseNode.h"
 	
 	#include "lang.tab.h"
 	

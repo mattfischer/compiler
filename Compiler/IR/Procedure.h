@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 
-struct Type;
+namespace Front {
+	struct Type;
+}
 
 namespace IR {
 	struct Block;
@@ -26,8 +28,8 @@ namespace IR {
 		void replaceEnd(Block *block);
 
 		std::vector<Symbol*> &symbols() { return mSymbols; }
-		Symbol *newTemp(Type *type);
-		Symbol *addSymbol(const std::string &name, Type *type);
+		Symbol *newTemp(Front::Type *type);
+		Symbol *addSymbol(const std::string &name, Front::Type *type);
 		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
 		Block *newBlock();
