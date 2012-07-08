@@ -9,15 +9,15 @@
 
 class ReachingDefs {
 public:
-	ReachingDefs(std::vector<IR::Block*> &blocks);
+	ReachingDefs(const std::vector<IR::Block*> &blocks);
 
 	typedef std::set<IR::Entry*> EntrySet;
-	EntrySet &defs(IR::Entry* entry);
-	void print();
+	const EntrySet &defs(IR::Entry* entry) const;
+	void print() const;
 
 private:
-	EntrySet createKillSet(EntrySet &in, EntrySet &gen);
-	EntrySet createOutSet(EntrySet &in, EntrySet &gen, EntrySet &kill);
+	EntrySet createKillSet(const EntrySet &in, const EntrySet &gen);
+	EntrySet createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill);
 
 	std::vector<IR::Block*> mBlocks;
 	std::map<IR::Entry*, EntrySet> mDefs;

@@ -7,7 +7,9 @@ struct InOut {
 	ReachingDefs::EntrySet out;
 };
 
-ReachingDefs::ReachingDefs(std::vector<IR::Block*> &blocks)
+static ReachingDefs::EntrySet emptyEntrySet;
+
+ReachingDefs::ReachingDefs(const std::vector<IR::Block*> &blocks)
 {
 	mBlocks = blocks;
 
@@ -75,16 +77,21 @@ ReachingDefs::ReachingDefs(std::vector<IR::Block*> &blocks)
 	}
 }
 
-ReachingDefs::EntrySet &ReachingDefs::defs(IR::Entry *entry)
+const ReachingDefs::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
 {
-	return mDefs[entry];
+	std::map<IR::Entry*, EntrySet>::const_iterator it = mDefs.find(entry);
+	if(it != mDefs.end()) {
+		return it->second;
+	} else {
+		return emptyEntrySet;
+	}
 }
 
-void ReachingDefs::print()
+void ReachingDefs::print() const
 {
 	int line = 1;
 	std::map<IR::Entry*, int> lineMap;
-	for(int i=0; i<mBlocks.size(); i++) {
+	for(unsigned int i=0; i<mBlocks.size(); i++) {
 		IR::Block *block = mBlocks[i];
 		for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
 			lineMap[entry] = line;
@@ -102,12 +109,12 @@ void ReachingDefs::print()
 	}
 }
 
-ReachingDefs::EntrySet ReachingDefs::createKillSet(EntrySet &in, EntrySet &gen)
+ReachingDefs::EntrySet ReachingDefs::createKillSet(const EntrySet &in, const EntrySet &gen)
 {
 	EntrySet kill;
-	for(EntrySet::iterator it = in.begin(); it != in.end(); it++) {
+	for(EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
 		IR::Entry *entry = *it;
-		for(EntrySet::iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
+		for(EntrySet::const_iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
 			IR::Entry *genEntry = *it2;
 			if(genEntry->assignSymbol() == entry->assignSymbol()) {
 				kill.insert(entry);
@@ -118,10 +125,10 @@ ReachingDefs::EntrySet ReachingDefs::createKillSet(EntrySet &in, EntrySet &gen)
 	return kill;
 }
 
-ReachingDefs::EntrySet ReachingDefs::createOutSet(EntrySet &in, EntrySet &gen, EntrySet &kill)
+ReachingDefs::EntrySet ReachingDefs::createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill)
 {
 	EntrySet out(gen.begin(), gen.end());
-	for(EntrySet::iterator it = in.begin(); it != in.end(); it++) {
+	for(EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
 		IR::Entry *entry = *it;
 		if(kill.find(entry) == kill.end()) {
 			out.insert(entry);

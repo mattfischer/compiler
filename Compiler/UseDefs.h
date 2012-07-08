@@ -11,12 +11,12 @@
 class UseDefs
 {
 public:
-	UseDefs(std::vector<IR::Block*> &blocks, ReachingDefs &reachingDefs);
+	UseDefs(const std::vector<IR::Block*> &blocks, const ReachingDefs &reachingDefs);
 
 	typedef std::set<IR::Entry*> EntrySet;
-	EntrySet &uses(IR::Entry *def);
-	EntrySet &defines(IR::Entry *use, IR::Symbol *symbol);
-	void print();
+	const EntrySet &uses(IR::Entry *def) const;
+	const EntrySet &defines(IR::Entry *use, IR::Symbol *symbol) const;
+	void print() const;
 
 private:
 	typedef std::map<IR::Symbol*, EntrySet> SymbolToEntrySetMap;

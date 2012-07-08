@@ -2,14 +2,16 @@
 
 #include <stdio.h>
 
-UseDefs::UseDefs(std::vector<IR::Block*> &blocks, ReachingDefs &reachingDefs)
+static UseDefs::EntrySet emptyEntrySet;
+
+UseDefs::UseDefs(const std::vector<IR::Block*> &blocks, const ReachingDefs &reachingDefs)
 : mBlocks(blocks)
 {
 	for(unsigned int i=0; i<blocks.size(); i++) {
 		IR::Block *block = blocks[i];
 		for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
-			EntrySet defs = reachingDefs.defs(entry);
-			for(EntrySet::iterator it = defs.begin(); it != defs.end(); it++) {
+			const EntrySet &defs = reachingDefs.defs(entry);
+			for(EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
 				IR::Entry *defEntry = *it;
 				IR::Symbol *symbol = defEntry->assignSymbol();
 				if(entry->uses(symbol)) {
@@ -21,17 +23,33 @@ UseDefs::UseDefs(std::vector<IR::Block*> &blocks, ReachingDefs &reachingDefs)
 	}
 }
 
-std::set<IR::Entry*> &UseDefs::uses(IR::Entry *define)
+const UseDefs::EntrySet &UseDefs::uses(IR::Entry *define) const
 {
-	return mUses[define];
+	std::map<IR::Entry*, EntrySet>::const_iterator it = mUses.find(define);
+	if(it != mUses.end()) {
+		return it->second;
+	} else {
+		return emptyEntrySet;
+	}
 }
 
-std::set<IR::Entry*> &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol)
+const std::set<IR::Entry*> &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
 {
-	return mDefines[use][symbol];
+	std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(use);
+	if(it != mDefines.end()) {
+		const SymbolToEntrySetMap &map = it->second;
+		SymbolToEntrySetMap::const_iterator it2 = map.find(symbol);
+		if(it2 != map.end()) {
+			return it2->second;
+		} else {
+			return emptyEntrySet;
+		}
+	} else {
+		return emptyEntrySet;
+	}
 }
 
-void UseDefs::print()
+void UseDefs::print() const
 {
 	int line = 1;
 	std::map<IR::Entry*, int> lineMap;
@@ -50,16 +68,16 @@ void UseDefs::print()
 			entry->print();
 
 			printf(" || Uses: ");
-			EntrySet &uses = mUses[entry];
-			for(EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+			const EntrySet &u = mUses.find(entry)->second;
+			for(EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
 				IR::Entry *e = *it;
 				printf("%i ", lineMap[e]);
 			}
 
-			SymbolToEntrySetMap &defs = mDefines[entry];
-			for(SymbolToEntrySetMap::iterator it = defs.begin(); it != defs.end(); it++) {
+			const SymbolToEntrySetMap &defs = mDefines.find(entry)->second;
+			for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
 				printf(" | Defs (%s): ", it->first->name.c_str());
-				for(EntrySet::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+				for(EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
 					IR::Entry *e = *it2;
 					printf("%i ", lineMap[e]);
 				}
