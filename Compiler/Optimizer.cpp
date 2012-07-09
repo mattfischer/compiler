@@ -2,7 +2,6 @@
 
 #include "IR/Program.h"
 
-#include "OptPassIntoSSA.h"
 #include "OptPassCopy.h"
 
 Optimizer::Optimizer(IR::Program *ir)
@@ -20,7 +19,6 @@ void Optimizer::optimize()
 
 	repeatPasses(mPreSSAPasses);
 
-	optimizeProcedures(new OptPassIntoSSA);
 	printf("INTO SSA:\n");
 	mIR->print();
 	printf("\n");

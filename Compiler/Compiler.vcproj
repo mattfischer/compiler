@@ -203,10 +203,6 @@
 				RelativePath=".\OptPassCopy.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\OptPassIntoSSA.cpp"
-				>
-			</File>
 			<Filter
 				Name="Analysis"
 				>
@@ -307,6 +303,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Transform\SSA.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Transform\ThreadJumps.cpp"
 					>
 				</File>
@@ -323,10 +323,6 @@
 			</File>
 			<File
 				RelativePath=".\OptPassCopy.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassIntoSSA.h"
 				>
 			</File>
 			<Filter
@@ -414,6 +410,10 @@
 				</File>
 				<File
 					RelativePath=".\Transform\DeadCodeElimination.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\SSA.h"
 					>
 				</File>
 				<File
