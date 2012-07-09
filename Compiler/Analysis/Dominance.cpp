@@ -21,8 +21,8 @@ namespace Analysis {
 			for(unsigned int i=1; i<mBlocks.size(); i++) {
 				IR::Block *block = mBlocks[i];
 				IR::Block *newDom = 0;
-				for(unsigned int j=0; j<block->pred.size(); j++) {
-					IR::Block *pred = block->pred[j];
+				for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+					IR::Block *pred = *it;
 
 					if(mIDoms[pred] == 0) {
 						continue;
@@ -69,8 +69,8 @@ namespace Analysis {
 			if(block->pred.size() < 2)
 				continue;
 
-			for(unsigned int j=0; j<block->pred.size(); j++) {
-				IR::Block *runner = block->pred[j];
+			for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+				IR::Block *runner = *it;
 				while(runner != tree.idom(block)) {
 					mFrontiers[runner].insert(block);
 					runner = tree.idom(runner);

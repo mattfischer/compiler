@@ -125,16 +125,16 @@ namespace IR {
 		if(entry->type == Entry::TypeJump) {
 			EntryJump *jump = (EntryJump*)entry;
 
-			mCurrentBlock->succ.push_back(jump->target);
-			jump->target->pred.push_back(mCurrentBlock);
+			mCurrentBlock->succ.insert(jump->target);
+			jump->target->pred.insert(mCurrentBlock);
 		} else if(entry->type == Entry::TypeCJump) {
 			EntryCJump *cjump = (EntryCJump*)entry;
 
-			mCurrentBlock->succ.push_back(cjump->trueTarget);
-			cjump->trueTarget->pred.push_back(mCurrentBlock);
+			mCurrentBlock->succ.insert(cjump->trueTarget);
+			cjump->trueTarget->pred.insert(mCurrentBlock);
 
-			mCurrentBlock->succ.push_back(cjump->falseTarget);
-			cjump->falseTarget->pred.push_back(mCurrentBlock);
+			mCurrentBlock->succ.insert(cjump->falseTarget);
+			cjump->falseTarget->pred.insert(mCurrentBlock);
 		}
 	}
 

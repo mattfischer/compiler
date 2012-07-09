@@ -87,16 +87,19 @@ namespace Transform {
 				}
 
 				// Propagate variable uses into Phi functions
-				for(unsigned int k=0; k<block->succ.size(); k++) {
-					IR::Block *succ = block->succ[k];
+				for(IR::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+					IR::Block *succ = *it;
 					IR::Entry *head = succ->head()->next;
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
-						for(unsigned int l=0; l<succ->pred.size(); l++) {
-							if(succ->pred[l] == block) {
+						int l = 0;
+						for(IR::Block::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
+							IR::Block *pred = *it2;
+							if(pred == block) {
 								((IR::EntryPhi*)head)->setArg(l, active);
 								break;
 							}
+							l++;
 						}
 					}
 				}

@@ -3,28 +3,21 @@
 
 #include "IR/Entry.h"
 
-#include <vector>
+#include <set>
 
 namespace IR {
 	class Block {
 	public:
 		int number;
-		std::vector<Block*> pred;
-		std::vector<Block*> succ;
+		typedef std::set<Block*> BlockSet;
+		BlockSet pred;
+		BlockSet succ;
 
 		Block(int _number) : number(_number), headEntry(Entry::TypeNone), tailEntry(Entry::TypeNone) 
 		{
 			headEntry.next = &tailEntry;
 			tailEntry.prev = &headEntry;
 		}
-
-		void addPred(Block *block);
-		void removePred(Block *block);
-		void replacePred(Block *block, Block *newBlock);
-
-		void addSucc(Block *block);
-		void removeSucc(Block *block);
-		void replaceSucc(Block *block, Block *newBlock);
 
 		void appendEntry(Entry *entry) { entry->insertBefore(tail());}
 		void prependEntry(Entry *entry) { entry->insertAfter(head());}

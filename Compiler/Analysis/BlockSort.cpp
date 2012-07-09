@@ -13,8 +13,9 @@ namespace Analysis {
 
 		seenBlocks.insert(block);
 
-		for(unsigned int i=0; i<block->succ.size(); i++) {
-			sortRecurse(block->succ[i], blocks, seenBlocks);
+		for(IR::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+			IR::Block *succ = *it;
+			sortRecurse(succ, blocks, seenBlocks);
 		}
 
 		blocks.push_back(block);

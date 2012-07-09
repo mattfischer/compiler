@@ -47,8 +47,8 @@ namespace Analysis {
 			blockQueue.pop();
 
 			states[block].in.clear();
-			for(unsigned int i=0; i<block->pred.size(); i++) {
-				IR::Block *pred = block->pred[i];
+			for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+				IR::Block *pred = *it;
 				EntrySet &out = states[pred].out;
 				states[block].in.insert(out.begin(), out.end());
 			}
@@ -58,8 +58,9 @@ namespace Analysis {
 
 			if(newOut != states[block].out) {
 				states[block].out = newOut;
-				for(unsigned int i=0; i<block->succ.size(); i++) {
-					blockQueue.push(block->succ[i]);
+				for(IR::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+					IR::Block *succ = *it;
+					blockQueue.push(succ);
 				}
 			}
 		}
