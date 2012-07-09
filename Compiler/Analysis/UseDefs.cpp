@@ -56,6 +56,29 @@ namespace Analysis {
 		}
 	}
 
+	void UseDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	{
+		SymbolToEntrySetMap &map = mDefines[oldEntry];
+		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
+			EntrySet &defSet = it->second;
+			for(EntrySet::iterator it2 = defSet.begin(); it2 != defSet.end(); it2++) {
+				IR::Entry *use = *it2;
+				mUses[use].erase(oldEntry);
+			}
+		}
+		mDefines.erase(oldEntry);
+		// TODO: Handle newEntry != LoadImm
+
+		mUses[newEntry] = mUses[oldEntry];
+		mUses.erase(oldEntry);
+		EntrySet &uses = mUses[newEntry];
+		for(EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+			IR::Entry *use = *it;
+			mDefines[use][newEntry->assignSymbol()].erase(oldEntry);
+			mDefines[use][newEntry->assignSymbol()].insert(newEntry);
+		}
+	}
+
 	void UseDefs::print() const
 	{
 		int line = 1;

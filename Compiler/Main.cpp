@@ -8,23 +8,28 @@
 #include "IR/Program.h"
 #include "IR/Procedure.h"
 
+#include "Transform/ConstantProp.h"
+
 int main(int arg, char *argv[])
 {
 	Front::Parser parser("input.lang");
 	IR::Program *ir = parser.ir();
 	if(ir) {
-		printf("REACHING DEFS:\n");
-	
 		for(unsigned int i=0; i<ir->procedures().size(); i++) {
 			IR::Procedure *procedure = ir->procedures()[i];
 			Analysis::ReachingDefs defs(procedure->blocks());
 			Analysis::UseDefs ud(procedure->blocks(), defs);
-			ud.print();
-		}
-		printf("\n");
 
-		//Optimizer opt(ir);
-		//opt.optimize();
+			printf("START:\n");
+			ud.print();
+			printf("\n");
+
+			Transform::ConstantProp::transform(procedure, ud);
+
+			printf("AFTER CONSTANTPROP:\n");
+			ud.print();
+			printf("\n");
+		}
 	}
 
 	return 0;

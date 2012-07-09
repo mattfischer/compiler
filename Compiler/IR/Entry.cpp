@@ -178,8 +178,8 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryImm::EntryImm(Type _type, Symbol *_lhs, int _rhs)
-		: Entry(_type), lhs(_lhs), rhs(_rhs)
+	EntryImm::EntryImm(Symbol *_lhs, int _rhs)
+		: Entry(TypeLoadImm), lhs(_lhs), rhs(_rhs)
 	{
 		if(lhs)
 			lhs->addAssign(this);

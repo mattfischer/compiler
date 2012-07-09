@@ -22,6 +22,9 @@ namespace Analysis {
 		typedef std::set<IR::Entry*> EntrySet;
 		const EntrySet &uses(IR::Entry *def) const;
 		const EntrySet &defines(IR::Entry *use, IR::Symbol *symbol) const;
+
+		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
+
 		void print() const;
 
 	private:

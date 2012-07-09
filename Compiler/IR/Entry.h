@@ -69,7 +69,7 @@ namespace IR {
 		Symbol *lhs;
 		int rhs;
 
-		EntryImm(Type _type, Symbol *_lhs, int _rhs);
+		EntryImm(Symbol *_lhs, int _rhs);
 		virtual ~EntryImm();
 
 		virtual void print(const std::string &prefix);

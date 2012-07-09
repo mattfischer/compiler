@@ -200,10 +200,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\OptPassConstant.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\OptPassCopy.cpp"
 				>
 			</File>
@@ -307,6 +303,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Transform"
+				>
+				<File
+					RelativePath=".\Transform\ConstantProp.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -315,10 +319,6 @@
 			>
 			<File
 				RelativePath=".\Optimizer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassConstant.h"
 				>
 			</File>
 			<File
@@ -417,7 +417,7 @@
 				Name="Transform"
 				>
 				<File
-					RelativePath=".\ConstantProp.h"
+					RelativePath=".\Transform\ConstantProp.h"
 					>
 				</File>
 			</Filter>
