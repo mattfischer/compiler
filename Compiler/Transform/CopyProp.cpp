@@ -35,13 +35,7 @@ namespace Transform {
 					}
 
 					use->replaceUse(oldSymbol, newSymbol);
-					useDefs.removeUse(entry, use);
-					useDefs.removeDefines(use, oldSymbol);
-					for(Analysis::ReachingDefs::EntrySet::iterator it2 = newDefs.begin(); it2 != newDefs.end(); it2++) {
-						IR::Entry *def = *it2;
-						useDefs.addUse(def, use);
-					}
-					useDefs.addDefines(use, newSymbol, newDefs);
+					useDefs.replaceUse(use, oldSymbol, newSymbol);
 				}
 			}
 		}

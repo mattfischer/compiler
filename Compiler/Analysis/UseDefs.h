@@ -24,13 +24,8 @@ namespace Analysis {
 		const EntrySet &defines(IR::Entry *use, IR::Symbol *symbol) const;
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
+		void replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol);
 		void remove(IR::Entry *entry);
-
-		void removeUse(IR::Entry *entry, IR::Entry *use);
-		void addUse(IR::Entry *entry, IR::Entry *use);
-
-		void removeDefines(IR::Entry *entry, IR::Symbol *symbol);
-		void addDefines(IR::Entry *entry, IR::Symbol *symbol, const EntrySet &defines);
 
 		void print() const;
 
@@ -40,6 +35,7 @@ namespace Analysis {
 		std::map<IR::Entry*, EntrySet> mUses;
 		std::map<IR::Entry*, SymbolToEntrySetMap> mDefines;
 		std::vector<IR::Block*> mBlocks;
+		const ReachingDefs &mReachingDefs;
 	};
 }
 #endif

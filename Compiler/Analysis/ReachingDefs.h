@@ -20,14 +20,16 @@ namespace Analysis {
 		typedef std::map<IR::Symbol*, EntrySet> SymbolToEntrySetMap;
 		const EntrySet &defs(IR::Entry* entry) const;
 		const EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
+		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void print() const;
 
 	private:
 		EntrySet createKillSet(const EntrySet &in, const EntrySet &gen);
 		EntrySet createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill);
 
+		typedef std::map<IR::Entry*, EntrySet> EntryToEntrySetMap;
 		std::vector<IR::Block*> mBlocks;
-		std::map<IR::Entry*, EntrySet> mDefs;
+		EntryToEntrySetMap mDefs;
 	};
 }
 #endif

@@ -32,7 +32,7 @@ int main(int arg, char *argv[])
 			ud.print();
 			printf("\n");
 
-			Transform::ConstantProp::transform(procedure, ud);
+			Transform::ConstantProp::transform(procedure, ud, defs);
 
 			printf("AFTER CONSTANTPROP:\n");
 			ud.print();

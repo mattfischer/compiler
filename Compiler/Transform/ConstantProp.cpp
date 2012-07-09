@@ -5,6 +5,7 @@
 #include "IR/Entry.h"
 
 #include "Analysis/UseDefs.h"
+#include "Analysis/ReachingDefs.h"
 
 #include <queue>
 
@@ -37,7 +38,7 @@ namespace Transform {
 		return ret;
 	}
 
-	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs)
+	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs)
 	{
 		std::queue<IR::Entry*> queue;
 
@@ -107,6 +108,7 @@ namespace Transform {
 						}
 
 						useDefs.replace(threeAddr, imm);
+						reachingDefs.replace(threeAddr, imm);
 						delete threeAddr;
 						break;
 					}
@@ -127,6 +129,7 @@ namespace Transform {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
 						useDefs.replace(cJump, jump);
+						reachingDefs.replace(cJump, jump);
 						cJump->replace(jump);
 						delete cJump;
 						break;
