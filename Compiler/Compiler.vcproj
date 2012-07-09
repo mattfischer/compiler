@@ -195,14 +195,6 @@
 				RelativePath=".\Main.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\Optimizer.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassCopy.cpp"
-				>
-			</File>
 			<Filter
 				Name="Analysis"
 				>
@@ -299,6 +291,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Transform\CopyProp.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Transform\DeadCodeElimination.cpp"
 					>
 				</File>
@@ -317,14 +313,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\Optimizer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassCopy.h"
-				>
-			</File>
 			<Filter
 				Name="Analysis"
 				>
@@ -406,6 +394,10 @@
 				>
 				<File
 					RelativePath=".\Transform\ConstantProp.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\CopyProp.h"
 					>
 				</File>
 				<File

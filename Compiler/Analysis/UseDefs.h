@@ -26,6 +26,12 @@ namespace Analysis {
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void remove(IR::Entry *entry);
 
+		void removeUse(IR::Entry *entry, IR::Entry *use);
+		void addUse(IR::Entry *entry, IR::Entry *use);
+
+		void removeDefines(IR::Entry *entry, IR::Symbol *symbol);
+		void addDefines(IR::Entry *entry, IR::Symbol *symbol, const EntrySet &defines);
+
 		void print() const;
 
 	private:

@@ -71,15 +71,6 @@ namespace Transform {
 			}
 			IR::Block *succ = block->succ[0];
 
-			for(IR::Entry *entry = succ->head()->next; entry != succ->tail(); entry = entry->next) {
-				if(entry->type == IR::Entry::TypePhi) {
-					IR::EntryPhi *phi = (IR::EntryPhi*)entry;
-					phi->replace(new IR::EntryThreeAddr(IR::Entry::TypeLoad, phi->lhs, phi->args[0]));
-					entry = entry->prev;
-					delete phi;
-				}
-			}
-
 			block->tail()->prev->remove();
 
 			block->tail()->prev->next = succ->head()->next;

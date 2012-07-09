@@ -91,6 +91,20 @@ namespace Analysis {
 		}
 	}
 
+	const ReachingDefs::EntrySet ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
+	{
+		EntrySet result;
+		const EntrySet &all = defs(entry);
+		for(EntrySet::const_iterator it = all.begin(); it != all.end(); it++) {
+			IR::Entry *def = *it;
+			if(def->assignSymbol() == symbol) {
+				result.insert(def);
+			}
+		}
+
+		return result;
+	}
+
 	void ReachingDefs::print() const
 	{
 		int line = 1;

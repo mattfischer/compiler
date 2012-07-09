@@ -10,6 +10,7 @@
 
 #include "Transform/ConstantProp.h"
 #include "Transform/DeadCodeElimination.h"
+#include "Transform/CopyProp.h"
 
 int main(int arg, char *argv[])
 {
@@ -22,6 +23,12 @@ int main(int arg, char *argv[])
 			Analysis::UseDefs ud(procedure->blocks(), defs);
 
 			printf("START:\n");
+			ud.print();
+			printf("\n");
+
+			Transform::CopyProp::transform(procedure, ud, defs);
+
+			printf("AFTER COPYPROP:\n");
 			ud.print();
 			printf("\n");
 

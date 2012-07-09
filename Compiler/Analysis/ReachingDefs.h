@@ -8,6 +8,7 @@
 namespace IR {
 	class Block;
 	class Entry;
+	class Symbol;
 }
 
 namespace Analysis {
@@ -16,7 +17,9 @@ namespace Analysis {
 		ReachingDefs(const std::vector<IR::Block*> &blocks);
 
 		typedef std::set<IR::Entry*> EntrySet;
+		typedef std::map<IR::Symbol*, EntrySet> SymbolToEntrySetMap;
 		const EntrySet &defs(IR::Entry* entry) const;
+		const EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
 		void print() const;
 
 	private:

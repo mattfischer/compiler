@@ -93,6 +93,26 @@ namespace Analysis {
 		mUses.erase(entry);
 	}
 
+	void UseDefs::removeUse(IR::Entry *entry, IR::Entry *use)
+	{
+		mUses[entry].erase(use);
+	}
+
+	void UseDefs::addUse(IR::Entry *entry, IR::Entry *use)
+	{
+		mUses[entry].insert(use);
+	}
+
+	void UseDefs::removeDefines(IR::Entry *entry, IR::Symbol *symbol)
+	{
+		mDefines[entry].erase(symbol);
+	}
+
+	void UseDefs::addDefines(IR::Entry *entry, IR::Symbol *symbol, const EntrySet &defines)
+	{
+		mDefines[entry][symbol] = defines;
+	}
+
 	void UseDefs::print() const
 	{
 		int line = 1;
