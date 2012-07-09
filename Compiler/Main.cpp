@@ -4,6 +4,7 @@
 
 #include "Analysis/ReachingDefs.h"
 #include "Analysis/UseDefs.h"
+#include "Analysis/FlowGraph.h"
 
 #include "IR/Program.h"
 #include "IR/Procedure.h"
@@ -21,6 +22,7 @@ int main(int arg, char *argv[])
 			IR::Procedure *procedure = *it;
 			Analysis::ReachingDefs defs(procedure->blocks());
 			Analysis::UseDefs ud(procedure->blocks(), defs);
+			Analysis::FlowGraph graph(procedure);
 
 			printf("START:\n");
 			ud.print();
