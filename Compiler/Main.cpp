@@ -9,6 +9,7 @@
 #include "IR/Procedure.h"
 
 #include "Transform/ConstantProp.h"
+#include "Transform/DeadCodeElimination.h"
 
 int main(int arg, char *argv[])
 {
@@ -29,7 +30,15 @@ int main(int arg, char *argv[])
 			printf("AFTER CONSTANTPROP:\n");
 			ud.print();
 			printf("\n");
+
+			Transform::DeadCodeElimination::transform(procedure, ud);
+
+			printf("AFTER DCE:\n");
+			ud.print();
+			printf("\n");
 		}
+
+		ir->print();
 	}
 
 	return 0;

@@ -204,15 +204,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\OptPassDce.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\OptPassIntoSSA.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassJumps.cpp"
 				>
 			</File>
 			<Filter
@@ -310,6 +302,14 @@
 					RelativePath=".\Transform\ConstantProp.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\Transform\DeadCodeElimination.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\ThreadJumps.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -326,15 +326,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\OptPassDce.h"
-				>
-			</File>
-			<File
 				RelativePath=".\OptPassIntoSSA.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OptPassJumps.h"
 				>
 			</File>
 			<Filter
@@ -418,6 +410,14 @@
 				>
 				<File
 					RelativePath=".\Transform\ConstantProp.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\DeadCodeElimination.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\ThreadJumps.h"
 					>
 				</File>
 			</Filter>

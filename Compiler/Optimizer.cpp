@@ -2,8 +2,6 @@
 
 #include "IR/Program.h"
 
-#include "OptPassJumps.h"
-#include "OptPassDce.h"
 #include "OptPassIntoSSA.h"
 #include "OptPassCopy.h"
 
@@ -62,10 +60,5 @@ bool Optimizer::optimizeProcedures(Pass *pass)
 
 void Optimizer::initPasses()
 {
-	mPreSSAPasses.push_back(new OptPassJumps);
-	mPreSSAPasses.push_back(new OptPassDce);
-
 	mPostSSAPasses.push_back(new OptPassCopy);
-	mPostSSAPasses.push_back(new OptPassJumps);
-	mPostSSAPasses.push_back(new OptPassDce);
 }
