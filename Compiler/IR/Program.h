@@ -1,7 +1,7 @@
 #ifndef IR_PROGRAM_H
 #define IR_PROGRAM_H
 
-#include <vector>
+#include <list>
 
 namespace IR {
 	class Procedure;
@@ -11,14 +11,15 @@ namespace IR {
 		Program();
 
 		Procedure *main() { return mMain; }
-		std::vector<Procedure*> procedures() { return mProcedures; }
+		typedef std::list<Procedure*> ProcedureList;
+		ProcedureList &procedures() { return mProcedures; }
 
 		void print() const;
 
 		void computeDominance();
 
 	private:
-		std::vector<Procedure*> mProcedures;
+		ProcedureList mProcedures;
 		Procedure *mMain;
 	};
 }

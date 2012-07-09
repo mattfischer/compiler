@@ -28,8 +28,8 @@ namespace Transform {
 		Analysis::DominatorTree domTree(proc->blocks());
 		Analysis::DominanceFrontiers domFrontiers(domTree);
 
-		for(unsigned int i=0; i<proc->symbols().size(); i++) {
-			IR::Symbol *symbol = proc->symbols()[i];
+		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
+			IR::Symbol *symbol = *symIt;
 			std::queue<IR::Block*> blocks;
 
 			// Initialize queue with variable assignments
@@ -49,8 +49,8 @@ namespace Transform {
 				blocks.pop();
 
 				const Analysis::DominanceFrontiers::BlockSet &frontiers = domFrontiers.frontiers(block);
-				for(Analysis::DominanceFrontiers::BlockSet::const_iterator it = frontiers.begin(); it != frontiers.end(); it++) {
-					IR::Block *frontier = *it;
+				for(Analysis::DominanceFrontiers::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
+					IR::Block *frontier = *frontIt;
 					IR::Entry *head = frontier->head()->next;
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {

@@ -11,9 +11,10 @@ namespace IR {
 
 	void Program::print() const
 	{
-		for(unsigned int i=0; i<mProcedures.size(); i++) {
-			printf("<%s>\n", mProcedures[i]->name().c_str());
-			mProcedures[i]->print("  ");
+		for(ProcedureList::const_iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
+			Procedure *procedure = *it;
+			printf("<%s>\n", procedure->name().c_str());
+			procedure->print("  ");
 		}
 	}
 }

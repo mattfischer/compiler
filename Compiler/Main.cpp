@@ -17,8 +17,8 @@ int main(int arg, char *argv[])
 	Front::Parser parser("input.lang");
 	IR::Program *ir = parser.ir();
 	if(ir) {
-		for(unsigned int i=0; i<ir->procedures().size(); i++) {
-			IR::Procedure *procedure = ir->procedures()[i];
+		for(IR::Program::ProcedureList::iterator it = ir->procedures().begin(); it != ir->procedures().end(); it++) {
+			IR::Procedure *procedure = *it;
 			Analysis::ReachingDefs defs(procedure->blocks());
 			Analysis::UseDefs ud(procedure->blocks(), defs);
 

@@ -2,6 +2,7 @@
 #define IR_PROCEDURE_H
 
 #include <string>
+#include <list>
 #include <vector>
 
 namespace Front {
@@ -27,7 +28,8 @@ namespace IR {
 		void removeBlock(Block *block);
 		void replaceEnd(Block *block);
 
-		std::vector<Symbol*> &symbols() { return mSymbols; }
+		typedef std::list<Symbol*> SymbolList;
+		SymbolList &symbols() { return mSymbols; }
 		Symbol *newTemp(Front::Type *type);
 		Symbol *addSymbol(const std::string &name, Front::Type *type);
 		void addSymbol(Symbol *symbol);
@@ -40,7 +42,7 @@ namespace IR {
 
 	private:
 		std::string mName;
-		std::vector<Symbol*> mSymbols;
+		SymbolList mSymbols;
 		std::vector<Block*> mBlocks;
 		Block *mStart;
 		Block *mEnd;

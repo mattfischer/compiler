@@ -21,8 +21,9 @@ namespace IR {
 	void Procedure::print(const std::string &prefix) const
 	{
 		printf("%sSymbols:\n", prefix.c_str());
-		for(unsigned int i=0; i<mSymbols.size(); i++) {
-			printf("%s%s %s\n", (prefix + "  ").c_str(), mSymbols[i]->type->name.c_str(), mSymbols[i]->name.c_str());
+		for(SymbolList::const_iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
+			Symbol *symbol = *it;
+			printf("%s%s %s\n", (prefix + "  ").c_str(), symbol->type->name.c_str(), symbol->name.c_str());
 		}
 		printf("%s\n", prefix.c_str());
 		printf("%sBody:\n", prefix.c_str());
@@ -96,9 +97,10 @@ namespace IR {
 
 	Symbol *Procedure::findSymbol(const std::string &name)
 	{
-		for(unsigned int i=0; i<mSymbols.size(); i++) {
-			if(mSymbols[i]->name == name) {
-				return mSymbols[i];
+		for(SymbolList::iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
+			Symbol *symbol = *it;
+			if(symbol->name == name) {
+				return symbol;
 			}
 		}
 
