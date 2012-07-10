@@ -1,6 +1,7 @@
 #include "Transform/SSA.h"
 
-#include "Analysis/Dominance.h"
+#include "Analysis/DominatorTree.h"
+#include "Analysis/DominanceFrontiers.h"
 #include "Analysis/FlowGraph.h"
 
 #include "IR/Symbol.h"

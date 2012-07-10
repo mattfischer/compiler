@@ -203,7 +203,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Analysis\Dominance.cpp"
+					RelativePath=".\Analysis\DominanceFrontiers.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\DominatorTree.cpp"
 					>
 				</File>
 				<File
@@ -325,7 +329,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Analysis\Dominance.h"
+					RelativePath=".\Analysis\DominanceFrontiers.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\DominatorTree.h"
 					>
 				</File>
 				<File

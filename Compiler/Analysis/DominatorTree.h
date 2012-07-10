@@ -25,18 +25,6 @@ namespace Analysis {
 		BlockVector mBlocks;
 		std::map<FlowGraph::Block*, FlowGraph::Block*> mIDoms;
 	};
-
-	class DominanceFrontiers {
-	public:
-		DominanceFrontiers(DominatorTree &tree);
-
-		typedef std::set<FlowGraph::Block*> BlockSet;
-		typedef std::vector<FlowGraph::Block*> BlockVector;
-		const BlockSet &frontiers(FlowGraph::Block *block) const;
-
-	private:
-		std::map<FlowGraph::Block*, BlockSet> mFrontiers;
-	};
 }
 
 #endif
