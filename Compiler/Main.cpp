@@ -40,7 +40,19 @@ int main(int arg, char *argv[])
 			ud.print();
 			printf("\n");
 
-			Transform::DeadCodeElimination::transform(procedure, ud);
+			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
+
+			printf("AFTER DCE:\n");
+			ud.print();
+			printf("\n");
+
+			Transform::ConstantProp::transform(procedure, ud, defs, flowGraph);
+
+			printf("AFTER CONSTANTPROP:\n");
+			ud.print();
+			printf("\n");
+
+			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
 
 			printf("AFTER DCE:\n");
 			ud.print();

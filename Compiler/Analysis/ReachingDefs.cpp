@@ -124,6 +124,18 @@ namespace Analysis {
 		}
 	}
 
+	void ReachingDefs::remove(IR::Entry *entry)
+	{
+		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
+			EntrySet &set = it->second;
+			EntrySet::iterator setIt = set.find(entry);
+			if(setIt != set.end()) {
+				set.erase(setIt);
+			}
+		}
+		mDefs.erase(entry);
+	}
+
 	void ReachingDefs::print() const
 	{
 		int line = 1;

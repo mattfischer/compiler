@@ -23,6 +23,7 @@ namespace Analysis {
 		const EntrySet &defs(IR::Entry* entry) const;
 		const EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
+		void remove(IR::Entry *entry);
 		void print() const;
 
 	private:

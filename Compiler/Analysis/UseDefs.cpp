@@ -98,6 +98,12 @@ namespace Analysis {
 			}
 		}
 		mDefines.erase(entry);
+
+		EntrySet &uses = mUses[entry];
+		for(EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+			IR::Entry *use = *it;
+			mDefines[use][entry->assignSymbol()].erase(entry);
+		}
 		mUses.erase(entry);
 	}
 
