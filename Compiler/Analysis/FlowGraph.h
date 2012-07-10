@@ -23,11 +23,11 @@ namespace Analysis {
 		FlowGraph(IR::Procedure *procedure);
 		~FlowGraph();
 
-		const Block *start() const { return mStart; }
-		const Block *end() const { return mEnd; }
+		Block *start() const { return mStart; }
+		Block *end() const { return mEnd; }
 
 		typedef std::set<Block*> BlockSet;
-		const BlockSet &blocks() const { return mBlockSet; }
+		BlockSet &blocks() { return mBlockSet; }
 
 	private:
 		typedef std::map<IR::Block*, Block*> IRBlockToBlockMap;

@@ -20,9 +20,9 @@ int main(int arg, char *argv[])
 	if(ir) {
 		for(IR::Program::ProcedureList::iterator it = ir->procedures().begin(); it != ir->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
-			Analysis::ReachingDefs defs(procedure->blocks());
+			Analysis::FlowGraph flowGraph(procedure);
+			Analysis::ReachingDefs defs(flowGraph);
 			Analysis::UseDefs ud(procedure->blocks(), defs);
-			Analysis::FlowGraph graph(procedure);
 
 			printf("START:\n");
 			ud.print();

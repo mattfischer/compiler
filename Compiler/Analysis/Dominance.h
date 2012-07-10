@@ -5,39 +5,37 @@
 #include <map>
 #include <set>
 
-namespace IR {
-	class Block;
-}
+#include "Analysis/FlowGraph.h"
 
 namespace Analysis {
 	class DominatorTree {
 	public:
-		typedef std::vector<IR::Block*> BlockVector;
+		typedef std::vector<FlowGraph::Block*> BlockVector;
 
-		DominatorTree(BlockVector &blocks);
+		DominatorTree(FlowGraph &flowGraph);
 
 		const BlockVector &blocks() const;
-		IR::Block *idom(IR::Block *block);
+		FlowGraph::Block *idom(FlowGraph::Block *block);
 
 	private:
-		typedef std::set<IR::Block*> BlockSet;
-		void topoSortRecurse(IR::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
+		typedef std::set<FlowGraph::Block*> BlockSet;
+		void topoSortRecurse(FlowGraph::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
 		BlockVector topologicalSort(BlockVector &blocks);
 
 		BlockVector mBlocks;
-		std::map<IR::Block*, IR::Block*> mIDoms;
+		std::map<FlowGraph::Block*, FlowGraph::Block*> mIDoms;
 	};
 
 	class DominanceFrontiers {
 	public:
 		DominanceFrontiers(DominatorTree &tree);
 
-		typedef std::set<IR::Block*> BlockSet;
-		typedef std::vector<IR::Block*> BlockVector;
-		const BlockSet &frontiers(IR::Block *block) const;
+		typedef std::set<FlowGraph::Block*> BlockSet;
+		typedef std::vector<FlowGraph::Block*> BlockVector;
+		const BlockSet &frontiers(FlowGraph::Block *block) const;
 
 	private:
-		std::map<IR::Block*, BlockSet> mFrontiers;
+		std::map<FlowGraph::Block*, BlockSet> mFrontiers;
 	};
 }
 

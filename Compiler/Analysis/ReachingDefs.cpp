@@ -1,5 +1,7 @@
 #include "ReachingDefs.h"
 
+#include "Analysis/FlowGraph.h"
+
 #include "IR/Entry.h"
 #include "IR/Block.h"
 
@@ -13,18 +15,18 @@ namespace Analysis {
 
 	static ReachingDefs::EntrySet emptyEntrySet;
 
-	ReachingDefs::ReachingDefs(const std::vector<IR::Block*> &blocks)
+	ReachingDefs::ReachingDefs(FlowGraph &flowGraph)
+		: mFlowGraph(flowGraph)
 	{
-		mBlocks = blocks;
+		std::map<FlowGraph::Block*, InOut> states;
+		std::map<FlowGraph::Block*, EntrySet> gen;
+		std::queue<FlowGraph::Block*> blockQueue;
 
-		std::map<IR::Block*, InOut> states;
-		std::map<IR::Block*, EntrySet> gen;
-		std::queue<IR::Block*> blockQueue;
-
-		for(unsigned int i=0; i<blocks.size(); i++) {
-			IR::Block *block = blocks[i];
+		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+			FlowGraph::Block *block = *it;
+			IR::Block* irBlock = block->irBlock;
 			EntrySet out;
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
 				if(!entry->assignSymbol()) {
 					continue;
 				}
@@ -38,17 +40,18 @@ namespace Analysis {
 			gen[block] = out;
 		}
 
-		for(unsigned int i=0; i<blocks.size(); i++) {
-			blockQueue.push(blocks[i]);
+		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+			FlowGraph::Block *block = *it;
+			blockQueue.push(block);
 		}
 
 		while(!blockQueue.empty()) {
-			IR::Block *block = blockQueue.front();
+			FlowGraph::Block *block = blockQueue.front();
 			blockQueue.pop();
 
 			states[block].in.clear();
-			for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-				IR::Block *pred = *it;
+			for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+				FlowGraph::Block *pred = *it;
 				EntrySet &out = states[pred].out;
 				states[block].in.insert(out.begin(), out.end());
 			}
@@ -58,17 +61,18 @@ namespace Analysis {
 
 			if(newOut != states[block].out) {
 				states[block].out = newOut;
-				for(IR::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-					IR::Block *succ = *it;
+				for(FlowGraph::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+					FlowGraph::Block *succ = *it;
 					blockQueue.push(succ);
 				}
 			}
 		}
 
-		for(unsigned int i=0; i<blocks.size(); i++) {
-			IR::Block *block = blocks[i];
+		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+			FlowGraph::Block *block = *it;
+			IR::Block *irBlock = block->irBlock;
 			EntrySet out = states[block].in;
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
 				mDefs[entry] = out;
 
 				if(entry->assignSymbol()) {
@@ -124,9 +128,10 @@ namespace Analysis {
 	{
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			IR::Block *block = mBlocks[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+			FlowGraph::Block *block = *it;
+			IR::Block *irBlock = block->irBlock;
+			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
 				lineMap[entry] = line;
 				printf("%i: ", line);
 				entry->print();

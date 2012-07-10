@@ -5,25 +5,23 @@
 #include <set>
 #include <map>
 
-namespace IR {
-	class Block;
-}
+#include "Analysis/FlowGraph.h"
 
 namespace Analysis {
 	class BlockSort {
 	public:
-		typedef std::vector<IR::Block*> BlockVector;
-		BlockSort(const BlockVector &blocks);
+		typedef std::vector<FlowGraph::Block*> BlockVector;
+		BlockSort(FlowGraph &flowGraph);
 
 		const BlockVector &sorted() const;
-		int position(IR::Block *block) const;
+		int position(FlowGraph::Block *block) const;
 
 	private:
-		typedef std::set<IR::Block*> BlockSet;
-		void sortRecurse(IR::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
+		typedef std::set<FlowGraph::Block*> BlockSet;
+		void sortRecurse(FlowGraph::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
 
 		BlockVector mSorted;
-		typedef std::map<IR::Block*, int> OrderMap;
+		typedef std::map<FlowGraph::Block*, int> OrderMap;
 		OrderMap mOrder;
 	};
 }

@@ -8,9 +8,9 @@
 namespace Analysis {
 	static DominanceFrontiers::BlockSet emptyBlockSet;
 
-	DominatorTree::DominatorTree(BlockVector &blocks)
+	DominatorTree::DominatorTree(FlowGraph &flowGraph)
 	{
-		BlockSort sort(blocks);
+		BlockSort sort(flowGraph);
 		mBlocks = sort.sorted();
 
 		mIDoms[mBlocks[0]] = mBlocks[0];
@@ -19,18 +19,18 @@ namespace Analysis {
 		do {
 			changed = false;
 			for(unsigned int i=1; i<mBlocks.size(); i++) {
-				IR::Block *block = mBlocks[i];
-				IR::Block *newDom = 0;
-				for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-					IR::Block *pred = *it;
+				FlowGraph::Block *block = mBlocks[i];
+				FlowGraph::Block *newDom = 0;
+				for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+					FlowGraph::Block *pred = *it;
 
 					if(mIDoms[pred] == 0) {
 						continue;
 					}
 
 					if(newDom) {
-						IR::Block *a = pred;
-						IR::Block *b = newDom;
+						FlowGraph::Block *a = pred;
+						FlowGraph::Block *b = newDom;
 						while(a != b) {
 							while(sort.position(a) > sort.position(b))
 								a = mIDoms[a];
@@ -51,7 +51,7 @@ namespace Analysis {
 		} while(changed);
 	}
 
-	IR::Block *DominatorTree::idom(IR::Block *block)
+	FlowGraph::Block *DominatorTree::idom(FlowGraph::Block *block)
 	{
 		return mIDoms[block];
 	}
@@ -64,13 +64,13 @@ namespace Analysis {
 	DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
 	{
 		for(unsigned int i=0; i<tree.blocks().size(); i++) {
-			IR::Block *block = tree.blocks()[i];
+			FlowGraph::Block *block = tree.blocks()[i];
 
 			if(block->pred.size() < 2)
 				continue;
 
-			for(IR::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-				IR::Block *runner = *it;
+			for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+				FlowGraph::Block *runner = *it;
 				while(runner != tree.idom(block)) {
 					mFrontiers[runner].insert(block);
 					runner = tree.idom(runner);
@@ -79,9 +79,9 @@ namespace Analysis {
 		}
 	}
 
-	const DominanceFrontiers::BlockSet &DominanceFrontiers::frontiers(IR::Block *block) const
+	const DominanceFrontiers::BlockSet &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
 	{
-		std::map<IR::Block*, BlockSet>::const_iterator it = mFrontiers.find(block);
+		std::map<FlowGraph::Block*, BlockSet>::const_iterator it = mFrontiers.find(block);
 		if(it != mFrontiers.end()) {
 			return it->second;
 		} else {

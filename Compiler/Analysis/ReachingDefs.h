@@ -12,9 +12,11 @@ namespace IR {
 }
 
 namespace Analysis {
+	class FlowGraph;
+
 	class ReachingDefs {
 	public:
-		ReachingDefs(const std::vector<IR::Block*> &blocks);
+		ReachingDefs(FlowGraph &flowGraph);
 
 		typedef std::set<IR::Entry*> EntrySet;
 		typedef std::map<IR::Symbol*, EntrySet> SymbolToEntrySetMap;
@@ -28,7 +30,7 @@ namespace Analysis {
 		EntrySet createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill);
 
 		typedef std::map<IR::Entry*, EntrySet> EntryToEntrySetMap;
-		std::vector<IR::Block*> mBlocks;
+		FlowGraph &mFlowGraph;
 		EntryToEntrySetMap mDefs;
 	};
 }

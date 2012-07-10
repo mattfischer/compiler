@@ -1,6 +1,7 @@
 #include "Transform/SSA.h"
 
 #include "Analysis/Dominance.h"
+#include "Analysis/FlowGraph.h"
 
 #include "IR/Symbol.h"
 #include "IR/Procedure.h"
@@ -21,22 +22,22 @@ namespace Transform {
 		return ss.str();
 	}
 
-	void SSA::transform(IR::Procedure *proc)
+	void SSA::transform(IR::Procedure *proc, Analysis::FlowGraph &flowGraph)
 	{
 		std::vector<IR::Symbol*> newSymbols;
 
-		Analysis::DominatorTree domTree(proc->blocks());
+		Analysis::DominatorTree domTree(flowGraph);
 		Analysis::DominanceFrontiers domFrontiers(domTree);
 
 		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
 			IR::Symbol *symbol = *symIt;
-			std::queue<IR::Block*> blocks;
+			std::queue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(unsigned int j=0; j<proc->blocks().size(); j++) {
-				IR::Block *block = proc->blocks()[j];
-
-				for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+				Analysis::FlowGraph::Block *block = *blockIt;
+				IR::Block *irBlock = block->irBlock;
+				for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
 					if(entry->assigns(symbol)) {
 						blocks.push(block);
 					}
@@ -45,16 +46,17 @@ namespace Transform {
 
 			// Insert Phi functions
 			while(!blocks.empty()) {
-				IR::Block *block = blocks.front();
+				Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
 
 				const Analysis::DominanceFrontiers::BlockSet &frontiers = domFrontiers.frontiers(block);
 				for(Analysis::DominanceFrontiers::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
-					IR::Block *frontier = *frontIt;
-					IR::Entry *head = frontier->head()->next;
+					Analysis::FlowGraph::Block *frontier = *frontIt;
+					IR::Block *irFrontier = frontier->irBlock;
+					IR::Entry *head = irFrontier->head()->next;
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						frontier->prependEntry(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+						irFrontier->prependEntry(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -62,16 +64,17 @@ namespace Transform {
 
 			// Rename variables
 			int nextVersion = 0;
-			std::map<IR::Block*, IR::Symbol*> activeList;
-			activeList[proc->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
-			newSymbols.push_back(activeList[proc->start()]);
-			for(unsigned int j=0; j<proc->blocks().size(); j++) {
-				IR::Block *block = proc->blocks()[j];
+			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
+			activeList[flowGraph.start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
+			newSymbols.push_back(activeList[flowGraph.start()]);
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+				Analysis::FlowGraph::Block *block = *blockIt;
+				IR::Block *irBlock = block->irBlock;
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[domTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
-				for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+				for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
 					if(entry->uses(symbol)) {
 						entry->replaceUse(symbol, active);
 					}
@@ -87,14 +90,15 @@ namespace Transform {
 				}
 
 				// Propagate variable uses into Phi functions
-				for(IR::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-					IR::Block *succ = *it;
-					IR::Entry *head = succ->head()->next;
+				for(Analysis::FlowGraph::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+					Analysis::FlowGraph::Block *succ = *it;
+					IR::Block *irSucc = succ->irBlock;
+					IR::Entry *head = irSucc->head()->next;
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
-						for(IR::Block::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
-							IR::Block *pred = *it2;
+						for(Analysis::FlowGraph::Block::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
+							Analysis::FlowGraph::Block *pred = *it2;
 							if(pred == block) {
 								((IR::EntryPhi*)head)->setArg(l, active);
 								break;
