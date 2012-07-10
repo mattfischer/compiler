@@ -10,8 +10,6 @@ namespace IR {
 	public:
 		int number;
 		typedef std::set<Block*> BlockSet;
-		BlockSet pred;
-		BlockSet succ;
 
 		Block(int _number) : number(_number), headEntry(Entry::TypeNone), tailEntry(Entry::TypeNone) 
 		{

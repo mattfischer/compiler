@@ -123,21 +123,6 @@ namespace IR {
 	void Procedure::emit(Entry *entry)
 	{
 		mCurrentBlock->appendEntry(entry);
-
-		if(entry->type == Entry::TypeJump) {
-			EntryJump *jump = (EntryJump*)entry;
-
-			mCurrentBlock->succ.insert(jump->target);
-			jump->target->pred.insert(mCurrentBlock);
-		} else if(entry->type == Entry::TypeCJump) {
-			EntryCJump *cjump = (EntryCJump*)entry;
-
-			mCurrentBlock->succ.insert(cjump->trueTarget);
-			cjump->trueTarget->pred.insert(mCurrentBlock);
-
-			mCurrentBlock->succ.insert(cjump->falseTarget);
-			cjump->falseTarget->pred.insert(mCurrentBlock);
-		}
 	}
 
 	void Procedure::removeBlock(Block *block)

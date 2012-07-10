@@ -19,14 +19,20 @@ namespace Analysis {
 			Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
 
-			for(IR::Block::BlockSet::iterator it2 = irBlock->pred.begin(); it2 != irBlock->pred.end(); it2++) {
-				IR::Block *pred = *it2;
-				block->pred.insert(mBlockMap[pred]);
-			}
-
-			for(IR::Block::BlockSet::iterator it2 = irBlock->succ.begin(); it2 != irBlock->succ.end(); it2++) {
-				IR::Block *succ = *it2;
-				block->succ.insert(mBlockMap[succ]);
+			IR::Entry *tail = irBlock->tail()->prev;
+			if(tail->type == IR::Entry::TypeJump) {
+				IR::EntryJump *jump = (IR::EntryJump*)tail;
+				FlowGraph::Block *target = mBlockMap[jump->target];
+				block->succ.insert(target);
+				target->pred.insert(block);
+			} else if(tail->type == IR::Entry::TypeCJump) {
+				IR::EntryCJump *cJump = (IR::EntryCJump*)tail;
+				FlowGraph::Block *trueTarget = mBlockMap[cJump->trueTarget];
+				block->succ.insert(trueTarget);
+				trueTarget->pred.insert(block);
+				FlowGraph::Block *falseTarget = mBlockMap[cJump->falseTarget];
+				block->succ.insert(falseTarget);
+				falseTarget->pred.insert(block);
 			}
 		}
 
