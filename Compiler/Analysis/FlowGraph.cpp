@@ -18,22 +18,9 @@ namespace Analysis {
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
 			Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
-
 			IR::Entry *tail = irBlock->tail()->prev;
-			if(tail->type == IR::Entry::TypeJump) {
-				IR::EntryJump *jump = (IR::EntryJump*)tail;
-				FlowGraph::Block *target = mBlockMap[jump->target];
-				block->succ.insert(target);
-				target->pred.insert(block);
-			} else if(tail->type == IR::Entry::TypeCJump) {
-				IR::EntryCJump *cJump = (IR::EntryCJump*)tail;
-				FlowGraph::Block *trueTarget = mBlockMap[cJump->trueTarget];
-				block->succ.insert(trueTarget);
-				trueTarget->pred.insert(block);
-				FlowGraph::Block *falseTarget = mBlockMap[cJump->falseTarget];
-				block->succ.insert(falseTarget);
-				falseTarget->pred.insert(block);
-			}
+
+			addTail(block, tail);
 		}
 
 		mStart = mBlockMap[procedure->start()];
@@ -46,5 +33,36 @@ namespace Analysis {
 			Block *block = *it;
 			delete block;
 		}
+	}
+
+	void FlowGraph::addTail(Block *block, IR::Entry *entry)
+	{
+		mTailMap[entry] = block;
+		if(entry->type == IR::Entry::TypeJump) {
+			IR::EntryJump *jump = (IR::EntryJump*)entry;
+			FlowGraph::Block *target = mBlockMap[jump->target];
+			block->succ.insert(target);
+			target->pred.insert(block);
+		} else if(entry->type == IR::Entry::TypeCJump) {
+			IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
+			FlowGraph::Block *trueTarget = mBlockMap[cJump->trueTarget];
+			block->succ.insert(trueTarget);
+			trueTarget->pred.insert(block);
+			FlowGraph::Block *falseTarget = mBlockMap[cJump->falseTarget];
+			block->succ.insert(falseTarget);
+			falseTarget->pred.insert(block);
+		}
+	}
+
+	void FlowGraph::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	{
+		Block *block = mTailMap[oldEntry];
+		for(Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+			Block *succ = *it;
+			succ->pred.erase(block);
+		}
+		block->succ.clear();
+		mTailMap.erase(oldEntry);
+		addTail(block, newEntry);
 	}
 }

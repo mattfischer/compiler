@@ -6,6 +6,7 @@
 
 #include "Analysis/UseDefs.h"
 #include "Analysis/ReachingDefs.h"
+#include "Analysis/FlowGraph.h"
 
 #include <queue>
 
@@ -38,7 +39,7 @@ namespace Transform {
 		return ret;
 	}
 
-	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs)
+	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs, Analysis::FlowGraph &flowGraph)
 	{
 		std::queue<IR::Entry*> queue;
 
@@ -130,6 +131,7 @@ namespace Transform {
 						}
 						useDefs.replace(cJump, jump);
 						reachingDefs.replace(cJump, jump);
+						flowGraph.replace(cJump, jump);
 						cJump->replace(jump);
 						delete cJump;
 						break;
