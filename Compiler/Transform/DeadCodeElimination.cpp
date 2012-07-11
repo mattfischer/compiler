@@ -15,8 +15,9 @@ namespace Transform {
 			Analysis::FlowGraph::Block *block = *it;
 			if(block->pred.size() == 0 && block != flowGraph.start()) {
 				IR::Block *irBlock = block->irBlock;
-				for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
-					entry->remove();
+				for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+					IR::Entry *entry = *itEntry;
+					irBlock->entries.erase(entry);
 					useDefs.remove(entry);
 					reachingDefs.remove(entry);
 				}
@@ -25,7 +26,8 @@ namespace Transform {
 
 		for(unsigned int i=0; i<procedure->blocks().size(); i++) {
 			IR::Block *block = procedure->blocks()[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				switch(entry->type) {
 					case IR::Entry::TypeAdd:
 					case IR::Entry::TypeMult:
@@ -36,7 +38,7 @@ namespace Transform {
 						{
 							const Analysis::UseDefs::EntrySet &uses = useDefs.uses(entry);
 							if(uses.empty()) {
-								entry->remove();
+								block->entries.erase(entry);
 								useDefs.remove(entry);
 							}
 							break;

@@ -29,11 +29,6 @@ namespace IR {
 		Entry *prev;
 		Entry *next;
 
-		void insertAfter(Entry *entry);
-		void insertBefore(Entry *entry);
-		void remove();
-		void replace(Entry *entry);
-
 		Entry(Type _type) : type(_type), prev(0), next(0) {}
 		virtual ~Entry() {}
 

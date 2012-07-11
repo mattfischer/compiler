@@ -26,7 +26,8 @@ namespace Analysis {
 			FlowGraph::Block *block = *it;
 			IR::Block* irBlock = block->irBlock;
 			EntrySet out;
-			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				if(!entry->assignSymbol()) {
 					continue;
 				}
@@ -72,7 +73,8 @@ namespace Analysis {
 			FlowGraph::Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
 			EntrySet out = states[block].in;
-			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				mDefs[entry] = out;
 
 				if(entry->assignSymbol()) {
@@ -143,14 +145,15 @@ namespace Analysis {
 		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
-			for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				lineMap[entry] = line;
 				printf("%i: ", line);
 				entry->print();
 				printf(" -> ");
 				EntrySet d = defs(entry);
-				for(EntrySet::iterator it = d.begin(); it != d.end(); it++) {
-					IR::Entry *e = *it;
+				for(EntrySet::iterator it2 = d.begin(); it2 != d.end(); it++) {
+					IR::Entry *e = *it2;
 					printf("%i ", lineMap[e]);
 				}
 				printf("\n");

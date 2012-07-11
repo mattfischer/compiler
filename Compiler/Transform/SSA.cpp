@@ -38,7 +38,8 @@ namespace Transform {
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				IR::Block *irBlock = block->irBlock;
-				for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
+				for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+					IR::Entry *entry = *itEntry;
 					if(entry->assigns(symbol)) {
 						blocks.push(block);
 					}
@@ -54,10 +55,10 @@ namespace Transform {
 				for(Analysis::DominanceFrontiers::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
 					IR::Block *irFrontier = frontier->irBlock;
-					IR::Entry *head = irFrontier->head()->next;
+					IR::Entry *head = irFrontier->entries.front();
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						irFrontier->prependEntry(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+						irFrontier->entries.push_front(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -75,7 +76,8 @@ namespace Transform {
 					activeList[block] = activeList[domTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
-				for(IR::Entry *entry = irBlock->head()->next; entry != irBlock->tail(); entry = entry->next) {
+				for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+					IR::Entry *entry = *itEntry;
 					if(entry->uses(symbol)) {
 						entry->replaceUse(symbol, active);
 					}
@@ -94,7 +96,7 @@ namespace Transform {
 				for(Analysis::FlowGraph::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					Analysis::FlowGraph::Block *succ = *it;
 					IR::Block *irSucc = succ->irBlock;
-					IR::Entry *head = irSucc->head()->next;
+					IR::Entry *head = irSucc->entries.front();
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;

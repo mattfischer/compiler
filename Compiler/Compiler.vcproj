@@ -235,6 +235,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\IR\EntryList.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\IR\Procedure.cpp"
 					>
 				</File>
@@ -358,6 +362,10 @@
 				</File>
 				<File
 					RelativePath=".\IR\Entry.h"
+					>
+				</File>
+				<File
+					RelativePath=".\IR\EntryList.h"
 					>
 				</File>
 				<File

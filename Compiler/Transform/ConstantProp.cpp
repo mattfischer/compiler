@@ -9,6 +9,7 @@
 #include "Analysis/FlowGraph.h"
 
 #include <queue>
+#include <map>
 
 namespace Transform {
 	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, const Analysis::UseDefs &useDefs, bool &isConstant)
@@ -42,12 +43,15 @@ namespace Transform {
 	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs, Analysis::FlowGraph &flowGraph)
 	{
 		std::queue<IR::Entry*> queue;
+		std::map<IR::Entry*, IR::Block*> blockMap;
 
 		for(unsigned int i=0; i<procedure->blocks().size(); i++) {
 			IR::Block *block = procedure->blocks()[i];
 
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				queue.push(entry);
+				blockMap[entry] = block;
 			}
 		}
 
@@ -101,7 +105,9 @@ namespace Transform {
 						}
 
 						IR::Entry *imm = new IR::EntryImm(threeAddr->lhs, value);
-						threeAddr->replace(imm);
+						IR::Block *block = blockMap[threeAddr];
+						block->entries.insert(threeAddr, imm);
+						block->entries.erase(threeAddr);
 
 						const Analysis::UseDefs::EntrySet &entries = useDefs.uses(threeAddr);
 						for(Analysis::UseDefs::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
@@ -129,10 +135,16 @@ namespace Transform {
 						} else {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
+
+						IR::Block *block = blockMap[cJump];
+
 						useDefs.replace(cJump, jump);
 						reachingDefs.replace(cJump, jump);
 						flowGraph.replace(cJump, jump);
-						cJump->replace(jump);
+
+						block->entries.insert(cJump, jump);
+						block->entries.erase(cJump);
+
 						delete cJump;
 						break;
 					}

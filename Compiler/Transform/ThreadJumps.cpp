@@ -8,7 +8,7 @@ namespace Transform {
 	IR::Block *ThreadJumps::getJumpTarget(IR::Block *block)
 	{
 		for(;;) {
-			IR::Entry *entry = block->head()->next;
+			IR::Entry *entry = block->entries.front();
 			
 			if(entry->type != IR::Entry::TypeJump)
 				break;
@@ -24,7 +24,7 @@ namespace Transform {
 		// follow jumps
 		for(unsigned int j=0; j<proc->blocks().size(); j++) {
 			IR::Block *block = proc->blocks()[j];
-			IR::Entry *entry = block->tail()->prev;
+			IR::Entry *entry = block->entries.back();
 
 			if(entry->type == IR::Entry::TypeJump) {
 				IR::EntryJump *jump = (IR::EntryJump*)entry;

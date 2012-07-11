@@ -16,7 +16,8 @@ namespace Analysis {
 	{
 		for(unsigned int i=0; i<blocks.size(); i++) {
 			IR::Block *block = blocks[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				const EntrySet &defs = reachingDefs.defs(entry);
 				for(EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
 					IR::Entry *defEntry = *it;
@@ -130,7 +131,8 @@ namespace Analysis {
 		std::map<IR::Entry*, int> lineMap;
 		for(unsigned int i=0; i<mBlocks.size(); i++) {
 			IR::Block *block = mBlocks[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				lineMap[entry] = line;
 				line++;
 			}
@@ -138,7 +140,8 @@ namespace Analysis {
 
 		for(unsigned int i=0; i<mBlocks.size(); i++) {
 			IR::Block *block = mBlocks[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				printf("%i: ", lineMap[entry]);
 				entry->print();
 

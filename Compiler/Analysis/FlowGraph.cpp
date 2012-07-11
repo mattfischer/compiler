@@ -18,9 +18,11 @@ namespace Analysis {
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
 			Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
-			IR::Entry *tail = irBlock->tail()->prev;
+			IR::Entry *tail = irBlock->entries.back();
 
-			addTail(block, tail);
+			if(tail) {
+				addTail(block, tail);
+			}
 		}
 
 		mStart = mBlockMap[procedure->start()];

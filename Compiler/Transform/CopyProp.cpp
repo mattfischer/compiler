@@ -12,7 +12,8 @@ namespace Transform {
 	{
 		for(unsigned int i=0; i<procedure->blocks().size(); i++) {
 			IR::Block *block = procedure->blocks()[i];
-			for(IR::Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				if(entry->type != IR::Entry::TypeLoad) {
 					continue;
 				}

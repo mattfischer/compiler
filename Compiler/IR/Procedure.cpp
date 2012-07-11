@@ -30,7 +30,8 @@ namespace IR {
 		for(unsigned int i=0; i<mBlocks.size(); i++) {
 			Block *block = mBlocks[i];
 			printf("%sbb%i%s%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : "", (block == mEnd) ? " (end)" : "");
-			for(Entry *entry = block->head()->next; entry != block->tail(); entry = entry->next) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::Entry *entry = *itEntry;
 				entry->print(prefix + "  ");
 				printf("\n");
 			}
@@ -122,7 +123,7 @@ namespace IR {
 
 	void Procedure::emit(Entry *entry)
 	{
-		mCurrentBlock->appendEntry(entry);
+		mCurrentBlock->entries.push_back(entry);
 	}
 
 	void Procedure::removeBlock(Block *block)

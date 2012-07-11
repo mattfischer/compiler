@@ -4,38 +4,6 @@
 #include "IR/Block.h"
 
 namespace IR {
-	void Entry::insertAfter(Entry *entry)
-	{
-		next = entry->next;
-		prev = entry;
-		if(next)
-			next->prev = this;
-		entry->next = this;
-	}
-
-	void Entry::insertBefore(Entry *entry)
-	{
-		next = entry;
-		prev = entry->prev;
-		if(prev)
-			prev->next = this;
-		entry->prev = this;
-	}
-
-	void Entry::remove()
-	{
-		next->prev = prev;
-		prev->next = next;
-	}
-
-	void Entry::replace(Entry *entry)
-	{
-		entry->next = next;
-		entry->prev = prev;
-		next->prev = entry;
-		prev->next = entry;
-	}
-
 	static char* names[] = {
 		/* TypeNone		*/	"none	",
 		/* TypeLoad		*/	"load   ",
