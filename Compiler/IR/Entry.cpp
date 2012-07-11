@@ -198,17 +198,27 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryJump::EntryJump(Block *_target)
+	EntryLabel::EntryLabel(const std::string &_name, Block *_block)
+		: Entry(TypeLabel), name(_name), block(_block)
+	{
+	}
+
+	void EntryLabel::print(const std::string &prefix)
+	{
+		printf("%s%s:", prefix.c_str(), name.c_str());
+	}
+
+	EntryJump::EntryJump(EntryLabel *_target)
 		: Entry(TypeJump), target(_target)
 	{
 	}
 
 	void EntryJump::print(const std::string &prefix)
 	{
-		printf("%s%sbb%i", prefix.c_str(), names[type], target->number);
+		printf("%s%s%s", prefix.c_str(), names[type], target->name.c_str());
 	}
 
-	EntryCJump::EntryCJump(Symbol *_pred, Block *_trueTarget, Block *_falseTarget)
+	EntryCJump::EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
 		: Entry(TypeCJump), pred(_pred), trueTarget(_trueTarget), falseTarget(_falseTarget)
 	{
 		pred->uses++;
@@ -221,7 +231,7 @@ namespace IR {
 
 	void EntryCJump::print(const std::string &prefix)
 	{
-		printf("%s%s%s, bb%i, bb%i", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->number, falseTarget->number);
+		printf("%s%s%s, %s, %s", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->name.c_str(), falseTarget->name.c_str());
 	}
 
 	bool EntryCJump::uses(Symbol *symbol)

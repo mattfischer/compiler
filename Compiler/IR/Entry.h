@@ -18,6 +18,7 @@ namespace IR {
 			TypePrint,
 			TypeEqual,
 			TypeNequal,
+			TypeLabel,
 			TypeJump,
 			TypeCJump,
 			TypeNCJump,
@@ -75,20 +76,29 @@ namespace IR {
 		virtual Symbol *assignSymbol();
 	};
 
-	struct EntryJump : public Entry {
-		Block *target;
+	struct EntryLabel : public Entry {
+		std::string name;
+		Block *block;
 
-		EntryJump(Block *_target);
+		EntryLabel(const std::string &_name, Block *_block);
+
+		virtual void print(const std::string &prefix);
+	};
+
+	struct EntryJump : public Entry {
+		EntryLabel *target;
+
+		EntryJump(EntryLabel *_target);
 
 		virtual void print(const std::string &prefix);
 	};
 
 	struct EntryCJump : public Entry {
 		Symbol *pred;
-		Block *trueTarget;
-		Block *falseTarget;
+		EntryLabel *trueTarget;
+		EntryLabel *falseTarget;
 
-		EntryCJump(Symbol *_pred, Block *_trueTarget, Block *_falseTarget);
+		EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget);
 		virtual ~EntryCJump();
 
 		virtual void print(const std::string &prefix);

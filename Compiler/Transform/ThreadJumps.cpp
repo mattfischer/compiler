@@ -5,18 +5,18 @@
 #include "IR/Procedure.h"
 
 namespace Transform {
-	IR::Block *ThreadJumps::getJumpTarget(IR::Block *block)
+	IR::EntryLabel *ThreadJumps::getJumpTarget(IR::EntryLabel *label)
 	{
 		for(;;) {
-			IR::Entry *entry = block->entries.front();
+			IR::Entry *entry = label->next;
 			
 			if(entry->type != IR::Entry::TypeJump)
 				break;
 			
-			block = ((IR::EntryJump*)entry)->target;
+			label = ((IR::EntryJump*)entry)->target;
 		}
 
-		return block;
+		return label;
 	}
 
 	void ThreadJumps::transform(IR::Procedure *proc)
@@ -28,12 +28,12 @@ namespace Transform {
 
 			if(entry->type == IR::Entry::TypeJump) {
 				IR::EntryJump *jump = (IR::EntryJump*)entry;
-				IR::Block *target = getJumpTarget(jump->target);
+				IR::EntryLabel *target = getJumpTarget(jump->target);
 				jump->target = target;
 			} else if(entry->type == IR::Entry::TypeCJump) {
 				IR::EntryCJump *jump = (IR::EntryCJump*)entry;
-				IR::Block *trueTarget = getJumpTarget(jump->trueTarget);
-				IR::Block *falseTarget = getJumpTarget(jump->falseTarget);
+				IR::EntryLabel *trueTarget = getJumpTarget(jump->trueTarget);
+				IR::EntryLabel *falseTarget = getJumpTarget(jump->falseTarget);
 				jump->trueTarget = trueTarget;
 				jump->falseTarget = falseTarget;
 			}

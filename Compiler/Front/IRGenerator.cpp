@@ -19,7 +19,7 @@ namespace Front {
 	IR::Program *IRGenerator::generate()
 	{
 		processNode(mTree);
-		mProc->emit(new IR::EntryJump(mProc->end()));
+		mProc->emit(new IR::EntryJump(mProc->end()->label));
 
 		return mIR;
 	}
@@ -56,13 +56,13 @@ namespace Front {
 					IR::Block *trueBlock = mProc->newBlock();
 					IR::Block *nextBlock = mProc->newBlock();
 
-					mProc->emit(new IR::EntryCJump(lhs, trueBlock, nextBlock));
+					mProc->emit(new IR::EntryCJump(lhs, trueBlock->label, nextBlock->label));
 					
 					setCurrentBlock(trueBlock);
 					processNode(node->children[1]);
 
 					setCurrentBlock(trueBlock);
-					mProc->emit(new IR::EntryJump(nextBlock));
+					mProc->emit(new IR::EntryJump(nextBlock->label));
 
 					setCurrentBlock(nextBlock);
 				} else {
@@ -70,15 +70,15 @@ namespace Front {
 					IR::Block *falseBlock = mProc->newBlock();
 					IR::Block *nextBlock = mProc->newBlock();
 
-					mProc->emit(new IR::EntryCJump(lhs, trueBlock, falseBlock));
+					mProc->emit(new IR::EntryCJump(lhs, trueBlock->label, falseBlock->label));
 
 					setCurrentBlock(trueBlock);
 					processNode(node->children[1]);
-					mProc->emit(new IR::EntryJump(nextBlock));
+					mProc->emit(new IR::EntryJump(nextBlock->label));
 
 					setCurrentBlock(falseBlock);
 					processNode(node->children[2]);
-					mProc->emit(new IR::EntryJump(nextBlock));
+					mProc->emit(new IR::EntryJump(nextBlock->label));
 
 					setCurrentBlock(nextBlock);
 				}
@@ -90,14 +90,14 @@ namespace Front {
 					IR::Block *mainBlock = mProc->newBlock();
 					IR::Block *nextBlock = mProc->newBlock();
 
-					mProc->emit(new IR::EntryJump(testBlock));
+					mProc->emit(new IR::EntryJump(testBlock->label));
 					setCurrentBlock(testBlock);
 					lhs = processRValue(node->children[0]);
-					mProc->emit(new IR::EntryCJump(lhs, mainBlock, nextBlock));
+					mProc->emit(new IR::EntryCJump(lhs, mainBlock->label, nextBlock->label));
 
 					setCurrentBlock(mainBlock);
 					processNode(node->children[1]);
-					mProc->emit(new IR::EntryJump(testBlock));
+					mProc->emit(new IR::EntryJump(testBlock->label));
 
 					setCurrentBlock(nextBlock);
 					break;

@@ -10,12 +10,11 @@ namespace IR {
 	class Block {
 	public:
 		int number;
+		EntryLabel *label;
 
 		EntryList entries;
 
-		Block(int _number) : number(_number)
-		{
-		}
+		Block(int _number);
 	};
 }
 #endif

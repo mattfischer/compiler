@@ -42,15 +42,15 @@ namespace Analysis {
 		mTailMap[entry] = block;
 		if(entry->type == IR::Entry::TypeJump) {
 			IR::EntryJump *jump = (IR::EntryJump*)entry;
-			FlowGraph::Block *target = mBlockMap[jump->target];
+			FlowGraph::Block *target = mBlockMap[jump->target->block];
 			block->succ.insert(target);
 			target->pred.insert(block);
 		} else if(entry->type == IR::Entry::TypeCJump) {
 			IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
-			FlowGraph::Block *trueTarget = mBlockMap[cJump->trueTarget];
+			FlowGraph::Block *trueTarget = mBlockMap[cJump->trueTarget->block];
 			block->succ.insert(trueTarget);
 			trueTarget->pred.insert(block);
-			FlowGraph::Block *falseTarget = mBlockMap[cJump->falseTarget];
+			FlowGraph::Block *falseTarget = mBlockMap[cJump->falseTarget->block];
 			block->succ.insert(falseTarget);
 			falseTarget->pred.insert(block);
 		}

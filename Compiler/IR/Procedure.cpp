@@ -111,6 +111,7 @@ namespace IR {
 	Block *Procedure::newBlock()
 	{
 		Block *block = new Block((int)mBlocks.size());
+
 		mBlocks.push_back(block);
 
 		return block;

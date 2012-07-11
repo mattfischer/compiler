@@ -4,6 +4,7 @@
 namespace IR {
 	class Procedure;
 	class Block;
+	struct EntryLabel;
 }
 
 namespace Transform {
@@ -12,7 +13,7 @@ namespace Transform {
 		static void transform(IR::Procedure *procedure);
 
 	private:
-		static IR::Block *getJumpTarget(IR::Block *block);
+		static IR::EntryLabel *getJumpTarget(IR::EntryLabel *label);
 	};
 }
 
