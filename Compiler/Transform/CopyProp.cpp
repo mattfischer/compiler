@@ -21,16 +21,16 @@ namespace Transform {
 				IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 				IR::Symbol *oldSymbol = threeAddr->lhs;
 				IR::Symbol *newSymbol = threeAddr->rhs1;
-				Analysis::ReachingDefs::EntrySet oldDefs = reachingDefs.defsForSymbol(entry, newSymbol);
+				IR::EntrySet oldDefs = reachingDefs.defsForSymbol(entry, newSymbol);
 
-				Analysis::UseDefs::EntrySet uses = useDefs.uses(entry);
-				for(Analysis::UseDefs::EntrySet::const_iterator it = uses.begin(); it != uses.end(); it++) {
+				IR::EntrySet uses = useDefs.uses(entry);
+				for(IR::EntrySet::const_iterator it = uses.begin(); it != uses.end(); it++) {
 					IR::Entry *use = *it;
 					if(useDefs.defines(use, oldSymbol).size() > 1) {
 						continue;
 					}
 
-					Analysis::ReachingDefs::EntrySet newDefs = reachingDefs.defsForSymbol(use, newSymbol);
+					IR::EntrySet newDefs = reachingDefs.defsForSymbol(use, newSymbol);
 					if(oldDefs != newDefs) {
 						continue;
 					}

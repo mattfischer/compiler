@@ -369,6 +369,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\IR\EntrySet.h"
+					>
+				</File>
+				<File
 					RelativePath=".\IR\Procedure.h"
 					>
 				</File>

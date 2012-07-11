@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 namespace Analysis {
-	static UseDefs::EntrySet emptyEntrySet;
+	static IR::EntrySet emptyEntrySet;
 
 	UseDefs::UseDefs(const std::vector<IR::Block*> &blocks, const ReachingDefs &reachingDefs)
 	: mBlocks(blocks), mReachingDefs(reachingDefs)
@@ -18,8 +18,8 @@ namespace Analysis {
 			IR::Block *block = blocks[i];
 			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
-				const EntrySet &defs = reachingDefs.defs(entry);
-				for(EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
+				const IR::EntrySet &defs = reachingDefs.defs(entry);
+				for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
 					IR::Entry *defEntry = *it;
 					IR::Symbol *symbol = defEntry->assignSymbol();
 					if(entry->uses(symbol)) {
@@ -31,9 +31,9 @@ namespace Analysis {
 		}
 	}
 
-	const UseDefs::EntrySet &UseDefs::uses(IR::Entry *define) const
+	const IR::EntrySet &UseDefs::uses(IR::Entry *define) const
 	{
-		std::map<IR::Entry*, EntrySet>::const_iterator it = mUses.find(define);
+		std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(define);
 		if(it != mUses.end()) {
 			return it->second;
 		} else {
@@ -41,7 +41,7 @@ namespace Analysis {
 		}
 	}
 
-	const std::set<IR::Entry*> &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
+	const IR::EntrySet &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
 	{
 		std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(use);
 		if(it != mDefines.end()) {
@@ -61,15 +61,15 @@ namespace Analysis {
 	{
 		SymbolToEntrySetMap &map = mDefines[oldEntry];
 		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
-			EntrySet &defs = it->second;
-			for(EntrySet::iterator it2 = defs.begin(); it2 != defs.end(); it2++) {
+			IR::EntrySet &defs = it->second;
+			for(IR::EntrySet::iterator it2 = defs.begin(); it2 != defs.end(); it2++) {
 				IR::Entry *use = *it2;
 				mUses[use].erase(oldEntry);
 			}
 		}
 		mDefines.erase(oldEntry);
-		const ReachingDefs::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
-		for(ReachingDefs::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
+		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
+		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
 			IR::Entry *def = *it;
 			IR::Symbol *symbol = def->assignSymbol();
 			if(newEntry->uses(symbol)) {
@@ -79,10 +79,10 @@ namespace Analysis {
 
 		mUses[newEntry] = mUses[oldEntry];
 		mUses.erase(oldEntry);
-		EntrySet &uses = mUses[newEntry];
-		for(EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+		IR::EntrySet &uses = mUses[newEntry];
+		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
 			IR::Entry *use = *it;
-			EntrySet &defs = mDefines[use][newEntry->assignSymbol()];
+			IR::EntrySet &defs = mDefines[use][newEntry->assignSymbol()];
 			defs.erase(oldEntry);
 			defs.insert(newEntry);
 		}
@@ -92,16 +92,16 @@ namespace Analysis {
 	{
 		SymbolToEntrySetMap &map = mDefines[entry];
 		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
-			EntrySet &defSet = it->second;
-			for(EntrySet::iterator it2 = defSet.begin(); it2 != defSet.end(); it2++) {
+			IR::EntrySet &defSet = it->second;
+			for(IR::EntrySet::iterator it2 = defSet.begin(); it2 != defSet.end(); it2++) {
 				IR::Entry *def = *it2;
 				mUses[def].erase(entry);
 			}
 		}
 		mDefines.erase(entry);
 
-		EntrySet &uses = mUses[entry];
-		for(EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+		IR::EntrySet &uses = mUses[entry];
+		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
 			IR::Entry *use = *it;
 			mDefines[use][entry->assignSymbol()].erase(entry);
 		}
@@ -110,15 +110,15 @@ namespace Analysis {
 
 	void UseDefs::replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol)
 	{
-		EntrySet &oldDefs = mDefines[entry][oldSymbol];
-		for(EntrySet::iterator it = oldDefs.begin(); it != oldDefs.end(); it++) {
+		IR::EntrySet &oldDefs = mDefines[entry][oldSymbol];
+		for(IR::EntrySet::iterator it = oldDefs.begin(); it != oldDefs.end(); it++) {
 			IR::Entry *def = *it;
 			mUses[def].erase(entry);
 		}
 		mDefines[entry].erase(oldSymbol);
 
-		const ReachingDefs::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
-		for(ReachingDefs::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
+		const IR::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
+		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
 			IR::Entry *def = *it;
 			mUses[def].insert(entry);
 		}
@@ -148,11 +148,11 @@ namespace Analysis {
 				printf(" || ");
 
 				{
-					std::map<IR::Entry*, EntrySet>::const_iterator it = mUses.find(entry);
+					std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(entry);
 					if(it != mUses.end()) {
 						printf("Uses: ");
-						const EntrySet &u = it->second;
-						for(EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
+						const IR::EntrySet &u = it->second;
+						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
 							IR::Entry *e = *it;
 							printf("%i ", lineMap[e]);
 						}
@@ -165,7 +165,7 @@ namespace Analysis {
 						const SymbolToEntrySetMap &defs = it->second;
 						for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
 							printf(" | Defs (%s): ", it->first->name.c_str());
-							for(EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+							for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
 								IR::Entry *e = *it2;
 								printf("%i ", lineMap[e]);
 							}

@@ -10,19 +10,16 @@
 namespace Analysis {
 	class DominatorTree {
 	public:
-		typedef std::vector<FlowGraph::Block*> BlockVector;
-
 		DominatorTree(FlowGraph &flowGraph);
 
-		const BlockVector &blocks() const;
+		const FlowGraph::BlockVector &blocks() const;
 		FlowGraph::Block *idom(FlowGraph::Block *block);
 
 	private:
-		typedef std::set<FlowGraph::Block*> BlockSet;
-		void topoSortRecurse(FlowGraph::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
-		BlockVector topologicalSort(BlockVector &blocks);
+		void topoSortRecurse(FlowGraph::Block *block, FlowGraph::BlockVector &blocks, FlowGraph::BlockSet &seenBlocks);
+		FlowGraph::BlockVector topologicalSort(FlowGraph::BlockVector &blocks);
 
-		BlockVector mBlocks;
+		FlowGraph::BlockVector mBlocks;
 		std::map<FlowGraph::Block*, FlowGraph::Block*> mIDoms;
 	};
 }

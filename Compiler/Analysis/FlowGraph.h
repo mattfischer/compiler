@@ -2,6 +2,7 @@
 #define ANALYSIS_FLOW_GRAPH_H
 
 #include <set>
+#include <vector>
 #include <map>
 
 namespace IR {
@@ -13,9 +14,11 @@ namespace IR {
 namespace Analysis {
 	class FlowGraph {
 	public:
-		struct Block {
-			typedef std::set<Block*> BlockSet;
+		struct Block;
+		typedef std::set<Block*> BlockSet;
+		typedef std::vector<Block*> BlockVector;
 
+		struct Block {
 			BlockSet pred;
 			BlockSet succ;
 			IR::Block *irBlock;
@@ -29,7 +32,6 @@ namespace Analysis {
 		Block *start() const { return mStart; }
 		Block *end() const { return mEnd; }
 
-		typedef std::set<Block*> BlockSet;
 		BlockSet &blocks() { return mBlockSet; }
 
 	private:

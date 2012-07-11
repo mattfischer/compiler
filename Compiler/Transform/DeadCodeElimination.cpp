@@ -36,7 +36,7 @@ namespace Transform {
 					case IR::Entry::TypeEqual:
 					case IR::Entry::TypeNequal:
 						{
-							const Analysis::UseDefs::EntrySet &uses = useDefs.uses(entry);
+							const IR::EntrySet &uses = useDefs.uses(entry);
 							if(uses.empty()) {
 								block->entries.erase(entry);
 								useDefs.remove(entry);

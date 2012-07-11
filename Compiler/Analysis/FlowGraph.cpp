@@ -59,7 +59,7 @@ namespace Analysis {
 	void FlowGraph::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
 	{
 		Block *block = mTailMap[oldEntry];
-		for(Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+		for(BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 			Block *succ = *it;
 			succ->pred.erase(block);
 		}

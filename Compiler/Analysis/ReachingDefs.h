@@ -1,6 +1,8 @@
 #ifndef ANALYSIS_REACHING_DEFS_H
 #define ANALYSIS_REACHING_DEFS_H
 
+#include "IR/EntrySet.h"
+
 #include <vector>
 #include <set>
 #include <map>
@@ -18,19 +20,18 @@ namespace Analysis {
 	public:
 		ReachingDefs(FlowGraph &flowGraph);
 
-		typedef std::set<IR::Entry*> EntrySet;
-		typedef std::map<IR::Symbol*, EntrySet> SymbolToEntrySetMap;
-		const EntrySet &defs(IR::Entry* entry) const;
-		const EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
+		typedef std::map<IR::Symbol*, IR::EntrySet> SymbolToEntrySetMap;
+		const IR::EntrySet &defs(IR::Entry* entry) const;
+		const IR::EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void remove(IR::Entry *entry);
 		void print() const;
 
 	private:
-		EntrySet createKillSet(const EntrySet &in, const EntrySet &gen);
-		EntrySet createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill);
+		IR::EntrySet createKillSet(const IR::EntrySet &in, const IR::EntrySet &gen);
+		IR::EntrySet createOutSet(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill);
 
-		typedef std::map<IR::Entry*, EntrySet> EntryToEntrySetMap;
+		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 		FlowGraph &mFlowGraph;
 		EntryToEntrySetMap mDefs;
 	};

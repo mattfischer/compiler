@@ -17,8 +17,8 @@ namespace Transform {
 		isConstant = false;
 		int ret = 0;
 
-		const Analysis::UseDefs::EntrySet &set = useDefs.defines(entry, symbol);
-		for(Analysis::UseDefs::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
+		const IR::EntrySet &set = useDefs.defines(entry, symbol);
+		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 			IR::Entry *def = *it;
 			if(def->type != IR::Entry::TypeLoadImm) {
 				ret = 0;
@@ -109,8 +109,8 @@ namespace Transform {
 						block->entries.insert(threeAddr, imm);
 						block->entries.erase(threeAddr);
 
-						const Analysis::UseDefs::EntrySet &entries = useDefs.uses(threeAddr);
-						for(Analysis::UseDefs::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+						const IR::EntrySet &entries = useDefs.uses(threeAddr);
+						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 							queue.push(*it);
 						}
 

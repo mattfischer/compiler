@@ -9,33 +9,33 @@
 
 namespace Analysis {
 	struct InOut {
-		ReachingDefs::EntrySet in;
-		ReachingDefs::EntrySet out;
+		IR::EntrySet in;
+		IR::EntrySet out;
 	};
 
-	static ReachingDefs::EntrySet emptyEntrySet;
+	static IR::EntrySet emptyEntrySet;
 
 	ReachingDefs::ReachingDefs(FlowGraph &flowGraph)
 		: mFlowGraph(flowGraph)
 	{
 		std::map<FlowGraph::Block*, InOut> states;
-		std::map<FlowGraph::Block*, EntrySet> gen;
+		std::map<FlowGraph::Block*, IR::EntrySet> gen;
 		std::queue<FlowGraph::Block*> blockQueue;
 
 		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::Block* irBlock = block->irBlock;
-			EntrySet out;
+			IR::EntrySet out;
 			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				if(!entry->assignSymbol()) {
 					continue;
 				}
 
-				EntrySet g;
+				IR::EntrySet g;
 				g.insert(entry);
 
-				EntrySet k = createKillSet(out, g);
+				IR::EntrySet k = createKillSet(out, g);
 				out = createOutSet(out, g, k);
 			}
 			gen[block] = out;
@@ -51,18 +51,18 @@ namespace Analysis {
 			blockQueue.pop();
 
 			states[block].in.clear();
-			for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+			for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
 				FlowGraph::Block *pred = *it;
-				EntrySet &out = states[pred].out;
+				IR::EntrySet &out = states[pred].out;
 				states[block].in.insert(out.begin(), out.end());
 			}
 
-			EntrySet kill = createKillSet(states[block].in, gen[block]);
-			EntrySet newOut = createOutSet(states[block].in, gen[block], kill);
+			IR::EntrySet kill = createKillSet(states[block].in, gen[block]);
+			IR::EntrySet newOut = createOutSet(states[block].in, gen[block], kill);
 
 			if(newOut != states[block].out) {
 				states[block].out = newOut;
-				for(FlowGraph::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+				for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					FlowGraph::Block *succ = *it;
 					blockQueue.push(succ);
 				}
@@ -72,25 +72,25 @@ namespace Analysis {
 		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::Block *irBlock = block->irBlock;
-			EntrySet out = states[block].in;
+			IR::EntrySet out = states[block].in;
 			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				mDefs[entry] = out;
 
 				if(entry->assignSymbol()) {
-					EntrySet g;
+					IR::EntrySet g;
 					g.insert(entry);
 
-					EntrySet k = createKillSet(out, g);
+					IR::EntrySet k = createKillSet(out, g);
 					out = createOutSet(out, g, k);
 				}
 			}
 		}
 	}
 
-	const ReachingDefs::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
+	const IR::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
 	{
-		std::map<IR::Entry*, EntrySet>::const_iterator it = mDefs.find(entry);
+		std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mDefs.find(entry);
 		if(it != mDefs.end()) {
 			return it->second;
 		} else {
@@ -98,11 +98,11 @@ namespace Analysis {
 		}
 	}
 
-	const ReachingDefs::EntrySet ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
+	const IR::EntrySet ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
 	{
-		EntrySet result;
-		const EntrySet &all = defs(entry);
-		for(EntrySet::const_iterator it = all.begin(); it != all.end(); it++) {
+		IR::EntrySet result;
+		const IR::EntrySet &all = defs(entry);
+		for(IR::EntrySet::const_iterator it = all.begin(); it != all.end(); it++) {
 			IR::Entry *def = *it;
 			if(def->assignSymbol() == symbol) {
 				result.insert(def);
@@ -117,8 +117,8 @@ namespace Analysis {
 		mDefs[newEntry] = mDefs[oldEntry];
 		mDefs.erase(oldEntry);
 		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
-			EntrySet &set = it->second;
-			EntrySet::iterator setIt = set.find(oldEntry);
+			IR::EntrySet &set = it->second;
+			IR::EntrySet::iterator setIt = set.find(oldEntry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 				set.insert(newEntry);
@@ -129,8 +129,8 @@ namespace Analysis {
 	void ReachingDefs::remove(IR::Entry *entry)
 	{
 		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
-			EntrySet &set = it->second;
-			EntrySet::iterator setIt = set.find(entry);
+			IR::EntrySet &set = it->second;
+			IR::EntrySet::iterator setIt = set.find(entry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 			}
@@ -151,8 +151,8 @@ namespace Analysis {
 				printf("%i: ", line);
 				entry->print();
 				printf(" -> ");
-				EntrySet d = defs(entry);
-				for(EntrySet::iterator it2 = d.begin(); it2 != d.end(); it++) {
+				IR::EntrySet d = defs(entry);
+				for(IR::EntrySet::iterator it2 = d.begin(); it2 != d.end(); it++) {
 					IR::Entry *e = *it2;
 					printf("%i ", lineMap[e]);
 				}
@@ -162,12 +162,12 @@ namespace Analysis {
 		}
 	}
 
-	ReachingDefs::EntrySet ReachingDefs::createKillSet(const EntrySet &in, const EntrySet &gen)
+	IR::EntrySet ReachingDefs::createKillSet(const IR::EntrySet &in, const IR::EntrySet &gen)
 	{
-		EntrySet kill;
-		for(EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
+		IR::EntrySet kill;
+		for(IR::EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
 			IR::Entry *entry = *it;
-			for(EntrySet::const_iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
+			for(IR::EntrySet::const_iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
 				IR::Entry *genEntry = *it2;
 				if(genEntry->assignSymbol() == entry->assignSymbol()) {
 					kill.insert(entry);
@@ -178,10 +178,10 @@ namespace Analysis {
 		return kill;
 	}
 
-	ReachingDefs::EntrySet ReachingDefs::createOutSet(const EntrySet &in, const EntrySet &gen, const EntrySet &kill)
+	IR::EntrySet ReachingDefs::createOutSet(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill)
 	{
-		EntrySet out(gen.begin(), gen.end());
-		for(EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
+		IR::EntrySet out(gen.begin(), gen.end());
+		for(IR::EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
 			IR::Entry *entry = *it;
 			if(kill.find(entry) == kill.end()) {
 				out.insert(entry);

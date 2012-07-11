@@ -10,17 +10,15 @@
 namespace Analysis {
 	class BlockSort {
 	public:
-		typedef std::vector<FlowGraph::Block*> BlockVector;
 		BlockSort(FlowGraph &flowGraph);
 
-		const BlockVector &sorted() const;
+		const FlowGraph::BlockVector &sorted() const;
 		int position(FlowGraph::Block *block) const;
 
 	private:
-		typedef std::set<FlowGraph::Block*> BlockSet;
-		void sortRecurse(FlowGraph::Block *block, BlockVector &blocks, BlockSet &seenBlocks);
+		void sortRecurse(FlowGraph::Block *block, FlowGraph::BlockVector &blocks, FlowGraph::BlockSet &seenBlocks);
 
-		BlockVector mSorted;
+		FlowGraph::BlockVector mSorted;
 		typedef std::map<FlowGraph::Block*, int> OrderMap;
 		OrderMap mOrder;
 	};

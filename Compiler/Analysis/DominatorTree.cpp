@@ -19,7 +19,7 @@ namespace Analysis {
 			for(unsigned int i=1; i<mBlocks.size(); i++) {
 				FlowGraph::Block *block = mBlocks[i];
 				FlowGraph::Block *newDom = 0;
-				for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+				for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
 					FlowGraph::Block *pred = *it;
 
 					if(mIDoms[pred] == 0) {
@@ -54,7 +54,7 @@ namespace Analysis {
 		return mIDoms[block];
 	}
 
-	const DominatorTree::BlockVector &DominatorTree::blocks() const
+	const FlowGraph::BlockVector &DominatorTree::blocks() const
 	{
 		return mBlocks;
 	}

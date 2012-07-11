@@ -3,7 +3,7 @@
 #include "Analysis/DominatorTree.h"
 
 namespace Analysis {
-	static DominanceFrontiers::BlockSet emptyBlockSet;
+	static FlowGraph::BlockSet emptyBlockSet;
 
 	DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
 	{
@@ -13,7 +13,7 @@ namespace Analysis {
 			if(block->pred.size() < 2)
 				continue;
 
-			for(FlowGraph::Block::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+			for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
 				FlowGraph::Block *runner = *it;
 				while(runner != tree.idom(block)) {
 					mFrontiers[runner].insert(block);
@@ -23,9 +23,9 @@ namespace Analysis {
 		}
 	}
 
-	const DominanceFrontiers::BlockSet &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
+	const FlowGraph::BlockSet &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
 	{
-		std::map<FlowGraph::Block*, BlockSet>::const_iterator it = mFrontiers.find(block);
+		std::map<FlowGraph::Block*, FlowGraph::BlockSet>::const_iterator it = mFrontiers.find(block);
 		if(it != mFrontiers.end()) {
 			return it->second;
 		} else {

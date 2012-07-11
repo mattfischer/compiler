@@ -13,11 +13,10 @@ namespace Analysis {
 	public:
 		DominanceFrontiers(DominatorTree &tree);
 
-		typedef std::set<FlowGraph::Block*> BlockSet;
-		const BlockSet &frontiers(FlowGraph::Block *block) const;
+		const FlowGraph::BlockSet &frontiers(FlowGraph::Block *block) const;
 
 	private:
-		std::map<FlowGraph::Block*, BlockSet> mFrontiers;
+		std::map<FlowGraph::Block*, FlowGraph::BlockSet> mFrontiers;
 	};
 }
 #endif

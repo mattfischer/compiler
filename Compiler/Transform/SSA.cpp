@@ -51,8 +51,8 @@ namespace Transform {
 				Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
 
-				const Analysis::DominanceFrontiers::BlockSet &frontiers = domFrontiers.frontiers(block);
-				for(Analysis::DominanceFrontiers::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
+				const Analysis::FlowGraph::BlockSet &frontiers = domFrontiers.frontiers(block);
+				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
 					IR::Block *irFrontier = frontier->irBlock;
 					IR::Entry *head = irFrontier->entries.front();
@@ -93,14 +93,14 @@ namespace Transform {
 				}
 
 				// Propagate variable uses into Phi functions
-				for(Analysis::FlowGraph::Block::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+				for(Analysis::FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					Analysis::FlowGraph::Block *succ = *it;
 					IR::Block *irSucc = succ->irBlock;
 					IR::Entry *head = irSucc->entries.front();
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
-						for(Analysis::FlowGraph::Block::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
+						for(Analysis::FlowGraph::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
 							Analysis::FlowGraph::Block *pred = *it2;
 							if(pred == block) {
 								((IR::EntryPhi*)head)->setArg(l, active);
