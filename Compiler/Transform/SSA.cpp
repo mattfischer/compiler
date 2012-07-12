@@ -55,10 +55,10 @@ namespace Transform {
 				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
 					IR::Block *irFrontier = frontier->irBlock;
-					IR::Entry *head = irFrontier->entries.front();
+					IR::Entry *head = irFrontier->label->next;
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						irFrontier->entries.push_front(new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+						irFrontier->entries.insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -95,8 +95,7 @@ namespace Transform {
 				// Propagate variable uses into Phi functions
 				for(Analysis::FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					Analysis::FlowGraph::Block *succ = *it;
-					IR::Block *irSucc = succ->irBlock;
-					IR::Entry *head = irSucc->entries.front();
+					IR::Entry *head = succ->label->next;
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
