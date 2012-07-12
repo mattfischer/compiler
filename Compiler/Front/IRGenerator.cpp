@@ -5,7 +5,6 @@
 
 #include "IR/Program.h"
 #include "IR/Procedure.h"
-#include "IR/Block.h"
 #include "IR/Entry.h"
 
 namespace Front {
@@ -19,7 +18,6 @@ namespace Front {
 	IR::Program *IRGenerator::generate()
 	{
 		processNode(mTree);
-		mProc->emit(new IR::EntryJump(mProc->end()->label));
 
 		return mIR;
 	}
@@ -53,53 +51,46 @@ namespace Front {
 			case SyntaxNode::NodeTypeIf:
 				lhs = processRValue(node->children[0]);
 				if(node->numChildren == 2) {
-					IR::Block *trueBlock = mProc->newBlock();
-					IR::Block *nextBlock = mProc->newBlock();
+					IR::EntryLabel *trueLabel = mProc->newLabel();
+					IR::EntryLabel *nextLabel = mProc->newLabel();
 
-					mProc->emit(new IR::EntryCJump(lhs, trueBlock->label, nextBlock->label));
-					
-					setCurrentBlock(trueBlock);
+					mProc->emit(new IR::EntryCJump(lhs, trueLabel, nextLabel));
+					mProc->emit(trueLabel);
 					processNode(node->children[1]);
-
-					setCurrentBlock(trueBlock);
-					mProc->emit(new IR::EntryJump(nextBlock->label));
-
-					setCurrentBlock(nextBlock);
+					mProc->emit(new IR::EntryJump(nextLabel));
+					mProc->emit(nextLabel);
 				} else {
-					IR::Block *trueBlock = mProc->newBlock();
-					IR::Block *falseBlock = mProc->newBlock();
-					IR::Block *nextBlock = mProc->newBlock();
+					IR::EntryLabel *trueLabel = mProc->newLabel();
+					IR::EntryLabel *falseLabel = mProc->newLabel();
+					IR::EntryLabel *nextLabel = mProc->newLabel();
 
-					mProc->emit(new IR::EntryCJump(lhs, trueBlock->label, falseBlock->label));
-
-					setCurrentBlock(trueBlock);
+					mProc->emit(new IR::EntryCJump(lhs, trueLabel, falseLabel));
+					mProc->emit(trueLabel);
 					processNode(node->children[1]);
-					mProc->emit(new IR::EntryJump(nextBlock->label));
-
-					setCurrentBlock(falseBlock);
+					mProc->emit(new IR::EntryJump(nextLabel));
+					mProc->emit(falseLabel);
 					processNode(node->children[2]);
-					mProc->emit(new IR::EntryJump(nextBlock->label));
-
-					setCurrentBlock(nextBlock);
+					mProc->emit(new IR::EntryJump(nextLabel));
+					mProc->emit(nextLabel);
 				}
 				break;
 
 			case SyntaxNode::NodeTypeWhile:
 				{
-					IR::Block *testBlock = mProc->newBlock();
-					IR::Block *mainBlock = mProc->newBlock();
-					IR::Block *nextBlock = mProc->newBlock();
+					IR::EntryLabel *testLabel = mProc->newLabel();
+					IR::EntryLabel *mainLabel = mProc->newLabel();
+					IR::EntryLabel *nextLabel = mProc->newLabel();
 
-					mProc->emit(new IR::EntryJump(testBlock->label));
-					setCurrentBlock(testBlock);
+					mProc->emit(new IR::EntryJump(testLabel));
+					mProc->emit(testLabel);
 					lhs = processRValue(node->children[0]);
-					mProc->emit(new IR::EntryCJump(lhs, mainBlock->label, nextBlock->label));
+					mProc->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
+					mProc->emit(mainLabel);
 
-					setCurrentBlock(mainBlock);
 					processNode(node->children[1]);
-					mProc->emit(new IR::EntryJump(testBlock->label));
+					mProc->emit(new IR::EntryJump(testLabel));
 
-					setCurrentBlock(nextBlock);
+					mProc->emit(nextLabel);
 					break;
 				}
 		}
@@ -152,10 +143,5 @@ namespace Front {
 		}
 
 		return result;
-	}
-
-	void IRGenerator::setCurrentBlock(IR::Block *block)
-	{
-		mProc->setCurrentBlock(block);
 	}
 }

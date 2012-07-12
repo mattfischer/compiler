@@ -3,7 +3,7 @@
 #include "Analysis/FlowGraph.h"
 
 #include "IR/Entry.h"
-#include "IR/Block.h"
+#include "IR/Procedure.h"
 
 #include <queue>
 
@@ -15,18 +15,19 @@ namespace Analysis {
 
 	static IR::EntrySet emptyEntrySet;
 
-	ReachingDefs::ReachingDefs(FlowGraph &flowGraph)
+	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph)
 		: mFlowGraph(flowGraph)
 	{
 		std::map<FlowGraph::Block*, InOut> states;
 		std::map<FlowGraph::Block*, IR::EntrySet> gen;
 		std::queue<FlowGraph::Block*> blockQueue;
 
+		mProcedure = procedure;
+
 		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
-			IR::Block* irBlock = block->irBlock;
 			IR::EntrySet out;
-			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+			for(IR::EntryList::iterator itEntry = procedure->entries().find(block->label); itEntry != procedure->entries().find(block->end->next); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				if(!entry->assignSymbol()) {
 					continue;
@@ -71,9 +72,8 @@ namespace Analysis {
 
 		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
-			IR::Block *irBlock = block->irBlock;
 			IR::EntrySet out = states[block].in;
-			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+			for(IR::EntryList::iterator itEntry = procedure->entries().find(block->label); itEntry != procedure->entries().find(block->end->next); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				mDefs[entry] = out;
 
@@ -142,23 +142,20 @@ namespace Analysis {
 	{
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
-		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
-			FlowGraph::Block *block = *it;
-			IR::Block *irBlock = block->irBlock;
-			for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				lineMap[entry] = line;
-				printf("%i: ", line);
-				entry->print();
-				printf(" -> ");
-				IR::EntrySet d = defs(entry);
-				for(IR::EntrySet::iterator it2 = d.begin(); it2 != d.end(); it++) {
-					IR::Entry *e = *it2;
-					printf("%i ", lineMap[e]);
-				}
-				printf("\n");
-				line++;
+
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			lineMap[entry] = line;
+			printf("%i: ", line);
+			entry->print();
+			printf(" -> ");
+			IR::EntrySet d = defs(entry);
+			for(IR::EntrySet::iterator it2 = d.begin(); it2 != d.end(); it2++) {
+				IR::Entry *e = *it2;
+				printf("%i ", lineMap[e]);
 			}
+			printf("\n");
+			line++;
 		}
 	}
 

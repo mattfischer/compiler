@@ -8,9 +8,9 @@
 #include "IR/EntrySet.h"
 
 namespace IR {
-	class Block;
 	class Entry;
 	class Symbol;
+	class Procedure;
 }
 
 namespace Analysis {
@@ -19,7 +19,7 @@ namespace Analysis {
 	class UseDefs
 	{
 	public:
-		UseDefs(const std::vector<IR::Block*> &blocks, const ReachingDefs &reachingDefs);
+		UseDefs(IR::Procedure *procedure, const ReachingDefs &reachingDefs);
 
 		const IR::EntrySet &uses(IR::Entry *def) const;
 		const IR::EntrySet &defines(IR::Entry *use, IR::Symbol *symbol) const;
@@ -35,7 +35,7 @@ namespace Analysis {
 
 		std::map<IR::Entry*, IR::EntrySet> mUses;
 		std::map<IR::Entry*, SymbolToEntrySetMap> mDefines;
-		std::vector<IR::Block*> mBlocks;
+		IR::Procedure *mProcedure;
 		const ReachingDefs &mReachingDefs;
 	};
 }

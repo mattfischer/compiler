@@ -71,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -227,10 +227,6 @@
 				Name="IR"
 				>
 				<File
-					RelativePath=".\IR\Block.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\IR\Entry.cpp"
 					>
 				</File>
@@ -356,10 +352,6 @@
 			<Filter
 				Name="IR"
 				>
-				<File
-					RelativePath=".\IR\Block.h"
-					>
-				</File>
 				<File
 					RelativePath=".\IR\Entry.h"
 					>

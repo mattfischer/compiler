@@ -18,11 +18,12 @@ int main(int arg, char *argv[])
 	Front::Parser parser("input.lang");
 	IR::Program *ir = parser.ir();
 	if(ir) {
+		ir->print();
 		for(IR::Program::ProcedureList::iterator it = ir->procedures().begin(); it != ir->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 			Analysis::FlowGraph flowGraph(procedure);
-			Analysis::ReachingDefs defs(flowGraph);
-			Analysis::UseDefs ud(procedure->blocks(), defs);
+			Analysis::ReachingDefs defs(procedure, flowGraph);
+			Analysis::UseDefs ud(procedure, defs);
 
 			printf("START:\n");
 			ud.print();

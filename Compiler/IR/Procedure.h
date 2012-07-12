@@ -5,28 +5,27 @@
 #include <list>
 #include <vector>
 
+#include "IR/EntryList.h"
+
 namespace Front {
 	class Type;
 }
 
 namespace IR {
-	class Block;
 	class Symbol;
 	class Entry;
+	struct EntryLabel;
 
 	class Procedure {
 	public:
 		Procedure(const std::string &name);
 
-		void print(const std::string &prefix = "") const;
+		void print(const std::string &prefix = "");
 		
-		Block *start() const { return mStart; }
-		Block *end() const { return mEnd; }
+		EntryLabel *start() const { return mStart; }
+		EntryLabel *end() const { return mEnd; }
 		const std::string &name() const { return mName; }
-		std::vector<Block*> &blocks() { return mBlocks; }
-
-		void removeBlock(Block *block);
-		void replaceEnd(Block *block);
+		EntryList &entries() { return mEntries; }
 
 		typedef std::list<Symbol*> SymbolList;
 		SymbolList &symbols() { return mSymbols; }
@@ -34,22 +33,20 @@ namespace IR {
 		Symbol *addSymbol(const std::string &name, Front::Type *type);
 		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
-		Block *newBlock();
-
-		void setCurrentBlock(Block *block);
+		EntryLabel *newLabel();
+		void setPosition(Entry *entry);
 
 		void emit(Entry *entry);
 
 	private:
 		std::string mName;
 		SymbolList mSymbols;
-		std::vector<Block*> mBlocks;
-		Block *mStart;
-		Block *mEnd;
+		EntryLabel *mStart;
+		EntryLabel *mEnd;
 
 		int mNextTemp;
-
-		Block *mCurrentBlock;
+		int mNextLabel;
+		EntryList mEntries;
 	};
 }
 

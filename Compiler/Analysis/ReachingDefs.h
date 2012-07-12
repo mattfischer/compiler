@@ -8,9 +8,9 @@
 #include <map>
 
 namespace IR {
-	class Block;
 	class Entry;
 	class Symbol;
+	class Procedure;
 }
 
 namespace Analysis {
@@ -18,7 +18,7 @@ namespace Analysis {
 
 	class ReachingDefs {
 	public:
-		ReachingDefs(FlowGraph &flowGraph);
+		ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph);
 
 		typedef std::map<IR::Symbol*, IR::EntrySet> SymbolToEntrySetMap;
 		const IR::EntrySet &defs(IR::Entry* entry) const;
@@ -34,6 +34,7 @@ namespace Analysis {
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 		FlowGraph &mFlowGraph;
 		EntryToEntrySetMap mDefs;
+		IR::Procedure *mProcedure;
 	};
 }
 #endif

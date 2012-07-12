@@ -80,7 +80,7 @@ namespace IR {
 		std::string name;
 		Block *block;
 
-		EntryLabel(const std::string &_name, Block *_block);
+		EntryLabel(const std::string &_name, Block *_block = 0);
 
 		virtual void print(const std::string &prefix);
 	};

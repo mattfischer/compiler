@@ -1,20 +1,33 @@
 #include "Analysis/FlowGraph.h"
 
 #include "IR/Procedure.h"
-#include "IR/Block.h"
 
 namespace Analysis {
 	FlowGraph::FlowGraph(IR::Procedure *procedure)
 	{
-		for(unsigned int i=0; i<procedure->blocks().size(); i++) {
-			IR::Block *irBlock = procedure->blocks()[i];
+		Block *block = 0;
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
 
-			Block *block = new Block;
-			block->irBlock = irBlock;
-			block->label = irBlock->label;
-			block->end = irBlock->entries.back();
-			mBlockSet.insert(block);
-			mBlockMap[block->label] = block;
+			switch(entry->type) {
+				case IR::Entry::TypeLabel:
+					if(block) {
+						block->end = entry;
+						mBlockSet.insert(block);
+						mBlockMap[block->label] = block;
+					}
+					block = new Block;
+					block->label = (IR::EntryLabel*)entry;
+					break;
+
+				case IR::Entry::TypeJump:
+				case IR::Entry::TypeCJump:
+					block->end = entry;
+					mBlockSet.insert(block);
+					mBlockMap[block->label] = block;
+					block = 0;
+					break;
+			}
 		}
 
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
@@ -22,8 +35,8 @@ namespace Analysis {
 			linkBlock(block);
 		}
 
-		mStart = mBlockMap[procedure->start()->label];
-		mEnd = mBlockMap[procedure->end()->label];
+		mStart = mBlockMap[procedure->start()];
+		mEnd = mBlockMap[procedure->end()];
 	}
 
 	FlowGraph::~FlowGraph()
@@ -36,6 +49,10 @@ namespace Analysis {
 
 	void FlowGraph::linkBlock(Block *block)
 	{
+		if(!block->end) {
+			return;
+		}
+
 		mTailMap[block->end] = block;
 		switch(block->end->type) {
 			case IR::Entry::TypeJump:

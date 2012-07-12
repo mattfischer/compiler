@@ -1,7 +1,6 @@
 #include "IR/Entry.h"
 
 #include "IR/Symbol.h"
-#include "IR/Block.h"
 
 namespace IR {
 	static char* names[] = {
@@ -44,7 +43,7 @@ namespace IR {
 	void EntryThreeAddr::print(const std::string &prefix)
 	{
 		bool needComma = false;
-		printf("%s%s", prefix.c_str(), names[type]);
+		printf("  %s%s", prefix.c_str(), names[type]);
 
 		if(lhs) {
 			printf("%s", lhs->name.c_str());
@@ -162,7 +161,7 @@ namespace IR {
 
 	void EntryImm::print(const std::string &prefix)
 	{
-		printf("%s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
+		printf("  %s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
 	}
 
 	bool EntryImm::assigns(Symbol *symbol)
@@ -216,7 +215,7 @@ namespace IR {
 
 	void EntryJump::print(const std::string &prefix)
 	{
-		printf("%s%s%s", prefix.c_str(), names[type], target->name.c_str());
+		printf("  %s%s%s", prefix.c_str(), names[type], target->name.c_str());
 	}
 
 	EntryCJump::EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
@@ -232,7 +231,7 @@ namespace IR {
 
 	void EntryCJump::print(const std::string &prefix)
 	{
-		printf("%s%s%s, %s, %s", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->name.c_str(), falseTarget->name.c_str());
+		printf("  %s%s%s, %s, %s", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->name.c_str(), falseTarget->name.c_str());
 	}
 
 	bool EntryCJump::uses(Symbol *symbol)
@@ -293,7 +292,7 @@ namespace IR {
 
 	void EntryPhi::print(const std::string &prefix)
 	{
-		printf("%s%s = PHI(", prefix.c_str(), lhs->name.c_str());
+		printf("  %s%s = PHI(", prefix.c_str(), lhs->name.c_str());
 		for(int i=0; i<numArgs; i++) {
 			printf("%s%s", args[i] ? args[i]->name.c_str() : "<none>", (i < numArgs - 1) ? ", " : "");
 		}

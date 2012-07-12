@@ -9,6 +9,7 @@ namespace IR {
 		class iterator {
 			friend class EntryList;
 		public:
+			iterator() : mEntry(0) {}
 			Entry *operator*() { return mEntry; }
 			iterator operator++() { iterator ret(mEntry); mEntry = mEntry->next; return ret;}
 			iterator &operator++(int) { mEntry = mEntry->next; return *this; }

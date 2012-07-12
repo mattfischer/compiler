@@ -10,7 +10,6 @@
 namespace IR {
 	class Entry;
 	class Procedure;
-	class Block;
 };
 
 namespace Analysis {
@@ -25,7 +24,6 @@ namespace Analysis {
 			BlockSet succ;
 			IR::EntryLabel *label;
 			IR::Entry *end;
-			IR::Block *irBlock;
 		};
 
 		FlowGraph(IR::Procedure *procedure);

@@ -3,7 +3,6 @@
 
 namespace IR {
 	class Procedure;
-	class Block;
 	struct EntryLabel;
 }
 

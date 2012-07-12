@@ -1,7 +1,7 @@
 #include "IR/Procedure.h"
 
-#include "IR/Block.h"
 #include "IR/Symbol.h"
+#include "IR/Entry.h"
 
 #include "Front/Type.h"
 
@@ -11,14 +11,15 @@ namespace IR {
 	Procedure::Procedure(const std::string &name)
 	{
 		mNextTemp = 0;
-
+		mNextLabel = 1;
 		mName = name;
-		mStart = newBlock();
-		mEnd = newBlock();
-		mCurrentBlock = mStart;
+		mStart = new EntryLabel("start");
+		mEnd = new EntryLabel("end");
+		mEntries.push_back(mStart);
+		mEntries.push_back(mEnd);
 	}
 
-	void Procedure::print(const std::string &prefix) const
+	void Procedure::print(const std::string &prefix)
 	{
 		printf("%sSymbols:\n", prefix.c_str());
 		for(SymbolList::const_iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
@@ -27,14 +28,10 @@ namespace IR {
 		}
 		printf("%s\n", prefix.c_str());
 		printf("%sBody:\n", prefix.c_str());
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			Block *block = mBlocks[i];
-			printf("%sbb%i%s%s:\n", prefix.c_str(), block->number, (block == mStart)?" (start)" : "", (block == mEnd) ? " (end)" : "");
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				entry->print(prefix + "  ");
-				printf("\n");
-			}
+		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			entry->print(prefix + "  ");
+			printf("\n");
 		}
 		printf("%s\n", prefix.c_str());
 
@@ -108,39 +105,16 @@ namespace IR {
 		return NULL;
 	}
 
-	Block *Procedure::newBlock()
+	EntryLabel *Procedure::newLabel()
 	{
-		Block *block = new Block((int)mBlocks.size());
-
-		mBlocks.push_back(block);
-
-		return block;
-	}
-
-	void Procedure::setCurrentBlock(Block *block)
-	{
-		mCurrentBlock = block;
+		std::stringstream ss;
+		ss << mNextLabel++;
+		std::string name = "bb" + ss.str();
+		return new EntryLabel(name, 0);
 	}
 
 	void Procedure::emit(Entry *entry)
 	{
-		mCurrentBlock->entries.push_back(entry);
-	}
-
-	void Procedure::removeBlock(Block *block)
-	{
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			if(mBlocks[i] == block) {
-				mBlocks.erase(mBlocks.begin() + i);
-				break;
-			}
-		}
-
-		delete block;
-	}
-
-	void Procedure::replaceEnd(Block *block)
-	{
-		mEnd = block;
+		mEntries.insert(mEnd, entry);
 	}
 }

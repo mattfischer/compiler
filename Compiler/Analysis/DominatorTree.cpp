@@ -1,7 +1,6 @@
 #include "Analysis/DominatorTree.h"
 
 #include "Analysis/BlockSort.h"
-#include "IR/Block.h"
 
 #include <algorithm>
 

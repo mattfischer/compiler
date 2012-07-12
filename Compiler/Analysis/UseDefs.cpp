@@ -2,7 +2,7 @@
 
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
-#include "IR/Block.h"
+#include "IR/Procedure.h"
 
 #include "Analysis/ReachingDefs.h"
 
@@ -11,21 +11,18 @@
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet;
 
-	UseDefs::UseDefs(const std::vector<IR::Block*> &blocks, const ReachingDefs &reachingDefs)
-	: mBlocks(blocks), mReachingDefs(reachingDefs)
+	UseDefs::UseDefs(IR::Procedure *procedure, const ReachingDefs &reachingDefs)
+	: mProcedure(procedure), mReachingDefs(reachingDefs)
 	{
-		for(unsigned int i=0; i<blocks.size(); i++) {
-			IR::Block *block = blocks[i];
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				const IR::EntrySet &defs = reachingDefs.defs(entry);
-				for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
-					IR::Entry *defEntry = *it;
-					IR::Symbol *symbol = defEntry->assignSymbol();
-					if(entry->uses(symbol)) {
-						mDefines[entry][symbol].insert(defEntry);
-						mUses[defEntry].insert(entry);
-					}
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			const IR::EntrySet &defs = reachingDefs.defs(entry);
+			for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
+				IR::Entry *defEntry = *it;
+				IR::Symbol *symbol = defEntry->assignSymbol();
+				if(entry->uses(symbol)) {
+					mDefines[entry][symbol].insert(defEntry);
+					mUses[defEntry].insert(entry);
 				}
 			}
 		}
@@ -129,52 +126,46 @@ namespace Analysis {
 	{
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			IR::Block *block = mBlocks[i];
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				lineMap[entry] = line;
-				line++;
-			}
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			lineMap[entry] = line;
+			line++;
 		}
 
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			IR::Block *block = mBlocks[i];
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				printf("%i: ", lineMap[entry]);
-				entry->print();
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			printf("%i: ", lineMap[entry]);
+			entry->print();
 
-				printf(" || ");
+			printf(" || ");
 
-				{
-					std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(entry);
-					if(it != mUses.end()) {
-						printf("Uses: ");
-						const IR::EntrySet &u = it->second;
-						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
-							IR::Entry *e = *it;
+			{
+				std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(entry);
+				if(it != mUses.end()) {
+					printf("Uses: ");
+					const IR::EntrySet &u = it->second;
+					for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
+						IR::Entry *e = *it;
+						printf("%i ", lineMap[e]);
+					}
+				}
+			}
+
+			{
+				std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(entry);
+				if(it != mDefines.end()) {
+					const SymbolToEntrySetMap &defs = it->second;
+					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
+						printf(" | Defs (%s): ", it->first->name.c_str());
+						for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+							IR::Entry *e = *it2;
 							printf("%i ", lineMap[e]);
 						}
 					}
 				}
-
-				{
-					std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(entry);
-					if(it != mDefines.end()) {
-						const SymbolToEntrySetMap &defs = it->second;
-						for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
-							printf(" | Defs (%s): ", it->first->name.c_str());
-							for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-								IR::Entry *e = *it2;
-								printf("%i ", lineMap[e]);
-							}
-						}
-					}
-				}
-
-				printf("\n");
 			}
+
+			printf("\n");
 		}
 	}
 }

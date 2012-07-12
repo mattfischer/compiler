@@ -7,7 +7,6 @@
 #include "IR/Symbol.h"
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
-#include "IR/Block.h"
 
 #include <queue>
 #include <sstream>
@@ -37,8 +36,7 @@ namespace Transform {
 			// Initialize queue with variable assignments
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
-				IR::Block *irBlock = block->irBlock;
-				for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+				for(IR::EntryList::iterator itEntry = proc->entries().find(block->label); itEntry != proc->entries().find(block->end); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					if(entry->assigns(symbol)) {
 						blocks.push(block);
@@ -54,11 +52,10 @@ namespace Transform {
 				const Analysis::FlowGraph::BlockSet &frontiers = domFrontiers.frontiers(block);
 				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
-					IR::Block *irFrontier = frontier->irBlock;
-					IR::Entry *head = irFrontier->label->next;
+					IR::Entry *head = frontier->label->next;
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						irFrontier->entries.insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+						proc->entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -71,12 +68,11 @@ namespace Transform {
 			newSymbols.push_back(activeList[flowGraph.start()]);
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
-				IR::Block *irBlock = block->irBlock;
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[domTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
-				for(IR::EntryList::iterator itEntry = irBlock->entries.begin(); itEntry != irBlock->entries.end(); itEntry++) {
+				for(IR::EntryList::iterator itEntry = proc->entries().find(block->label); itEntry != proc->entries().find(block->end); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					if(entry->uses(symbol)) {
 						entry->replaceUse(symbol, active);
