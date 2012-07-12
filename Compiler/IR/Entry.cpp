@@ -13,6 +13,7 @@ namespace IR {
 		/* TypePrint	*/	"print  ",
 		/* TypeEqual	*/	"equ    ",
 		/* TypeNequal	*/	"neq    ",
+		/* TypeLabel    */	"       ",
 		/* TypeJump		*/	"jmp    ",
 		/* TypeCJump	*/	"cjmp   "
 	};

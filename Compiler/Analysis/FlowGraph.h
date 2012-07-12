@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 
+#include "IR/Entry.h"
+
 namespace IR {
 	class Entry;
 	class Procedure;
@@ -21,6 +23,8 @@ namespace Analysis {
 		struct Block {
 			BlockSet pred;
 			BlockSet succ;
+			IR::EntryLabel *label;
+			IR::Entry *end;
 			IR::Block *irBlock;
 		};
 
@@ -35,11 +39,11 @@ namespace Analysis {
 		BlockSet &blocks() { return mBlockSet; }
 
 	private:
-		void addTail(Block *block, IR::Entry *entry);
+		void linkBlock(Block *block);
 
-		typedef std::map<IR::Block*, Block*> IRBlockToBlockMap;
+		typedef std::map<IR::EntryLabel*, Block*> LabelToBlockMap;
 		BlockSet mBlockSet;
-		IRBlockToBlockMap mBlockMap;
+		LabelToBlockMap mBlockMap;
 		Block *mStart;
 		Block *mEnd;
 		typedef std::map<IR::Entry*, Block*> EntryToBlockMap;

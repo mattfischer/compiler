@@ -5,6 +5,8 @@
 	#include <stdlib.h>
 	#include <string.h>
 
+	#define YY_NO_UNISTD_H
+
 	#include "Front/ParseNode.h"
 	
 	#include "lang.tab.h"
