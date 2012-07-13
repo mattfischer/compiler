@@ -27,7 +27,7 @@ namespace Analysis {
 		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::EntrySet out;
-			for(IR::EntryList::iterator itEntry = procedure->entries().find(block->label); itEntry != procedure->entries().find(block->end->next); itEntry++) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				if(!entry->assignSymbol()) {
 					continue;
@@ -73,7 +73,7 @@ namespace Analysis {
 		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::EntrySet out = states[block].in;
-			for(IR::EntryList::iterator itEntry = procedure->entries().find(block->label); itEntry != procedure->entries().find(block->end->next); itEntry++) {
+			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
 				mDefs[entry] = out;
 

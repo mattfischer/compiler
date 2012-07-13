@@ -57,7 +57,7 @@ namespace Front {
 					mProc->emit(new IR::EntryCJump(lhs, trueLabel, nextLabel));
 					mProc->emit(trueLabel);
 					processNode(node->children[1]);
-					mProc->emit(new IR::EntryJump(nextLabel));
+//					mProc->emit(new IR::EntryJump(nextLabel));
 					mProc->emit(nextLabel);
 				} else {
 					IR::EntryLabel *trueLabel = mProc->newLabel();
@@ -70,7 +70,7 @@ namespace Front {
 					mProc->emit(new IR::EntryJump(nextLabel));
 					mProc->emit(falseLabel);
 					processNode(node->children[2]);
-					mProc->emit(new IR::EntryJump(nextLabel));
+//					mProc->emit(new IR::EntryJump(nextLabel));
 					mProc->emit(nextLabel);
 				}
 				break;

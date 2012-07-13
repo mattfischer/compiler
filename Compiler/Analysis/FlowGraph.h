@@ -6,6 +6,8 @@
 #include <map>
 
 #include "IR/Entry.h"
+#include "IR/EntryList.h"
+#include "IR/EntrySubList.h"
 
 namespace IR {
 	class Entry;
@@ -22,8 +24,7 @@ namespace Analysis {
 		struct Block {
 			BlockSet pred;
 			BlockSet succ;
-			IR::EntryLabel *label;
-			IR::Entry *end;
+			IR::EntrySubList entries;
 		};
 
 		FlowGraph(IR::Procedure *procedure);
@@ -37,15 +38,14 @@ namespace Analysis {
 		BlockSet &blocks() { return mBlockSet; }
 
 	private:
-		void linkBlock(Block *block);
+		void linkBlock(Block *block, IR::Entry *back);
 
-		typedef std::map<IR::EntryLabel*, Block*> LabelToBlockMap;
+		typedef std::map<IR::Entry*, Block*> EntryToBlockMap;
 		BlockSet mBlockSet;
-		LabelToBlockMap mBlockMap;
+		EntryToBlockMap mFrontMap;
+		EntryToBlockMap mBackMap;
 		Block *mStart;
 		Block *mEnd;
-		typedef std::map<IR::Entry*, Block*> EntryToBlockMap;
-		EntryToBlockMap mTailMap;
 	};
 }
 #endif

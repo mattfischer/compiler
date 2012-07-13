@@ -137,16 +137,18 @@ namespace Analysis {
 			printf("%i: ", lineMap[entry]);
 			entry->print();
 
-			printf(" || ");
-
+			bool printedOpen = false;
 			{
 				std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(entry);
 				if(it != mUses.end()) {
-					printf("Uses: ");
 					const IR::EntrySet &u = it->second;
-					for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
-						IR::Entry *e = *it;
-						printf("%i ", lineMap[e]);
+					if(!u.empty()) {
+						printf(" [ Uses: ");
+						printedOpen = true;
+						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
+							IR::Entry *e = *it;
+							printf("%i ", lineMap[e]);
+						}
 					}
 				}
 			}
@@ -156,7 +158,13 @@ namespace Analysis {
 				if(it != mDefines.end()) {
 					const SymbolToEntrySetMap &defs = it->second;
 					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
-						printf(" | Defs (%s): ", it->first->name.c_str());
+						if(printedOpen) {
+							printf("| ");
+						} else {
+							printf(" [ ");
+							printedOpen = true;
+						}
+						printf("Defs (%s): ", it->first->name.c_str());
 						for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
 							IR::Entry *e = *it2;
 							printf("%i ", lineMap[e]);
@@ -165,6 +173,9 @@ namespace Analysis {
 				}
 			}
 
+			if(printedOpen) {
+				printf("]");
+			}
 			printf("\n");
 		}
 	}

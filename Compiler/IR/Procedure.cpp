@@ -110,7 +110,7 @@ namespace IR {
 		std::stringstream ss;
 		ss << mNextLabel++;
 		std::string name = "bb" + ss.str();
-		return new EntryLabel(name, 0);
+		return new EntryLabel(name);
 	}
 
 	void Procedure::emit(Entry *entry)

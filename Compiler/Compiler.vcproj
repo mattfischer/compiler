@@ -365,6 +365,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\IR\EntrySubList.h"
+					>
+				</File>
+				<File
 					RelativePath=".\IR\Procedure.h"
 					>
 				</File>

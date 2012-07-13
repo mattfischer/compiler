@@ -13,7 +13,7 @@ namespace Transform {
 		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
 			if(block->pred.size() == 0 && block != flowGraph.start()) {
-				for(IR::EntryList::iterator itEntry = procedure->entries().find(block->label); itEntry != procedure->entries().find(block->end); itEntry++) {
+				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					procedure->entries().erase(entry);
 					useDefs.remove(entry);
@@ -22,7 +22,10 @@ namespace Transform {
 			}
 		}
 
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+		IR::EntryList::iterator itNext;
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry = itNext) {
+			itNext = itEntry;
+			itNext++;
 			IR::Entry *entry = *itEntry;
 			switch(entry->type) {
 				case IR::Entry::TypeAdd:
@@ -34,6 +37,15 @@ namespace Transform {
 					{
 						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {
+							procedure->entries().erase(entry);
+							useDefs.remove(entry);
+						}
+						break;
+					}
+				case IR::Entry::TypeJump:
+					{
+						IR::EntryJump *jump = (IR::EntryJump*)entry;
+						if(jump->target == *itNext) {
 							procedure->entries().erase(entry);
 							useDefs.remove(entry);
 						}

@@ -1,28 +1,20 @@
 #include "IR/EntryList.h"
 
 namespace IR {
-	EntryList::EntryList() {
-		mHead = NULL;
-		mTail = NULL;
+	EntryList::EntryList() : mTail(IR::Entry::TypeNone) {
+		mHead = &mTail;
+		mTail.prev = 0;
+		mTail.next = 0;
 	}
 
 	EntryList::iterator EntryList::insert(Entry *pos, Entry* entry)
 	{
-		if(pos) {
-			entry->prev = pos->prev;
-			if(pos->prev) {
-				pos->prev->next = entry;
-			}
-			entry->next = pos;
-			pos->prev = entry;
-		} else {
-			entry->next = 0;
-			entry->prev = mTail;
-			if(mTail) {
-				mTail->next = entry;
-			}
-			mTail = entry;
+		entry->prev = pos->prev;
+		if(pos->prev) {
+			pos->prev->next = entry;
 		}
+		entry->next = pos;
+		pos->prev = entry;
 
 		if(pos == mHead) {
 			mHead = entry;
@@ -43,10 +35,6 @@ namespace IR {
 
 		if(entry == mHead) {
 			mHead = mHead->next;
-		}
-
-		if(entry == mTail) {
-			mTail = mTail->prev;
 		}
 
 		return iterator(entry->next);

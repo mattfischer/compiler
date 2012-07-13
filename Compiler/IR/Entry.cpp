@@ -198,8 +198,8 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryLabel::EntryLabel(const std::string &_name, Block *_block)
-		: Entry(TypeLabel), name(_name), block(_block)
+	EntryLabel::EntryLabel(const std::string &_name)
+		: Entry(TypeLabel), name(_name)
 	{
 	}
 

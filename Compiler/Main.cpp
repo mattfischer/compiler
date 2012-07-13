@@ -18,49 +18,50 @@ int main(int arg, char *argv[])
 	Front::Parser parser("input.lang");
 	IR::Program *ir = parser.ir();
 	if(ir) {
-		ir->print();
 		for(IR::Program::ProcedureList::iterator it = ir->procedures().begin(); it != ir->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 			Analysis::FlowGraph flowGraph(procedure);
 			Analysis::ReachingDefs defs(procedure, flowGraph);
 			Analysis::UseDefs ud(procedure, defs);
 
-			printf("START:\n");
+			printf("Start:\n");
 			ud.print();
+			printf("\n");
+
+			printf("Reaching Defs:\n");
+			defs.print();
 			printf("\n");
 
 			Transform::CopyProp::transform(procedure, ud, defs);
 
-			printf("AFTER COPYPROP:\n");
+			printf("After CopyProp:\n");
 			ud.print();
 			printf("\n");
 
 			Transform::ConstantProp::transform(procedure, ud, defs, flowGraph);
 
-			printf("AFTER CONSTANTPROP:\n");
+			printf("After ConstantProp:\n");
 			ud.print();
 			printf("\n");
 
 			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
 
-			printf("AFTER DCE:\n");
+			printf("After DeadCodeElimination:\n");
 			ud.print();
 			printf("\n");
 
 			Transform::ConstantProp::transform(procedure, ud, defs, flowGraph);
 
-			printf("AFTER CONSTANTPROP:\n");
+			printf("After ConstantProp:\n");
 			ud.print();
 			printf("\n");
 
 			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
 
-			printf("AFTER DCE:\n");
+			printf("After DeadCodeElimination:\n");
 			ud.print();
 			printf("\n");
 		}
-
-		ir->print();
 	}
 
 	return 0;

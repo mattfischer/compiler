@@ -36,7 +36,7 @@ namespace Transform {
 			// Initialize queue with variable assignments
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
-				for(IR::EntryList::iterator itEntry = proc->entries().find(block->label); itEntry != proc->entries().find(block->end); itEntry++) {
+				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					if(entry->assigns(symbol)) {
 						blocks.push(block);
@@ -52,7 +52,7 @@ namespace Transform {
 				const Analysis::FlowGraph::BlockSet &frontiers = domFrontiers.frontiers(block);
 				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
-					IR::Entry *head = frontier->label->next;
+					IR::Entry *head = *(frontier->entries.begin()++);
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
 						proc->entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
@@ -72,7 +72,7 @@ namespace Transform {
 					activeList[block] = activeList[domTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
-				for(IR::EntryList::iterator itEntry = proc->entries().find(block->label); itEntry != proc->entries().find(block->end); itEntry++) {
+				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					if(entry->uses(symbol)) {
 						entry->replaceUse(symbol, active);
@@ -91,7 +91,7 @@ namespace Transform {
 				// Propagate variable uses into Phi functions
 				for(Analysis::FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					Analysis::FlowGraph::Block *succ = *it;
-					IR::Entry *head = succ->label->next;
+					IR::Entry *head = *(succ->entries.begin()++);
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
