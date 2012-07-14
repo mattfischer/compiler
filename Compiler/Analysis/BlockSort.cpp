@@ -29,6 +29,9 @@ namespace Analysis {
 		}
 
 		std::reverse(mSorted.begin(), mSorted.end());
+		for(unsigned int i=0; i<mSorted.size(); i++) {
+			mOrder[mSorted[i]] = i;
+		}
 	}
 
 	const FlowGraph::BlockVector &BlockSort::sorted() const

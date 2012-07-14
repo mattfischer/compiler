@@ -22,19 +22,16 @@ namespace Transform {
 		return ss.str();
 	}
 
-	void SSA::transform(IR::Procedure *proc, Analysis::FlowGraph &flowGraph)
+	void SSA::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
 		std::vector<IR::Symbol*> newSymbols;
-
-		Analysis::DominatorTree domTree(flowGraph);
-		Analysis::DominanceFrontiers domFrontiers(domTree);
 
 		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
 			IR::Symbol *symbol = *symIt;
 			std::queue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = analysis.flowGraph().blocks().begin(); blockIt != analysis.flowGraph().blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
@@ -49,7 +46,7 @@ namespace Transform {
 				Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
 
-				const Analysis::FlowGraph::BlockSet &frontiers = domFrontiers.frontiers(block);
+				const Analysis::FlowGraph::BlockSet &frontiers = analysis.dominanceFrontiers().frontiers(block);
 				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
 					Analysis::FlowGraph::Block *frontier = *frontIt;
 					IR::Entry *head = *(frontier->entries.begin()++);
@@ -64,12 +61,12 @@ namespace Transform {
 			// Rename variables
 			int nextVersion = 0;
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
-			activeList[flowGraph.start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
-			newSymbols.push_back(activeList[flowGraph.start()]);
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+			activeList[analysis.flowGraph().start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
+			newSymbols.push_back(activeList[analysis.flowGraph().start()]);
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = analysis.flowGraph().blocks().begin(); blockIt != analysis.flowGraph().blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				if(activeList.find(block) == activeList.end())
-					activeList[block] = activeList[domTree.idom(block)];
+					activeList[block] = activeList[analysis.dominatorTree().idom(block)];
 				IR::Symbol *active = activeList[block];
 
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {

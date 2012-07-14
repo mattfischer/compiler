@@ -2,9 +2,7 @@
 
 #include "Front/Parser.h"
 
-#include "Analysis/ReachingDefs.h"
-#include "Analysis/UseDefs.h"
-#include "Analysis/FlowGraph.h"
+#include "Analysis/Analysis.h"
 
 #include "IR/Program.h"
 #include "IR/Procedure.h"
@@ -20,46 +18,44 @@ int main(int arg, char *argv[])
 	if(ir) {
 		for(IR::Program::ProcedureList::iterator it = ir->procedures().begin(); it != ir->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
-			Analysis::FlowGraph flowGraph(procedure);
-			Analysis::ReachingDefs defs(procedure, flowGraph);
-			Analysis::UseDefs ud(procedure, defs);
+			Analysis::Analysis analysis(procedure);
 
 			printf("Start:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 
 			printf("Reaching Defs:\n");
-			defs.print();
+			analysis.reachingDefs().print();
 			printf("\n");
 
-			Transform::CopyProp::transform(procedure, ud, defs);
+			Transform::CopyProp::transform(procedure, analysis);
 
 			printf("After CopyProp:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::ConstantProp::transform(procedure, ud, defs, flowGraph);
+			Transform::ConstantProp::transform(procedure, analysis);
 
 			printf("After ConstantProp:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
+			Transform::DeadCodeElimination::transform(procedure, analysis);
 
 			printf("After DeadCodeElimination:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::ConstantProp::transform(procedure, ud, defs, flowGraph);
+			Transform::ConstantProp::transform(procedure, analysis);
 
 			printf("After ConstantProp:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::DeadCodeElimination::transform(procedure, ud, defs, flowGraph);
+			Transform::DeadCodeElimination::transform(procedure, analysis);
 
 			printf("After DeadCodeElimination:\n");
-			ud.print();
+			analysis.useDefs().print();
 			printf("\n");
 		}
 	}

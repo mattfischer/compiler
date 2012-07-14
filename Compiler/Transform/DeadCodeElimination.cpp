@@ -8,16 +8,15 @@
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	void DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs, Analysis::FlowGraph &flowGraph)
+	void DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
-		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
+		for(Analysis::FlowGraph::BlockSet::iterator it = analysis.flowGraph().blocks().begin(); it != analysis.flowGraph().blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
-			if(block->pred.size() == 0 && block != flowGraph.start()) {
+			if(block->pred.size() == 0 && block != analysis.flowGraph().start()) {
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					procedure->entries().erase(entry);
-					useDefs.remove(entry);
-					reachingDefs.remove(entry);
+					analysis.remove(entry);
 				}
 			}
 		}
@@ -35,10 +34,10 @@ namespace Transform {
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
 					{
-						const IR::EntrySet &uses = useDefs.uses(entry);
+						const IR::EntrySet &uses = analysis.useDefs().uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
-							useDefs.remove(entry);
+							analysis.remove(entry);
 						}
 						break;
 					}
@@ -47,7 +46,7 @@ namespace Transform {
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						if(jump->target == *itNext) {
 							procedure->entries().erase(entry);
-							useDefs.remove(entry);
+							analysis.remove(entry);
 						}
 						break;
 					}

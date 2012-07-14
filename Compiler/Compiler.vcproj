@@ -199,6 +199,10 @@
 				Name="Analysis"
 				>
 				<File
+					RelativePath=".\Analysis\Analysis.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Analysis\BlockSort.cpp"
 					>
 				</File>
@@ -324,6 +328,10 @@
 			<Filter
 				Name="Analysis"
 				>
+				<File
+					RelativePath=".\Analysis\Analysis.h"
+					>
+				</File>
 				<File
 					RelativePath=".\Analysis\BlockSort.h"
 					>

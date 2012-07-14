@@ -3,15 +3,13 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
-#include "Analysis/UseDefs.h"
-#include "Analysis/ReachingDefs.h"
-#include "Analysis/FlowGraph.h"
+#include "Analysis/Analysis.h"
 
 #include <queue>
 #include <map>
 
 namespace Transform {
-	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, const Analysis::UseDefs &useDefs, bool &isConstant)
+	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant)
 	{
 		isConstant = false;
 		int ret = 0;
@@ -39,7 +37,7 @@ namespace Transform {
 		return ret;
 	}
 
-	void ConstantProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs, Analysis::FlowGraph &flowGraph)
+	void ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		std::queue<IR::Entry*> queue;
 
@@ -61,14 +59,14 @@ namespace Transform {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						bool isConstant;
-						int rhs1 = getValue(threeAddr, threeAddr->rhs1, useDefs, isConstant);
+						int rhs1 = getValue(threeAddr, threeAddr->rhs1, analysis.useDefs(), isConstant);
 						if(!isConstant) {
 							continue;
 						}
 
 						int rhs2 = 0;
 						if(threeAddr->rhs2) {
-							rhs2 = getValue(threeAddr, threeAddr->rhs2, useDefs, isConstant);
+							rhs2 = getValue(threeAddr, threeAddr->rhs2, analysis.useDefs(), isConstant);
 							if(!isConstant) {
 								continue;
 							}
@@ -101,13 +99,12 @@ namespace Transform {
 						procedure->entries().insert(threeAddr, imm);
 						procedure->entries().erase(threeAddr);
 
-						const IR::EntrySet &entries = useDefs.uses(threeAddr);
+						const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
 						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 							queue.push(*it);
 						}
 
-						useDefs.replace(threeAddr, imm);
-						reachingDefs.replace(threeAddr, imm);
+						analysis.replace(threeAddr, imm);
 						delete threeAddr;
 						break;
 					}
@@ -116,7 +113,7 @@ namespace Transform {
 					{
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = getValue(cJump, cJump->pred, useDefs, isConstant);
+						int value = getValue(cJump, cJump->pred, analysis.useDefs(), isConstant);
 						if(!isConstant) {
 							continue;
 						}
@@ -128,9 +125,7 @@ namespace Transform {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
 
-						useDefs.replace(cJump, jump);
-						reachingDefs.replace(cJump, jump);
-						flowGraph.replace(cJump, jump);
+						analysis.replace(cJump, jump);
 
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);

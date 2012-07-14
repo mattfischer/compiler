@@ -7,7 +7,7 @@
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	void CopyProp::transform(IR::Procedure *procedure, Analysis::UseDefs &useDefs, Analysis::ReachingDefs &reachingDefs)
+	void CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -18,22 +18,22 @@ namespace Transform {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 			IR::Symbol *oldSymbol = threeAddr->lhs;
 			IR::Symbol *newSymbol = threeAddr->rhs1;
-			IR::EntrySet oldDefs = reachingDefs.defsForSymbol(entry, newSymbol);
+			IR::EntrySet oldDefs = analysis.reachingDefs().defsForSymbol(entry, newSymbol);
 
-			IR::EntrySet uses = useDefs.uses(entry);
+			IR::EntrySet uses = analysis.useDefs().uses(entry);
 			for(IR::EntrySet::const_iterator it = uses.begin(); it != uses.end(); it++) {
 				IR::Entry *use = *it;
-				if(useDefs.defines(use, oldSymbol).size() > 1) {
+				if(analysis.useDefs().defines(use, oldSymbol).size() > 1) {
 					continue;
 				}
 
-				IR::EntrySet newDefs = reachingDefs.defsForSymbol(use, newSymbol);
+				IR::EntrySet newDefs = analysis.reachingDefs().defsForSymbol(use, newSymbol);
 				if(oldDefs != newDefs) {
 					continue;
 				}
 
 				use->replaceUse(oldSymbol, newSymbol);
-				useDefs.replaceUse(use, oldSymbol, newSymbol);
+				analysis.replaceUse(use, oldSymbol, newSymbol);
 			}
 		}
 	}
