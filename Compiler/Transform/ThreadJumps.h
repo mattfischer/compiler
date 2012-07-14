@@ -11,8 +11,9 @@ namespace Transform {
 	class ThreadJumps : public Transform {
 	public:
 		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		std::string name() { return "ThreadJumps"; }
 
-		ThreadJumps &instance();
+		ThreadJumps *instance();
 
 	private:
 		IR::EntryLabel *getJumpTarget(IR::EntryLabel *label);

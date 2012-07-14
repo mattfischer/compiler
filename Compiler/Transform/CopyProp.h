@@ -7,8 +7,9 @@ namespace Transform {
 	class CopyProp : public Transform {
 	public:
 		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		std::string name() { return "CopyProp"; }
 
-		static CopyProp &instance();
+		static CopyProp *instance();
 	};
 }
 #endif

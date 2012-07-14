@@ -7,8 +7,9 @@ namespace Transform {
 	class DeadCodeElimination : public Transform {
 	public:
 		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		std::string name() { return "DeadCodeElimination"; }
 
-		static DeadCodeElimination &instance();
+		static DeadCodeElimination *instance();
 	};
 }
 #endif

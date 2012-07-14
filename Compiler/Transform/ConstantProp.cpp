@@ -137,9 +137,9 @@ namespace Transform {
 		}
 	}
 
-	ConstantProp &ConstantProp::instance()
+	ConstantProp *ConstantProp::instance()
 	{
 		static ConstantProp inst;
-		return inst;
+		return &inst;
 	}
 }

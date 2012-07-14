@@ -16,8 +16,9 @@ namespace Transform {
 	class ConstantProp : public Transform {
 	public:
 		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		std::string name() { return "ConstantProp"; }
 
-		static ConstantProp &instance();
+		static ConstantProp *instance();
 
 	private:
 		int getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant);

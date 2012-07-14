@@ -112,9 +112,9 @@ namespace Transform {
 		}
 	}
 
-	SSA &SSA::instance()
+	SSA *SSA::instance()
 	{
 		static SSA inst;
-		return inst;
+		return &inst;
 	}
 }

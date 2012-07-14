@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include <queue>
+
 #include "Front/Parser.h"
 
 #include "Analysis/Analysis.h"
@@ -24,39 +26,24 @@ int main(int arg, char *argv[])
 			analysis.useDefs().print();
 			printf("\n");
 
-			printf("Reaching Defs:\n");
-			analysis.reachingDefs().print();
-			printf("\n");
+			typedef std::queue<Transform::Transform*> TransformQueue;
+			TransformQueue transforms;
+			transforms.push(Transform::CopyProp::instance());
+			transforms.push(Transform::ConstantProp::instance());
+			transforms.push(Transform::DeadCodeElimination::instance());
+			transforms.push(Transform::ConstantProp::instance());
+			transforms.push(Transform::DeadCodeElimination::instance());
 
-			Transform::CopyProp::instance().transform(procedure, analysis);
+			while(!transforms.empty()) {
+				Transform::Transform *transform = transforms.front();
+				transforms.pop();
 
-			printf("After CopyProp:\n");
-			analysis.useDefs().print();
-			printf("\n");
+				transform->transform(procedure, analysis);
 
-			Transform::ConstantProp::instance().transform(procedure, analysis);
-
-			printf("After ConstantProp:\n");
-			analysis.useDefs().print();
-			printf("\n");
-
-			Transform::DeadCodeElimination::instance().transform(procedure, analysis);
-
-			printf("After DeadCodeElimination:\n");
-			analysis.useDefs().print();
-			printf("\n");
-
-			Transform::ConstantProp::instance().transform(procedure, analysis);
-
-			printf("After ConstantProp:\n");
-			analysis.useDefs().print();
-			printf("\n");
-
-			Transform::DeadCodeElimination::instance().transform(procedure, analysis);
-
-			printf("After DeadCodeElimination:\n");
-			analysis.useDefs().print();
-			printf("\n");
+				printf("After %s:\n", transform->name().c_str());
+				analysis.useDefs().print();
+				printf("\n");
+			}
 		}
 	}
 

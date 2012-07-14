@@ -45,9 +45,9 @@ namespace Transform {
 		}
 	}
 
-	ThreadJumps &ThreadJumps::instance()
+	ThreadJumps *ThreadJumps::instance()
 	{
 		static ThreadJumps inst;
-		return inst;
+		return &inst;
 	}
 }

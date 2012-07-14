@@ -39,9 +39,9 @@ namespace Transform {
 		}
 	}
 
-	CopyProp &CopyProp::instance()
+	CopyProp *CopyProp::instance()
 	{
 		static CopyProp inst;
-		return inst;
+		return &inst;
 	}
 }

@@ -55,9 +55,9 @@ namespace Transform {
 		}
 	}
 
-	DeadCodeElimination &DeadCodeElimination::instance()
+	DeadCodeElimination *DeadCodeElimination::instance()
 	{
 		static DeadCodeElimination inst;
-		return inst;
+		return &inst;
 	}
 }
