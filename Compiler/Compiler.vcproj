@@ -461,6 +461,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Util"
+				>
+				<File
+					RelativePath=".\Util\UniqueQueue.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

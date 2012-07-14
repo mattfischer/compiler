@@ -9,7 +9,8 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
-#include <queue>
+#include "Util/UniqueQueue.h"
+
 #include <sstream>
 #include <vector>
 #include <set>
@@ -29,7 +30,7 @@ namespace Transform {
 
 		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
 			IR::Symbol *symbol = *symIt;
-			std::queue<Analysis::FlowGraph::Block*> blocks;
+			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = analysis.flowGraph().blocks().begin(); blockIt != analysis.flowGraph().blocks().end(); blockIt++) {

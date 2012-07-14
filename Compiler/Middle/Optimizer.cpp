@@ -10,7 +10,7 @@
 #include "IR/Program.h"
 #include "IR/Procedure.h"
 
-#include <queue>
+#include "Util/UniqueQueue.h"
 
 namespace Middle {
 	void Optimizer::optimize(IR::Program *program)
@@ -39,8 +39,7 @@ namespace Middle {
 			procedure->print();
 			printf("\n");
 
-			typedef std::queue<Transform::Transform*> TransformQueue;
-			TransformQueue transforms;
+			Util::UniqueQueue<Transform::Transform*> transforms;
 
 			for(TransformVector::iterator itTransform = startingTransforms.begin(); itTransform != startingTransforms.end(); itTransform++) {
 				Transform::Transform *transform = *itTransform;

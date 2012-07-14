@@ -5,7 +5,7 @@
 #include "IR/Entry.h"
 #include "IR/Procedure.h"
 
-#include <queue>
+#include "Util/UniqueQueue.h"
 
 namespace Analysis {
 	struct InOut {
@@ -20,7 +20,7 @@ namespace Analysis {
 	{
 		std::map<FlowGraph::Block*, InOut> states;
 		std::map<FlowGraph::Block*, IR::EntrySet> gen;
-		std::queue<FlowGraph::Block*> blockQueue;
+		Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
 		mProcedure = procedure;
 

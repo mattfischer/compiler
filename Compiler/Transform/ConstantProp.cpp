@@ -5,8 +5,7 @@
 
 #include "Analysis/Analysis.h"
 
-#include <queue>
-#include <map>
+#include "Util/UniqueQueue.h"
 
 namespace Transform {
 	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant)
@@ -41,7 +40,7 @@ namespace Transform {
 	{
 		bool changed = false;
 
-		std::queue<IR::Entry*> queue;
+		Util::UniqueQueue<IR::Entry*> queue;
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
