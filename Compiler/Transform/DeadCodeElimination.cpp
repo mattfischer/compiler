@@ -53,6 +53,26 @@ namespace Transform {
 					}
 			}
 		}
+
+		std::map<IR::Symbol*, int> symbolCount;
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			IR::Symbol *assign = entry->assign();
+			if(assign) {
+				symbolCount[assign]++;
+			}
+		}
+
+		IR::Procedure::SymbolList::iterator itSymbolNext;
+		for(IR::Procedure::SymbolList::iterator itSymbol = procedure->symbols().begin(); itSymbol != procedure->symbols().end(); itSymbol = itSymbolNext) {
+			IR::Symbol *symbol = *itSymbol;
+			itSymbolNext = itSymbol;
+			itSymbolNext++;
+
+			if(symbolCount[symbol] == 0) {
+				procedure->symbols().erase(itSymbol);
+			}
+		}
 	}
 
 	DeadCodeElimination *DeadCodeElimination::instance()

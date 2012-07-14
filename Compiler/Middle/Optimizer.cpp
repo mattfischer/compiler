@@ -7,6 +7,7 @@
 #include "Transform/CopyProp.h"
 
 #include "IR/Program.h"
+#include "IR/Procedure.h"
 
 #include <queue>
 
@@ -18,7 +19,7 @@ namespace Middle {
 			Analysis::Analysis analysis(procedure);
 
 			printf("Start:\n");
-			analysis.useDefs().print();
+			procedure->print();
 			printf("\n");
 
 			typedef std::queue<Transform::Transform*> TransformQueue;
@@ -36,7 +37,7 @@ namespace Middle {
 				transform->transform(procedure, analysis);
 
 				printf("After %s:\n", transform->name().c_str());
-				analysis.useDefs().print();
+				procedure->print();
 				printf("\n");
 			}
 		}

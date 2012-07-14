@@ -35,12 +35,10 @@ namespace IR {
 
 		virtual void print(const std::string &prefix = "") {}
 
-		virtual bool assigns(Symbol *symbol) { return false; }
+		virtual Symbol *assign() { return 0; }
 		virtual bool uses(Symbol *symbol) { return false; }
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol) {}
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol) {}
-		virtual int value(bool &constant) { constant = false; return 0; }
-		virtual Symbol *assignSymbol() { return 0; }
 	};
 
 	struct EntryThreeAddr : public Entry {
@@ -53,12 +51,10 @@ namespace IR {
 
 		virtual void print(const std::string &prefix);
 
-		virtual bool assigns(Symbol *symbol);
+		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
-		virtual int value(bool &constant);
-		virtual Symbol *assignSymbol();
 	};
 
 	struct EntryImm : public Entry {
@@ -70,10 +66,8 @@ namespace IR {
 
 		virtual void print(const std::string &prefix);
 
-		virtual bool assigns(Symbol *symbol);
+		virtual Symbol *assign();
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-		virtual int value(bool &constant);
-		virtual Symbol *assignSymbol();
 	};
 
 	struct EntryLabel : public Entry {
@@ -120,12 +114,10 @@ namespace IR {
 
 		virtual void print(const std::string &prefix);
 
-		virtual bool assigns(Symbol *symbol);
+		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
-		virtual int value(bool &constant);
-		virtual Symbol *assignSymbol();
 	};
 }
 

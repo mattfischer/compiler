@@ -19,7 +19,7 @@ namespace Analysis {
 			const IR::EntrySet &defs = reachingDefs.defs(entry);
 			for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
 				IR::Entry *defEntry = *it;
-				IR::Symbol *symbol = defEntry->assignSymbol();
+				IR::Symbol *symbol = defEntry->assign();
 				if(entry->uses(symbol)) {
 					mDefines[entry][symbol].insert(defEntry);
 					mUses[defEntry].insert(entry);
@@ -68,7 +68,7 @@ namespace Analysis {
 		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
 		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
 			IR::Entry *def = *it;
-			IR::Symbol *symbol = def->assignSymbol();
+			IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
 				mDefines[newEntry][symbol].insert(def);
 			}
@@ -79,7 +79,7 @@ namespace Analysis {
 		IR::EntrySet &uses = mUses[newEntry];
 		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
 			IR::Entry *use = *it;
-			IR::EntrySet &defs = mDefines[use][newEntry->assignSymbol()];
+			IR::EntrySet &defs = mDefines[use][newEntry->assign()];
 			defs.erase(oldEntry);
 			defs.insert(newEntry);
 		}
@@ -100,7 +100,7 @@ namespace Analysis {
 		IR::EntrySet &uses = mUses[entry];
 		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
 			IR::Entry *use = *it;
-			mDefines[use][entry->assignSymbol()].erase(entry);
+			mDefines[use][entry->assign()].erase(entry);
 		}
 		mUses.erase(entry);
 	}

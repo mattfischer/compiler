@@ -29,7 +29,7 @@ namespace Analysis {
 			IR::EntrySet out;
 			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
-				if(!entry->assignSymbol()) {
+				if(!entry->assign()) {
 					continue;
 				}
 
@@ -77,7 +77,7 @@ namespace Analysis {
 				IR::Entry *entry = *itEntry;
 				mDefs[entry] = out;
 
-				if(entry->assignSymbol()) {
+				if(entry->assign()) {
 					IR::EntrySet g;
 					g.insert(entry);
 
@@ -104,7 +104,7 @@ namespace Analysis {
 		const IR::EntrySet &all = defs(entry);
 		for(IR::EntrySet::const_iterator it = all.begin(); it != all.end(); it++) {
 			IR::Entry *def = *it;
-			if(def->assignSymbol() == symbol) {
+			if(def->assign() == symbol) {
 				result.insert(def);
 			}
 		}
@@ -166,7 +166,7 @@ namespace Analysis {
 			IR::Entry *entry = *it;
 			for(IR::EntrySet::const_iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
 				IR::Entry *genEntry = *it2;
-				if(genEntry->assignSymbol() == entry->assignSymbol()) {
+				if(genEntry->assign() == entry->assign()) {
 					kill.insert(entry);
 				}
 			}

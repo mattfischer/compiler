@@ -246,10 +246,6 @@
 					RelativePath=".\IR\Program.cpp"
 					>
 				</File>
-				<File
-					RelativePath=".\IR\Symbol.cpp"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Front"

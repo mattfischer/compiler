@@ -36,7 +36,7 @@ namespace Transform {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
-					if(entry->assigns(symbol)) {
+					if(entry->assign() == symbol) {
 						blocks.push(block);
 					}
 				}
@@ -77,7 +77,7 @@ namespace Transform {
 					}
 
 					// Create a new version of the variable for each assignment
-					if(entry->assigns(symbol)) {
+					if(entry->assign() == symbol) {
 						IR::Symbol *newSymbol = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
 						newSymbols.push_back(newSymbol);
 						entry->replaceAssign(active, newSymbol);
