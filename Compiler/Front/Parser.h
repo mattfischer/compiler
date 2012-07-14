@@ -10,12 +10,7 @@ namespace IR {
 namespace Front {
 	class Parser {
 	public:
-		Parser(const std::string &filename);
-
-		IR::Program *ir();
-
-	private:
-		IR::Program *mIR;
+		static IR::Program *parse(const std::string &filename);
 	};
 }
 
