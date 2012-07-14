@@ -3,6 +3,7 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
+#include "Analysis/Analysis.h"
 #include "Analysis/UseDefs.h"
 #include "Analysis/FlowGraph.h"
 #include "Analysis/ReachingDefs.h"
@@ -52,5 +53,11 @@ namespace Transform {
 					}
 			}
 		}
+	}
+
+	DeadCodeElimination &DeadCodeElimination::instance()
+	{
+		static DeadCodeElimination inst;
+		return inst;
 	}
 }

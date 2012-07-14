@@ -18,7 +18,7 @@ namespace Transform {
 		return label;
 	}
 
-	void ThreadJumps::transform(IR::Procedure *proc)
+	void ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
 		// follow jumps
 		for(IR::EntryList::iterator itEntry = proc->entries().begin(); itEntry != proc->entries().end(); itEntry++) {
@@ -43,5 +43,11 @@ namespace Transform {
 					}
 			}
 		}
+	}
+
+	ThreadJumps &ThreadJumps::instance()
+	{
+		static ThreadJumps inst;
+		return inst;
 	}
 }

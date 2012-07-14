@@ -1,18 +1,21 @@
 #ifndef TRANSFORM_THREAD_JUMPS_H
 #define TRANSFORM_THREAD_JUMPS_H
 
+#include "Transform/Transform.h"
+
 namespace IR {
-	class Procedure;
 	struct EntryLabel;
 }
 
 namespace Transform {
-	class ThreadJumps {
+	class ThreadJumps : public Transform {
 	public:
-		static void transform(IR::Procedure *procedure);
+		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+
+		ThreadJumps &instance();
 
 	private:
-		static IR::EntryLabel *getJumpTarget(IR::EntryLabel *label);
+		IR::EntryLabel *getJumpTarget(IR::EntryLabel *label);
 	};
 }
 

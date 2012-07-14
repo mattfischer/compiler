@@ -444,6 +444,10 @@
 					RelativePath=".\Transform\ThreadJumps.h"
 					>
 				</File>
+				<File
+					RelativePath=".\Transform\Transform.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

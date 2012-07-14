@@ -136,4 +136,10 @@ namespace Transform {
 			}
 		}
 	}
+
+	ConstantProp &ConstantProp::instance()
+	{
+		static ConstantProp inst;
+		return inst;
+	}
 }

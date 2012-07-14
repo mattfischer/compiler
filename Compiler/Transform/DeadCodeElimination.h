@@ -1,16 +1,14 @@
 #ifndef TRANSFORM_DEAD_CODE_ELIMINATION_H
 #define TRANSFORM_DEAD_CODE_ELIMINATION_H
 
-#include "Analysis/Analysis.h"
-
-namespace IR {
-	class Procedure;
-}
+#include "Transform/Transform.h"
 
 namespace Transform {
-	class DeadCodeElimination {
+	class DeadCodeElimination : public Transform {
 	public:
-		static void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+
+		static DeadCodeElimination &instance();
 	};
 }
 #endif

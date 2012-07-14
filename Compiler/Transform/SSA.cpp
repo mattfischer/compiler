@@ -1,5 +1,6 @@
 #include "Transform/SSA.h"
 
+#include "Analysis/Analysis.h"
 #include "Analysis/DominatorTree.h"
 #include "Analysis/DominanceFrontiers.h"
 #include "Analysis/FlowGraph.h"
@@ -109,5 +110,11 @@ namespace Transform {
 		for(unsigned int i=0; i<newSymbols.size(); i++) {
 			proc->addSymbol(newSymbols[i]);
 		}
+	}
+
+	SSA &SSA::instance()
+	{
+		static SSA inst;
+		return inst;
 	}
 }

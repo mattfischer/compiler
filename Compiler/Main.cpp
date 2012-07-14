@@ -28,31 +28,31 @@ int main(int arg, char *argv[])
 			analysis.reachingDefs().print();
 			printf("\n");
 
-			Transform::CopyProp::transform(procedure, analysis);
+			Transform::CopyProp::instance().transform(procedure, analysis);
 
 			printf("After CopyProp:\n");
 			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::ConstantProp::transform(procedure, analysis);
+			Transform::ConstantProp::instance().transform(procedure, analysis);
 
 			printf("After ConstantProp:\n");
 			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::DeadCodeElimination::transform(procedure, analysis);
+			Transform::DeadCodeElimination::instance().transform(procedure, analysis);
 
 			printf("After DeadCodeElimination:\n");
 			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::ConstantProp::transform(procedure, analysis);
+			Transform::ConstantProp::instance().transform(procedure, analysis);
 
 			printf("After ConstantProp:\n");
 			analysis.useDefs().print();
 			printf("\n");
 
-			Transform::DeadCodeElimination::transform(procedure, analysis);
+			Transform::DeadCodeElimination::instance().transform(procedure, analysis);
 
 			printf("After DeadCodeElimination:\n");
 			analysis.useDefs().print();

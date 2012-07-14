@@ -1,24 +1,26 @@
 #ifndef TRANSFORM_CONSTANT_PROP_H
 #define TRANSFORM_CONSTANT_PROP_H
 
+#include "Transform/Transform.h"
+
 namespace IR {
-	class Procedure;
 	class Entry;
 	class Symbol;
 }
 
 namespace Analysis {
-	class Analysis;
 	class UseDefs;
 }
 
 namespace Transform {
-	class ConstantProp {
+	class ConstantProp : public Transform {
 	public:
-		static void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+
+		static ConstantProp &instance();
 
 	private:
-		static int getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant);
+		int getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant);
 	};
 }
 #endif

@@ -3,6 +3,7 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
+#include "Analysis/Analysis.h"
 #include "Analysis/UseDefs.h"
 #include "Analysis/ReachingDefs.h"
 
@@ -36,5 +37,11 @@ namespace Transform {
 				analysis.replaceUse(use, oldSymbol, newSymbol);
 			}
 		}
+	}
+
+	CopyProp &CopyProp::instance()
+	{
+		static CopyProp inst;
+		return inst;
 	}
 }

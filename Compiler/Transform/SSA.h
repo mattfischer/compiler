@@ -3,20 +3,21 @@
 
 #include <string>
 
-#include "Analysis/Analysis.h"
+#include "Transform/Transform.h"
 
 namespace IR {
-	class Procedure;
 	class Symbol;
 }
 
 namespace Transform {
-	class SSA {
+	class SSA : public Transform {
 	public:
-		static void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+
+		static SSA &instance();
 
 	private:
-		static std::string newSymbolName(IR::Symbol *base, int version);
+		std::string newSymbolName(IR::Symbol *base, int version);
 	};
 }
 #endif
