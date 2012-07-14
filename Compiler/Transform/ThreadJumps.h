@@ -10,10 +10,10 @@ namespace IR {
 namespace Transform {
 	class ThreadJumps : public Transform {
 	public:
-		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
-		std::string name() { return "ThreadJumps"; }
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		virtual std::string name() { return "ThreadJumps"; }
 
-		ThreadJumps *instance();
+		static ThreadJumps *instance();
 
 	private:
 		IR::EntryLabel *getJumpTarget(IR::EntryLabel *label);

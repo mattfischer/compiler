@@ -18,8 +18,10 @@ namespace Transform {
 		return label;
 	}
 
-	void ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
+	bool ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
+		bool changed = false;
+
 		// follow jumps
 		for(IR::EntryList::iterator itEntry = proc->entries().begin(); itEntry != proc->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -29,7 +31,10 @@ namespace Transform {
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						IR::EntryLabel *target = getJumpTarget(jump->target);
-						jump->target = target;
+						if(target != jump->target) {
+							jump->target = target;
+							changed = true;
+						}
 						break;
 					}
 				case IR::Entry::TypeCJump:
@@ -37,12 +42,21 @@ namespace Transform {
 						IR::EntryCJump *jump = (IR::EntryCJump*)entry;
 						IR::EntryLabel *trueTarget = getJumpTarget(jump->trueTarget);
 						IR::EntryLabel *falseTarget = getJumpTarget(jump->falseTarget);
-						jump->trueTarget = trueTarget;
-						jump->falseTarget = falseTarget;
+						if(trueTarget != jump->trueTarget) {
+							jump->trueTarget = trueTarget;
+							changed = true;
+						}
+
+						if(falseTarget != jump->falseTarget) {
+							jump->falseTarget = falseTarget;
+							changed = true;
+						}
 						break;
 					}
 			}
 		}
+
+		return changed;
 	}
 
 	ThreadJumps *ThreadJumps::instance()

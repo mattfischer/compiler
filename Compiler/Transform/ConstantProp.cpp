@@ -37,8 +37,10 @@ namespace Transform {
 		return ret;
 	}
 
-	void ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
+		bool changed = false;
+
 		std::queue<IR::Entry*> queue;
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
@@ -96,8 +98,6 @@ namespace Transform {
 						}
 
 						IR::Entry *imm = new IR::EntryImm(threeAddr->lhs, value);
-						procedure->entries().insert(threeAddr, imm);
-						procedure->entries().erase(threeAddr);
 
 						const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
 						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
@@ -105,7 +105,11 @@ namespace Transform {
 						}
 
 						analysis.replace(threeAddr, imm);
+
+						procedure->entries().insert(threeAddr, imm);
+						procedure->entries().erase(threeAddr);
 						delete threeAddr;
+						changed = true;
 						break;
 					}
 
@@ -129,12 +133,15 @@ namespace Transform {
 
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);
-
 						delete cJump;
+						changed = true;
+
 						break;
 					}
 			}
 		}
+
+		return changed;
 	}
 
 	ConstantProp *ConstantProp::instance()

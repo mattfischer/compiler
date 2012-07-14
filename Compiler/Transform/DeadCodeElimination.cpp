@@ -9,8 +9,10 @@
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	void DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
+		bool changed = false;
+
 		for(Analysis::FlowGraph::BlockSet::iterator it = analysis.flowGraph().blocks().begin(); it != analysis.flowGraph().blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
 			if(block->pred.size() == 0 && block != analysis.flowGraph().start()) {
@@ -19,6 +21,7 @@ namespace Transform {
 					procedure->entries().erase(entry);
 					analysis.remove(entry);
 				}
+				changed = true;
 			}
 		}
 
@@ -39,6 +42,7 @@ namespace Transform {
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
 							analysis.remove(entry);
+							changed = true;
 						}
 						break;
 					}
@@ -48,6 +52,7 @@ namespace Transform {
 						if(jump->target == *itNext) {
 							procedure->entries().erase(entry);
 							analysis.remove(entry);
+							changed = true;
 						}
 						break;
 					}
@@ -71,8 +76,11 @@ namespace Transform {
 
 			if(symbolCount[symbol] == 0) {
 				procedure->symbols().erase(itSymbol);
+				changed = true;
 			}
 		}
+
+		return changed;
 	}
 
 	DeadCodeElimination *DeadCodeElimination::instance()

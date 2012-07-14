@@ -12,8 +12,8 @@ namespace IR {
 namespace Transform {
 	class SSA : public Transform {
 	public:
-		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
-		std::string name() { return "SSA"; }
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		virtual std::string name() { return "SSA"; }
 
 		static SSA *instance();
 

@@ -14,7 +14,7 @@ namespace Analysis {
 namespace Transform {
 	class Transform {
 	public:
-		virtual void transform(IR::Procedure *procedure, Analysis::Analysis &analysis) = 0;
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis) = 0;
 		virtual std::string name() = 0;
 	};
 }

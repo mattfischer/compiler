@@ -15,8 +15,8 @@ namespace Analysis {
 namespace Transform {
 	class ConstantProp : public Transform {
 	public:
-		void transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
-		std::string name() { return "ConstantProp"; }
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		virtual std::string name() { return "ConstantProp"; }
 
 		static ConstantProp *instance();
 

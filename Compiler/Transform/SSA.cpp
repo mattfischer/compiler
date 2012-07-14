@@ -23,7 +23,7 @@ namespace Transform {
 		return ss.str();
 	}
 
-	void SSA::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
+	bool SSA::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
 		std::vector<IR::Symbol*> newSymbols;
 
@@ -110,6 +110,8 @@ namespace Transform {
 		for(unsigned int i=0; i<newSymbols.size(); i++) {
 			proc->addSymbol(newSymbols[i]);
 		}
+
+		return true;
 	}
 
 	SSA *SSA::instance()

@@ -8,8 +8,10 @@
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	void CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
+		bool changed = false;
+
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 			if(entry->type != IR::Entry::TypeLoad) {
@@ -35,8 +37,11 @@ namespace Transform {
 
 				use->replaceUse(oldSymbol, newSymbol);
 				analysis.replaceUse(use, oldSymbol, newSymbol);
+				changed = true;
 			}
 		}
+
+		return changed;
 	}
 
 	CopyProp *CopyProp::instance()
