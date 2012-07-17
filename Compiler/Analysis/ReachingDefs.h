@@ -3,6 +3,8 @@
 
 #include "IR/EntrySet.h"
 
+#include "Analysis/FlowGraph.h"
+
 #include <vector>
 #include <set>
 #include <map>
@@ -14,8 +16,6 @@ namespace IR {
 }
 
 namespace Analysis {
-	class FlowGraph;
-
 	class ReachingDefs {
 	public:
 		ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph);
@@ -28,8 +28,7 @@ namespace Analysis {
 		void print() const;
 
 	private:
-		IR::EntrySet createKillSet(const IR::EntrySet &in, const IR::EntrySet &gen);
-		IR::EntrySet createOutSet(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill);
+		IR::EntrySet transfer(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill);
 
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 		FlowGraph &mFlowGraph;

@@ -18,29 +18,60 @@ namespace Analysis {
 	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph)
 		: mFlowGraph(flowGraph)
 	{
-		std::map<FlowGraph::Block*, InOut> states;
-		std::map<FlowGraph::Block*, IR::EntrySet> gen;
-		Util::UniqueQueue<FlowGraph::Block*> blockQueue;
-
 		mProcedure = procedure;
+
+		IR::EntrySet allDefs;
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			if(entry->assign()) {
+				allDefs.insert(entry);
+			}
+		}
+
+		EntryToEntrySetMap gen;
+		for(IR::EntryList::iterator it = procedure->entries().begin(); it != procedure->entries().end(); it++) {
+			IR::Entry *entry = *it;
+			if(entry->assign()) {
+				gen[entry].insert(entry);
+			}
+		}
+
+		EntryToEntrySetMap kill;
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+
+			if(!entry->assign()) {
+				continue;
+			}
+
+			for(IR::EntrySet::const_iterator itDef = allDefs.begin(); itDef != allDefs.end(); itDef++) {
+				IR::Entry *def = *itDef;
+				if(def->assign() == entry->assign() && def != entry) {
+					kill[entry].insert(def);
+				}
+			}
+		}
+
+		std::map<FlowGraph::Block*, IR::EntrySet> genBlock;
+		std::map<FlowGraph::Block*, IR::EntrySet> killBlock;
 
 		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
-			IR::EntrySet out;
+
+			IR::EntrySet g;
+			IR::EntrySet k;
 			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
-				if(!entry->assign()) {
-					continue;
-				}
-
-				IR::EntrySet g;
-				g.insert(entry);
-
-				IR::EntrySet k = createKillSet(out, g);
-				out = createOutSet(out, g, k);
+				g = transfer(g, gen[entry], kill[entry]);
+				k = transfer(k, kill[entry], gen[entry]);
 			}
-			gen[block] = out;
+
+			genBlock[block] = g;
+			killBlock[block] = k;
 		}
+
+		std::map<FlowGraph::Block*, InOut> states;
+		Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
 		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
@@ -58,11 +89,10 @@ namespace Analysis {
 				states[block].in.insert(out.begin(), out.end());
 			}
 
-			IR::EntrySet kill = createKillSet(states[block].in, gen[block]);
-			IR::EntrySet newOut = createOutSet(states[block].in, gen[block], kill);
+			IR::EntrySet out = transfer(states[block].in, genBlock[block], killBlock[block]);
 
-			if(newOut != states[block].out) {
-				states[block].out = newOut;
+			if(out != states[block].out) {
+				states[block].out = out;
 				for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 					FlowGraph::Block *succ = *it;
 					blockQueue.push(succ);
@@ -72,18 +102,11 @@ namespace Analysis {
 
 		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
-			IR::EntrySet out = states[block].in;
+			IR::EntrySet set = states[block].in;
 			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
-				mDefs[entry] = out;
-
-				if(entry->assign()) {
-					IR::EntrySet g;
-					g.insert(entry);
-
-					IR::EntrySet k = createKillSet(out, g);
-					out = createOutSet(out, g, k);
-				}
+				mDefs[entry] = set;
+				set = transfer(set, gen[entry], kill[entry]);
 			}
 		}
 	}
@@ -159,29 +182,14 @@ namespace Analysis {
 		}
 	}
 
-	IR::EntrySet ReachingDefs::createKillSet(const IR::EntrySet &in, const IR::EntrySet &gen)
-	{
-		IR::EntrySet kill;
-		for(IR::EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
-			IR::Entry *entry = *it;
-			for(IR::EntrySet::const_iterator it2 = gen.begin(); it2 != gen.end(); it2++) {
-				IR::Entry *genEntry = *it2;
-				if(genEntry->assign() == entry->assign()) {
-					kill.insert(entry);
-				}
-			}
-		}
-
-		return kill;
-	}
-
-	IR::EntrySet ReachingDefs::createOutSet(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill)
+	IR::EntrySet ReachingDefs::transfer(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill)
 	{
 		IR::EntrySet out(gen.begin(), gen.end());
-		for(IR::EntrySet::const_iterator it = in.begin(); it != in.end(); it++) {
-			IR::Entry *entry = *it;
-			if(kill.find(entry) == kill.end()) {
-				out.insert(entry);
+
+		for(IR::EntrySet::const_iterator itIn = in.begin(); itIn != in.end(); itIn++) {
+			IR::Entry *entryIn = *itIn;
+			if(kill.find(entryIn) == kill.end()) {
+				out.insert(entryIn);
 			}
 		}
 
