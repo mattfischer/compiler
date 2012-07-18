@@ -1,6 +1,7 @@
 #include "ReachingDefs.h"
 
 #include "Analysis/FlowGraph.h"
+#include "Analysis/DataFlow.h"
 
 #include "IR/Entry.h"
 #include "IR/Procedure.h"
@@ -8,11 +9,6 @@
 #include "Util/UniqueQueue.h"
 
 namespace Analysis {
-	struct InOut {
-		IR::EntrySet in;
-		IR::EntrySet out;
-	};
-
 	static IR::EntrySet emptyEntrySet;
 
 	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph)
@@ -52,71 +48,8 @@ namespace Analysis {
 			}
 		}
 
-		mDefs = analyze(mFlowGraph, gen, kill);
-	}
-
-	ReachingDefs::EntryToEntrySetMap ReachingDefs::analyze(FlowGraph &graph, EntryToEntrySetMap &gen, EntryToEntrySetMap &kill)
-	{
-		EntryToEntrySetMap map;
-		std::map<FlowGraph::Block*, IR::EntrySet> genBlock;
-		std::map<FlowGraph::Block*, IR::EntrySet> killBlock;
-
-		for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-			FlowGraph::Block *block = *it;
-
-			IR::EntrySet g;
-			IR::EntrySet k;
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				g = transfer(g, gen[entry], kill[entry]);
-				k = transfer(k, kill[entry], gen[entry]);
-			}
-
-			genBlock[block] = g;
-			killBlock[block] = k;
-		}
-
-		std::map<FlowGraph::Block*, InOut> states;
-		Util::UniqueQueue<FlowGraph::Block*> blockQueue;
-
-		for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-			FlowGraph::Block *block = *it;
-			blockQueue.push(block);
-		}
-
-		while(!blockQueue.empty()) {
-			FlowGraph::Block *block = blockQueue.front();
-			blockQueue.pop();
-
-			states[block].in.clear();
-			for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-				FlowGraph::Block *pred = *it;
-				IR::EntrySet &out = states[pred].out;
-				states[block].in.insert(out.begin(), out.end());
-			}
-
-			IR::EntrySet out = transfer(states[block].in, genBlock[block], killBlock[block]);
-
-			if(out != states[block].out) {
-				states[block].out = out;
-				for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-					FlowGraph::Block *succ = *it;
-					blockQueue.push(succ);
-				}
-			}
-		}
-
-		for(FlowGraph::BlockSet::iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-			FlowGraph::Block *block = *it;
-			IR::EntrySet set = states[block].in;
-			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
-				map[entry] = set;
-				set = transfer(set, gen[entry], kill[entry]);
-			}
-		}
-
-		return map;
+		DataFlow<IR::Entry*> dataFlow;
+		mDefs = dataFlow.analyze(mFlowGraph, gen, kill);
 	}
 
 	const IR::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
@@ -188,19 +121,5 @@ namespace Analysis {
 			printf("\n");
 			line++;
 		}
-	}
-
-	IR::EntrySet ReachingDefs::transfer(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill)
-	{
-		IR::EntrySet out(gen.begin(), gen.end());
-
-		for(IR::EntrySet::const_iterator itIn = in.begin(); itIn != in.end(); itIn++) {
-			IR::Entry *entryIn = *itIn;
-			if(kill.find(entryIn) == kill.end()) {
-				out.insert(entryIn);
-			}
-		}
-
-		return out;
 	}
 }

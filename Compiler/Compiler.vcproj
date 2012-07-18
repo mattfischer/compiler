@@ -341,6 +341,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Analysis\DataFlow.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Analysis\DominanceFrontiers.h"
 					>
 				</File>

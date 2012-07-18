@@ -30,9 +30,6 @@ namespace Analysis {
 	private:
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 
-		IR::EntrySet transfer(const IR::EntrySet &in, const IR::EntrySet &gen, const IR::EntrySet &kill);
-		EntryToEntrySetMap analyze(FlowGraph &graph, EntryToEntrySetMap &gen, EntryToEntrySetMap &kill);
-
 		FlowGraph &mFlowGraph;
 		EntryToEntrySetMap mDefs;
 		IR::Procedure *mProcedure;
