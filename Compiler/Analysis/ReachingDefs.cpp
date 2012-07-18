@@ -52,10 +52,16 @@ namespace Analysis {
 			}
 		}
 
+		mDefs = analyze(mFlowGraph, gen, kill);
+	}
+
+	ReachingDefs::EntryToEntrySetMap ReachingDefs::analyze(FlowGraph &graph, EntryToEntrySetMap &gen, EntryToEntrySetMap &kill)
+	{
+		EntryToEntrySetMap map;
 		std::map<FlowGraph::Block*, IR::EntrySet> genBlock;
 		std::map<FlowGraph::Block*, IR::EntrySet> killBlock;
 
-		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+		for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 
 			IR::EntrySet g;
@@ -73,7 +79,7 @@ namespace Analysis {
 		std::map<FlowGraph::Block*, InOut> states;
 		Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
-		for(FlowGraph::BlockSet::const_iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+		for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			blockQueue.push(block);
 		}
@@ -100,15 +106,17 @@ namespace Analysis {
 			}
 		}
 
-		for(FlowGraph::BlockSet::iterator it = mFlowGraph.blocks().begin(); it != mFlowGraph.blocks().end(); it++) {
+		for(FlowGraph::BlockSet::iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			IR::EntrySet set = states[block].in;
 			for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 				IR::Entry *entry = *itEntry;
-				mDefs[entry] = set;
+				map[entry] = set;
 				set = transfer(set, gen[entry], kill[entry]);
 			}
 		}
+
+		return map;
 	}
 
 	const IR::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
