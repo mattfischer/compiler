@@ -49,7 +49,7 @@ namespace Analysis {
 		}
 
 		DataFlow<IR::Entry*> dataFlow;
-		mDefs = dataFlow.analyze(mFlowGraph, gen, kill);
+		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::MeetTypeUnion);
 	}
 
 	const IR::EntrySet &ReachingDefs::defs(IR::Entry *entry) const

@@ -16,7 +16,12 @@ namespace Analysis {
 		typedef std::set<Item> ItemSet;
 		typedef std::map<Item, ItemSet> ItemToItemSetMap;
 
-		ItemToItemSetMap analyze(FlowGraph &graph, ItemToItemSetMap &gen, ItemToItemSetMap &kill)
+		enum MeetType {
+			MeetTypeUnion,
+			MeetTypeIntersect
+		};
+
+		ItemToItemSetMap analyze(FlowGraph &graph, ItemToItemSetMap &gen, ItemToItemSetMap &kill, ItemSet &all, MeetType meetType)
 		{
 			ItemToItemSetMap map;
 			std::map<FlowGraph::Block*, ItemSet> genBlock;
@@ -48,6 +53,10 @@ namespace Analysis {
 			for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
 				FlowGraph::Block *block = *it;
 				blockQueue.push(block);
+
+				if(meetType == MeetTypeIntersect) {
+					states[block].out.insert(all.begin(), all.end());
+				}
 			}
 
 			while(!blockQueue.empty()) {
@@ -58,7 +67,7 @@ namespace Analysis {
 				for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
 					FlowGraph::Block *pred = *it;
 					ItemSet &out = states[pred].out;
-					states[block].in.insert(out.begin(), out.end());
+					states[block].in = meet(states[block].in, states[pred].out, meetType);
 				}
 
 				ItemSet out = transfer(states[block].in, genBlock[block], killBlock[block]);
@@ -95,6 +104,29 @@ namespace Analysis {
 				if(kill.find(item) == kill.end()) {
 					out.insert(item);
 				}
+			}
+
+			return out;
+		}
+
+		ItemSet meet(ItemSet &a, ItemSet &b, MeetType meetType)
+		{
+			ItemSet out;
+
+			switch(meetType) {
+				case MeetTypeUnion:
+					out.insert(a.begin(), a.end());
+					out.insert(b.begin(), b.end());
+					break;
+
+				case MeetTypeIntersect:
+					for(ItemSet::iterator it = a.begin(); it != a.end(); it++) {
+						Item item = *it;
+						if(b.find(item) != b.end()) {
+							out.insert(item);
+						}
+					}
+					break;
 			}
 
 			return out;
