@@ -53,10 +53,18 @@ namespace Transform {
 				case IR::Entry::TypeJump:
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
-						if(jump->target == *itNext) {
-							procedure->entries().erase(entry);
-							analysis.remove(entry);
-							changed = true;
+						for(IR::EntryList::iterator itLabel = itNext; itLabel != procedure->entries().end(); itLabel++) {
+							IR::Entry *label = *itLabel;
+							if(label->type != IR::Entry::TypeLabel) {
+								break;
+							}
+
+							if(jump->target == label) {
+								procedure->entries().erase(jump);
+								analysis.remove(jump);
+								changed = true;
+								break;
+							}
 						}
 						break;
 					}
