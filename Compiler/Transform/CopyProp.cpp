@@ -6,38 +6,54 @@
 #include "Analysis/Analysis.h"
 #include "Analysis/UseDefs.h"
 #include "Analysis/ReachingDefs.h"
+#include "Analysis/DataFlow.h"
 
 namespace Transform {
 	bool CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
+		IR::EntrySet allLoads;
+		std::map<IR::Entry*, IR::EntrySet> gen;
+		std::map<IR::Entry*, IR::EntrySet> kill;
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			if(entry->type != IR::Entry::TypeLoad) {
+
+			if(entry->type == IR::Entry::TypeLoad) {
+				allLoads.insert(entry);
+				gen[entry].insert(entry);
+			}
+		}
+
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+
+			if(!entry->assign()) {
 				continue;
 			}
 
-			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-			IR::Symbol *oldSymbol = threeAddr->lhs;
-			IR::Symbol *newSymbol = threeAddr->rhs1;
-			IR::EntrySet oldDefs = analysis.reachingDefs().defsForSymbol(entry, newSymbol);
-
-			IR::EntrySet uses = analysis.useDefs().uses(entry);
-			for(IR::EntrySet::const_iterator it = uses.begin(); it != uses.end(); it++) {
-				IR::Entry *use = *it;
-				if(analysis.useDefs().defines(use, oldSymbol).size() > 1) {
-					continue;
+			for(IR::EntrySet::iterator itLoad = allLoads.begin(); itLoad != allLoads.end(); itLoad++) {
+				IR::Entry *load = *itLoad;
+				if(entry != load && (load->assign() == entry->assign() || load->uses(entry->assign()))) {
+					kill[entry].insert(load);
 				}
+			}
+		}
 
-				IR::EntrySet newDefs = analysis.reachingDefs().defsForSymbol(use, newSymbol);
-				if(oldDefs != newDefs) {
-					continue;
+		Analysis::DataFlow<IR::Entry*> dataFlow;
+		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(analysis.flowGraph(), gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect);
+
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+
+			IR::EntrySet &c = loads[entry];
+			for(IR::EntrySet::iterator itLoad = c.begin(); itLoad != c.end(); itLoad++) {
+				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
+				if(entry->uses(load->lhs)) {
+					entry->replaceUse(load->lhs, load->rhs1);
+					analysis.replaceUse(entry, load->lhs, load->rhs1);
+					changed = true;
 				}
-
-				use->replaceUse(oldSymbol, newSymbol);
-				analysis.replaceUse(use, oldSymbol, newSymbol);
-				changed = true;
 			}
 		}
 

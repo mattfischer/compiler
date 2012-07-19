@@ -55,7 +55,7 @@ namespace Analysis {
 				blockQueue.push(block);
 
 				if(meetType == MeetTypeIntersect) {
-					states[block].out.insert(all.begin(), all.end());
+					states[block].out = all;
 				}
 			}
 
@@ -64,6 +64,10 @@ namespace Analysis {
 				blockQueue.pop();
 
 				states[block].in.clear();
+				if(meetType == MeetTypeIntersect && block != graph.start()) {
+					states[block].in = all;
+				}
+
 				for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
 					FlowGraph::Block *pred = *it;
 					ItemSet &out = states[pred].out;

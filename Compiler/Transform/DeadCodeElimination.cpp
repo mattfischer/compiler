@@ -18,6 +18,10 @@ namespace Transform {
 			if(block->pred.size() == 0 && block != analysis.flowGraph().start()) {
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
+					if(entry->type == IR::Entry::TypeLabel) {
+						continue;
+					}
+
 					procedure->entries().erase(entry);
 					analysis.remove(entry);
 				}
