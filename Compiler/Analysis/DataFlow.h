@@ -21,7 +21,12 @@ namespace Analysis {
 			MeetTypeIntersect
 		};
 
-		ItemToItemSetMap analyze(FlowGraph &graph, ItemToItemSetMap &gen, ItemToItemSetMap &kill, ItemSet &all, MeetType meetType)
+		enum Direction {
+			DirectionForward,
+			DirectionBackward
+		};
+
+		ItemToItemSetMap analyze(FlowGraph &graph, ItemToItemSetMap &gen, ItemToItemSetMap &kill, ItemSet &all, MeetType meetType, Direction direction)
 		{
 			ItemToItemSetMap map;
 			std::map<FlowGraph::Block*, ItemSet> genBlock;
@@ -32,10 +37,22 @@ namespace Analysis {
 
 				ItemSet g;
 				ItemSet k;
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-					IR::Entry *entry = *itEntry;
-					g = transfer(g, gen[entry], kill[entry]);
-					k = transfer(k, kill[entry], gen[entry]);
+				switch(direction) {
+					case DirectionForward:
+						for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+							IR::Entry *entry = *itEntry;
+							g = transfer(g, gen[entry], kill[entry]);
+							k = transfer(k, kill[entry], gen[entry]);
+						}
+						break;
+
+					case DirectionBackward:
+						for(IR::EntryList::reverse_iterator itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
+							IR::Entry *entry = *itEntry;
+							g = transfer(g, gen[entry], kill[entry]);
+							k = transfer(k, kill[entry], gen[entry]);
+						}
+						break;
 				}
 
 				genBlock[block] = g;
@@ -54,8 +71,14 @@ namespace Analysis {
 				FlowGraph::Block *block = *it;
 				blockQueue.push(block);
 
-				if(meetType == MeetTypeIntersect) {
-					states[block].out = all;
+				switch(meetType) {
+					case MeetTypeUnion:
+						states[block].out.clear();
+						break;
+
+					case MeetTypeIntersect:
+						states[block].out = all;
+						break;
 				}
 			}
 
@@ -63,24 +86,56 @@ namespace Analysis {
 				FlowGraph::Block *block = blockQueue.front();
 				blockQueue.pop();
 
-				states[block].in.clear();
-				if(meetType == MeetTypeIntersect && block != graph.start()) {
-					states[block].in = all;
+				switch(meetType) {
+					case MeetTypeUnion:
+						states[block].in.clear();
+						break;
+
+					case MeetTypeIntersect:
+						if((direction == DirectionForward && block == graph.start()) ||
+							(direction == DirectionBackward && block == graph.end())) {
+							states[block].in.clear();
+						} else {
+							states[block].in = all;
+						}
 				}
 
-				for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-					FlowGraph::Block *pred = *it;
-					ItemSet &out = states[pred].out;
-					states[block].in = meet(states[block].in, states[pred].out, meetType);
+				switch(direction) {
+					case DirectionForward:
+						for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+							FlowGraph::Block *pred = *it;
+							ItemSet &out = states[pred].out;
+							states[block].in = meet(states[block].in, states[pred].out, meetType);
+						}
+						break;
+
+					case DirectionBackward:
+						for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+							FlowGraph::Block *succ = *it;
+							ItemSet &out = states[succ].out;
+							states[block].in = meet(states[block].in, states[succ].out, meetType);
+						}
+						break;
 				}
 
 				ItemSet out = transfer(states[block].in, genBlock[block], killBlock[block]);
 
 				if(out != states[block].out) {
 					states[block].out = out;
-					for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-						FlowGraph::Block *succ = *it;
-						blockQueue.push(succ);
+					switch(direction) {
+						case DirectionForward:
+							for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
+								FlowGraph::Block *succ = *it;
+								blockQueue.push(succ);
+							}
+							break;
+
+						case DirectionBackward:
+							for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
+								FlowGraph::Block *pred = *it;
+								blockQueue.push(pred);
+							}
+							break;
 					}
 				}
 			}
@@ -88,10 +143,22 @@ namespace Analysis {
 			for(FlowGraph::BlockSet::iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
 				FlowGraph::Block *block = *it;
 				ItemSet set = states[block].in;
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-					IR::Entry *entry = *itEntry;
-					map[entry] = set;
-					set = transfer(set, gen[entry], kill[entry]);
+				switch(direction) {
+					case DirectionForward:
+						for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+							IR::Entry *entry = *itEntry;
+							map[entry] = set;
+							set = transfer(set, gen[entry], kill[entry]);
+						}
+						break;
+
+					case DirectionBackward:
+						for(IR::EntryList::reverse_iterator itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
+							IR::Entry *entry = *itEntry;
+							map[entry] = set;
+							set = transfer(set, gen[entry], kill[entry]);
+						}
+						break;
 				}
 			}
 

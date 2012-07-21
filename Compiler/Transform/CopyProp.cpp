@@ -41,7 +41,7 @@ namespace Transform {
 		}
 
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(analysis.flowGraph(), gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect);
+		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(analysis.flowGraph(), gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
