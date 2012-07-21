@@ -1,6 +1,7 @@
 #include "Middle/Optimizer.h"
 
 #include "Analysis/Analysis.h"
+#include "Analysis/LiveVariables.h"
 
 #include "Transform/ConstantProp.h"
 #include "Transform/DeadCodeElimination.h"
@@ -37,6 +38,13 @@ namespace Middle {
 
 			printf("Start:\n");
 			procedure->print();
+			printf("\n");
+
+			Transform::CopyProp::instance()->transform(procedure, analysis);
+
+			Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
+			printf("Live Variables:\n");
+			liveVariables.print();
 			printf("\n");
 
 			Util::UniqueQueue<Transform::Transform*> transforms;

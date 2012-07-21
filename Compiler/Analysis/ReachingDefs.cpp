@@ -25,19 +25,16 @@ namespace Analysis {
 		}
 
 		EntryToEntrySetMap gen;
-		for(IR::EntryList::iterator it = procedure->entries().begin(); it != procedure->entries().end(); it++) {
-			IR::Entry *entry = *it;
-			if(entry->assign()) {
-				gen[entry].insert(entry);
-			}
-		}
-
 		EntryToEntrySetMap kill;
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
 			if(!entry->assign()) {
 				continue;
+			}
+
+			if(entry->assign()) {
+				gen[entry].insert(entry);
 			}
 
 			for(IR::EntrySet::const_iterator itDef = allDefs.begin(); itDef != allDefs.end(); itDef++) {

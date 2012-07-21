@@ -8,13 +8,17 @@
 #include <map>
 #include <set>
 
+namespace IR {
+	class Entry;
+}
+
 namespace Analysis {
 	template<typename T>
 	class DataFlow {
 	public:
 		typedef T Item;
 		typedef std::set<Item> ItemSet;
-		typedef std::map<Item, ItemSet> ItemToItemSetMap;
+		typedef std::map<IR::Entry*, ItemSet> EntryToItemSetMap;
 
 		enum MeetType {
 			MeetTypeUnion,
@@ -26,9 +30,9 @@ namespace Analysis {
 			DirectionBackward
 		};
 
-		ItemToItemSetMap analyze(FlowGraph &graph, ItemToItemSetMap &gen, ItemToItemSetMap &kill, ItemSet &all, MeetType meetType, Direction direction)
+		EntryToItemSetMap analyze(FlowGraph &graph, EntryToItemSetMap &gen, EntryToItemSetMap &kill, ItemSet &all, MeetType meetType, Direction direction)
 		{
-			ItemToItemSetMap map;
+			EntryToItemSetMap map;
 			std::map<FlowGraph::Block*, ItemSet> genBlock;
 			std::map<FlowGraph::Block*, ItemSet> killBlock;
 

@@ -219,6 +219,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Analysis\LiveVariables.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Analysis\ReachingDefs.cpp"
 					>
 				</File>
@@ -354,6 +358,10 @@
 				</File>
 				<File
 					RelativePath=".\Analysis\FlowGraph.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\LiveVariables.h"
 					>
 				</File>
 				<File
