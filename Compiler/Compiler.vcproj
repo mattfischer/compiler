@@ -327,6 +327,22 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="VM"
+				>
+				<File
+					RelativePath=".\VM\Instruction.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Back"
+				>
+				<File
+					RelativePath=".\Back\CodeGenerator.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -478,6 +494,22 @@
 				>
 				<File
 					RelativePath=".\Util\UniqueQueue.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="VM"
+				>
+				<File
+					RelativePath=".\VM\Instruction.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Back"
+				>
+				<File
+					RelativePath=".\Back\CodeGenerator.h"
 					>
 				</File>
 			</Filter>
