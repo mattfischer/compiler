@@ -334,6 +334,10 @@
 					RelativePath=".\VM\Instruction.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\VM\Interp.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Back"
@@ -502,6 +506,10 @@
 				>
 				<File
 					RelativePath=".\VM\Instruction.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VM\Interp.h"
 					>
 				</File>
 			</Filter>

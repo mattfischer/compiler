@@ -59,7 +59,7 @@ namespace Back {
 				case IR::Entry::TypePrint:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						VM::Instruction instr = VM::Instruction::makeOneAddr(VM::OneAddrPrint, regMap[threeAddr->lhs], 0);
+						VM::Instruction instr = VM::Instruction::makeOneAddr(VM::OneAddrPrint, regMap[threeAddr->rhs1], 0);
 						instructions.push_back(instr);
 						break;
 					}
