@@ -223,6 +223,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Analysis\Loops.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Analysis\ReachingDefs.cpp"
 					>
 				</File>
@@ -382,6 +386,10 @@
 				</File>
 				<File
 					RelativePath=".\Analysis\LiveVariables.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Analysis\Loops.h"
 					>
 				</File>
 				<File

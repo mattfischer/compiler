@@ -2,6 +2,7 @@
 
 #include "Analysis/Analysis.h"
 #include "Analysis/LiveVariables.h"
+#include "Analysis/Loops.h"
 
 #include "Transform/ConstantProp.h"
 #include "Transform/DeadCodeElimination.h"
@@ -46,6 +47,8 @@ namespace Middle {
 			printf("Live Variables:\n");
 			liveVariables.print();
 			printf("\n");
+
+			Analysis::Loops loops(analysis.flowGraph(), analysis.dominatorTree());
 
 			Util::UniqueQueue<Transform::Transform*> transforms;
 

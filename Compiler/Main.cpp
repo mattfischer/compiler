@@ -14,7 +14,7 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
-	//Middle::Optimizer::optimize(program);
+	Middle::Optimizer::optimize(program);
 
 	printf("IR:\n");
 	program->print();
