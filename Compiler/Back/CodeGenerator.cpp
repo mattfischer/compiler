@@ -34,8 +34,8 @@ namespace Back {
 
 				case IR::Entry::TypeLoadImm:
 					{
-						IR::EntryImm *imm = (IR::EntryImm*)entry;
-						VM::Instruction instr = VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[imm->lhs], imm->rhs);
+						IR::EntryOneAddrImm *imm = (IR::EntryOneAddrImm*)entry;
+						VM::Instruction instr = VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[imm->lhs], imm->imm);
 						instructions.push_back(instr);
 						break;
 					}

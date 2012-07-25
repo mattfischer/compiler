@@ -57,12 +57,12 @@ namespace IR {
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 
-	struct EntryImm : public Entry {
+	struct EntryOneAddrImm : public Entry {
 		Symbol *lhs;
-		int rhs;
+		int imm;
 
-		EntryImm(Symbol *_lhs, int _rhs);
-		virtual ~EntryImm();
+		EntryOneAddrImm(Symbol *_lhs, int _imm);
+		virtual ~EntryOneAddrImm();
 
 		virtual void print(const std::string &prefix);
 

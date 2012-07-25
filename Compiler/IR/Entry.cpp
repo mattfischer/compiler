@@ -71,26 +71,26 @@ namespace IR {
 		}
 	}
 
-	EntryImm::EntryImm(Symbol *_lhs, int _rhs)
-		: Entry(TypeLoadImm), lhs(_lhs), rhs(_rhs)
+	EntryOneAddrImm::EntryOneAddrImm(Symbol *_lhs, int _imm)
+		: Entry(TypeLoadImm), lhs(_lhs), imm(_imm)
 	{
 	}
 
-	EntryImm::~EntryImm()
+	EntryOneAddrImm::~EntryOneAddrImm()
 	{
 	}
 
-	void EntryImm::print(const std::string &prefix)
+	void EntryOneAddrImm::print(const std::string &prefix)
 	{
-		printf("  %s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs);
+		printf("  %s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), imm);
 	}
 
-	void EntryImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	void EntryOneAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 	{
 		lhs = newSymbol;
 	}
 
-	Symbol *EntryImm::assign()
+	Symbol *EntryOneAddrImm::assign()
 	{
 		return lhs;
 	}

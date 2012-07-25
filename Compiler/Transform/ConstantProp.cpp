@@ -22,13 +22,13 @@ namespace Transform {
 				break;
 			}
 
-			IR::EntryImm *imm = (IR::EntryImm*)def;
-			if(isConstant && ret != imm->rhs) {
+			IR::EntryOneAddrImm *imm = (IR::EntryOneAddrImm*)def;
+			if(isConstant && ret != imm->imm) {
 				ret = 0;
 				isConstant = false;
 				break;
 			} else {
-				ret = imm->rhs;
+				ret = imm->imm;
 				isConstant = true;
 			}
 		}
@@ -96,7 +96,7 @@ namespace Transform {
 								break;
 						}
 
-						IR::Entry *imm = new IR::EntryImm(threeAddr->lhs, value);
+						IR::Entry *imm = new IR::EntryOneAddrImm(threeAddr->lhs, value);
 
 						const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
 						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
