@@ -14,6 +14,7 @@ namespace IR {
 			TypeLoad,
 			TypeLoadImm,
 			TypeAdd,
+			TypeAddImm,
 			TypeMult,
 			TypePrint,
 			TypeEqual,

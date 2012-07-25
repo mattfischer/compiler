@@ -58,57 +58,75 @@ namespace Transform {
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
 					{
+						int rhs1;
+						int rhs2;
+						bool rhs1Const;
+						bool rhs2Const;
+
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						bool isConstant;
-						int rhs1 = getValue(threeAddr, threeAddr->rhs1, analysis.useDefs(), isConstant);
-						if(!isConstant) {
-							continue;
+						rhs1 = getValue(threeAddr, threeAddr->rhs1, analysis.useDefs(), rhs1Const);
+						if(threeAddr->rhs2) {
+							rhs2 = getValue(threeAddr, threeAddr->rhs2, analysis.useDefs(), rhs2Const);
+						} else {
+							rhs2 = 0;
+							rhs2Const = true;
 						}
 
-						int rhs2 = 0;
-						if(threeAddr->rhs2) {
-							rhs2 = getValue(threeAddr, threeAddr->rhs2, analysis.useDefs(), isConstant);
-							if(!isConstant) {
-								continue;
+						IR::Entry *newEntry = 0;
+						if(rhs1Const && rhs2Const) {
+							int value;
+							switch(entry->type) {
+								case IR::Entry::TypeAdd:
+									value = rhs1 + rhs2;
+									break;
+
+								case IR::Entry::TypeMult:
+									value = rhs1 * rhs2;
+									break;
+
+								case IR::Entry::TypeLoad:
+									value = rhs1;
+									break;
+
+								case IR::Entry::TypeEqual:
+									value = rhs1 == rhs2;
+									break;
+
+								case IR::Entry::TypeNequal:
+									value = rhs1 != rhs2;
+									break;
+							}
+
+							newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
+						} else if(rhs1Const || rhs2Const) {
+							if(threeAddr->type == IR::Entry::TypeAdd) {
+								int constant;
+								IR::Symbol *symbol;
+								if(rhs1Const) {
+									constant = rhs1;
+									symbol = threeAddr->rhs2;
+								} else {
+									constant = rhs2;
+									symbol = threeAddr->rhs1;
+								}
+
+								newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
 							}
 						}
 
-						int value;
-						switch(entry->type) {
-							case IR::Entry::TypeAdd:
-								value = rhs1 + rhs2;
-								break;
+						if(newEntry) {
+							const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
+							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+								queue.push(*it);
+							}
 
-							case IR::Entry::TypeMult:
-								value = rhs1 * rhs2;
-								break;
+							analysis.replace(threeAddr, newEntry);
 
-							case IR::Entry::TypeLoad:
-								value = rhs1;
-								break;
-
-							case IR::Entry::TypeEqual:
-								value = rhs1 == rhs2;
-								break;
-
-							case IR::Entry::TypeNequal:
-								value = rhs1 != rhs2;
-								break;
+							procedure->entries().insert(threeAddr, newEntry);
+							procedure->entries().erase(threeAddr);
+							delete threeAddr;
+							changed = true;
 						}
-
-						IR::Entry *imm = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
-
-						const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
-						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-							queue.push(*it);
-						}
-
-						analysis.replace(threeAddr, imm);
-
-						procedure->entries().insert(threeAddr, imm);
-						procedure->entries().erase(threeAddr);
-						delete threeAddr;
-						changed = true;
 						break;
 					}
 

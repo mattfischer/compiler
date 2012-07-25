@@ -8,6 +8,7 @@ namespace IR {
 		/* TypeLoad		*/	"load   ",
 		/* TypeLoadImm	*/	"loadi  ",
 		/* TypeAdd		*/	"add    ",
+		/* TypeAddImm   */  "addi   ",
 		/* TypeMult		*/	"mult   ",
 		/* TypePrint	*/	"print  ",
 		/* TypeEqual	*/	"equ    ",

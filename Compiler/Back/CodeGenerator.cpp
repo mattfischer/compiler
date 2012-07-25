@@ -48,6 +48,14 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeAddImm:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						VM::Instruction instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[twoAddrImm->lhs], regMap[twoAddrImm->rhs], twoAddrImm->imm);
+						instructions.push_back(instr);
+						break;
+					}
+
 				case IR::Entry::TypeMult:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
