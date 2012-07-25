@@ -61,13 +61,29 @@ namespace IR {
 		Symbol *lhs;
 		int imm;
 
-		EntryOneAddrImm(Symbol *_lhs, int _imm);
+		EntryOneAddrImm(Type _type, Symbol *_lhs, int _imm);
 		virtual ~EntryOneAddrImm();
 
 		virtual void print(const std::string &prefix);
 
 		virtual Symbol *assign();
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+	};
+
+	struct EntryTwoAddrImm : public Entry {
+		Symbol *lhs;
+		Symbol *rhs;
+		int imm;
+
+		EntryTwoAddrImm(Type _type, Symbol *_lhs, Symbol *_rhs, int _imm);
+		virtual ~EntryTwoAddrImm();
+
+		virtual void print(const std::string &prefix);
+
+		virtual Symbol *assign();
+		virtual bool uses(Symbol *symbol);
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 
 	struct EntryLabel : public Entry {

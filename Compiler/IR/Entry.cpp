@@ -71,8 +71,8 @@ namespace IR {
 		}
 	}
 
-	EntryOneAddrImm::EntryOneAddrImm(Symbol *_lhs, int _imm)
-		: Entry(TypeLoadImm), lhs(_lhs), imm(_imm)
+	EntryOneAddrImm::EntryOneAddrImm(Type _type, Symbol *_lhs, int _imm)
+		: Entry(_type), lhs(_lhs), imm(_imm)
 	{
 	}
 
@@ -93,6 +93,42 @@ namespace IR {
 	Symbol *EntryOneAddrImm::assign()
 	{
 		return lhs;
+	}
+
+	EntryTwoAddrImm::EntryTwoAddrImm(Type _type, IR::Symbol *_lhs, IR::Symbol *_rhs, int _imm)
+		: Entry(_type), lhs(_lhs), rhs(_rhs), imm(_imm)
+	{
+	}
+
+	EntryTwoAddrImm::~EntryTwoAddrImm()
+	{
+	}
+
+	void EntryTwoAddrImm::print(const std::string &prefix)
+	{
+		printf("  %s%s%s, %s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs->name.c_str(), imm);
+	}
+
+	void EntryTwoAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	{
+		lhs = newSymbol;
+	}
+
+	Symbol *EntryTwoAddrImm::assign()
+	{
+		return lhs;
+	}
+
+	bool EntryTwoAddrImm::uses(Symbol *symbol)
+	{
+		return (rhs == symbol);
+	}
+
+	void EntryTwoAddrImm::replaceUse(Symbol *symbol, Symbol *newSymbol)
+	{
+		if(rhs == symbol) {
+			rhs = newSymbol;
+		}
 	}
 
 	EntryLabel::EntryLabel(const std::string &_name)

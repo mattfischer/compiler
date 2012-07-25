@@ -100,7 +100,7 @@ namespace Front {
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeConstant:
 				result = mProc->newTemp(node->type);
-				mProc->emit(new IR::EntryOneAddrImm(result, node->lexVal._int));
+				mProc->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, result, node->lexVal._int));
 				break;
 
 			case SyntaxNode::NodeTypeId:

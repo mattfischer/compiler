@@ -96,7 +96,7 @@ namespace Transform {
 								break;
 						}
 
-						IR::Entry *imm = new IR::EntryOneAddrImm(threeAddr->lhs, value);
+						IR::Entry *imm = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
 
 						const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
 						for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
