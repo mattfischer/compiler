@@ -106,8 +106,12 @@ namespace Analysis {
 
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			lineMap[entry] = line;
-			printf("%i: ", line);
+			lineMap[entry] = line++;
+		}
+
+		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+			printf("%i: ", lineMap[entry]);
 			entry->print();
 			printf(" -> ");
 			IR::EntrySet d = defs(entry);
@@ -116,7 +120,6 @@ namespace Analysis {
 				printf("%i ", lineMap[e]);
 			}
 			printf("\n");
-			line++;
 		}
 	}
 }

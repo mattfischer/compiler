@@ -16,10 +16,6 @@ int main(int arg, char *argv[])
 
 	Middle::Optimizer::optimize(program);
 
-	printf("IR:\n");
-	program->print();
-	printf("\n");
-
 	std::vector<VM::Instruction> instrs = Back::CodeGenerator::generate(program->main());
 	printf("Code:\n");
 	for(unsigned int i = 0; i < instrs.size(); i++) {

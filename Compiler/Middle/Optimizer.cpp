@@ -41,14 +41,18 @@ namespace Middle {
 			procedure->print();
 			printf("\n");
 
-			Transform::CopyProp::instance()->transform(procedure, analysis);
+			printf("Reaching Definitions:\n");
+			analysis.reachingDefs().print();
+			printf("\n");
+
+			printf("Use-def chains:\n");
+			analysis.useDefs().print();
+			printf("\n");
 
 			Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
 			printf("Live Variables:\n");
 			liveVariables.print();
 			printf("\n");
-
-			Analysis::Loops loops(analysis.flowGraph(), analysis.dominatorTree());
 
 			Util::UniqueQueue<Transform::Transform*> transforms;
 
