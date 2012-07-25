@@ -25,7 +25,7 @@ namespace Front {
 		IR::Procedure *mProc;
 
 		void processNode(SyntaxNode *node);
-		IR::Symbol *processRValue(SyntaxNode *node);
+		IR::Symbol *processRValue(SyntaxNode *node, IR::Symbol *lhs = 0);
 		void setCurrentBlock(IR::Block *block);
 	};
 }

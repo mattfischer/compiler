@@ -44,8 +44,10 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeAssign:
 				lhs = mProc->findSymbol(node->children[0]->lexVal._id);
-				rhs = processRValue(node->children[1]);
-				mProc->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoad, lhs, rhs));
+				rhs = processRValue(node->children[1], lhs);
+				if(rhs != lhs) {
+					mProc->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoad, lhs, rhs));
+				}
 				break;
 
 			case SyntaxNode::NodeTypeIf:
@@ -92,14 +94,16 @@ namespace Front {
 		}
 	}
 
-	IR::Symbol *IRGenerator::processRValue(SyntaxNode *node)
+	IR::Symbol *IRGenerator::processRValue(SyntaxNode *node, IR::Symbol *lhs)
 	{
-		IR::Symbol *result;
+		IR::Symbol *result = lhs;
 		IR::Symbol *a, *b;
 
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeConstant:
-				result = mProc->newTemp(node->type);
+				if(!result) {
+					result = mProc->newTemp(node->type);
+				}
 				mProc->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, result, node->lexVal._int));
 				break;
 
@@ -108,7 +112,9 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeArith:
-				result = mProc->newTemp(node->type);
+				if(!result) {
+					result = mProc->newTemp(node->type);
+				}
 				a = processRValue(node->children[0]);
 				b = processRValue(node->children[1]);
 				switch(node->nodeSubtype) {
@@ -123,7 +129,9 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCompare:
-				result = mProc->newTemp(node->type);
+				if(!result) {
+					result = mProc->newTemp(node->type);
+				}
 				a = processRValue(node->children[0]);
 				b = processRValue(node->children[1]);
 				switch(node->nodeSubtype) {
