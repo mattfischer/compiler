@@ -6,8 +6,9 @@
 #include "IR/Symbol.h"
 
 namespace Analysis {
-	LiveVariables::LiveVariables(IR::Procedure *procedure, FlowGraph &graph)
+	LiveVariables::LiveVariables(IR::Procedure *procedure)
 	{
+		FlowGraph graph(procedure);
 		mProcedure = procedure;
 
 		SymbolSet all(procedure->symbols().begin(), procedure->symbols().end());

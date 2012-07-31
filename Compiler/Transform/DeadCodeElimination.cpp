@@ -3,19 +3,20 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
-#include "Analysis/Analysis.h"
 #include "Analysis/UseDefs.h"
 #include "Analysis/FlowGraph.h"
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	bool DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool DeadCodeElimination::transform(IR::Procedure *procedure)
 	{
 		bool changed = false;
+		Analysis::FlowGraph flowGraph(procedure);
+		Analysis::UseDefs useDefs(procedure);
 
-		for(Analysis::FlowGraph::BlockSet::iterator it = analysis.flowGraph().blocks().begin(); it != analysis.flowGraph().blocks().end(); it++) {
+		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
-			if(block->pred.size() == 0 && block != analysis.flowGraph().start()) {
+			if(block->pred.size() == 0 && block != flowGraph.start()) {
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
 					if(entry->type == IR::Entry::TypeLabel) {
@@ -23,7 +24,6 @@ namespace Transform {
 					}
 
 					procedure->entries().erase(entry);
-					analysis.remove(entry);
 				}
 				changed = true;
 			}
@@ -42,10 +42,9 @@ namespace Transform {
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
 					{
-						const IR::EntrySet &uses = analysis.useDefs().uses(entry);
+						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
-							analysis.remove(entry);
 							changed = true;
 						}
 						break;
@@ -61,7 +60,6 @@ namespace Transform {
 
 							if(jump->target == label) {
 								procedure->entries().erase(jump);
-								analysis.remove(jump);
 								changed = true;
 								break;
 							}

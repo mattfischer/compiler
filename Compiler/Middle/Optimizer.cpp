@@ -1,6 +1,7 @@
 #include "Middle/Optimizer.h"
 
-#include "Analysis/Analysis.h"
+#include "Analysis/ReachingDefs.h"
+#include "Analysis/UseDefs.h"
 #include "Analysis/LiveVariables.h"
 #include "Analysis/Loops.h"
 
@@ -35,21 +36,23 @@ namespace Middle {
 
 		for(IR::Program::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
-			Analysis::Analysis analysis(procedure);
 
 			printf("Start:\n");
 			procedure->print();
 			printf("\n");
 
+			Analysis::ReachingDefs reachingDefs(procedure);
+			Analysis::UseDefs useDefs(procedure);
+			Analysis::LiveVariables liveVariables(procedure);
+
 			printf("Reaching Definitions:\n");
-			analysis.reachingDefs().print();
+			reachingDefs.print();
 			printf("\n");
 
 			printf("Use-def chains:\n");
-			analysis.useDefs().print();
+			useDefs.print();
 			printf("\n");
 
-			Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
 			printf("Live Variables:\n");
 			liveVariables.print();
 			printf("\n");
@@ -65,7 +68,7 @@ namespace Middle {
 				Transform::Transform *transform = transforms.front();
 				transforms.pop();
 
-				bool changed = transform->transform(procedure, analysis);
+				bool changed = transform->transform(procedure);
 
 				printf("After %s:\n", transform->name().c_str());
 				procedure->print();

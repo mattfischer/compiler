@@ -3,13 +3,12 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
-#include "Analysis/Analysis.h"
 #include "Analysis/UseDefs.h"
 #include "Analysis/ReachingDefs.h"
 #include "Analysis/DataFlow.h"
 
 namespace Transform {
-	bool CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool CopyProp::transform(IR::Procedure *procedure)
 	{
 		bool changed = false;
 		IR::EntrySet allLoads;
@@ -41,7 +40,8 @@ namespace Transform {
 		}
 
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(analysis.flowGraph(), gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
+		Analysis::FlowGraph flowGraph(procedure);
+		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -51,7 +51,6 @@ namespace Transform {
 				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
 				if(entry->uses(load->lhs)) {
 					entry->replaceUse(load->lhs, load->rhs1);
-					analysis.replaceUse(entry, load->lhs, load->rhs1);
 					changed = true;
 				}
 			}

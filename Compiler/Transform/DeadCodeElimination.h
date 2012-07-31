@@ -6,7 +6,7 @@
 namespace Transform {
 	class DeadCodeElimination : public Transform {
 	public:
-		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		virtual bool transform(IR::Procedure *procedure);
 		virtual std::string name() { return "DeadCodeElimination"; }
 
 		static DeadCodeElimination *instance();

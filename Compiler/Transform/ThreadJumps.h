@@ -10,7 +10,7 @@ namespace IR {
 namespace Transform {
 	class ThreadJumps : public Transform {
 	public:
-		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		virtual bool transform(IR::Procedure *procedure);
 		virtual std::string name() { return "ThreadJumps"; }
 
 		static ThreadJumps *instance();

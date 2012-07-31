@@ -18,7 +18,7 @@ namespace Transform {
 		return label;
 	}
 
-	bool ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
+	bool ThreadJumps::transform(IR::Procedure *proc)
 	{
 		bool changed = false;
 

@@ -3,7 +3,8 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
-#include "Analysis/Analysis.h"
+#include "Analysis/ReachingDefs.h"
+#include "Analysis/UseDefs.h"
 
 #include "Util/UniqueQueue.h"
 
@@ -36,9 +37,10 @@ namespace Transform {
 		return ret;
 	}
 
-	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool ConstantProp::transform(IR::Procedure *procedure)
 	{
 		bool changed = false;
+		Analysis::UseDefs useDefs(procedure);
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
@@ -64,9 +66,9 @@ namespace Transform {
 						bool rhs2Const;
 
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = getValue(threeAddr, threeAddr->rhs1, analysis.useDefs(), rhs1Const);
+						rhs1 = getValue(threeAddr, threeAddr->rhs1, useDefs, rhs1Const);
 						if(threeAddr->rhs2) {
-							rhs2 = getValue(threeAddr, threeAddr->rhs2, analysis.useDefs(), rhs2Const);
+							rhs2 = getValue(threeAddr, threeAddr->rhs2, useDefs, rhs2Const);
 						} else {
 							rhs2 = 0;
 							rhs2Const = true;
@@ -115,12 +117,10 @@ namespace Transform {
 						}
 
 						if(newEntry) {
-							const IR::EntrySet &entries = analysis.useDefs().uses(threeAddr);
+							const IR::EntrySet &entries = useDefs.uses(threeAddr);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);
 							}
-
-							analysis.replace(threeAddr, newEntry);
 
 							procedure->entries().insert(threeAddr, newEntry);
 							procedure->entries().erase(threeAddr);
@@ -134,7 +134,7 @@ namespace Transform {
 					{
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = getValue(cJump, cJump->pred, analysis.useDefs(), isConstant);
+						int value = getValue(cJump, cJump->pred, useDefs, isConstant);
 						if(!isConstant) {
 							continue;
 						}
@@ -145,8 +145,6 @@ namespace Transform {
 						} else {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
-
-						analysis.replace(cJump, jump);
 
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);

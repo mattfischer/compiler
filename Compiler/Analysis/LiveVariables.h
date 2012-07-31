@@ -11,11 +11,9 @@ namespace IR {
 }
 
 namespace Analysis {
-	class FlowGraph;
-
 	class LiveVariables {
 	public:
-		LiveVariables(IR::Procedure *procedure, FlowGraph &graph);
+		LiveVariables(IR::Procedure *procedure);
 
 		typedef std::set<IR::Symbol*> SymbolSet;
 		SymbolSet &variables(IR::Entry *entry);
