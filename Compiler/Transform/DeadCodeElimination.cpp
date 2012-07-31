@@ -35,9 +35,17 @@ namespace Transform {
 			itNext++;
 			IR::Entry *entry = *itEntry;
 			switch(entry->type) {
+				case IR::Entry::TypeLoad:
+					{
+						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
+						if(load->lhs == load->rhs1) {
+							procedure->entries().erase(entry);
+							break;
+						}
+					}
+					// Fall-through
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeMult:
-				case IR::Entry::TypeLoad:
 				case IR::Entry::TypeLoadImm:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:

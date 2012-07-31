@@ -10,6 +10,9 @@ namespace Transform {
 		virtual std::string name() { return "CopyProp"; }
 
 		static CopyProp *instance();
+	private:
+		bool forward(IR::Procedure *procedure);
+		bool backward(IR::Procedure *procedure);
 	};
 }
 #endif
