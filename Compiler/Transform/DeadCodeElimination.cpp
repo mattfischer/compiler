@@ -17,13 +17,18 @@ namespace Transform {
 		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
 			if(block->pred.size() == 0 && block != flowGraph.start()) {
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
+				IR::EntryList::iterator itNext;
+				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
+					itNext = itEntry;
+					itNext++;
 					IR::Entry *entry = *itEntry;
 					if(entry->type == IR::Entry::TypeLabel) {
 						continue;
 					}
 
 					procedure->entries().erase(entry);
+					useDefs.remove(entry);
+					delete entry;
 				}
 				changed = true;
 			}
@@ -40,6 +45,8 @@ namespace Transform {
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
 						if(load->lhs == load->rhs1) {
 							procedure->entries().erase(entry);
+							useDefs.remove(entry);
+							delete entry;
 							break;
 						}
 					}
@@ -53,6 +60,8 @@ namespace Transform {
 						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
+							useDefs.remove(entry);
+							delete entry;
 							changed = true;
 						}
 						break;
@@ -68,6 +77,8 @@ namespace Transform {
 
 							if(jump->target == label) {
 								procedure->entries().erase(jump);
+								useDefs.remove(entry);
+								delete entry;
 								changed = true;
 								break;
 							}

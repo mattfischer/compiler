@@ -73,6 +73,32 @@ namespace Analysis {
 		return result;
 	}
 
+	void ReachingDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	{
+		mDefs[newEntry] = mDefs[oldEntry];
+		mDefs.erase(oldEntry);
+		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
+			IR::EntrySet &set = it->second;
+			IR::EntrySet::iterator setIt = set.find(oldEntry);
+			if(setIt != set.end()) {
+				set.erase(setIt);
+				set.insert(newEntry);
+			}
+		}
+	}
+
+	void ReachingDefs::remove(IR::Entry *entry)
+	{
+		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
+			IR::EntrySet &set = it->second;
+			IR::EntrySet::iterator setIt = set.find(entry);
+			if(setIt != set.end()) {
+				set.erase(setIt);
+			}
+		}
+		mDefs.erase(entry);
+	}
+
 	void ReachingDefs::print() const
 	{
 		int line = 1;

@@ -122,6 +122,7 @@ namespace Transform {
 								queue.push(*it);
 							}
 
+							useDefs.replace(threeAddr, newEntry);
 							procedure->entries().insert(threeAddr, newEntry);
 							procedure->entries().erase(threeAddr);
 							delete threeAddr;
@@ -146,6 +147,7 @@ namespace Transform {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
 
+						useDefs.replace(cJump, jump);
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);
 						delete cJump;

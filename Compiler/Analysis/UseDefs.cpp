@@ -54,6 +54,78 @@ namespace Analysis {
 		}
 	}
 
+	void UseDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	{
+		SymbolToEntrySetMap &map = mDefines[oldEntry];
+		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
+			IR::EntrySet &defs = it->second;
+			for(IR::EntrySet::iterator it2 = defs.begin(); it2 != defs.end(); it2++) {
+				IR::Entry *use = *it2;
+				mUses[use].erase(oldEntry);
+			}
+		}
+		mDefines.erase(oldEntry);
+		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
+		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
+			IR::Entry *def = *it;
+			IR::Symbol *symbol = def->assign();
+			if(newEntry->uses(symbol)) {
+				mDefines[newEntry][symbol].insert(def);
+			}
+		}
+
+		mUses[newEntry] = mUses[oldEntry];
+		mUses.erase(oldEntry);
+		IR::EntrySet &uses = mUses[newEntry];
+		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+			IR::Entry *use = *it;
+			IR::EntrySet &defs = mDefines[use][newEntry->assign()];
+			defs.erase(oldEntry);
+			defs.insert(newEntry);
+		}
+
+		mReachingDefs.replace(oldEntry, newEntry);
+	}
+
+	void UseDefs::remove(IR::Entry *entry)
+	{
+		SymbolToEntrySetMap &map = mDefines[entry];
+		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
+			IR::EntrySet &defSet = it->second;
+			for(IR::EntrySet::iterator it2 = defSet.begin(); it2 != defSet.end(); it2++) {
+				IR::Entry *def = *it2;
+				mUses[def].erase(entry);
+			}
+		}
+		mDefines.erase(entry);
+
+		IR::EntrySet &uses = mUses[entry];
+		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
+			IR::Entry *use = *it;
+			mDefines[use][entry->assign()].erase(entry);
+		}
+		mUses.erase(entry);
+
+		mReachingDefs.remove(entry);
+	}
+
+	void UseDefs::replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol)
+	{
+		IR::EntrySet &oldDefs = mDefines[entry][oldSymbol];
+		for(IR::EntrySet::iterator it = oldDefs.begin(); it != oldDefs.end(); it++) {
+			IR::Entry *def = *it;
+			mUses[def].erase(entry);
+		}
+		mDefines[entry].erase(oldSymbol);
+
+		const IR::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
+		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
+			IR::Entry *def = *it;
+			mUses[def].insert(entry);
+		}
+		mDefines[entry][newSymbol] = newDefs;
+	}
+
 	void UseDefs::print() const
 	{
 		int line = 1;
