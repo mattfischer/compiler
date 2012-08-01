@@ -89,6 +89,20 @@ namespace Analysis {
 
 	void UseDefs::remove(IR::Entry *entry)
 	{
+		if(entry->uses(entry->assign())) {
+			IR::Symbol *symbol = entry->assign();
+			IR::EntrySet &defs = mDefines[entry][symbol];
+			IR::EntrySet &uses = mUses[entry];
+			for(IR::EntrySet::iterator itUse = uses.begin(); itUse != uses.end(); itUse++) {
+				IR::Entry *use = *itUse;
+				for(IR::EntrySet::iterator itDef = defs.begin(); itDef != defs.end(); itDef++) {
+					IR::Entry *def = *itDef;
+					mDefines[use][symbol].insert(def);
+					mUses[def].insert(use);
+				}
+			}
+		}
+
 		SymbolToEntrySetMap &map = mDefines[entry];
 		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
 			IR::EntrySet &defSet = it->second;

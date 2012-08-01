@@ -34,8 +34,8 @@ namespace Transform {
 			}
 		}
 
-		IR::EntryList::iterator itNext;
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry = itNext) {
+		IR::EntryList::reverse_iterator itNext;
+		for(IR::EntryList::reverse_iterator itEntry = procedure->entries().rbegin(); itEntry != procedure->entries().rend(); itEntry = itNext) {
 			itNext = itEntry;
 			itNext++;
 			IR::Entry *entry = *itEntry;
@@ -69,7 +69,7 @@ namespace Transform {
 				case IR::Entry::TypeJump:
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
-						for(IR::EntryList::iterator itLabel = itNext; itLabel != procedure->entries().end(); itLabel++) {
+						for(IR::EntryList::iterator itLabel = ++(procedure->entries().find(entry)); itLabel != procedure->entries().end(); itLabel++) {
 							IR::Entry *label = *itLabel;
 							if(label->type != IR::Entry::TypeLabel) {
 								break;
