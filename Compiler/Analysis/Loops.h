@@ -6,22 +6,28 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 namespace Analysis {
 	class Loops {
 	public:
+		struct Loop;
+		typedef std::list<Loop*> LoopList;
+		typedef std::set<Loop*> LoopSet;
+
 		struct Loop {
 			FlowGraph::Block *header;
 			FlowGraph::Block *preheader;
 			FlowGraph::BlockSet blocks;
 			Loop *parent;
+			LoopSet children;
 		};
 
 		Loops(IR::Procedure *procedure);
 		~Loops();
 
-		typedef std::list<Loop*> LoopList;
 		LoopList &loops();
+		Loop *rootLoop() { return &mRootLoop; }
 
 		void print();
 
@@ -35,6 +41,7 @@ namespace Analysis {
 		typedef std::map<FlowGraph::Block*, Loop*> BlockToLoopMap;
 		BlockToLoopMap mLoopMap;
 		FlowGraph mFlowGraph;
+		Loop mRootLoop;
 	};
 }
 #endif

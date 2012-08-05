@@ -9,6 +9,7 @@
 #include "Transform/DeadCodeElimination.h"
 #include "Transform/CopyProp.h"
 #include "Transform/ThreadJumps.h"
+#include "Transform/LoopInvariantCodeMotion.h"
 
 #include "IR/Program.h"
 #include "IR/Procedure.h"
@@ -27,6 +28,7 @@ namespace Middle {
 		startingTransforms.push_back(Transform::ConstantProp::instance());
 		startingTransforms.push_back(Transform::DeadCodeElimination::instance());
 		startingTransforms.push_back(Transform::ThreadJumps::instance());
+		startingTransforms.push_back(Transform::LoopInvariantCodeMotion::instance());
 
 		transformMap[Transform::CopyProp::instance()].push_back(Transform::DeadCodeElimination::instance());
 		transformMap[Transform::ConstantProp::instance()].push_back(Transform::DeadCodeElimination::instance());

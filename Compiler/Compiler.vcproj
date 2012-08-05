@@ -311,6 +311,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Transform\LoopInvariantCodeMotion.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Transform\SSA.cpp"
 					>
 				</File>
@@ -470,6 +474,10 @@
 				</File>
 				<File
 					RelativePath=".\Transform\DeadCodeElimination.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\LoopInvariantCodeMotion.h"
 					>
 				</File>
 				<File

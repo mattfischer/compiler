@@ -7,6 +7,13 @@ namespace Analysis {
 		: mFlowGraph(procedure)
 	{
 		DominatorTree dominatorTree(procedure, mFlowGraph);
+		mRootLoop.parent = &mRootLoop;
+		mRootLoop.header = mFlowGraph.start();
+		for(FlowGraph::BlockSet::iterator itBlock = mFlowGraph.blocks().begin(); itBlock != mFlowGraph.blocks().end(); itBlock++) {
+			FlowGraph::Block *block = *itBlock;
+			mRootLoop.blocks.insert(block);
+		}
+		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		for(FlowGraph::BlockSet::iterator itBlock = mFlowGraph.blocks().begin(); itBlock != mFlowGraph.blocks().end(); itBlock++) {
 			FlowGraph::Block *block = *itBlock;
@@ -83,6 +90,7 @@ namespace Analysis {
 				BlockToLoopMap::iterator itMap = mLoopMap.find(block);
 				if(itMap != mLoopMap.end()) {
 					loop->parent = itMap->second;
+					loop->parent->children.insert(loop);
 					break;
 				}
 			}
@@ -125,7 +133,7 @@ namespace Analysis {
 		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
 			Loop *loop = *itLoop;
 			printf("%i: ", loopMap[loop]);
-			if(loop->parent) {
+			if(loop->parent != &mRootLoop) {
 				printf("parent: %i | ", loopMap[loop->parent]);
 			}
 			printf("header: %s | ", ((IR::EntryLabel*)loop->header->entries.front())->name.c_str());
