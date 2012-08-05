@@ -1,5 +1,6 @@
 #include "Front/Parser.h"
 #include "Middle/Optimizer.h"
+#include "Middle/ErrorCheck.h"
 #include "Back/CodeGenerator.h"
 
 #include "VM/Instruction.h"
@@ -11,6 +12,10 @@ int main(int arg, char *argv[])
 {
 	IR::Program *program = Front::Parser::parse("input.lang");
 	if(!program) {
+		return 1;
+	}
+
+	if(!Middle::ErrorCheck::check(program)) {
 		return 1;
 	}
 

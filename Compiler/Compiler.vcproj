@@ -327,6 +327,10 @@
 				Name="Middle"
 				>
 				<File
+					RelativePath=".\Middle\ErrorCheck.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Middle\Optimizer.cpp"
 					>
 				</File>
@@ -496,6 +500,10 @@
 			<Filter
 				Name="Middle"
 				>
+				<File
+					RelativePath=".\Middle\ErrorCheck.h"
+					>
+				</File>
 				<File
 					RelativePath=".\Middle\Optimizer.h"
 					>

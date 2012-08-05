@@ -15,7 +15,7 @@ namespace IR {
 		iterator begin() { return mBegin; }
 		iterator end() { return mEnd; }
 		reverse_iterator rbegin() { return reverse_iterator(*--end()); }
-		reverse_iterator rend() { return reverse_iterator(*begin()); }
+		reverse_iterator rend() { return reverse_iterator(*--begin()); }
 
 		Entry *front() { return *begin(); }
 		Entry *back() { return *(--end()); }
