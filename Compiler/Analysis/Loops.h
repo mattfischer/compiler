@@ -12,24 +12,29 @@ namespace Analysis {
 	public:
 		struct Loop {
 			FlowGraph::Block *header;
+			FlowGraph::Block *preheader;
 			FlowGraph::BlockSet blocks;
 			Loop *parent;
 		};
 
-		Loops(FlowGraph &graph, DominatorTree &doms);
+		Loops(IR::Procedure *procedure);
 		~Loops();
 
 		typedef std::list<Loop*> LoopList;
 		LoopList &loops();
 
+		void print();
+
 	private:
 		bool isDominator(FlowGraph::Block *block, FlowGraph::Block *test, DominatorTree &doms);
 		Loop *buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header);
 		void findParents(DominatorTree &doms);
+		FlowGraph::Block *findPreheader(Loop *loop);
 
 		LoopList mLoops;
 		typedef std::map<FlowGraph::Block*, Loop*> BlockToLoopMap;
 		BlockToLoopMap mLoopMap;
+		FlowGraph mFlowGraph;
 	};
 }
 #endif

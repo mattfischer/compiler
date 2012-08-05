@@ -44,6 +44,7 @@ namespace Middle {
 			Analysis::ReachingDefs reachingDefs(procedure);
 			Analysis::UseDefs useDefs(procedure);
 			Analysis::LiveVariables liveVariables(procedure);
+			Analysis::Loops loops(procedure);
 
 			printf("Reaching Definitions:\n");
 			reachingDefs.print();
@@ -55,6 +56,10 @@ namespace Middle {
 
 			printf("Live Variables:\n");
 			liveVariables.print();
+			printf("\n");
+
+			printf("Loops:\n");
+			loops.print();
 			printf("\n");
 
 			Util::UniqueQueue<Transform::Transform*> transforms;

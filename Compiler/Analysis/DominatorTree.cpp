@@ -5,9 +5,10 @@
 #include <algorithm>
 
 namespace Analysis {
-	DominatorTree::DominatorTree(FlowGraph &flowGraph)
+	DominatorTree::DominatorTree(IR::Procedure *procedure, FlowGraph &flowGraph)
+		: mFlowGraph(flowGraph)
 	{
-		BlockSort sort(flowGraph);
+		BlockSort sort(mFlowGraph);
 		mBlocks = sort.sorted();
 
 		mIDoms[mBlocks[0]] = mBlocks[0];
@@ -56,5 +57,21 @@ namespace Analysis {
 	const FlowGraph::BlockVector &DominatorTree::blocks() const
 	{
 		return mBlocks;
+	}
+
+	bool DominatorTree::dominates(FlowGraph::Block *block, FlowGraph::Block *dominator)
+	{
+		FlowGraph::Block *cursor = block;
+		FlowGraph::Block *id = idom(cursor);
+
+		while(id != cursor) {
+			cursor = id;
+			id = idom(cursor);
+			if(cursor == dominator) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

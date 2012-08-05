@@ -3,13 +3,16 @@
 #include <queue>
 
 namespace Analysis {
-	Loops::Loops(FlowGraph &graph, DominatorTree &doms)
+	Loops::Loops(IR::Procedure *procedure)
+		: mFlowGraph(procedure)
 	{
-		for(FlowGraph::BlockSet::iterator itBlock = graph.blocks().begin(); itBlock != graph.blocks().end(); itBlock++) {
+		DominatorTree dominatorTree(procedure, mFlowGraph);
+
+		for(FlowGraph::BlockSet::iterator itBlock = mFlowGraph.blocks().begin(); itBlock != mFlowGraph.blocks().end(); itBlock++) {
 			FlowGraph::Block *block = *itBlock;
 			for(FlowGraph::BlockSet::iterator itSucc = block->succ.begin(); itSucc != block->succ.end(); itSucc++) {
 				FlowGraph::Block *succ = *itSucc;
-				if(isDominator(block, succ, doms)) {
+				if(dominatorTree.dominates(block, succ)) {
 					FlowGraph::Block *header = succ;
 					FlowGraph::Block *bottom = block;
 					Loop *loop = buildLoop(bottom, header);
@@ -19,7 +22,7 @@ namespace Analysis {
 			}
 		}
 
-		findParents(doms);
+		findParents(dominatorTree);
 	}
 
 	Loops::~Loops()
@@ -33,22 +36,6 @@ namespace Analysis {
 	Loops::LoopList &Loops::loops()
 	{
 		return mLoops;
-	}
-
-	bool Loops::isDominator(FlowGraph::Block *block, FlowGraph::Block *test, DominatorTree &doms)
-	{
-		FlowGraph::Block *cursor = block;
-		FlowGraph::Block *idom = doms.idom(cursor);
-
-		while(idom != cursor) {
-			cursor = idom;
-			idom = doms.idom(cursor);
-			if(cursor == test) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	Loops::Loop *Loops::buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header)
@@ -76,6 +63,7 @@ namespace Analysis {
 		}
 
 		loop->blocks.insert(header);
+		loop->preheader = findPreheader(loop);
 
 		return loop;
 	}
@@ -98,6 +86,58 @@ namespace Analysis {
 					break;
 				}
 			}
+		}
+	}
+
+	FlowGraph::Block *Loops::findPreheader(Loop *loop)
+	{
+		FlowGraph::Block *preheader = 0;
+		for(FlowGraph::BlockSet::iterator itBlock = loop->header->pred.begin(); itBlock != loop->header->pred.end(); itBlock++) {
+			FlowGraph::Block *block = *itBlock;
+			if(loop->blocks.find(block) != loop->blocks.end()) {
+				continue;
+			}
+
+			if(preheader) {
+				preheader = 0;
+				break;
+			} else {
+				preheader = block;
+			}
+		}
+
+		if(!preheader || preheader->succ.size() > 1) {
+			preheader = 0;
+		}
+
+		return preheader;
+	}
+
+	void Loops::print()
+	{
+		std::map<Loop *, int> loopMap;
+		int num = 1;
+		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
+			Loop *loop = *itLoop;
+			loopMap[loop] = num++;
+		}
+
+		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
+			Loop *loop = *itLoop;
+			printf("%i: ", loopMap[loop]);
+			if(loop->parent) {
+				printf("parent: %i | ", loopMap[loop->parent]);
+			}
+			printf("header: %s | ", ((IR::EntryLabel*)loop->header->entries.front())->name.c_str());
+			if(loop->preheader) {
+				printf("preheader: %s | ", ((IR::EntryLabel*)loop->preheader->entries.front())->name.c_str());
+			}
+			printf("blocks: ");
+			for(FlowGraph::BlockSet::iterator itBlock = loop->blocks.begin(); itBlock != loop->blocks.end(); itBlock++) {
+				FlowGraph::Block *block = *itBlock;
+				printf("%s ", ((IR::EntryLabel*)block->entries.front())->name.c_str());
+			}
+			printf("\n");
 		}
 	}
 }

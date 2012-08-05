@@ -27,7 +27,7 @@ namespace Transform {
 	{
 		std::vector<IR::Symbol*> newSymbols;
 		Analysis::FlowGraph flowGraph(proc);
-		Analysis::DominatorTree dominatorTree(flowGraph);
+		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
 		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
