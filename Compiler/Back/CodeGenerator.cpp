@@ -1,15 +1,27 @@
 #include "Back/CodeGenerator.h"
 
 #include "IR/Procedure.h"
+#include "IR/Program.h"
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
 
 #include <map>
 
 namespace Back {
-	std::vector<VM::Instruction> CodeGenerator::generate(IR::Procedure *procedure)
+	std::vector<VM::Instruction> CodeGenerator::generate(IR::Program *program)
 	{
 		std::vector<VM::Instruction> instructions;
+
+		for(IR::Program::ProcedureList::iterator itProc = program->procedures().begin(); itProc != program->procedures().end(); itProc++) {
+			IR::Procedure *procedure = *itProc;
+			generateProcedure(procedure, instructions);
+		}
+
+		return instructions;
+	}
+
+	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions)
+	{
 		std::map<IR::Symbol*, int> regMap;
 		std::map<IR::EntryLabel*, int> labelMap;
 		std::map<IR::Entry*, int> jumpMap;
@@ -141,7 +153,5 @@ namespace Back {
 					}
 			}
 		}
-
-		return instructions;
 	}
 }

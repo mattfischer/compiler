@@ -21,7 +21,7 @@ int main(int arg, char *argv[])
 
 	Middle::Optimizer::optimize(program);
 
-	std::vector<VM::Instruction> instrs = Back::CodeGenerator::generate(program->main());
+	std::vector<VM::Instruction> instrs = Back::CodeGenerator::generate(program);
 	printf("Code:\n");
 	for(unsigned int i = 0; i < instrs.size(); i++) {
 		printf("  ");
