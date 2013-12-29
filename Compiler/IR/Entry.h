@@ -11,7 +11,7 @@ namespace IR {
 	public:
 		enum Type {
 			TypeNone,
-			TypeLoad,
+			TypeMove,
 			TypeLoadImm,
 			TypeAdd,
 			TypeAddImm,

@@ -56,7 +56,7 @@ namespace Transform {
 			switch(entry->type) {
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeMult:
-				case IR::Entry::TypeLoad:
+				case IR::Entry::TypeMove:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
 					{
@@ -86,7 +86,7 @@ namespace Transform {
 									value = rhs1 * rhs2;
 									break;
 
-								case IR::Entry::TypeLoad:
+								case IR::Entry::TypeMove:
 									value = rhs1;
 									break;
 

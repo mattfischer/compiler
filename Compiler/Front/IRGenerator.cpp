@@ -46,7 +46,7 @@ namespace Front {
 				lhs = mProc->findSymbol(node->children[0]->lexVal._id);
 				rhs = processRValue(node->children[1]);
 				if(rhs != lhs) {
-					mProc->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoad, lhs, rhs));
+					mProc->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, lhs, rhs));
 				}
 				break;
 

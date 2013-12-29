@@ -5,7 +5,7 @@
 namespace IR {
 	static char* names[] = {
 		/* TypeNone		*/	"none	",
-		/* TypeLoad		*/	"load   ",
+		/* TypeMove		*/	"move   ",
 		/* TypeLoadImm	*/	"loadi  ",
 		/* TypeAdd		*/	"add    ",
 		/* TypeAddImm   */  "addi   ",

@@ -26,7 +26,7 @@ namespace Transform {
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
-			if(entry->type == IR::Entry::TypeLoad) {
+			if(entry->type == IR::Entry::TypeMove) {
 				allLoads.insert(entry);
 				gen[entry].insert(entry);
 			}
@@ -77,7 +77,7 @@ namespace Transform {
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
-			if(entry->type == IR::Entry::TypeLoad) {
+			if(entry->type == IR::Entry::TypeMove) {
 				allLoads.insert(entry);
 				gen[entry].insert(entry);
 			}

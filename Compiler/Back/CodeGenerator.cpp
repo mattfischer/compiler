@@ -38,7 +38,7 @@ namespace Back {
 			IR::Entry *entry = *itEntry;
 
 			switch(entry->type) {
-				case IR::Entry::TypeLoad:
+				case IR::Entry::TypeMove:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, 0, VM::RegSP, regMap[threeAddr->rhs1]));

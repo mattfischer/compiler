@@ -40,7 +40,7 @@ namespace Transform {
 			itNext++;
 			IR::Entry *entry = *itEntry;
 			switch(entry->type) {
-				case IR::Entry::TypeLoad:
+				case IR::Entry::TypeMove:
 					{
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
 						if(load->lhs == load->rhs1) {
