@@ -1,7 +1,7 @@
 #include "VM/Interp.h"
 
 namespace VM {
-	void Interp::run(std::vector<VM::Instruction> &instructions)
+	void Interp::run(const Program &program)
 	{
 		int regs[16];
 		int curPC;
@@ -9,10 +9,11 @@ namespace VM {
 
 		memset(regs, 0, 16 * sizeof(int));
 		regs[VM::RegSP] = sizeof(mem) / sizeof(int) - 1;
+		regs[VM::RegPC] = program.start;
 
-		while(regs[VM::RegPC] < (int)instructions.size()) {
+		while(regs[VM::RegPC] < (int)program.instructions.size()) {
 			curPC = regs[VM::RegPC];
-			Instruction instr = instructions[regs[VM::RegPC]];
+			Instruction instr = program.instructions[regs[VM::RegPC]];
 
 			switch(instr.type) {
 				case VM::InstrOneAddr:

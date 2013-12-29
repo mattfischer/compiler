@@ -528,6 +528,10 @@
 					RelativePath=".\VM\Interp.h"
 					>
 				</File>
+				<File
+					RelativePath=".\VM\Program.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Back"

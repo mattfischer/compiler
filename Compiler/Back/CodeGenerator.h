@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "VM/Instruction.h"
+#include "VM/Program.h"
 
 namespace IR {
 	class Procedure;
@@ -13,7 +13,7 @@ namespace IR {
 namespace Back {
 	class CodeGenerator {
 	public:
-		static std::vector<VM::Instruction> generate(IR::Program *program);
+		static VM::Program generate(IR::Program *irProgram);
 
 	private:
 		static void generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions);

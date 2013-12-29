@@ -8,16 +8,19 @@
 #include <map>
 
 namespace Back {
-	std::vector<VM::Instruction> CodeGenerator::generate(IR::Program *program)
+	VM::Program CodeGenerator::generate(IR::Program *irProgram)
 	{
-		std::vector<VM::Instruction> instructions;
+		VM::Program vmProgram;
 
-		for(IR::Program::ProcedureList::iterator itProc = program->procedures().begin(); itProc != program->procedures().end(); itProc++) {
-			IR::Procedure *procedure = *itProc;
-			generateProcedure(procedure, instructions);
+		for(IR::Program::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
+			IR::Procedure *irProcedure = *itProc;
+			if(irProcedure->name() == "main") {
+				vmProgram.start = (int)vmProgram.instructions.size();
+			}
+			generateProcedure(irProcedure, vmProgram.instructions);
 		}
 
-		return instructions;
+		return vmProgram;
 	}
 
 	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions)

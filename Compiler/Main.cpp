@@ -10,28 +10,28 @@
 
 int main(int arg, char *argv[])
 {
-	IR::Program *program = Front::Parser::parse("input.lang");
-	if(!program) {
+	IR::Program *irProgram = Front::Parser::parse("input.lang");
+	if(!irProgram) {
 		return 1;
 	}
 
-	if(!Middle::ErrorCheck::check(program)) {
+	if(!Middle::ErrorCheck::check(irProgram)) {
 		return 1;
 	}
 
-	Middle::Optimizer::optimize(program);
+	Middle::Optimizer::optimize(irProgram);
 
-	std::vector<VM::Instruction> instrs = Back::CodeGenerator::generate(program);
+	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	printf("Code:\n");
-	for(unsigned int i = 0; i < instrs.size(); i++) {
+	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
 		printf("  ");
-		instrs[i].print();
+		vmProgram.instructions[i].print();
 		printf("\n");
 	}
 	printf("\n");
 
 	printf("Output:\n");
-	VM::Interp::run(instrs);
+	VM::Interp::run(vmProgram);
 
 	return 0;
 }
