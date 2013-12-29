@@ -20,8 +20,8 @@ namespace Front {
 
 		IR::Program *program = 0;
 		if(result) {
-			IRGenerator generator(syntaxTree);
-			program = generator.generate();
+			IRGenerator generator;
+			program = generator.generate(syntaxTree);
 		}
 
 		return program;

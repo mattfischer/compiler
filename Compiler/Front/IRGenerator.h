@@ -15,18 +15,13 @@ namespace Front {
 
 	class IRGenerator {
 	public:
-		IRGenerator(SyntaxNode *tree);
+		IRGenerator();
 
-		IR::Program *generate();
+		IR::Program *generate(SyntaxNode *tree);
 
 	private:
-		SyntaxNode *mTree;
-		IR::Program *mIR;
-		IR::Procedure *mProc;
-
-		void processNode(SyntaxNode *node);
-		IR::Symbol *processRValue(SyntaxNode *node);
-		void setCurrentBlock(IR::Block *block);
+		void processNode(SyntaxNode *node, IR::Procedure *procedure);
+		IR::Symbol *processRValue(SyntaxNode *node, IR::Procedure *procedure);
 	};
 }
 
