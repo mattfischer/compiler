@@ -5,8 +5,10 @@ namespace VM {
 	{
 		int regs[16];
 		int curPC;
+		int mem[1024];
 
 		memset(regs, 0, 16 * sizeof(int));
+		regs[VM::RegSP] = sizeof(mem) / sizeof(int) - 1;
 
 		while(regs[VM::RegPC] < (int)instructions.size()) {
 			curPC = regs[VM::RegPC];
@@ -29,6 +31,14 @@ namespace VM {
 					switch(instr.u.two.type) {
 						case VM::TwoAddrAddImm:
 							regs[instr.u.two.regDst] = regs[instr.u.two.regSrc] + instr.u.two.imm;
+							break;
+
+						case VM::TwoAddrLoad:
+							regs[instr.u.two.regDst] = mem[regs[instr.u.two.regSrc] + instr.u.two.imm];
+							break;
+
+						case::VM::TwoAddrStore:
+							mem[regs[instr.u.two.regDst] + instr.u.two.imm] = regs[instr.u.two.regSrc];
 							break;
 					}
 					break;

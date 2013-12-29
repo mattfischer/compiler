@@ -25,6 +25,23 @@ namespace VM {
 					}
 				}
 				break;
+
+			case TwoAddrLoad:
+				if(instr.u.two.imm == 0) {
+					printf("ldr r%i, [r%i]", instr.u.two.regDst, instr.u.two.regSrc);
+				} else {
+					printf("ldr r%i, [r%i, #%i]", instr.u.two.regDst, instr.u.two.regSrc, instr.u.two.imm);
+				}
+				break;
+
+			case TwoAddrStore:
+				if(instr.u.two.imm == 0) {
+					printf("str r%i, [r%i]", instr.u.two.regSrc, instr.u.two.regDst);
+				} else {
+					printf("str r%i, [r%i, #%i]", instr.u.two.regSrc, instr.u.two.regDst, instr.u.two.imm);
+				}
+				break;
+
 		}
 	}
 

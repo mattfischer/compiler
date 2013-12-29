@@ -40,6 +40,8 @@ namespace VM {
 	const int InstrOneAddr = 0x2;
 
 	const int TwoAddrAddImm = 0x0;
+	const int TwoAddrLoad = 0x1;
+	const int TwoAddrStore = 0x2;
 
 	const int ThreeAddrAdd = 0x0;
 	const int ThreeAddrMult = 0x1;
@@ -51,5 +53,6 @@ namespace VM {
 	const int OneAddrPrint = 0x1;
 
 	const int RegPC = 0xf;
+	const int RegSP = 0xd;
 }
 #endif
