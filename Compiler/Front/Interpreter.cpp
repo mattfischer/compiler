@@ -13,7 +13,13 @@ namespace Front {
 
 	void Interpreter::run()
 	{
-		evaluateStatement(mTree);
+		for(int i=0; i<mTree->numChildren; i++) {
+			SyntaxNode *procedure = mTree->children[i];
+			addProcedure(procedure->children[1]->lexVal._id, procedure->children[2]);
+		}
+
+		Procedure *proc = findProcedure("main");
+		evaluateStatement(proc->body);
 	}
 
 	void Interpreter::evaluateStatement(SyntaxNode *node)
@@ -183,6 +189,27 @@ namespace Front {
 		for(unsigned int i=0; i<mVariables.size(); i++) {
 			if(mVariables[i]->name == name) {
 				return mVariables[i];
+			}
+		}
+
+		return NULL;
+	}
+
+	void Interpreter::addProcedure(const std::string &name, SyntaxNode *body)
+	{
+		Procedure *procedure = new Procedure;
+
+		procedure->name = name;
+		procedure->body = body;
+
+		mProcedures.push_back(procedure);
+	}
+
+	Interpreter::Procedure *Interpreter::findProcedure(const std::string &name)
+	{
+		for(unsigned int i=0; i<mProcedures.size(); i++) {
+			if(mProcedures[i]->name == name) {
+				return mProcedures[i];
 			}
 		}
 

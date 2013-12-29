@@ -14,6 +14,9 @@ namespace IR {
 		typedef std::list<Procedure*> ProcedureList;
 		ProcedureList &procedures() { return mProcedures; }
 
+		void addProcedure(Procedure *procedure);
+		Procedure *findProcedure(const std::string &name);
+
 		void print() const;
 
 		void computeDominance();

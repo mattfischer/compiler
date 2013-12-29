@@ -2,6 +2,8 @@
 #define PARSE_NODE_H
 
 typedef enum {
+	ParseNodeProcedureList,
+	ParseNodeProcedure,
 	ParseNodeStatementList,
 	ParseNodePrint,
 	ParseNodeVarDecl,

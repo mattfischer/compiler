@@ -8,6 +8,8 @@ namespace Front {
 
 	struct SyntaxNode {
 		enum NodeType {
+			NodeTypeProcedureList,
+			NodeTypeProcedure,
 			NodeTypeStatementList,
 			NodeTypePrintStatement,
 			NodeTypeVarDecl,

@@ -16,6 +16,8 @@ namespace Front {
 		SyntaxNode::NodeSubtype nodeSubType;
 		LexValType	lexType;
 	} convertTable[] = {
+		{ /* ParseNodeProcedureList */  SyntaxNode::NodeTypeProcedureList,      SyntaxNode::NodeSubtypeNone,		LexValNone	},
+		{ /* ParseNodeProcedure     */  SyntaxNode::NodeTypeProcedure,          SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeStatementList	*/	SyntaxNode::NodeTypeStatementList,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			SyntaxNode::NodeSubtypeNone,		LexValNone	},

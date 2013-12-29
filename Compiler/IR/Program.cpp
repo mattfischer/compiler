@@ -5,8 +5,28 @@
 namespace IR {
 	Program::Program()
 	{
-		mMain = new Procedure("main");
-		mProcedures.push_back(mMain);
+		mMain = 0;
+	}
+
+	void Program::addProcedure(Procedure *procedure)
+	{
+		mProcedures.push_back(procedure);
+		if(procedure->name() == "main") {
+			mMain = procedure;
+		}
+	}
+
+
+	Procedure *Program::findProcedure(const std::string &name)
+	{
+		for(ProcedureList::iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
+			Procedure* procedure = *it;
+			if(procedure->name() == name) {
+				return procedure;
+			}
+		}
+
+		return 0;
 	}
 
 	void Program::print() const

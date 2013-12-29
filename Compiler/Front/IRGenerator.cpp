@@ -33,6 +33,16 @@ namespace Front {
 				}
 				break;
 
+			case SyntaxNode::NodeTypeProcedureList:
+				for(int i=0; i<node->numChildren; i++) {
+					SyntaxNode *proc = node->children[i];
+					IR::Procedure *procedure = new IR::Procedure(proc->children[1]->lexVal._id);
+					mProc = procedure;
+					processNode(proc->children[2]);
+					mIR->addProcedure(procedure);
+				}
+				break;
+
 			case SyntaxNode::NodeTypePrintStatement:
 				rhs = processRValue(node->children[0]);
 				mProc->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));

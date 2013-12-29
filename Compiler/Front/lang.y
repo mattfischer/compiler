@@ -27,10 +27,19 @@
 %token END
 %start s
 
-%type <_node> statementlist statement if_statement while_statement clause expression add_expr mult_expr base_expr id
+%type <_node> procedurelist procedure statementlist statement if_statement while_statement clause expression add_expr mult_expr base_expr id
 %%
-s: statementlist END
+
+s: procedurelist END
 	{ tree = $1; }
+
+procedurelist: procedurelist procedure
+	{ $$ = addChild($1, $2); }
+			  | procedure
+	{ $$ = newNode(ParseNodeProcedureList, $1, NULL); }
+
+procedure: id id '(' ')' '{' statementlist '}'
+	{ $$ = newNode(ParseNodeProcedure, $1, $2, $6, NULL); }
 
 statementlist:	statementlist statement
 	{ $$ = addChild($1, $2); }

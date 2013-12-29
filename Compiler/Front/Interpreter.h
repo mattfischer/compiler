@@ -35,6 +35,16 @@ namespace Front {
 
 		void addVariable(const std::string &name, Front::Type *type);
 		Variable *findVariable(const std::string &name);
+
+		struct Procedure {
+			std::string name;
+			Front::SyntaxNode *body;
+		};
+
+		std::vector<Procedure*> mProcedures;
+
+		void addProcedure(const std::string &name, Front::SyntaxNode *body);
+		Procedure *findProcedure(const std::string &name);
 	};
 }
 

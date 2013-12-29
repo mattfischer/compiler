@@ -12,10 +12,15 @@ namespace Front {
 		bool result = true;
 
 		switch(node->nodeType) {
+			case SyntaxNode::NodeTypeProcedureList:
 			case SyntaxNode::NodeTypeStatementList:
 			case SyntaxNode::NodeTypePrintStatement:
 				result = checkChildren(node);
 				node->type = TypeNone;
+				break;
+
+			case SyntaxNode::NodeTypeProcedure:
+				result = check(node->children[2]);
 				break;
 
 			case SyntaxNode::NodeTypeVarDecl:
