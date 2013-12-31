@@ -56,6 +56,8 @@ statement: PRINT expression ';'
 	{ $$ = $1; }
 		 | while_statement
 	{ $$ = $1; }
+		 | id '(' ')' ';'
+	{ $$ = newNode(ParseNodeCall, $1, NULL); }
 	
 if_statement: IF '(' expression ')' clause
 	{ $$ = newNode(ParseNodeIf, $3, $5, NULL); }

@@ -2,6 +2,7 @@
 #define BACK_CODE_GENERATOR_H
 
 #include <vector>
+#include <map>
 
 #include "VM/Program.h"
 
@@ -16,7 +17,7 @@ namespace Back {
 		static VM::Program generate(IR::Program *irProgram);
 
 	private:
-		static void generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions);
+		static void generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions, const std::map<IR::Procedure*, int> &procedureMap);
 	};
 }
 #endif

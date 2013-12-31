@@ -9,6 +9,7 @@ namespace VM {
 
 		memset(regs, 0, 16 * sizeof(int));
 		regs[VM::RegSP] = sizeof(mem) / sizeof(int) - 1;
+		regs[VM::RegLR] = (int)program.instructions.size();
 		regs[VM::RegPC] = program.start;
 
 		while(regs[VM::RegPC] < (int)program.instructions.size()) {
@@ -24,6 +25,11 @@ namespace VM {
 
 						case VM::OneAddrPrint:
 							printf("%i\n", regs[instr.u.one.reg]);
+							break;
+
+						case VM::OneAddrCall:
+							regs[VM::RegLR] = regs[VM::RegPC] + 1;
+							regs[VM::RegPC] = regs[instr.u.one.reg] + instr.u.one.imm;
 							break;
 					}
 					break;

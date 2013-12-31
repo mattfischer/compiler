@@ -51,8 +51,10 @@ namespace VM {
 
 	const int OneAddrLoadImm = 0x0;
 	const int OneAddrPrint = 0x1;
+	const int OneAddrCall = 0x2;
 
 	const int RegPC = 0xf;
+	const int RegLR = 0xe;
 	const int RegSP = 0xd;
 }
 #endif

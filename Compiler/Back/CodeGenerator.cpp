@@ -12,30 +12,35 @@ namespace Back {
 	{
 		VM::Program vmProgram;
 
+		std::map<IR::Procedure*, int> procedureMap;
+
 		for(IR::Program::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
 			IR::Procedure *irProcedure = *itProc;
 			if(irProcedure->name() == "main") {
 				vmProgram.start = (int)vmProgram.instructions.size();
 			}
-			generateProcedure(irProcedure, vmProgram.instructions);
+
+			procedureMap[irProcedure] = (int)vmProgram.instructions.size();
+			generateProcedure(irProcedure, vmProgram.instructions, procedureMap);
 		}
 
 		return vmProgram;
 	}
 
-	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions)
+	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions, const std::map<IR::Procedure*, int> &procedureMap)
 	{
 		std::map<IR::Symbol*, int> regMap;
 		std::map<IR::EntryLabel*, int> labelMap;
 		std::map<IR::Entry*, int> jumpMap;
-		int reg = 0;
+		int reg = 1;
 
 		for(IR::Procedure::SymbolList::iterator itSymbol = procedure->symbols().begin(); itSymbol != procedure->symbols().end(); itSymbol++) {
 			IR::Symbol *symbol = *itSymbol;
 			regMap[symbol] = reg++;
 		}
 
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -(int)regMap.size()));
+		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -((int)regMap.size() + 1)));
+		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, VM::RegLR, 0));
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -142,10 +147,19 @@ namespace Back {
 						instructions.push_back(instr);
 						break;
 					}
+
+				case IR::Entry::TypeCall:
+					{
+						IR::EntryCall *call = (IR::EntryCall*)entry;
+						int offset = procedureMap.find(call->target)->second;
+						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset - (int)instructions.size()));
+						break;
+					}
 			}
 		}
 
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, (int)regMap.size()));
+		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, (int)regMap.size() + 1));
+		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, VM::RegPC, VM::RegSP, -((int)regMap.size() + 1)));
 
 		for(std::map<IR::Entry*, int>::iterator it = jumpMap.begin(); it != jumpMap.end(); it++) {
 			IR::Entry *entry = it->first;

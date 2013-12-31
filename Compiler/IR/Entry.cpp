@@ -1,6 +1,7 @@
 #include "IR/Entry.h"
 
 #include "IR/Symbol.h"
+#include "IR/Procedure.h"
 
 namespace IR {
 	static char* names[] = {
@@ -15,7 +16,10 @@ namespace IR {
 		/* TypeNequal	*/	"neq    ",
 		/* TypeLabel    */	"       ",
 		/* TypeJump		*/	"jmp    ",
-		/* TypeCJump	*/	"cjmp   "
+		/* TypeCJump	*/	"cjmp   ",
+		/* TypeNCJump	*/	"ncjmp  ",
+		/* TypePhi	    */	"phi    ",
+		/* TypeCall     */  "call   "
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
@@ -240,5 +244,15 @@ namespace IR {
 	Symbol *EntryPhi::assign()
 	{
 		return lhs;
+	}
+
+	EntryCall::EntryCall(Procedure *_target)
+		: Entry(TypeCall), target(_target)
+	{
+	}
+
+	void EntryCall::print(const std::string &prefix)
+	{
+		printf("  %s%s%s()", prefix.c_str(), names[type], target->name().c_str());
 	}
 }

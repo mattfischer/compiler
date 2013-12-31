@@ -19,6 +19,10 @@ namespace Front {
 				node->type = TypeNone;
 				break;
 
+			case SyntaxNode::NodeTypeCall:
+				node->type = TypeNone;
+				break;
+
 			case SyntaxNode::NodeTypeProcedure:
 				result = check(node->children[2]);
 				break;

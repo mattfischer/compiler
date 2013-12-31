@@ -20,8 +20,8 @@ namespace Front {
 		IR::Program *generate(SyntaxNode *tree);
 
 	private:
-		void processNode(SyntaxNode *node, IR::Procedure *procedure);
-		IR::Symbol *processRValue(SyntaxNode *node, IR::Procedure *procedure);
+		void processNode(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure);
+		IR::Symbol *processRValue(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure);
 	};
 }
 

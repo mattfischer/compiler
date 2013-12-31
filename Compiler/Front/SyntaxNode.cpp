@@ -29,7 +29,8 @@ namespace Front {
 		{ /* ParseNodeAdd			*/	SyntaxNode::NodeTypeArith,				SyntaxNode::NodeSubtypeAdd,			LexValNone	},
 		{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeArith,				SyntaxNode::NodeSubtypeMultiply,	LexValNone	},
 		{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			SyntaxNode::NodeSubtypeNone,		LexValInt	},
-		{ /* ParseNodeId			*/	SyntaxNode::NodeTypeId,					SyntaxNode::NodeSubtypeNone,		LexValId	}
+		{ /* ParseNodeId			*/	SyntaxNode::NodeTypeId,					SyntaxNode::NodeSubtypeNone,		LexValId	},
+		{ /* ParseNodeCall			*/	SyntaxNode::NodeTypeCall,				SyntaxNode::NodeSubtypeNone,		LexValNone	}
 	};
 
 	SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)

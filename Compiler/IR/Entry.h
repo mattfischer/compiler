@@ -6,6 +6,7 @@
 namespace IR {
 	class Block;
 	class Symbol;
+	class Procedure;
 
 	class Entry {
 	public:
@@ -23,7 +24,8 @@ namespace IR {
 			TypeJump,
 			TypeCJump,
 			TypeNCJump,
-			TypePhi
+			TypePhi,
+			TypeCall
 		};
 
 		Type type;
@@ -135,6 +137,14 @@ namespace IR {
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+	};
+
+	struct EntryCall : public Entry {
+		Procedure *target;
+
+		EntryCall(Procedure *_target);
+
+		virtual void print(const std::string &prefix);
 	};
 }
 

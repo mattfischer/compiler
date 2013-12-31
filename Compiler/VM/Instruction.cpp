@@ -96,6 +96,10 @@ namespace VM {
 			case OneAddrPrint:
 				printf("print r%i", instr.u.one.reg);
 				break;
+
+			case OneAddrCall:
+				printf("call [r%i, #%i]", instr.u.one.reg, instr.u.one.imm);
+				break;
 		}
 	}
 

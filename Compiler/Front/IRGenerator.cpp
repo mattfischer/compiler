@@ -19,27 +19,31 @@ namespace Front {
 		for(int i=0; i<tree->numChildren; i++) {
 			SyntaxNode *proc = tree->children[i];
 			IR::Procedure *procedure = new IR::Procedure(proc->children[1]->lexVal._id);
-			processNode(proc->children[2], procedure);
+			processNode(proc->children[2], program, procedure);
 			program->addProcedure(procedure);
 		}
 
 		return program;
 	}
 
-	void IRGenerator::processNode(SyntaxNode *node, IR::Procedure *procedure)
+	void IRGenerator::processNode(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure)
 	{
 		IR::Symbol *lhs, *rhs;
 
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeStatementList:
 				for(int i=0; i<node->numChildren; i++) {
-					processNode(node->children[i], procedure);
+					processNode(node->children[i], program, procedure);
 				}
 				break;
 
 			case SyntaxNode::NodeTypePrintStatement:
-				rhs = processRValue(node->children[0], procedure);
+				rhs = processRValue(node->children[0], program, procedure);
 				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
+				break;
+
+			case SyntaxNode::NodeTypeCall:
+				procedure->emit(new IR::EntryCall(program->findProcedure(node->children[0]->lexVal._id)));
 				break;
 
 			case SyntaxNode::NodeTypeVarDecl:
@@ -48,21 +52,21 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeAssign:
 				lhs = procedure->findSymbol(node->children[0]->lexVal._id);
-				rhs = processRValue(node->children[1], procedure);
+				rhs = processRValue(node->children[1], program, procedure);
 				if(rhs != lhs) {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, lhs, rhs));
 				}
 				break;
 
 			case SyntaxNode::NodeTypeIf:
-				lhs = processRValue(node->children[0], procedure);
+				lhs = processRValue(node->children[0], program, procedure);
 				if(node->numChildren == 2) {
 					IR::EntryLabel *trueLabel = procedure->newLabel();
 					IR::EntryLabel *nextLabel = procedure->newLabel();
 
 					procedure->emit(new IR::EntryCJump(lhs, trueLabel, nextLabel));
 					procedure->emit(trueLabel);
-					processNode(node->children[1], procedure);
+					processNode(node->children[1], program, procedure);
 					procedure->emit(nextLabel);
 				} else {
 					IR::EntryLabel *trueLabel = procedure->newLabel();
@@ -71,10 +75,10 @@ namespace Front {
 
 					procedure->emit(new IR::EntryCJump(lhs, trueLabel, falseLabel));
 					procedure->emit(trueLabel);
-					processNode(node->children[1], procedure);
+					processNode(node->children[1], program, procedure);
 					procedure->emit(new IR::EntryJump(nextLabel));
 					procedure->emit(falseLabel);
-					processNode(node->children[2], procedure);
+					processNode(node->children[2], program, procedure);
 					procedure->emit(nextLabel);
 				}
 				break;
@@ -86,11 +90,11 @@ namespace Front {
 					IR::EntryLabel *nextLabel = procedure->newLabel();
 
 					procedure->emit(testLabel);
-					lhs = processRValue(node->children[0], procedure);
+					lhs = processRValue(node->children[0], program, procedure);
 					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
 					procedure->emit(mainLabel);
 
-					processNode(node->children[1], procedure);
+					processNode(node->children[1], program, procedure);
 					procedure->emit(new IR::EntryJump(testLabel));
 					procedure->emit(nextLabel);
 					break;
@@ -98,7 +102,7 @@ namespace Front {
 		}
 	}
 
-	IR::Symbol *IRGenerator::processRValue(SyntaxNode *node, IR::Procedure *procedure)
+	IR::Symbol *IRGenerator::processRValue(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure)
 	{
 		IR::Symbol *result;
 		IR::Symbol *a, *b;
@@ -115,8 +119,8 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeArith:
 				result = procedure->newTemp(node->type);
-				a = processRValue(node->children[0], procedure);
-				b = processRValue(node->children[1], procedure);
+				a = processRValue(node->children[0], program, procedure);
+				b = processRValue(node->children[1], program, procedure);
 				switch(node->nodeSubtype) {
 					case SyntaxNode::NodeSubtypeAdd:
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, a, b));
@@ -130,8 +134,8 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeCompare:
 				result = procedure->newTemp(node->type);
-				a = processRValue(node->children[0], procedure);
-				b = processRValue(node->children[1], procedure);
+				a = processRValue(node->children[0], program, procedure);
+				b = processRValue(node->children[1], program, procedure);
 				switch(node->nodeSubtype) {
 					case SyntaxNode::NodeSubtypeEqual:
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeEqual, result, a, b));
