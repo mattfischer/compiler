@@ -43,7 +43,7 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCall:
-				procedure->emit(new IR::EntryCall(program->findProcedure(node->children[0]->lexVal._id)));
+				procedure->emit(new IR::EntryCall(0, program->findProcedure(node->children[0]->lexVal._id)));
 				break;
 
 			case SyntaxNode::NodeTypeVarDecl:
@@ -99,6 +99,13 @@ namespace Front {
 					procedure->emit(nextLabel);
 					break;
 				}
+
+			case SyntaxNode::NodeTypeReturn:
+				{
+					rhs = processRValue(node->children[0], program, procedure);
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeReturn, 0, rhs));
+					break;
+				}
 		}
 	}
 
@@ -115,6 +122,11 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeId:
 				result = procedure->findSymbol(node->lexVal._id);
+				break;
+
+			case SyntaxNode::NodeTypeCall:
+				result = procedure->newTemp(node->type);
+				procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal._id)));
 				break;
 
 			case SyntaxNode::NodeTypeArith:

@@ -13,30 +13,67 @@ namespace Front {
 
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeProcedureList:
+				result = true;
+				for(int i=0; i<node->numChildren; i++) {
+					SyntaxNode *child = node->children[i];
+					Procedure *procedure = addProcedure(child->children[0]->lexVal._id, child->children[1]->lexVal._id, child);
+					if(procedure) {
+						Scope scope(*this);
+						result = check(child->children[2], procedure, scope);
+					} else {
+						result = false;
+					}
+
+					if(!result) {
+						break;
+					}
+
+					child->type = TypeNone;
+				}
+				break;
+
+			default:
+				result = false;
+				break;
+		}
+
+		return result;
+	}
+
+	bool TypeChecker::check(SyntaxNode *node, Procedure *procedure, Scope &scope)
+	{
+		bool result = true;
+
+		switch(node->nodeType) {
+			case SyntaxNode::NodeTypeProcedureList:
 			case SyntaxNode::NodeTypeStatementList:
 			case SyntaxNode::NodeTypePrintStatement:
-				result = checkChildren(node);
+				result = checkChildren(node, procedure, scope);
 				node->type = TypeNone;
 				break;
 
 			case SyntaxNode::NodeTypeCall:
-				node->type = TypeNone;
+				{
+					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
+					if(procedure) {
+						node->type = procedure->type;
+					} else {
+						error(node, "Undeclared procedure %s", node->children[0]->lexVal._id);
+						result = false;
+					}
 				break;
-
-			case SyntaxNode::NodeTypeProcedure:
-				result = check(node->children[2]);
-				break;
+				}
 
 			case SyntaxNode::NodeTypeVarDecl:
-				result = addSymbol(node->children[0]->lexVal._id, node->children[1]->lexVal._id, node);
+				result = scope.addSymbol(node->children[0]->lexVal._id, node->children[1]->lexVal._id, node);
 				node->type = TypeNone;
 				break;
 
 			case SyntaxNode::NodeTypeAssign:
-				result = check(node->children[1]);
+				result = check(node->children[1], procedure, scope);
 				if(result) {
 					char *name = node->children[0]->lexVal._id;
-					Symbol *symbol = findSymbol(name);
+					Symbol *symbol = scope.findSymbol(name);
 					if(symbol) {
 						if(symbol->type != node->children[1]->type) {
 							error(node, "Type mismatch");
@@ -53,7 +90,7 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeIf:
 			case SyntaxNode::NodeTypeWhile:
-				result = checkChildren(node);
+				result = checkChildren(node, procedure, scope);
 				if(result) {
 					if(node->children[0]->type != TypeBool) {
 						error(node, "Type mismatch");
@@ -65,7 +102,7 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCompare:
-				result = checkChildren(node);
+				result = checkChildren(node, procedure, scope);
 
 				if(result) {
 					if(node->children[0]->type != TypeInt ||
@@ -78,7 +115,7 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeArith:
-				result = checkChildren(node);
+				result = checkChildren(node, procedure, scope);
 
 				if(result) {
 					if(node->children[0]->type != TypeInt ||
@@ -93,7 +130,7 @@ namespace Front {
 			case SyntaxNode::NodeTypeId:
 				{
 					const char *name = node->lexVal._id;
-					Symbol *symbol = findSymbol(name);
+					Symbol *symbol = scope.findSymbol(name);
 					if(symbol == NULL) {
 						error(node, "Undefined variable '%s'", name);
 						return false;
@@ -102,15 +139,24 @@ namespace Front {
 					node->type = symbol->type;
 					break;
 				}
+
+			case SyntaxNode::NodeTypeReturn:
+				check(node->children[0], procedure, scope);
+				if(node->children[0]->type != procedure->type) {
+					error(node, "Type mismatch");
+					return false;
+				}
+				node->type = TypeNone;
+				break;
 		}
 
 		return result;
 	}
 
-	bool TypeChecker::checkChildren(SyntaxNode *node)
+	bool TypeChecker::checkChildren(SyntaxNode *node, Procedure *procedure, Scope &scope)
 	{
 		for(int i=0; i<node->numChildren; i++) {
-			bool result = check(node->children[i]);
+			bool result = check(node->children[i], procedure, scope);
 			if(!result) {
 				return false;
 			}
@@ -118,11 +164,16 @@ namespace Front {
 		return true;
 	}
 
-	bool TypeChecker::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *node)
+	TypeChecker::Scope::Scope(TypeChecker &typeChecker)
+		: mTypeChecker(typeChecker)
+	{
+	}
+
+	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *node)
 	{
 		Type *type = Type::find(typeName);
 		if(type == NULL) {
-			error(node, "Error: Type '%s' not found.\n", typeName.c_str());
+			mTypeChecker.error(node, "Error: Type '%s' not found.\n", typeName.c_str());
 			return false;
 		}
 		
@@ -132,11 +183,36 @@ namespace Front {
 		return true;
 	}
 
-	TypeChecker::Symbol *TypeChecker::findSymbol(const std::string &name)
+	TypeChecker::Symbol *TypeChecker::Scope::findSymbol(const std::string &name)
 	{
 		for(unsigned int i=0; i<mSymbols.size(); i++) {
 			if(mSymbols[i]->name == name) {
 				return mSymbols[i];
+			}
+		}
+
+		return NULL;
+	}
+
+	TypeChecker::Procedure* TypeChecker::addProcedure(const std::string &typeName, const std::string &name, SyntaxNode *node)
+	{
+		Type *type = Type::find(typeName);
+		if(type == NULL) {
+			error(node, "Error: Type '%s' not found.\n", typeName.c_str());
+			return 0;
+		}
+
+		Procedure *procedure = new Procedure(type, name);
+		mProcedures.push_back(procedure);
+
+		return procedure;
+	}
+
+	TypeChecker::Procedure *TypeChecker::findProcedure(const std::string &name)
+	{
+		for(unsigned int i=0; i<mProcedures.size(); i++) {
+			if(mProcedures[i]->name == name) {
+				return mProcedures[i];
 			}
 		}
 

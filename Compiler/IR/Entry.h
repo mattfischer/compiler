@@ -25,7 +25,8 @@ namespace IR {
 			TypeCJump,
 			TypeNCJump,
 			TypePhi,
-			TypeCall
+			TypeCall,
+			TypeReturn
 		};
 
 		Type type;
@@ -141,10 +142,13 @@ namespace IR {
 
 	struct EntryCall : public Entry {
 		Procedure *target;
+		Symbol *lhs;
 
-		EntryCall(Procedure *_target);
+		EntryCall(Symbol *_lhs, Procedure *_target);
 
 		virtual void print(const std::string &prefix);
+
+		virtual Symbol *assign();
 	};
 }
 

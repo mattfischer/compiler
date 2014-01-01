@@ -20,7 +20,8 @@ namespace Front {
 			NodeTypeArith,
 			NodeTypeConstant,
 			NodeTypeId,
-			NodeTypeCall
+			NodeTypeCall,
+			NodeTypeReturn
 		};
 
 		enum NodeSubtype {

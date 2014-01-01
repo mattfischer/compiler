@@ -25,6 +25,7 @@ print return PRINT;
 if return IF;
 else return ELSE;
 while return WHILE;
+return return RETURN;
 == return EQUAL;
 != return NEQUAL;
 (\+|\*|\(|\)|=|;|\{|\}) return *langtext;

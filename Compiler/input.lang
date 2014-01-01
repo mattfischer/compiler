@@ -1,11 +1,9 @@
 int foo()
 {
-  print 0;
+  return 0;
 }
 
 int main()
 {
-  foo();
-  foo();
-  foo();
+  print foo();
 }

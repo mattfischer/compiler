@@ -153,6 +153,16 @@ namespace Back {
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 						int offset = procedureMap.find(call->target)->second;
 						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset - (int)instructions.size()));
+						if(call->lhs) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, 0, regMap[call->lhs]));
+						}
+						break;
+					}
+
+				case IR::Entry::TypeReturn:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, 0, VM::RegSP, regMap[threeAddr->rhs1]));
 						break;
 					}
 			}

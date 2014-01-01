@@ -19,7 +19,8 @@ namespace IR {
 		/* TypeCJump	*/	"cjmp   ",
 		/* TypeNCJump	*/	"ncjmp  ",
 		/* TypePhi	    */	"phi    ",
-		/* TypeCall     */  "call   "
+		/* TypeCall     */  "call   ",
+		/* TypeReturn   */  "return "
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
@@ -246,13 +247,23 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryCall::EntryCall(Procedure *_target)
-		: Entry(TypeCall), target(_target)
+	EntryCall::EntryCall(Symbol *_lhs, Procedure *_target)
+		: Entry(TypeCall), lhs(_lhs), target(_target)
 	{
 	}
 
 	void EntryCall::print(const std::string &prefix)
 	{
-		printf("  %s%s%s()", prefix.c_str(), names[type], target->name().c_str());
+		if(lhs) {
+			printf("  %s%s = %s%s()", prefix.c_str(), lhs->name.c_str(), names[type], target->name().c_str());
+		} else {
+			printf("  %s%s%s()", prefix.c_str(), names[type], target->name().c_str());
+		}
 	}
+
+	Symbol *EntryCall::assign()
+	{
+		return lhs;
+	}
+
 }

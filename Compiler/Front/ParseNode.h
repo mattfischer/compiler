@@ -16,7 +16,8 @@ typedef enum {
 	ParseNodeMultiply,
 	ParseNodeInt,
 	ParseNodeId,
-	ParseNodeCall
+	ParseNodeCall,
+	ParseNodeReturn
 } ParseNodeType;
 
 struct _ParseNode;

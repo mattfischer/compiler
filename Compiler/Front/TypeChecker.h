@@ -21,11 +21,32 @@ namespace Front {
 			Symbol(Type *_type, const std::string &_name) : type(_type), name(_name) {}
 		};
 
-		std::vector<Symbol*> mSymbols;
+		class Scope {
+		public:
+			Scope(TypeChecker &typeChecker);
 
-		bool checkChildren(SyntaxNode *tree);
-		bool addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree);
-		Symbol *findSymbol(const std::string &name);
+			bool addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree);
+			Symbol *findSymbol(const std::string &name);
+
+		private:
+			TypeChecker &mTypeChecker;
+			std::vector<Symbol*> mSymbols;
+		};
+
+		struct Procedure {
+			Type *type;
+			std::string name;
+
+			Procedure(Type *_type, const std::string &_name) : type(_type), name(_name) {}
+		};
+
+		std::vector<Procedure*> mProcedures;
+
+		bool check(SyntaxNode *tree, Procedure *procedure, Scope &scope);
+		bool checkChildren(SyntaxNode *tree, Procedure *procedure, Scope &scope);
+
+		Procedure *addProcedure(const std::string &typeName, const std::string &name, SyntaxNode *tree);
+		Procedure *findProcedure(const std::string &name);
 
 		void error(SyntaxNode *node, char *fmt, ...);
 	};

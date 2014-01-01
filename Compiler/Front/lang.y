@@ -24,6 +24,7 @@
 %token WHILE
 %token EQUAL
 %token NEQUAL
+%token RETURN
 %token END
 %start s
 
@@ -58,7 +59,9 @@ statement: PRINT expression ';'
 	{ $$ = $1; }
 		 | id '(' ')' ';'
 	{ $$ = newNode(ParseNodeCall, $1, NULL); }
-	
+		 | RETURN expression ';'
+	{ $$ = newNode(ParseNodeReturn, $2, NULL); }
+
 if_statement: IF '(' expression ')' clause
 	{ $$ = newNode(ParseNodeIf, $3, $5, NULL); }
 			| IF '(' expression ')' clause ELSE clause
@@ -93,6 +96,8 @@ base_expr: INT
 	{ $$ = newNode(ParseNodeInt, NULL); $$->lexVal._int = $1; }
 	  | id
 	{ $$ = $1; }
+	  | id '(' ')'
+	{ $$ = newNode(ParseNodeCall, $1, NULL); }
 	  | '(' expression ')'
 	{ $$ = $2; }
 
