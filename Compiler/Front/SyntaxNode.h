@@ -21,7 +21,9 @@ namespace Front {
 			NodeTypeConstant,
 			NodeTypeId,
 			NodeTypeCall,
-			NodeTypeReturn
+			NodeTypeReturn,
+			NodeTypeArgDeclList,
+			NodeTypeArgumentDecl
 		};
 
 		enum NodeSubtype {

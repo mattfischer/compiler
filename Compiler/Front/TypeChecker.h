@@ -26,6 +26,7 @@ namespace Front {
 			Scope(TypeChecker &typeChecker);
 
 			bool addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree);
+			bool addSymbol(Symbol *symbol);
 			Symbol *findSymbol(const std::string &name);
 
 		private:
@@ -34,10 +35,11 @@ namespace Front {
 		};
 
 		struct Procedure {
-			Type *type;
+			Type *returnType;
 			std::string name;
+			std::vector<Symbol*> arguments;
 
-			Procedure(Type *_type, const std::string &_name) : type(_type), name(_name) {}
+			Procedure(Type *_returnType, const std::string &_name, const std::vector<Symbol*> _arguments) : returnType(_returnType), name(_name), arguments(_arguments) {}
 		};
 
 		std::vector<Procedure*> mProcedures;
@@ -45,7 +47,7 @@ namespace Front {
 		bool check(SyntaxNode *tree, Procedure *procedure, Scope &scope);
 		bool checkChildren(SyntaxNode *tree, Procedure *procedure, Scope &scope);
 
-		Procedure *addProcedure(const std::string &typeName, const std::string &name, SyntaxNode *tree);
+		Procedure *addProcedure(SyntaxNode *tree);
 		Procedure *findProcedure(const std::string &name);
 
 		void error(SyntaxNode *node, char *fmt, ...);

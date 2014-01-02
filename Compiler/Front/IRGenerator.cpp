@@ -19,7 +19,7 @@ namespace Front {
 		for(int i=0; i<tree->numChildren; i++) {
 			SyntaxNode *proc = tree->children[i];
 			IR::Procedure *procedure = new IR::Procedure(proc->children[1]->lexVal._id);
-			processNode(proc->children[2], program, procedure);
+			processNode(proc->children[3], program, procedure);
 			program->addProcedure(procedure);
 		}
 

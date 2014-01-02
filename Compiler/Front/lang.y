@@ -28,21 +28,31 @@
 %token END
 %start s
 
-%type <_node> procedurelist procedure statementlist statement if_statement while_statement clause expression add_expr mult_expr base_expr id
+%type <_node> procedure_list procedure statement_list statement if_statement while_statement clause expression add_expr mult_expr base_expr id arg_decl arg_decl_list
 %%
 
-s: procedurelist END
+s: procedure_list END
 	{ tree = $1; }
 
-procedurelist: procedurelist procedure
+procedure_list: procedure_list procedure
 	{ $$ = addChild($1, $2); }
 			  | procedure
 	{ $$ = newNode(ParseNodeProcedureList, $1, NULL); }
 
-procedure: id id '(' ')' '{' statementlist '}'
-	{ $$ = newNode(ParseNodeProcedure, $1, $2, $6, NULL); }
+procedure: id id '(' arg_decl_list ')' '{' statement_list '}'
+	{ $$ = newNode(ParseNodeProcedure, $1, $2, $4, $7, NULL); }
+		 | id id '(' ')' '{' statement_list '}'
+	{ $$ = newNode(ParseNodeProcedure, $1, $2, newNode(ParseNodeArgDeclList, NULL), $6, NULL); }
 
-statementlist:	statementlist statement
+arg_decl_list: arg_decl_list ',' arg_decl
+	{ $$ = addChild($1, $3); }
+			| arg_decl
+	{ $$ = newNode(ParseNodeArgDeclList, $1, NULL); }
+
+arg_decl: id id
+	{ $$ = newNode(ParseNodeArgumentDecl, $1, $2, NULL); }
+
+statement_list:	statement_list statement
 	{ $$ = addChild($1, $2); }
 			  | statement
 	{ $$ = newNode(ParseNodeStatementList, $1, NULL);	}
@@ -72,7 +82,7 @@ while_statement: WHILE '(' expression ')' clause
 
 clause: statement
 	{ $$ = $1; }
-		 | '{' statementlist '}'
+		 | '{' statement_list '}'
 	{ $$ = $2; }
 	
 expression: add_expr EQUAL add_expr

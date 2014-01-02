@@ -16,10 +16,13 @@ namespace Front {
 				result = true;
 				for(int i=0; i<node->numChildren; i++) {
 					SyntaxNode *child = node->children[i];
-					Procedure *procedure = addProcedure(child->children[0]->lexVal._id, child->children[1]->lexVal._id, child);
+					Procedure *procedure = addProcedure(child);
 					if(procedure) {
 						Scope scope(*this);
-						result = check(child->children[2], procedure, scope);
+						for(int j=0; j<procedure->arguments.size(); j++) {
+							scope.addSymbol(procedure->arguments[j]);
+						}
+						result = check(child->children[3], procedure, scope);
 					} else {
 						result = false;
 					}
@@ -56,7 +59,7 @@ namespace Front {
 				{
 					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
 					if(procedure) {
-						node->type = procedure->type;
+						node->type = procedure->returnType;
 					} else {
 						error(node, "Undeclared procedure %s", node->children[0]->lexVal._id);
 						result = false;
@@ -142,7 +145,7 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeReturn:
 				check(node->children[0], procedure, scope);
-				if(node->children[0]->type != procedure->type) {
+				if(node->children[0]->type != procedure->returnType) {
 					error(node, "Type mismatch");
 					return false;
 				}
@@ -183,6 +186,14 @@ namespace Front {
 		return true;
 	}
 
+	bool TypeChecker::Scope::addSymbol(Symbol *symbol)
+	{
+		Symbol *localSymbol = new Symbol(symbol->type, symbol->name);
+		mSymbols.push_back(localSymbol);
+
+		return true;
+	}
+
 	TypeChecker::Symbol *TypeChecker::Scope::findSymbol(const std::string &name)
 	{
 		for(unsigned int i=0; i<mSymbols.size(); i++) {
@@ -194,15 +205,26 @@ namespace Front {
 		return NULL;
 	}
 
-	TypeChecker::Procedure* TypeChecker::addProcedure(const std::string &typeName, const std::string &name, SyntaxNode *node)
+	TypeChecker::Procedure* TypeChecker::addProcedure(SyntaxNode *node)
 	{
-		Type *type = Type::find(typeName);
-		if(type == NULL) {
-			error(node, "Error: Type '%s' not found.\n", typeName.c_str());
+		Type *returnType = Type::find(node->children[0]->lexVal._id);
+		if(returnType == NULL) {
+			error(node, "Error: Type '%s' not found.\n", node->children[0]->lexVal._id);
 			return 0;
 		}
 
-		Procedure *procedure = new Procedure(type, name);
+		std::vector<Symbol*> arguments;
+		for(int i=0; i<node->children[2]->numChildren; i++) {
+			SyntaxNode *decl = node->children[2]->children[i];
+			Type *type = Type::find(decl->children[0]->lexVal._id);
+			if(type == NULL) {
+				error(node, "Error: Type '%s' not found.\n", decl->children[0]->lexVal._id);
+				return 0;
+			}
+			arguments.push_back(new Symbol(type, decl->children[1]->lexVal._id));
+		}
+
+		Procedure *procedure = new Procedure(returnType, node->children[1]->lexVal._id, arguments);
 		mProcedures.push_back(procedure);
 
 		return procedure;
