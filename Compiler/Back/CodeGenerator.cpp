@@ -165,6 +165,13 @@ namespace Back {
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, 0, VM::RegSP, regMap[threeAddr->rhs1]));
 						break;
 					}
+
+				case IR::Entry::TypeArgument:
+					{
+						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, oneAddrImm->imm, regMap[oneAddrImm->lhs]));
+						break;
+					}
 			}
 		}
 

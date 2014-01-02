@@ -19,6 +19,7 @@ namespace Front {
 			std::string name;
 
 			Symbol(Type *_type, const std::string &_name) : type(_type), name(_name) {}
+			Symbol(const Symbol &other) : type(other.type), name(other.name) {}
 		};
 
 		class Scope {

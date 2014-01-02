@@ -20,7 +20,8 @@ namespace IR {
 		/* TypeNCJump	*/	"ncjmp  ",
 		/* TypePhi	    */	"phi    ",
 		/* TypeCall     */  "call   ",
-		/* TypeReturn   */  "return "
+		/* TypeReturn   */  "ret    ",
+		/* TypeArgument */  "arg    "
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)

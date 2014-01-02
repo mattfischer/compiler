@@ -19,6 +19,11 @@ namespace Front {
 		for(int i=0; i<tree->numChildren; i++) {
 			SyntaxNode *proc = tree->children[i];
 			IR::Procedure *procedure = new IR::Procedure(proc->children[1]->lexVal._id);
+			SyntaxNode *args = proc->children[2];
+			for(int j=0; j<args->numChildren; j++) {
+				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->children[1]->lexVal._id, Front::Type::find(args->children[j]->children[0]->lexVal._id));
+				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeArgument, symbol, j));
+			}
 			processNode(proc->children[3], program, procedure);
 			program->addProcedure(procedure);
 		}

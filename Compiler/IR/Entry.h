@@ -26,7 +26,8 @@ namespace IR {
 			TypeNCJump,
 			TypePhi,
 			TypeCall,
-			TypeReturn
+			TypeReturn,
+			TypeArgument
 		};
 
 		Type type;

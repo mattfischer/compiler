@@ -19,7 +19,7 @@ namespace Front {
 					Procedure *procedure = addProcedure(child);
 					if(procedure) {
 						Scope scope(*this);
-						for(int j=0; j<procedure->arguments.size(); j++) {
+						for(unsigned int j=0; j<procedure->arguments.size(); j++) {
 							scope.addSymbol(procedure->arguments[j]);
 						}
 						result = check(child->children[3], procedure, scope);
@@ -188,7 +188,7 @@ namespace Front {
 
 	bool TypeChecker::Scope::addSymbol(Symbol *symbol)
 	{
-		Symbol *localSymbol = new Symbol(symbol->type, symbol->name);
+		Symbol *localSymbol = new Symbol(*symbol);
 		mSymbols.push_back(localSymbol);
 
 		return true;
