@@ -33,7 +33,8 @@ namespace Front {
 		{ /* ParseNodeCall			*/	SyntaxNode::NodeTypeCall,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeReturn		*/	SyntaxNode::NodeTypeReturn,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeArgDeclList	*/	SyntaxNode::NodeTypeArgDeclList,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeArgumentDecl	*/	SyntaxNode::NodeTypeArgumentDecl,		SyntaxNode::NodeSubtypeNone,		LexValNone	}
+		{ /* ParseNodeArgumentDecl	*/	SyntaxNode::NodeTypeArgumentDecl,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
+		{ /* ParseNodeArgList   	*/	SyntaxNode::NodeTypeArgList,			SyntaxNode::NodeSubtypeNone,		LexValNone	}
 	};
 
 	SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)

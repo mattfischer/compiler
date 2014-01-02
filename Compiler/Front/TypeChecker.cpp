@@ -59,7 +59,20 @@ namespace Front {
 				{
 					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
 					if(procedure) {
-						node->type = procedure->returnType;
+						if(procedure->arguments.size() == node->children[1]->numChildren) {
+							for(int i=0; i<node->children[1]->numChildren; i++) {
+								check(node->children[1]->children[i], procedure, scope);
+								if(node->children[1]->children[i]->type != procedure->arguments[i]->type) {
+									error(node, "Type mismatch on argument %i of procedure %s", i, procedure->name.c_str());
+									result = false;
+									break;
+								}
+							}
+							node->type = procedure->returnType;
+						} else {
+							error(node, "Incorrect number of arguments to procedure %s", procedure->name.c_str());
+							result = false;
+						}
 					} else {
 						error(node, "Undeclared procedure %s", node->children[0]->lexVal._id);
 						result = false;

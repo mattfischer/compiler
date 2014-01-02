@@ -48,9 +48,17 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCall:
-				procedure->emit(new IR::EntryCall(0, program->findProcedure(node->children[0]->lexVal._id)));
-				break;
+				{
+					std::vector<IR::Symbol*> args;
+					for(int i=0; i<node->children[1]->numChildren; i++) {
+						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
+						args.push_back(arg);
+					}
 
+					IR::Symbol **argList = args.size() > 0 ? &args[0] : 0;
+					procedure->emit(new IR::EntryCall(0, program->findProcedure(node->children[0]->lexVal._id), argList, (int)args.size()));
+					break;
+				}
 			case SyntaxNode::NodeTypeVarDecl:
 				procedure->addSymbol(node->children[1]->lexVal._id, Type::find(node->children[0]->lexVal._id));
 				break;
@@ -130,9 +138,18 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCall:
-				result = procedure->newTemp(node->type);
-				procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal._id)));
-				break;
+				{
+					std::vector<IR::Symbol*> args;
+					for(int i=0; i<node->children[1]->numChildren; i++) {
+						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
+						args.push_back(arg);
+					}
+					IR::Symbol **argList = args.size() > 0 ? &args[0] : 0;
+
+					result = procedure->newTemp(node->type);
+					procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal._id), argList, (int)args.size()));
+					break;
+				}
 
 			case SyntaxNode::NodeTypeArith:
 				result = procedure->newTemp(node->type);

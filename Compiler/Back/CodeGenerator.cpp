@@ -151,6 +151,9 @@ namespace Back {
 				case IR::Entry::TypeCall:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
+						for(int i=0; i<call->numArgs; i++) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, i, VM::RegSP, regMap[call->args[i]]));
+						}
 						int offset = procedureMap.find(call->target)->second;
 						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset - (int)instructions.size()));
 						if(call->lhs) {

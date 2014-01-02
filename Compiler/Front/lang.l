@@ -28,7 +28,7 @@ while return WHILE;
 return return RETURN;
 == return EQUAL;
 != return NEQUAL;
-(\+|\*|\(|\)|=|;|\{|\}) return *langtext;
+(\+|\*|\(|\)|=|;|\{|\}|,) return *langtext;
 {INT} langlval._int = atoi(langtext); return INT;
 {ID} langlval._id = malloc(strlen(langtext) + 1); strcpy(langlval._id, langtext); return ID;
 

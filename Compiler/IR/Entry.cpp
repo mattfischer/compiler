@@ -248,23 +248,41 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryCall::EntryCall(Symbol *_lhs, Procedure *_target)
-		: Entry(TypeCall), lhs(_lhs), target(_target)
+	EntryCall::EntryCall(Symbol *_lhs, Procedure *_target, Symbol **_args, int _numArgs)
+		: Entry(TypeCall), lhs(_lhs), target(_target), numArgs(_numArgs)
 	{
+		args = new Symbol*[numArgs];
+		for(int i=0; i<numArgs; i++) {
+			args[i] = _args[i];
+		}
 	}
 
 	void EntryCall::print(const std::string &prefix)
 	{
+		printf("  %s", prefix.c_str());
 		if(lhs) {
-			printf("  %s%s = %s%s()", prefix.c_str(), lhs->name.c_str(), names[type], target->name().c_str());
-		} else {
-			printf("  %s%s%s()", prefix.c_str(), names[type], target->name().c_str());
+			printf("%s = ", lhs->name.c_str());
 		}
+		printf("%s%s(", names[type], target->name().c_str());
+		for(int i=0; i<numArgs; i++) {
+			printf("%s%s", args[i]->name.c_str(), i < numArgs - 1 ? ", " : "");
+		}
+		printf(")");
 	}
 
 	Symbol *EntryCall::assign()
 	{
 		return lhs;
+	}
+
+	bool EntryCall::uses(Symbol *symbol)
+	{
+		for(int i=0; i<numArgs; i++) {
+			if(args[i] == symbol)
+				return true;
+		}
+
+		return false;
 	}
 
 }

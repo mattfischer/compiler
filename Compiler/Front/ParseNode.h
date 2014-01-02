@@ -19,7 +19,8 @@ typedef enum {
 	ParseNodeCall,
 	ParseNodeReturn,
 	ParseNodeArgDeclList,
-	ParseNodeArgumentDecl
+	ParseNodeArgumentDecl,
+	ParseNodeArgList
 } ParseNodeType;
 
 struct _ParseNode;

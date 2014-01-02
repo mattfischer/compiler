@@ -1,9 +1,11 @@
-int foo(int x)
+int foo(int x, int y)
 {
+  print x;
+  print y;
   return 0;
 }
 
 int main()
 {
-  print foo();
+  foo(1, 2);
 }

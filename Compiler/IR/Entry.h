@@ -144,12 +144,15 @@ namespace IR {
 	struct EntryCall : public Entry {
 		Procedure *target;
 		Symbol *lhs;
+		int numArgs;
+		Symbol **args;
 
-		EntryCall(Symbol *_lhs, Procedure *_target);
+		EntryCall(Symbol *_lhs, Procedure *_target, Symbol **_args, int _numArgs);
 
 		virtual void print(const std::string &prefix);
 
 		virtual Symbol *assign();
+		virtual bool uses(Symbol *symbol);
 	};
 }
 

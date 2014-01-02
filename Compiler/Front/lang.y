@@ -28,7 +28,7 @@
 %token END
 %start s
 
-%type <_node> procedure_list procedure statement_list statement if_statement while_statement clause expression add_expr mult_expr base_expr id arg_decl arg_decl_list
+%type <_node> procedure_list procedure statement_list statement if_statement while_statement clause expression add_expr mult_expr base_expr id arg_decl arg_decl_list arg_list
 %%
 
 s: procedure_list END
@@ -68,7 +68,9 @@ statement: PRINT expression ';'
 		 | while_statement
 	{ $$ = $1; }
 		 | id '(' ')' ';'
-	{ $$ = newNode(ParseNodeCall, $1, NULL); }
+	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeArgList, NULL), NULL); }
+	     | id '(' arg_list ')' ';'
+	{ $$ = newNode(ParseNodeCall, $1, $3, NULL); }
 		 | RETURN expression ';'
 	{ $$ = newNode(ParseNodeReturn, $2, NULL); }
 
@@ -107,12 +109,19 @@ base_expr: INT
 	  | id
 	{ $$ = $1; }
 	  | id '(' ')'
-	{ $$ = newNode(ParseNodeCall, $1, NULL); }
+	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeArgList, NULL), NULL); }
+	  | id '(' arg_list ')'
+	{ $$ = newNode(ParseNodeCall, $1, $3, NULL); }
 	  | '(' expression ')'
 	{ $$ = $2; }
 
 id: ID
 	{ $$ = newNode(ParseNodeId, NULL); $$->lexVal._id = $1; }
+
+arg_list: arg_list ',' expression
+	{ $$ = addChild($1, $3); }
+		| expression
+	{ $$ = newNode(ParseNodeArgList, $1, NULL); }
 
 %%
 

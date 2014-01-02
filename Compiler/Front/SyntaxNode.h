@@ -23,7 +23,8 @@ namespace Front {
 			NodeTypeCall,
 			NodeTypeReturn,
 			NodeTypeArgDeclList,
-			NodeTypeArgumentDecl
+			NodeTypeArgumentDecl,
+			NodeTypeArgList
 		};
 
 		enum NodeSubtype {
