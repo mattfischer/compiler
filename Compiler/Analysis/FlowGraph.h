@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <list>
 
 #include "IR/Entry.h"
 #include "IR/EntryList.h"
@@ -20,6 +21,7 @@ namespace Analysis {
 		struct Block;
 		typedef std::set<Block*> BlockSet;
 		typedef std::vector<Block*> BlockVector;
+		typedef std::list<Block*> BlockList;
 
 		struct Block {
 			BlockSet pred;

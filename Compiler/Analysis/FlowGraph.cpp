@@ -26,6 +26,7 @@ namespace Analysis {
 
 				case IR::Entry::TypeJump:
 				case IR::Entry::TypeCJump:
+				case IR::Entry::TypeReturn:
 					end = itEntry;
 					end++;
 					block->entries = IR::EntrySubList(begin, end);
