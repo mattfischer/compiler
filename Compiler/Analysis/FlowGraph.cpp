@@ -43,13 +43,13 @@ namespace Analysis {
 			mFrontMap[block->entries.front()] = block;
 		}
 
+		mStart = mFrontMap[procedure->start()];
+		mEnd = mFrontMap[procedure->end()];
+
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
 			Block *block = *it;
 			linkBlock(block, block->entries.back());
 		}
-
-		mStart = mFrontMap[procedure->start()];
-		mEnd = mFrontMap[procedure->end()];
 	}
 
 	FlowGraph::~FlowGraph()
@@ -81,6 +81,12 @@ namespace Analysis {
 					FlowGraph::Block *falseTarget = mFrontMap[cJump->falseTarget];
 					block->succ.insert(falseTarget);
 					falseTarget->pred.insert(block);
+					break;
+				}
+			case IR::Entry::TypeReturn:
+				{
+					block->succ.insert(mEnd);
+					mEnd->pred.insert(block);
 					break;
 				}
 			default:

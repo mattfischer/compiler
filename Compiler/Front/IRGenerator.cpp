@@ -107,8 +107,10 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeReturn:
 				{
+					IR::EntryLabel *label = procedure->newLabel();
 					rhs = processRValue(node->children[0], program, procedure);
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeReturn, 0, rhs));
+					procedure->emit(label);
 					break;
 				}
 		}
