@@ -66,6 +66,15 @@ namespace Transform {
 						}
 						break;
 					}
+				case IR::Entry::TypeCall:
+					{
+						const IR::EntrySet &uses = useDefs.uses(entry);
+						if(uses.empty()) {
+							entry->replaceAssign(entry->assign(), 0);
+							changed = true;
+						}
+						break;
+					}
 				case IR::Entry::TypeJump:
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;

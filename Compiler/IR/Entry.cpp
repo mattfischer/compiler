@@ -285,4 +285,19 @@ namespace IR {
 		return false;
 	}
 
+	void EntryCall::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	{
+		lhs = newSymbol;
+	}
+
+	void EntryCall::replaceUse(Symbol *symbol, Symbol *newSymbol)
+	{
+		for(int i=0; i<numArgs; i++) {
+			if(args[i] == symbol)
+			{
+				args[i] = newSymbol;
+				break;
+			}
+		}
+	}
 }

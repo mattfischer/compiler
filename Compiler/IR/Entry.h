@@ -153,6 +153,8 @@ namespace IR {
 
 		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 }
 

@@ -48,17 +48,9 @@ namespace Front {
 				break;
 
 			case SyntaxNode::NodeTypeCall:
-				{
-					std::vector<IR::Symbol*> args;
-					for(int i=0; i<node->children[1]->numChildren; i++) {
-						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
-						args.push_back(arg);
-					}
+				processRValue(node, program, procedure);
+				break;
 
-					IR::Symbol **argList = args.size() > 0 ? &args[0] : 0;
-					procedure->emit(new IR::EntryCall(0, program->findProcedure(node->children[0]->lexVal._id), argList, (int)args.size()));
-					break;
-				}
 			case SyntaxNode::NodeTypeVarDecl:
 				procedure->addSymbol(node->lexVal._id, Type::find(node->children[0]->lexVal._id));
 				break;
