@@ -37,30 +37,30 @@ s: procedure_list END
 procedure_list: procedure_list procedure
 	{ $$ = addChild($1, $2); }
 			  | procedure
-	{ $$ = newNode(ParseNodeProcedureList, $1, NULL); }
+	{ $$ = newNode(ParseNodeList, $1, NULL); }
 
-procedure: id id '(' arg_decl_list ')' '{' statement_list '}'
-	{ $$ = newNode(ParseNodeProcedure, $1, $2, $4, $7, NULL); }
-		 | id id '(' ')' '{' statement_list '}'
-	{ $$ = newNode(ParseNodeProcedure, $1, $2, newNode(ParseNodeArgDeclList, NULL), $6, NULL); }
+procedure: id ID '(' arg_decl_list ')' '{' statement_list '}'
+	{ $$ = newNode(ParseNodeProcedureDef, $1, $4, $7, NULL); $$->lexVal._id = $2; }
+		 | id ID '(' ')' '{' statement_list '}'
+	{ $$ = newNode(ParseNodeProcedureDef, $1, newNode(ParseNodeList, NULL), $6, NULL); $$->lexVal._id = $2; }
 
 arg_decl_list: arg_decl_list ',' arg_decl
 	{ $$ = addChild($1, $3); }
 			| arg_decl
-	{ $$ = newNode(ParseNodeArgDeclList, $1, NULL); }
+	{ $$ = newNode(ParseNodeList, $1, NULL); }
 
-arg_decl: id id
-	{ $$ = newNode(ParseNodeArgumentDecl, $1, $2, NULL); }
+arg_decl: id ID
+	{ $$ = newNode(ParseNodeVarDecl, $1, NULL); $$->lexVal._id = $2; }
 
 statement_list:	statement_list statement
 	{ $$ = addChild($1, $2); }
 			  | statement
-	{ $$ = newNode(ParseNodeStatementList, $1, NULL);	}
+	{ $$ = newNode(ParseNodeList, $1, NULL);	}
 
 statement: PRINT expression ';'
 	{ $$ = newNode(ParseNodePrint, $2, NULL); }
-	     | id id ';'
-	{ $$ = newNode(ParseNodeVarDecl, $1, $2, NULL); }
+	     | id ID ';'
+	{ $$ = newNode(ParseNodeVarDecl, $1, NULL); $$->lexVal._id = $2;}
 		 | id '=' expression ';'
     { $$ = newNode(ParseNodeAssign, $1, $3, NULL); }
 		 | if_statement
@@ -68,7 +68,7 @@ statement: PRINT expression ';'
 		 | while_statement
 	{ $$ = $1; }
 		 | id '(' ')' ';'
-	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeArgList, NULL), NULL); }
+	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeList, NULL), NULL); }
 	     | id '(' arg_list ')' ';'
 	{ $$ = newNode(ParseNodeCall, $1, $3, NULL); }
 		 | RETURN expression ';'
@@ -109,7 +109,7 @@ base_expr: INT
 	  | id
 	{ $$ = $1; }
 	  | id '(' ')'
-	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeArgList, NULL), NULL); }
+	{ $$ = newNode(ParseNodeCall, $1, newNode(ParseNodeList, NULL), NULL); }
 	  | id '(' arg_list ')'
 	{ $$ = newNode(ParseNodeCall, $1, $3, NULL); }
 	  | '(' expression ')'
@@ -121,7 +121,7 @@ id: ID
 arg_list: arg_list ',' expression
 	{ $$ = addChild($1, $3); }
 		| expression
-	{ $$ = newNode(ParseNodeArgList, $1, NULL); }
+	{ $$ = newNode(ParseNodeList, $1, NULL); }
 
 %%
 

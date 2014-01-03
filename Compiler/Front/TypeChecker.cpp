@@ -11,33 +11,24 @@ namespace Front {
 	{
 		bool result = true;
 
-		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeProcedureList:
-				result = true;
-				for(int i=0; i<node->numChildren; i++) {
-					SyntaxNode *child = node->children[i];
-					Procedure *procedure = addProcedure(child);
-					if(procedure) {
-						Scope scope(*this);
-						for(unsigned int j=0; j<procedure->arguments.size(); j++) {
-							scope.addSymbol(procedure->arguments[j]);
-						}
-						result = check(child->children[3], procedure, scope);
-					} else {
-						result = false;
-					}
-
-					if(!result) {
-						break;
-					}
-
-					child->type = TypeNone;
+		for(int i=0; i<node->numChildren; i++) {
+			SyntaxNode *child = node->children[i];
+			Procedure *procedure = addProcedure(child);
+			if(procedure) {
+				Scope scope(*this);
+				for(unsigned int j=0; j<procedure->arguments.size(); j++) {
+					scope.addSymbol(procedure->arguments[j]);
 				}
-				break;
-
-			default:
+				result = check(child->children[2], procedure, scope);
+			} else {
 				result = false;
+			}
+
+			if(!result) {
 				break;
+			}
+
+			child->type = TypeNone;
 		}
 
 		return result;
@@ -48,9 +39,8 @@ namespace Front {
 		bool result = true;
 
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeProcedureList:
-			case SyntaxNode::NodeTypeStatementList:
-			case SyntaxNode::NodeTypePrintStatement:
+			case SyntaxNode::NodeTypeList:
+			case SyntaxNode::NodeTypePrint:
 				result = checkChildren(node, procedure, scope);
 				node->type = TypeNone;
 				break;
@@ -81,7 +71,7 @@ namespace Front {
 				}
 
 			case SyntaxNode::NodeTypeVarDecl:
-				result = scope.addSymbol(node->children[0]->lexVal._id, node->children[1]->lexVal._id, node);
+				result = scope.addSymbol(node->lexVal._id, node->children[1]->lexVal._id, node);
 				node->type = TypeNone;
 				break;
 
@@ -227,17 +217,17 @@ namespace Front {
 		}
 
 		std::vector<Symbol*> arguments;
-		for(int i=0; i<node->children[2]->numChildren; i++) {
-			SyntaxNode *decl = node->children[2]->children[i];
+		for(int i=0; i<node->children[1]->numChildren; i++) {
+			SyntaxNode *decl = node->children[1]->children[i];
 			Type *type = Type::find(decl->children[0]->lexVal._id);
 			if(type == NULL) {
 				error(node, "Error: Type '%s' not found.\n", decl->children[0]->lexVal._id);
 				return 0;
 			}
-			arguments.push_back(new Symbol(type, decl->children[1]->lexVal._id));
+			arguments.push_back(new Symbol(type, decl->lexVal._id));
 		}
 
-		Procedure *procedure = new Procedure(returnType, node->children[1]->lexVal._id, arguments);
+		Procedure *procedure = new Procedure(returnType, node->lexVal._id, arguments);
 		mProcedures.push_back(procedure);
 
 		return procedure;

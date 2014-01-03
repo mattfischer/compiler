@@ -8,11 +8,11 @@ namespace Front {
 
 	struct SyntaxNode {
 		enum NodeType {
-			NodeTypeProcedureList,
-			NodeTypeProcedure,
-			NodeTypeStatementList,
-			NodeTypePrintStatement,
+			NodeTypeList,
+			NodeTypeProcedureDef,
 			NodeTypeVarDecl,
+			NodeTypeReturn,
+			NodeTypePrint,
 			NodeTypeAssign,
 			NodeTypeIf,
 			NodeTypeWhile,
@@ -20,11 +20,7 @@ namespace Front {
 			NodeTypeArith,
 			NodeTypeConstant,
 			NodeTypeId,
-			NodeTypeCall,
-			NodeTypeReturn,
-			NodeTypeArgDeclList,
-			NodeTypeArgumentDecl,
-			NodeTypeArgList
+			NodeTypeCall
 		};
 
 		enum NodeSubtype {

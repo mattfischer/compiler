@@ -2,11 +2,11 @@
 #define PARSE_NODE_H
 
 typedef enum {
-	ParseNodeProcedureList,
-	ParseNodeProcedure,
-	ParseNodeStatementList,
-	ParseNodePrint,
+	ParseNodeList,
+	ParseNodeProcedureDef,
 	ParseNodeVarDecl,
+	ParseNodeReturn,
+	ParseNodePrint,
 	ParseNodeAssign,
 	ParseNodeIf,
 	ParseNodeWhile,
@@ -16,11 +16,7 @@ typedef enum {
 	ParseNodeMultiply,
 	ParseNodeInt,
 	ParseNodeId,
-	ParseNodeCall,
-	ParseNodeReturn,
-	ParseNodeArgDeclList,
-	ParseNodeArgumentDecl,
-	ParseNodeArgList
+	ParseNodeCall
 } ParseNodeType;
 
 struct _ParseNode;

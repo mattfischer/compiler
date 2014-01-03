@@ -15,7 +15,7 @@ namespace Front {
 	{
 		for(int i=0; i<mTree->numChildren; i++) {
 			SyntaxNode *procedure = mTree->children[i];
-			addProcedure(procedure->children[1]->lexVal._id, procedure->children[2]);
+			addProcedure(procedure->lexVal._id, procedure->children[1]);
 		}
 
 		Procedure *proc = findProcedure("main");
@@ -25,13 +25,13 @@ namespace Front {
 	void Interpreter::evaluateStatement(SyntaxNode *node)
 	{
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeStatementList:
+			case SyntaxNode::NodeTypeList:
 				for(int i=0; i<node->numChildren; i++) {
 					evaluateStatement(node->children[i]);
 				}
 				break;
 
-			case SyntaxNode::NodeTypePrintStatement:
+			case SyntaxNode::NodeTypePrint:
 				{
 					int result;
 
@@ -49,7 +49,7 @@ namespace Front {
 			case SyntaxNode::NodeTypeVarDecl:
 				{
 					Type *type = Type::find(node->children[0]->lexVal._id);
-					addVariable(node->children[1]->lexVal._id, type);
+					addVariable(node->lexVal._id, type);
 					break;
 				}
 

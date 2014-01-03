@@ -16,11 +16,11 @@ namespace Front {
 		SyntaxNode::NodeSubtype nodeSubType;
 		LexValType	lexType;
 	} convertTable[] = {
-		{ /* ParseNodeProcedureList */  SyntaxNode::NodeTypeProcedureList,      SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeProcedure     */  SyntaxNode::NodeTypeProcedure,          SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeStatementList	*/	SyntaxNode::NodeTypeStatementList,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrintStatement,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			SyntaxNode::NodeSubtypeNone,		LexValNone	},
+		{ /* ParseNodeList			*/  SyntaxNode::NodeTypeList,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
+		{ /* ParseNodeProcedureDef  */  SyntaxNode::NodeTypeProcedureDef,       SyntaxNode::NodeSubtypeNone,		LexValId	},
+		{ /* ParseNodeVarDecl		*/	SyntaxNode::NodeTypeVarDecl,			SyntaxNode::NodeSubtypeNone,		LexValId	},
+		{ /* ParseNodeReturn		*/	SyntaxNode::NodeTypeReturn,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
+		{ /* ParseNodePrint			*/	SyntaxNode::NodeTypePrint,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeAssign		*/	SyntaxNode::NodeTypeAssign,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeIf			*/	SyntaxNode::NodeTypeIf,					SyntaxNode::NodeSubtypeNone,		LexValNone	},
 		{ /* ParseNodeWhile			*/	SyntaxNode::NodeTypeWhile,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
@@ -30,11 +30,7 @@ namespace Front {
 		{ /* ParseNodeMultiply		*/	SyntaxNode::NodeTypeArith,				SyntaxNode::NodeSubtypeMultiply,	LexValNone	},
 		{ /* ParseNodeInt			*/	SyntaxNode::NodeTypeConstant,			SyntaxNode::NodeSubtypeNone,		LexValInt	},
 		{ /* ParseNodeId			*/	SyntaxNode::NodeTypeId,					SyntaxNode::NodeSubtypeNone,		LexValId	},
-		{ /* ParseNodeCall			*/	SyntaxNode::NodeTypeCall,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeReturn		*/	SyntaxNode::NodeTypeReturn,				SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeArgDeclList	*/	SyntaxNode::NodeTypeArgDeclList,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeArgumentDecl	*/	SyntaxNode::NodeTypeArgumentDecl,		SyntaxNode::NodeSubtypeNone,		LexValNone	},
-		{ /* ParseNodeArgList   	*/	SyntaxNode::NodeTypeArgList,			SyntaxNode::NodeSubtypeNone,		LexValNone	}
+		{ /* ParseNodeCall			*/	SyntaxNode::NodeTypeCall,				SyntaxNode::NodeSubtypeNone,		LexValNone	}
 	};
 
 	SyntaxNode *SyntaxNode::fromParseTree(ParseNode *tree)

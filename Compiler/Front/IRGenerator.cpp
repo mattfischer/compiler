@@ -18,13 +18,13 @@ namespace Front {
 
 		for(int i=0; i<tree->numChildren; i++) {
 			SyntaxNode *proc = tree->children[i];
-			IR::Procedure *procedure = new IR::Procedure(proc->children[1]->lexVal._id);
-			SyntaxNode *args = proc->children[2];
+			IR::Procedure *procedure = new IR::Procedure(proc->lexVal._id);
+			SyntaxNode *args = proc->children[1];
 			for(int j=0; j<args->numChildren; j++) {
-				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->children[1]->lexVal._id, Front::Type::find(args->children[j]->children[0]->lexVal._id));
+				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal._id, Front::Type::find(args->children[j]->children[0]->lexVal._id));
 				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeArgument, symbol, j));
 			}
-			processNode(proc->children[3], program, procedure);
+			processNode(proc->children[2], program, procedure);
 			program->addProcedure(procedure);
 		}
 
@@ -36,13 +36,13 @@ namespace Front {
 		IR::Symbol *lhs, *rhs;
 
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeStatementList:
+			case SyntaxNode::NodeTypeList:
 				for(int i=0; i<node->numChildren; i++) {
 					processNode(node->children[i], program, procedure);
 				}
 				break;
 
-			case SyntaxNode::NodeTypePrintStatement:
+			case SyntaxNode::NodeTypePrint:
 				rhs = processRValue(node->children[0], program, procedure);
 				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
 				break;
@@ -60,7 +60,7 @@ namespace Front {
 					break;
 				}
 			case SyntaxNode::NodeTypeVarDecl:
-				procedure->addSymbol(node->children[1]->lexVal._id, Type::find(node->children[0]->lexVal._id));
+				procedure->addSymbol(node->lexVal._id, Type::find(node->children[0]->lexVal._id));
 				break;
 
 			case SyntaxNode::NodeTypeAssign:
