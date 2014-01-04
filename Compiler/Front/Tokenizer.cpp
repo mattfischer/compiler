@@ -1,6 +1,7 @@
 #include "Front/Tokenizer.h"
 
 #include <cctype>
+#include <sstream>
 
 char whitespace[] = { ' ', '\t', '\r', '\n' };
 char *literals[] = { "print", "if", "else", "while", "return", "==", "!=", "+", "*", "(", ")", "=", ";", "{", "}", "," };
@@ -11,13 +12,14 @@ Tokenizer::Tokenizer(const std::string &filename)
 {
 	mLine = 0;
 	mColumn = 0;
+	mError = false;
 
 	getNext();
 }
 
 void Tokenizer::consume()
 {
-	if(mNext.type != Token::TypeEnd) {
+	if(!mError && mNext.type != Token::TypeEnd) {
 		getNext();
 	}
 }
@@ -85,6 +87,11 @@ void Tokenizer::getNext()
 		emptyBuffer(len);
 		return;
 	}
+
+	mError = true;
+	std::stringstream str;
+	str << "Illegal symbol '" << mBuffer[0] << "'";
+	mErrorMessage = str.str();
 }
 
 bool Tokenizer::fillBuffer(size_t length)

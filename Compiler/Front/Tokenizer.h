@@ -24,6 +24,11 @@ public:
 	};
 
 	const Token &next() { return mNext; }
+	bool error() { return mError; }
+	const std::string &errorMessage() { return mErrorMessage; }
+
+	int line() { return mLine; }
+	int column() { return mColumn; }
 
 	void consume();
 
@@ -34,6 +39,9 @@ private:
 	std::string mBuffer;
 	int mLine;
 	int mColumn;
+
+	bool mError;
+	std::string mErrorMessage;
 
 	void getNext();
 	bool fillBuffer(size_t length);
