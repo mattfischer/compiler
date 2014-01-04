@@ -287,6 +287,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Front\Tokenizer.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Front\Type.cpp"
 					>
 				</File>
@@ -454,6 +458,10 @@
 				</File>
 				<File
 					RelativePath=".\Front\SyntaxNode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\Tokenizer.h"
 					>
 				</File>
 				<File
