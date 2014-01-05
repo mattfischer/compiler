@@ -16,11 +16,11 @@ namespace Front {
 	{
 		IR::Program *program = new IR::Program;
 
-		for(int i=0; i<tree->numChildren; i++) {
+		for(unsigned int i=0; i<tree->children.size(); i++) {
 			SyntaxNode *proc = tree->children[i];
 			IR::Procedure *procedure = new IR::Procedure(proc->lexVal._id);
 			SyntaxNode *args = proc->children[1];
-			for(int j=0; j<args->numChildren; j++) {
+			for(unsigned int j=0; j<args->children.size(); j++) {
 				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal._id, Front::Type::find(args->children[j]->children[0]->lexVal._id));
 				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeArgument, symbol, j));
 			}
@@ -37,7 +37,7 @@ namespace Front {
 
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeList:
-				for(int i=0; i<node->numChildren; i++) {
+				for(unsigned int i=0; i<node->children.size(); i++) {
 					processNode(node->children[i], program, procedure);
 				}
 				break;
@@ -65,7 +65,7 @@ namespace Front {
 
 			case SyntaxNode::NodeTypeIf:
 				lhs = processRValue(node->children[0], program, procedure);
-				if(node->numChildren == 2) {
+				if(node->children.size() == 2) {
 					IR::EntryLabel *trueLabel = procedure->newLabel();
 					IR::EntryLabel *nextLabel = procedure->newLabel();
 
@@ -134,7 +134,7 @@ namespace Front {
 			case SyntaxNode::NodeTypeCall:
 				{
 					std::vector<IR::Symbol*> args;
-					for(int i=0; i<node->children[1]->numChildren; i++) {
+					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
 						args.push_back(arg);
 					}

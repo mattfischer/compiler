@@ -37,8 +37,7 @@ namespace Front {
 	{
 		SyntaxNode *node = new SyntaxNode;
 		node->line = tree->line;
-		node->numChildren = tree->numChildren;
-		node->children = new SyntaxNode*[node->numChildren];
+		node->children.reserve(tree->numChildren);
 
 		node->nodeType = convertTable[tree->type].nodeType;
 		node->nodeSubtype = convertTable[tree->type].nodeSubType;

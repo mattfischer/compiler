@@ -21,6 +21,8 @@ public:
 		std::string text;
 		int line;
 		int column;
+
+		static std::string typeName(Type type);
 	};
 
 	const Token &next() { return mNext; }

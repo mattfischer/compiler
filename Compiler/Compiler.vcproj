@@ -255,6 +255,10 @@
 				Name="Front"
 				>
 				<File
+					RelativePath=".\Front\HandParser.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Front\Interpreter.cpp"
 					>
 				</File>
@@ -440,6 +444,10 @@
 			<Filter
 				Name="Front"
 				>
+				<File
+					RelativePath=".\Front\HandParser.h"
+					>
+				</File>
 				<File
 					RelativePath=".\Front\Interpreter.h"
 					>

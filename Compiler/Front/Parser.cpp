@@ -5,6 +5,8 @@
 #include "Front/SyntaxNode.h"
 #include "Front/TypeChecker.h"
 #include "Front/IRGenerator.h"
+#include "Front/Tokenizer.h"
+#include "Front/HandParser.h"
 
 #include "ParseNode.h"
 
@@ -13,8 +15,10 @@ extern "C" ParseNode *parseLang(const char *filename);
 namespace Front {
 	IR::Program *Parser::parse(const std::string &filename)
 	{
-		ParseNode *parseTree = parseLang("input.lang");
-		SyntaxNode *syntaxTree = SyntaxNode::fromParseTree(parseTree);
+		Tokenizer tokenizer("input.lang");
+		HandParser handParser(tokenizer);
+
+		SyntaxNode *syntaxTree = handParser.parse();
 		TypeChecker typeChecker;
 		bool result = typeChecker.check(syntaxTree);
 

@@ -1,6 +1,7 @@
 #ifndef SYNTAX_NODE_H
 #define SYNTAX_NODE_H
 
+#include <vector>
 #include "Front/ParseNode.h"
 
 namespace Front {
@@ -33,11 +34,13 @@ namespace Front {
 			NodeSubtypeNequal
 		};
 
+		SyntaxNode(NodeType _nodeType, NodeSubtype _nodeSubtype = NodeSubtypeNone) : nodeType(_nodeType), nodeSubtype(_nodeSubtype) {}
+		SyntaxNode() {}
+
 		NodeType nodeType;
 		NodeSubtype nodeSubtype;
 		int line;
-		int numChildren;
-		SyntaxNode **children;
+		std::vector<SyntaxNode*> children;
 		Type *type;
 		union {
 			int _int;

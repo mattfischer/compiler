@@ -89,9 +89,9 @@ void Tokenizer::getNext()
 	}
 
 	mError = true;
-	std::stringstream str;
-	str << "Illegal symbol '" << mBuffer[0] << "'";
-	mErrorMessage = str.str();
+	std::stringstream ss;
+	ss << "Illegal symbol '" << mBuffer[0] << "'";
+	mErrorMessage = ss.str();
 }
 
 bool Tokenizer::fillBuffer(size_t length)
@@ -146,6 +146,20 @@ void Tokenizer::skipWhitespace()
 			break;
 		}
 	}
+}
+
+std::string Tokenizer::Token::typeName(Type type)
+{
+	switch(type) {
+		case TypeLiteral:
+			return "literal";
+		case TypeIdentifier:
+			return "identifier";
+		case TypeNumber:
+			return "number";
+	}
+
+	return "";
 }
 
 }

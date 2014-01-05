@@ -11,7 +11,7 @@ namespace Front {
 	{
 		bool result = true;
 
-		for(int i=0; i<node->numChildren; i++) {
+		for(unsigned int i=0; i<node->children.size(); i++) {
 			SyntaxNode *child = node->children[i];
 			Procedure *procedure = addProcedure(child);
 			if(procedure) {
@@ -49,8 +49,8 @@ namespace Front {
 				{
 					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
 					if(procedure) {
-						if(procedure->arguments.size() == node->children[1]->numChildren) {
-							for(int i=0; i<node->children[1]->numChildren; i++) {
+						if(procedure->arguments.size() == node->children[1]->children.size()) {
+							for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 								check(node->children[1]->children[i], procedure, scope);
 								if(node->children[1]->children[i]->type != procedure->arguments[i]->type) {
 									error(node, "Type mismatch on argument %i of procedure %s", i, procedure->name.c_str());
@@ -146,6 +146,10 @@ namespace Front {
 					break;
 				}
 
+			case SyntaxNode::NodeTypeConstant:
+				node->type = TypeInt;
+				break;
+
 			case SyntaxNode::NodeTypeReturn:
 				check(node->children[0], procedure, scope);
 				if(node->children[0]->type != procedure->returnType) {
@@ -161,7 +165,7 @@ namespace Front {
 
 	bool TypeChecker::checkChildren(SyntaxNode *node, Procedure *procedure, Scope &scope)
 	{
-		for(int i=0; i<node->numChildren; i++) {
+		for(unsigned int i=0; i<node->children.size(); i++) {
 			bool result = check(node->children[i], procedure, scope);
 			if(!result) {
 				return false;
@@ -217,7 +221,7 @@ namespace Front {
 		}
 
 		std::vector<Symbol*> arguments;
-		for(int i=0; i<node->children[1]->numChildren; i++) {
+		for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 			SyntaxNode *decl = node->children[1]->children[i];
 			Type *type = Type::find(decl->children[0]->lexVal._id);
 			if(type == NULL) {

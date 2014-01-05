@@ -13,7 +13,7 @@ namespace Front {
 
 	void Interpreter::run()
 	{
-		for(int i=0; i<mTree->numChildren; i++) {
+		for(int i=0; i<mTree->children.size(); i++) {
 			SyntaxNode *procedure = mTree->children[i];
 			addProcedure(procedure->lexVal._id, procedure->children[1]);
 		}
@@ -26,7 +26,7 @@ namespace Front {
 	{
 		switch(node->nodeType) {
 			case SyntaxNode::NodeTypeList:
-				for(int i=0; i<node->numChildren; i++) {
+				for(int i=0; i<node->children.size(); i++) {
 					evaluateStatement(node->children[i]);
 				}
 				break;
@@ -70,7 +70,7 @@ namespace Front {
 
 					if(a == 1) {
 						evaluateStatement(node->children[1]);
-					} else if(node->numChildren == 3) {
+					} else if(node->children.size() == 3) {
 						evaluateStatement(node->children[2]);
 					}
 					break;
