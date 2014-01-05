@@ -95,19 +95,6 @@ void Parser::errorExpected(const std::string &expected)
 	throw ParseException(ss.str(), next().line, next().column);
 }
 
-bool Parser::checkPresent(Node *node, const std::string &name, bool required)
-{
-	if(!node) {
-		if(required) {
-			errorExpected(name);
-		} else {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 Node *Parser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype)
 {
 	Node *node = new Node;
@@ -272,9 +259,9 @@ Node *Parser::parseStatement(bool required)
 
 	if(required) {
 		errorExpected("<statement>");
-	} else {
-		return 0;
 	}
+
+	return 0;
 }
 
 Node *Parser::parsePrintStatement()
@@ -360,8 +347,8 @@ Node *Parser::parseClause(bool required)
 
 Node *Parser::parseExpression(bool required)
 {
-	Node *arg1 = parseAddExpression();
-	if(!checkPresent(arg1, "<expression>", required))	{
+	Node *arg1 = parseAddExpression(required);
+	if(!arg1) {
 		return 0;
 	}
 
@@ -384,8 +371,8 @@ Node *Parser::parseExpression(bool required)
 
 Node *Parser::parseAddExpression(bool required)
 {
-	Node *arg1 = parseMultiplyExpression();
-	if(!checkPresent(arg1, "<add-expression>", required))	{
+	Node *arg1 = parseMultiplyExpression(required);
+	if(!arg1) {
 		return 0;
 	}
 
@@ -404,8 +391,8 @@ Node *Parser::parseAddExpression(bool required)
 
 Node *Parser::parseMultiplyExpression(bool required)
 {
-	Node *arg1 = parseBaseExpression();
-	if(!checkPresent(arg1, "<multiply-expression>", required))	{
+	Node *arg1 = parseBaseExpression(required);
+	if(!arg1) {
 		return 0;
 	}
 
@@ -422,7 +409,7 @@ Node *Parser::parseMultiplyExpression(bool required)
 	}
 }
 
-Node *Parser::parseBaseExpression()
+Node *Parser::parseBaseExpression(bool required)
 {
 	Node *node;
 
@@ -451,10 +438,13 @@ Node *Parser::parseBaseExpression()
 			node = functionCall;
 		}
 		return node;
-	} else {
-		errorExpected("<base-expression>");
-		return 0;
 	}
+
+	if(required) {
+		errorExpected("<base-expression>");
+	}
+
+	return 0;
 }
 
 Node *Parser::parseExpressionList()

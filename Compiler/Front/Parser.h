@@ -29,7 +29,6 @@ private:
 	bool match(Tokenizer::Token::Type type);
 	bool matchLiteral(const std::string &text);
 	void errorExpected(const std::string &expected);
-	bool checkPresent(Node *node, const std::string &name, bool required);
 	void consume();
 
 	std::vector<Node*> mNodes;
@@ -52,7 +51,7 @@ private:
 	Node *parseExpression(bool required = false);
 	Node *parseAddExpression(bool required = false);
 	Node *parseMultiplyExpression(bool required = false);
-	Node *parseBaseExpression();
+	Node *parseBaseExpression(bool required = false);
 	Node *parseExpressionList();
 	Node *parseIdentifier();
 };
