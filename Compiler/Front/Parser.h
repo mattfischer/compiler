@@ -45,8 +45,10 @@ private:
 	Node *parseStatement(bool required = false);
 	Node *parseClause(bool required = false);
 	Node *parseExpression(bool required = false);
+	Node *parseCompareExpression(bool required = false);
 	Node *parseAddExpression(bool required = false);
 	Node *parseMultiplyExpression(bool required = false);
+	Node *parseFunctionExpression(bool required = false);
 	Node *parseBaseExpression(bool required = false);
 	Node *parseExpressionList();
 	Node *parseIdentifier();

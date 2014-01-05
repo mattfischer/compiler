@@ -47,20 +47,8 @@ namespace Front {
 				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
 				break;
 
-			case Node::NodeTypeCall:
-				processRValue(node, program, procedure);
-				break;
-
 			case Node::NodeTypeVarDecl:
 				procedure->addSymbol(node->lexVal.s, Type::find(node->children[0]->lexVal.s));
-				break;
-
-			case Node::NodeTypeAssign:
-				lhs = procedure->findSymbol(node->children[0]->lexVal.s);
-				rhs = processRValue(node->children[1], program, procedure);
-				if(rhs != lhs) {
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, lhs, rhs));
-				}
 				break;
 
 			case Node::NodeTypeIf:
@@ -113,6 +101,10 @@ namespace Front {
 					procedure->emit(label);
 					break;
 				}
+
+			default:
+				processRValue(node, program, procedure);
+				break;
 		}
 	}
 
@@ -129,6 +121,15 @@ namespace Front {
 
 			case Node::NodeTypeId:
 				result = procedure->findSymbol(node->lexVal.s);
+				break;
+
+			case Node::NodeTypeAssign:
+				a = procedure->findSymbol(node->children[0]->lexVal.s);
+				b = processRValue(node->children[1], program, procedure);
+				if(a != b) {
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+				}
+				result = b;
 				break;
 
 			case Node::NodeTypeCall:

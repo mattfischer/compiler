@@ -47,24 +47,29 @@ namespace Front {
 
 			case Node::NodeTypeCall:
 				{
-					Procedure *procedure = findProcedure(node->children[0]->lexVal.s);
-					if(procedure) {
-						if(procedure->arguments.size() == node->children[1]->children.size()) {
-							for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-								check(node->children[1]->children[i], procedure, scope);
-								if(node->children[1]->children[i]->type != procedure->arguments[i]->type) {
-									error(node, "Type mismatch on argument %i of procedure %s", i, procedure->name.c_str());
-									result = false;
-									break;
+					if(node->children[0]->nodeType == Node::NodeTypeId) {
+						Procedure *procedure = findProcedure(node->children[0]->lexVal.s);
+						if(procedure) {
+							if(procedure->arguments.size() == node->children[1]->children.size()) {
+								for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
+									check(node->children[1]->children[i], procedure, scope);
+									if(node->children[1]->children[i]->type != procedure->arguments[i]->type) {
+										error(node, "Type mismatch on argument %i of procedure %s", i, procedure->name.c_str());
+										result = false;
+										break;
+									}
 								}
+								node->type = procedure->returnType;
+							} else {
+								error(node, "Incorrect number of arguments to procedure %s", procedure->name.c_str());
+								result = false;
 							}
-							node->type = procedure->returnType;
 						} else {
-							error(node, "Incorrect number of arguments to procedure %s", procedure->name.c_str());
+							error(node, "Undeclared procedure %s", node->children[0]->lexVal.s);
 							result = false;
 						}
 					} else {
-						error(node, "Undeclared procedure %s", node->children[0]->lexVal.s);
+						error(node, "Function call performed on non-function");
 						result = false;
 					}
 				break;
@@ -76,21 +81,25 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeAssign:
-				result = check(node->children[1], procedure, scope);
+				result = checkChildren(node, procedure, scope);
 				if(result) {
-					std::string name = node->children[0]->lexVal.s;
-					Symbol *symbol = scope.findSymbol(name);
-					if(symbol) {
-						if(symbol->type != node->children[1]->type) {
-							error(node, "Type mismatch");
+					if(node->children[0]->nodeType == Node::NodeTypeId) {
+						std::string name = node->children[0]->lexVal.s;
+						Symbol *symbol = scope.findSymbol(name);
+						if(symbol) {
+							if(symbol->type != node->children[1]->type) {
+								error(node, "Type mismatch");
+								result = false;
+							}
+						} else {
+							error(node, "Undeclared variable '%s'", name);
 							result = false;
 						}
 					} else {
-						error(node, "Undeclared variable '%s'", name);
+						error(node, "Lvalue required");
 						result = false;
 					}
-
-					node->type = TypeNone;
+					node->type = node->children[1]->type;
 				}
 				break;
 

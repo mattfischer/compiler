@@ -227,6 +227,10 @@ Node *Parser::parseStatement(bool required)
 		expectLiteral(";");
 
 		return node;
+	} else if(node = parseExpression()) {
+		expectLiteral(";");
+
+		return node;
 	} else if(matchLiteral("return")) {
 		node = newNode(Node::NodeTypeReturn, next().line);
 		consume();
@@ -268,30 +272,6 @@ Node *Parser::parseStatement(bool required)
 		node->children.push_back(parseClause(true));
 
 		return node;
-	} else if(match(Tokenizer::Token::TypeIdentifier)) {
-		Node *identifier = parseIdentifier();
-		if(matchLiteral("=")) {
-			consume();
-
-			node = newNode(Node::NodeTypeAssign, identifier->line);
-			node->children.push_back(identifier);
-			node->children.push_back(parseExpression(true));
-			expectLiteral(";");
-
-			return node;
-		} else if(matchLiteral("(")) {
-			consume();
-
-			node = newNode(Node::NodeTypeCall, identifier->line);
-			node->children.push_back(identifier);
-			node->children.push_back(parseExpressionList());
-			expectLiteral(")");
-			expectLiteral(";");
-
-			return node;
-		} else {
-			errorExpected("= or (");
-		}
 	}
 
 	if(required) {
@@ -317,6 +297,26 @@ Node *Parser::parseClause(bool required)
 
 Node *Parser::parseExpression(bool required)
 {
+	Node *lhs = parseCompareExpression(required);
+	if(!lhs) {
+		return 0;
+	}
+
+	if(matchLiteral("=")) {
+		consume();
+
+		Node *node = newNode(Node::NodeTypeAssign, lhs->line);
+		node->children.push_back(lhs);
+		node->children.push_back(parseExpression(true));
+
+		return node;
+	} else {
+		return lhs;
+	}
+}
+
+Node *Parser::parseCompareExpression(bool required)
+{
 	Node *arg1 = parseAddExpression(required);
 	if(!arg1) {
 		return 0;
@@ -331,7 +331,7 @@ Node *Parser::parseExpression(bool required)
 		Node *node = newNode(Node::NodeTypeCompare, arg1->line, subtype);
 
 		node->children.push_back(arg1);
-		node->children.push_back(parseAddExpression(true));
+		node->children.push_back(parseCompareExpression(true));
 
 		return node;
 	} else {
@@ -361,7 +361,7 @@ Node *Parser::parseAddExpression(bool required)
 
 Node *Parser::parseMultiplyExpression(bool required)
 {
-	Node *arg1 = parseBaseExpression(required);
+	Node *arg1 = parseFunctionExpression(required);
 	if(!arg1) {
 		return 0;
 	}
@@ -376,6 +376,27 @@ Node *Parser::parseMultiplyExpression(bool required)
 		return node;
 	} else {
 		return arg1;
+	}
+}
+
+Node *Parser::parseFunctionExpression(bool required)
+{
+	Node *node = parseBaseExpression(required);
+	if(!node) {
+		return 0;
+	}
+
+	if(matchLiteral("(")) {
+		consume();
+
+		Node *call = newNode(Node::NodeTypeCall, node->line);
+		call->children.push_back(node);
+		call->children.push_back(parseExpressionList());
+		expectLiteral(")");
+
+		return call;
+	} else {
+		return node;
 	}
 }
 
@@ -397,16 +418,6 @@ Node *Parser::parseBaseExpression(bool required)
 
 		return node;
 	} else if(node = parseIdentifier()) {
-		if(matchLiteral("(")) {
-			consume();
-
-			Node *functionCall = newNode(Node::NodeTypeCall, node->line);
-			functionCall->children.push_back(node);
-			functionCall->children.push_back(parseExpressionList());
-			expectLiteral(")");
-
-			node = functionCall;
-		}
 		return node;
 	}
 
