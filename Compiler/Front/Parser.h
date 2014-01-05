@@ -24,32 +24,34 @@ private:
 	int mErrorColumn;
 
 	const Tokenizer::Token &next();
-	bool expect(Tokenizer::Token::Type type);
-	bool expectLiteral(const std::string &text);
+	void expect(Tokenizer::Token::Type type);
+	void expectLiteral(const std::string &text);
 	bool match(Tokenizer::Token::Type type);
 	bool matchLiteral(const std::string &text);
 	void errorExpected(const std::string &expected);
+	bool checkPresent(Node *node, const std::string &name, bool required);
 	void consume();
 
 	std::vector<Node*> mNodes;
 
-	Node *newNode(Node::NodeType nodeType, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
+	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
 
+	Node *parseProgram();
 	Node *parseProcedureList();
 	Node *parseProcedure();
 	Node *parseArgumentDeclarationList();
 	Node *parseVariableDeclaration();
 	Node *parseType();
 	Node *parseStatementList();
-	Node *parseStatement();
+	Node *parseStatement(bool required = false);
 	Node *parsePrintStatement();
 	Node *parseReturnStatement();
 	Node *parseIfStatement();
 	Node *parseWhileStatement();
-	Node *parseClause();
-	Node *parseExpression();
-	Node *parseAddExpression();
-	Node *parseMultiplyExpression();
+	Node *parseClause(bool required = false);
+	Node *parseExpression(bool required = false);
+	Node *parseAddExpression(bool required = false);
+	Node *parseMultiplyExpression(bool required = false);
 	Node *parseBaseExpression();
 	Node *parseExpressionList();
 	Node *parseIdentifier();

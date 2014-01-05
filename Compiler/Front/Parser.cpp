@@ -4,10 +4,30 @@
 
 #include <sstream>
 #include <cctype>
+#include <exception>
 
 #include <string.h>
 
 namespace Front {
+
+class ParseException : public std::exception
+{
+public:
+	ParseException(const std::string &message, int line, int column)
+		: mMessage(message), mLine(line), mColumn(column)
+	{}
+
+	const char *what() { return mMessage.c_str(); }
+	const std::string &message() { return mMessage; }
+	int line() { return mLine; }
+	int column() { return mColumn; }
+
+private:
+	std::string mMessage;
+	int mLine;
+	int mColumn;
+};
+
 Parser::Parser(Tokenizer &tokenizer)
 	: mTokenizer(tokenizer)
 {
@@ -19,42 +39,30 @@ const Tokenizer::Token &Parser::next()
 	return mTokenizer.next();
 }
 
-bool Parser::expect(Tokenizer::Token::Type type)
+void Parser::expect(Tokenizer::Token::Type type)
 {
 	if(mTokenizer.error()) {
-		mError = true;
-		mErrorMessage = mTokenizer.errorMessage();
-		mErrorLine = next().line;
-		mErrorColumn = next().column;
-		return false;
+		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
 	}
 
 	if(next().type != type) {
 		errorExpected(Tokenizer::Token::typeName(type));
-		return false;
 	}
 
 	consume();
-	return true;
 }
 
-bool Parser::expectLiteral(const std::string &text)
+void Parser::expectLiteral(const std::string &text)
 {
 	if(mTokenizer.error()) {
-		mError = true;
-		mErrorMessage = mTokenizer.errorMessage();
-		mErrorLine = next().line;
-		mErrorColumn = next().column;
-		return false;
+		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
 	}
 
 	if(next().type != Tokenizer::Token::TypeLiteral || next().text != text) {
 		errorExpected(text);
-		return false;
 	}
 
 	consume();
-	return true;
 }
 
 bool Parser::match(Tokenizer::Token::Type type)
@@ -82,19 +90,30 @@ void Parser::consume()
 
 void Parser::errorExpected(const std::string &expected)
 {
-	mError = true;
 	std::stringstream ss;
 	ss << "expected " << expected << ", '" << next().text << "' found instead";
-	mErrorMessage = ss.str();
-	mErrorLine = next().line;
-	mErrorColumn = next().column;
+	throw ParseException(ss.str(), next().line, next().column);
 }
 
-Node *Parser::newNode(Node::NodeType nodeType, Node::NodeSubtype nodeSubtype)
+bool Parser::checkPresent(Node *node, const std::string &name, bool required)
+{
+	if(!node) {
+		if(required) {
+			errorExpected(name);
+		} else {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+Node *Parser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype)
 {
 	Node *node = new Node;
 	node->nodeType = nodeType;
 	node->nodeSubtype = nodeSubtype;
+	node->line = line;
 
 	mNodes.push_back(node);
 
@@ -103,28 +122,37 @@ Node *Parser::newNode(Node::NodeType nodeType, Node::NodeSubtype nodeSubtype)
 
 Node *Parser::parse()
 {
-	Node *procedureList = parseProcedureList();
+	try {
+		return parseProgram();
+	} catch(ParseException parseException) {
+		mError = true;
+		mErrorMessage = parseException.message();
+		mErrorLine = parseException.line();
+		mErrorColumn = parseException.column();
 
-	if(error() || !expect(Tokenizer::Token::TypeEnd)) {
 		for(unsigned int i=0; i<mNodes.size(); i++) {
 			delete mNodes[i];
 		}
 		return 0;
 	}
+}
 
-	return procedureList;
+Node *Parser::parseProgram()
+{
+	Node *node = parseProcedureList();
+	expect(Tokenizer::Token::TypeEnd);
+
+	return node;
 }
 
 Node *Parser::parseProcedureList()
 {
-	Node *node = newNode(Node::NodeTypeList);
-	node->line = 0;
+	Node *node = newNode(Node::NodeTypeList, next().line);
 
 	Node *procedure;
 	while(procedure = parseProcedure()) {
 		node->children.push_back(procedure);
 	}
-	if(error()) return 0;
 
 	return node;
 }
@@ -133,35 +161,26 @@ Node *Parser::parseProcedure()
 {
 	Node *returnType = parseType();
 	if(!returnType)	return 0;
-	if(!match(Tokenizer::Token::TypeIdentifier)) return 0;
 
-	std::string name = next().text;
-	consume();
-
-	if(!expectLiteral("(")) return 0;
-	Node *arguments = parseArgumentDeclarationList();
-	if(error()) return 0;
-	if(!expectLiteral(")")) return 0;
-
-	if(!expectLiteral("{")) return 0;
-	Node *body = parseStatementList();
-	if(error()) return 0;
-	if(!expectLiteral("}")) return 0;
-
-	Node *node = newNode(Node::NodeTypeProcedureDef);
-	node->line = returnType->line;
+	Node *node = newNode(Node::NodeTypeProcedureDef, returnType->line);
 	node->children.push_back(returnType);
-	node->lexVal._id = strdup(name.c_str());
-	node->children.push_back(arguments);
-	node->children.push_back(body);
+	node->lexVal._id = strdup(next().text.c_str());
+	expect(Tokenizer::Token::TypeIdentifier);
+
+	expectLiteral("(");
+	node->children.push_back(parseArgumentDeclarationList());
+	expectLiteral(")");
+
+	expectLiteral("{");
+	node->children.push_back(parseStatementList());
+	expectLiteral("}");
 
 	return node;
 }
 
 Node *Parser::parseArgumentDeclarationList()
 {
-	Node *node = newNode(Node::NodeTypeList);
-	node->line = 0;
+	Node *node = newNode(Node::NodeTypeList, next().line);
 
 	Node *argument;
 	while(argument = parseVariableDeclaration()) {
@@ -172,7 +191,6 @@ Node *Parser::parseArgumentDeclarationList()
 			break;
 		}
 	}
-	if(error()) return 0;
 
 	return node;
 }
@@ -182,18 +200,11 @@ Node *Parser::parseVariableDeclaration()
 	Node *type = parseType();
 	if(!type) return 0;
 
-	Node *node = newNode(Node::NodeTypeVarDecl);
-	node->line = type->line;
+	Node *node = newNode(Node::NodeTypeVarDecl, type->line);
+	node->lexVal._id = strdup(next().text.c_str());
+	expect(Tokenizer::Token::TypeIdentifier);
+
 	node->children.push_back(type);
-
-	if(!match(Tokenizer::Token::TypeIdentifier)) {
-		errorExpected("Identifier");
-		return 0;
-	}
-
-	std::string name = next().text;
-	consume();
-	node->lexVal._id = strdup(name.c_str());
 
 	return node;
 }
@@ -211,26 +222,24 @@ Node *Parser::parseType()
 
 Node *Parser::parseStatementList()
 {
-	Node *node = newNode(Node::NodeTypeList);
-	node->line = 0;
+	Node *node = newNode(Node::NodeTypeList, next().line);
 
 	Node *statement;
 	while(statement = parseStatement()) {
 		node->children.push_back(statement);
 	}
-	if(error()) return 0;
 
 	return node;
 }
 
-Node *Parser::parseStatement()
+Node *Parser::parseStatement(bool required)
 {
 	Node *node;
 
 	if((node = parseVariableDeclaration()) ||
 	   (node = parsePrintStatement()) ||
 	   (node = parseReturnStatement())) {
-		if(!expectLiteral(";")) return 0;
+		expectLiteral(";");
 
 		return node;
 	} else if((node = parseIfStatement()) || (node = parseWhileStatement())) {
@@ -238,64 +247,44 @@ Node *Parser::parseStatement()
 	} else if(match(Tokenizer::Token::TypeIdentifier)) {
 		Node *identifier = parseIdentifier();
 		if(matchLiteral("=")) {
-			node = newNode(Node::NodeTypeAssign);
-			node->line = next().line;
 			consume();
 
+			node = newNode(Node::NodeTypeAssign, identifier->line);
 			node->children.push_back(identifier);
-
-			Node *expression = parseExpression();
-			if(error()) return 0;
-			if(!expression) {
-				errorExpected("Expression");
-				return 0;
-			}
-			node->children.push_back(expression);
-
-			if(!expectLiteral(";")) return 0;
+			node->children.push_back(parseExpression(true));
+			expectLiteral(";");
 
 			return node;
 		} else if(matchLiteral("(")) {
-			node = newNode(Node::NodeTypeCall);
-			node->line = next().line;
 			consume();
 
+			node = newNode(Node::NodeTypeCall, identifier->line);
 			node->children.push_back(identifier);
-			Node *arguments = parseExpressionList();
-			if(error()) return 0;
-			if(!arguments) {
-				errorExpected("ArgumentList");
-				return 0;
-			}
-
-			node->children.push_back(arguments);
-
-			if(!expectLiteral(")")) return 0;
-			if(!expectLiteral(";")) return 0;
+			node->children.push_back(parseExpressionList());
+			expectLiteral(")");
+			expectLiteral(";");
 
 			return node;
 		} else {
 			errorExpected("= or (");
-			return 0;
 		}
 	}
 
-	return 0;
+	if(required) {
+		errorExpected("Statement");
+	} else {
+		return 0;
+	}
 }
 
 Node *Parser::parsePrintStatement()
 {
 	if(matchLiteral("print")) {
-		Node *node = newNode(Node::NodeTypePrint);
-		node->line = next().line;
+		Node *node = newNode(Node::NodeTypePrint, next().line);
 		consume();
 
-		Node *expression = parseExpression();
-		if(!expression) {
-			errorExpected("Expression");
-			return 0;
-		}
-		node->children.push_back(expression);
+		node->children.push_back(parseExpression(true));
+
 		return node;
 	}
 
@@ -305,16 +294,11 @@ Node *Parser::parsePrintStatement()
 Node *Parser::parseReturnStatement()
 {
 	if(matchLiteral("return")) {
-		Node *node = newNode(Node::NodeTypeReturn);
-		node->line = next().line;
+		Node *node = newNode(Node::NodeTypeReturn, next().line);
 		consume();
 
-		Node *expression = parseExpression();
-		if(!expression) {
-			errorExpected("Expression");
-			return 0;
-		}
-		node->children.push_back(expression);
+		node->children.push_back(parseExpression(true));
+
 		return node;
 	}
 
@@ -324,37 +308,16 @@ Node *Parser::parseReturnStatement()
 Node *Parser::parseIfStatement()
 {
 	if(matchLiteral("if")) {
-		Node *node = newNode(Node::NodeTypeIf);
-		node->line = next().line;
-
+		Node *node = newNode(Node::NodeTypeIf, next().line);
 		consume();
-		if(!expectLiteral("(")) return 0;
 
-		Node *predicate = parseExpression();
-		if(error()) return 0;
-		if(!predicate) {
-			errorExpected("Expression");
-			return 0;
-		}
-		if(!expectLiteral(")")) return 0;
-		node->children.push_back(predicate);
+		expectLiteral("(");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(")");
 
-		Node *thenClause = parseClause();
-		if(error()) return 0;
-		if(!thenClause) {
-			errorExpected("Clause");
-			return 0;
-		}
-		node->children.push_back(thenClause);
-
+		node->children.push_back(parseClause(true));
 		if(matchLiteral("else")) {
-			Node *elseClause = parseClause();
-			if(error()) return 0;
-			if(!elseClause) {
-				errorExpected("Clause");
-				return 0;
-			}
-			node->children.push_back(elseClause);
+			node->children.push_back(parseClause(true));
 		}
 
 		return node;
@@ -366,28 +329,14 @@ Node *Parser::parseIfStatement()
 Node *Parser::parseWhileStatement()
 {
 	if(matchLiteral("while")) {
-		Node *node = newNode(Node::NodeTypeWhile);
-		node->line = next().line;
-
+		Node *node = newNode(Node::NodeTypeWhile, next().line);
 		consume();
-		if(!expectLiteral("(")) return 0;
 
-		Node *predicate = parseExpression();
-		if(error()) return 0;
-		if(!predicate) {
-			errorExpected("Expression");
-			return 0;
-		}
-		if(!expectLiteral(")")) return 0;
-		node->children.push_back(predicate);
+		expectLiteral("(");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(")");
 
-		Node *clause = parseClause();
-		if(error()) return 0;
-		if(!clause) {
-			errorExpected("Clause");
-			return 0;
-		}
-		node->children.push_back(clause);
+		node->children.push_back(parseClause(true));
 
 		return node;
 	}
@@ -395,89 +344,78 @@ Node *Parser::parseWhileStatement()
 	return 0;
 }
 
-Node *Parser::parseClause()
+Node *Parser::parseClause(bool required)
 {
 	if(matchLiteral("{")) {
 		consume();
-		Node *node = parseStatementList();
-		if(error()) return 0;
-		if(!node) {
-			errorExpected("StatementList");
-			return 0;
-		}
-		if(!expectLiteral("}")) return 0;
-		return node;
-	}
 
-	return parseStatement();
+		Node *node = parseStatementList();
+		expectLiteral("}");
+
+		return node;
+	} else {
+		return parseStatement(required);
+	}
 }
 
-Node *Parser::parseExpression()
+Node *Parser::parseExpression(bool required)
 {
 	Node *arg1 = parseAddExpression();
-	if(!arg1) return 0;
+	if(!checkPresent(arg1, "Expression", required))	{
+		return 0;
+	}
 
 	if(matchLiteral("==") || matchLiteral("!=")) {
 		Node::NodeSubtype subtype;
 		if(matchLiteral("==")) subtype = Node::NodeSubtypeEqual;
 		else if(matchLiteral("!=")) subtype = Node::NodeSubtypeNequal;
 		consume();
-		Node *arg2 = parseAddExpression();
-		if(!arg2) {
-			errorExpected("AddExpression");
-			return 0;
-		}
 
-		Node *node = newNode(Node::NodeTypeCompare, subtype);
-		node->line = arg1->line;
+		Node *node = newNode(Node::NodeTypeCompare, arg1->line, subtype);
+
 		node->children.push_back(arg1);
-		node->children.push_back(arg2);
+		node->children.push_back(parseAddExpression(true));
+
 		return node;
 	} else {
 		return arg1;
 	}
 }
 
-Node *Parser::parseAddExpression()
+Node *Parser::parseAddExpression(bool required)
 {
 	Node *arg1 = parseMultiplyExpression();
-	if(!arg1) return 0;
+	if(!checkPresent(arg1, "AddExpression", required))	{
+		return 0;
+	}
 
 	if(matchLiteral("+")) {
 		consume();
-		Node *arg2 = parseAddExpression();
-		if(!arg2) {
-			errorExpected("AddExpression");
-			return 0;
-		}
 
-		Node *node = newNode(Node::NodeTypeArith, Node::NodeSubtypeAdd);
-		node->line = arg1->line;
+		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeAdd);
 		node->children.push_back(arg1);
-		node->children.push_back(arg2);
+		node->children.push_back(parseAddExpression(true));
+
 		return node;
 	} else {
 		return arg1;
 	}
 }
 
-Node *Parser::parseMultiplyExpression()
+Node *Parser::parseMultiplyExpression(bool required)
 {
 	Node *arg1 = parseBaseExpression();
-	if(!arg1) return 0;
+	if(!checkPresent(arg1, "MultiplyExpression", required))	{
+		return 0;
+	}
 
 	if(matchLiteral("*")) {
 		consume();
-		Node *arg2 = parseMultiplyExpression();
-		if(!arg2) {
-			errorExpected("MultiplyExpression");
-			return 0;
-		}
 
-		Node *node = newNode(Node::NodeTypeArith, Node::NodeSubtypeAdd);
-		node->line = arg1->line;
+		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeAdd);
 		node->children.push_back(arg1);
-		node->children.push_back(arg2);
+		node->children.push_back(parseMultiplyExpression(true));
+
 		return node;
 	} else {
 		return arg1;
@@ -489,39 +427,26 @@ Node *Parser::parseBaseExpression()
 	Node *node;
 
 	if(match(Tokenizer::Token::TypeNumber)) {
-		int value = std::atoi(next().text.c_str());
+		node = newNode(Node::NodeTypeConstant, next().line);
+		node->lexVal._int = std::atoi(next().text.c_str());
 		consume();
 
-		node = newNode(Node::NodeTypeConstant);
-		node->lexVal._int = value;
 		return node;
 	} else if(matchLiteral("(")) {
 		consume();
-		node = parseExpression();
-		if(error()) return 0;
-		if(!node) {
-			errorExpected("Expression");
-			return 0;
-		}
-		if(!expectLiteral(")")) return 0;
+
+		node = parseExpression(true);
+		expectLiteral(")");
 
 		return node;
 	} else if(node = parseIdentifier()) {
 		if(matchLiteral("(")) {
-			Node *functionCall = newNode(Node::NodeTypeCall);
-			functionCall->line = next().line;
 			consume();
 
+			Node *functionCall = newNode(Node::NodeTypeCall, node->line);
 			functionCall->children.push_back(node);
-
-			Node *arguments = parseExpressionList();
-			if(!arguments) {
-				errorExpected("ExpressionList");
-				return 0;
-			}
-			functionCall->children.push_back(arguments);
-
-			if(!expectLiteral(")")) return 0;
+			functionCall->children.push_back(parseExpressionList());
+			expectLiteral(")");
 
 			node = functionCall;
 		}
@@ -534,7 +459,7 @@ Node *Parser::parseBaseExpression()
 
 Node *Parser::parseExpressionList()
 {
-	Node *node = newNode(Node::NodeTypeList);
+	Node *node = newNode(Node::NodeTypeList, next().line);
 	Node *expression;
 	while(expression = parseExpression()) {
 		node->children.push_back(expression);
@@ -544,7 +469,6 @@ Node *Parser::parseExpressionList()
 			break;
 		}
 	}
-	if(error()) return 0;
 
 	return node;
 }
@@ -553,8 +477,7 @@ Node *Parser::parseIdentifier()
 {
 	if(match(Tokenizer::Token::TypeIdentifier))
 	{
-		Node *node = newNode(Node::NodeTypeId);
-		node->line = next().line;
+		Node *node = newNode(Node::NodeTypeId, next().line);
 		node->lexVal._id = strdup(mTokenizer.next().text.c_str());
 		consume();
 
