@@ -192,7 +192,7 @@ namespace Front {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 
 	void Interpreter::addProcedure(const std::string &name, Node *body)
@@ -213,6 +213,6 @@ namespace Front {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 }

@@ -32,6 +32,6 @@ namespace Front {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 }

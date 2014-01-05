@@ -137,7 +137,7 @@ namespace Front {
 				{
 					std::string name = node->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
-					if(symbol == NULL) {
+					if(!symbol) {
 						error(node, "Undefined variable '%s'", name);
 						return false;
 					}
@@ -182,7 +182,7 @@ namespace Front {
 	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, Node *node)
 	{
 		Type *type = Type::find(typeName);
-		if(type == NULL) {
+		if(!type) {
 			mTypeChecker.error(node, "Error: Type '%s' not found.\n", typeName.c_str());
 			return false;
 		}
@@ -209,14 +209,14 @@ namespace Front {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 
 	TypeChecker::Procedure* TypeChecker::addProcedure(Node *node)
 	{
 		std::string typeName = node->children[0]->lexVal.s;
 		Type *returnType = Type::find(typeName);
-		if(returnType == NULL) {
+		if(!returnType) {
 			error(node, "Error: Type '%s' not found.\n", typeName);
 			return 0;
 		}
@@ -226,7 +226,7 @@ namespace Front {
 			Node *decl = node->children[1]->children[i];
 			std::string argTypeName = decl->children[0]->lexVal.s;
 			Type *type = Type::find(argTypeName);
-			if(type == NULL) {
+			if(!type) {
 				error(node, "Error: Type '%s' not found.\n", argTypeName);
 				return 0;
 			}
@@ -247,7 +247,7 @@ namespace Front {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 
 	void TypeChecker::error(Node *node, char *fmt, ...)

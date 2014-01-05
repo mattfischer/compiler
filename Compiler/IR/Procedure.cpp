@@ -102,7 +102,7 @@ namespace IR {
 			}
 		}
 
-		return NULL;
+		return 0;
 	}
 
 	EntryLabel *Procedure::newLabel()
