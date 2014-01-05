@@ -223,13 +223,50 @@ Node *Parser::parseStatement(bool required)
 {
 	Node *node;
 
-	if((node = parseVariableDeclaration()) ||
-	   (node = parsePrintStatement()) ||
-	   (node = parseReturnStatement())) {
+	if(node = parseVariableDeclaration()) {
 		expectLiteral(";");
 
 		return node;
-	} else if((node = parseIfStatement()) || (node = parseWhileStatement())) {
+	} else if(matchLiteral("return")) {
+		node = newNode(Node::NodeTypeReturn, next().line);
+		consume();
+
+		node->children.push_back(parseExpression(true));
+		expectLiteral(";");
+
+		return node;
+	} else if(matchLiteral("print")) {
+		node = newNode(Node::NodeTypePrint, next().line);
+		consume();
+
+		node->children.push_back(parseExpression(true));
+		expectLiteral(";");
+
+		return node;
+	} else if(matchLiteral("if")) {
+		node = newNode(Node::NodeTypeIf, next().line);
+		consume();
+
+		expectLiteral("(");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(")");
+
+		node->children.push_back(parseClause(true));
+		if(matchLiteral("else")) {
+			node->children.push_back(parseClause(true));
+		}
+
+		return node;
+	} else if(matchLiteral("while")) {
+		node = newNode(Node::NodeTypeWhile, next().line);
+		consume();
+
+		expectLiteral("(");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(")");
+
+		node->children.push_back(parseClause(true));
+
 		return node;
 	} else if(match(Tokenizer::Token::TypeIdentifier)) {
 		Node *identifier = parseIdentifier();
@@ -259,73 +296,6 @@ Node *Parser::parseStatement(bool required)
 
 	if(required) {
 		errorExpected("<statement>");
-	}
-
-	return 0;
-}
-
-Node *Parser::parsePrintStatement()
-{
-	if(matchLiteral("print")) {
-		Node *node = newNode(Node::NodeTypePrint, next().line);
-		consume();
-
-		node->children.push_back(parseExpression(true));
-
-		return node;
-	}
-
-	return 0;
-}
-
-Node *Parser::parseReturnStatement()
-{
-	if(matchLiteral("return")) {
-		Node *node = newNode(Node::NodeTypeReturn, next().line);
-		consume();
-
-		node->children.push_back(parseExpression(true));
-
-		return node;
-	}
-
-	return 0;
-}
-
-Node *Parser::parseIfStatement()
-{
-	if(matchLiteral("if")) {
-		Node *node = newNode(Node::NodeTypeIf, next().line);
-		consume();
-
-		expectLiteral("(");
-		node->children.push_back(parseExpression(true));
-		expectLiteral(")");
-
-		node->children.push_back(parseClause(true));
-		if(matchLiteral("else")) {
-			node->children.push_back(parseClause(true));
-		}
-
-		return node;
-	}
-
-	return 0;
-}
-
-Node *Parser::parseWhileStatement()
-{
-	if(matchLiteral("while")) {
-		Node *node = newNode(Node::NodeTypeWhile, next().line);
-		consume();
-
-		expectLiteral("(");
-		node->children.push_back(parseExpression(true));
-		expectLiteral(")");
-
-		node->children.push_back(parseClause(true));
-
-		return node;
 	}
 
 	return 0;

@@ -43,10 +43,6 @@ private:
 	Node *parseType();
 	Node *parseStatementList();
 	Node *parseStatement(bool required = false);
-	Node *parsePrintStatement();
-	Node *parseReturnStatement();
-	Node *parseIfStatement();
-	Node *parseWhileStatement();
 	Node *parseClause(bool required = false);
 	Node *parseExpression(bool required = false);
 	Node *parseAddExpression(bool required = false);
