@@ -15,7 +15,7 @@ namespace Front {
 	{
 		for(unsigned int i=0; i<mTree->children.size(); i++) {
 			Node *procedure = mTree->children[i];
-			addProcedure(procedure->lexVal._id, procedure->children[1]);
+			addProcedure(procedure->lexVal.s, procedure->children[1]);
 		}
 
 		Procedure *proc = findProcedure("main");
@@ -48,14 +48,14 @@ namespace Front {
 				}
 			case Node::NodeTypeVarDecl:
 				{
-					Type *type = Type::find(node->children[0]->lexVal._id);
-					addVariable(node->lexVal._id, type);
+					Type *type = Type::find(node->children[0]->lexVal.s);
+					addVariable(node->lexVal.s, type);
 					break;
 				}
 
 			case Node::NodeTypeAssign:
 				{
-					Variable *variable = findVariable(node->children[0]->lexVal._id);
+					Variable *variable = findVariable(node->children[0]->lexVal.s);
 					evaluateExpression(node->children[1]);
 
 					pop(variable->data, node->children[1]->type->size);
@@ -96,12 +96,12 @@ namespace Front {
 	{
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
-				push(&node->lexVal._int, sizeof(int));
+				push(&node->lexVal.i, sizeof(int));
 				break;
 
 			case Node::NodeTypeId:
 				{
-					Variable *variable = findVariable(node->lexVal._id);
+					Variable *variable = findVariable(node->lexVal.s);
 					push(variable->data, node->type->size);
 					break;
 				}

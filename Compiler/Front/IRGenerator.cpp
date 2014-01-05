@@ -18,10 +18,10 @@ namespace Front {
 
 		for(unsigned int i=0; i<tree->children.size(); i++) {
 			Node *proc = tree->children[i];
-			IR::Procedure *procedure = new IR::Procedure(proc->lexVal._id);
+			IR::Procedure *procedure = new IR::Procedure(proc->lexVal.s);
 			Node *args = proc->children[1];
 			for(unsigned int j=0; j<args->children.size(); j++) {
-				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal._id, Front::Type::find(args->children[j]->children[0]->lexVal._id));
+				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal.s, Front::Type::find(args->children[j]->children[0]->lexVal.s));
 				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeArgument, symbol, j));
 			}
 			processNode(proc->children[2], program, procedure);
@@ -52,11 +52,11 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeVarDecl:
-				procedure->addSymbol(node->lexVal._id, Type::find(node->children[0]->lexVal._id));
+				procedure->addSymbol(node->lexVal.s, Type::find(node->children[0]->lexVal.s));
 				break;
 
 			case Node::NodeTypeAssign:
-				lhs = procedure->findSymbol(node->children[0]->lexVal._id);
+				lhs = procedure->findSymbol(node->children[0]->lexVal.s);
 				rhs = processRValue(node->children[1], program, procedure);
 				if(rhs != lhs) {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, lhs, rhs));
@@ -124,11 +124,11 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
 				result = procedure->newTemp(node->type);
-				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, result, node->lexVal._int));
+				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, result, node->lexVal.i));
 				break;
 
 			case Node::NodeTypeId:
-				result = procedure->findSymbol(node->lexVal._id);
+				result = procedure->findSymbol(node->lexVal.s);
 				break;
 
 			case Node::NodeTypeCall:
@@ -141,7 +141,7 @@ namespace Front {
 					IR::Symbol **argList = args.size() > 0 ? &args[0] : 0;
 
 					result = procedure->newTemp(node->type);
-					procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal._id), argList, (int)args.size()));
+					procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal.s), argList, (int)args.size()));
 					break;
 				}
 

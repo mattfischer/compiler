@@ -38,10 +38,12 @@ namespace Front {
 		int line;
 		std::vector<Node*> children;
 		Type *type;
-		union {
-			int _int;
-			char *_id;
-		} lexVal;
+
+		struct LexVal {
+			int i;
+			std::string s;
+		};
+		LexVal lexVal;
 	};
 }
 

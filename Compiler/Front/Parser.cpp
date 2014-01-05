@@ -164,7 +164,7 @@ Node *Parser::parseProcedure()
 
 	Node *node = newNode(Node::NodeTypeProcedureDef, returnType->line);
 	node->children.push_back(returnType);
-	node->lexVal._id = strdup(next().text.c_str());
+	node->lexVal.s = next().text;
 	expect(Tokenizer::Token::TypeIdentifier);
 
 	expectLiteral("(");
@@ -201,7 +201,7 @@ Node *Parser::parseVariableDeclaration()
 	if(!type) return 0;
 
 	Node *node = newNode(Node::NodeTypeVarDecl, type->line);
-	node->lexVal._id = strdup(next().text.c_str());
+	node->lexVal.s = next().text;
 	expect(Tokenizer::Token::TypeIdentifier);
 
 	node->children.push_back(type);
@@ -428,7 +428,7 @@ Node *Parser::parseBaseExpression()
 
 	if(match(Tokenizer::Token::TypeNumber)) {
 		node = newNode(Node::NodeTypeConstant, next().line);
-		node->lexVal._int = std::atoi(next().text.c_str());
+		node->lexVal.i = std::atoi(next().text.c_str());
 		consume();
 
 		return node;
@@ -478,7 +478,7 @@ Node *Parser::parseIdentifier()
 	if(match(Tokenizer::Token::TypeIdentifier))
 	{
 		Node *node = newNode(Node::NodeTypeId, next().line);
-		node->lexVal._id = strdup(mTokenizer.next().text.c_str());
+		node->lexVal.s = mTokenizer.next().text;
 		consume();
 
 		return node;

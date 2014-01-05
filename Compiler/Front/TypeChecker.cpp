@@ -47,7 +47,7 @@ namespace Front {
 
 			case Node::NodeTypeCall:
 				{
-					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
+					Procedure *procedure = findProcedure(node->children[0]->lexVal.s);
 					if(procedure) {
 						if(procedure->arguments.size() == node->children[1]->children.size()) {
 							for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
@@ -64,21 +64,21 @@ namespace Front {
 							result = false;
 						}
 					} else {
-						error(node, "Undeclared procedure %s", node->children[0]->lexVal._id);
+						error(node, "Undeclared procedure %s", node->children[0]->lexVal.s);
 						result = false;
 					}
 				break;
 				}
 
 			case Node::NodeTypeVarDecl:
-				result = scope.addSymbol(node->lexVal._id, node->children[1]->lexVal._id, node);
+				result = scope.addSymbol(node->lexVal.s, node->children[1]->lexVal.s, node);
 				node->type = TypeNone;
 				break;
 
 			case Node::NodeTypeAssign:
 				result = check(node->children[1], procedure, scope);
 				if(result) {
-					char *name = node->children[0]->lexVal._id;
+					std::string name = node->children[0]->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
 					if(symbol) {
 						if(symbol->type != node->children[1]->type) {
@@ -135,7 +135,7 @@ namespace Front {
 
 			case Node::NodeTypeId:
 				{
-					const char *name = node->lexVal._id;
+					std::string name = node->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
 					if(symbol == NULL) {
 						error(node, "Undefined variable '%s'", name);
@@ -214,24 +214,26 @@ namespace Front {
 
 	TypeChecker::Procedure* TypeChecker::addProcedure(Node *node)
 	{
-		Type *returnType = Type::find(node->children[0]->lexVal._id);
+		std::string typeName = node->children[0]->lexVal.s;
+		Type *returnType = Type::find(typeName);
 		if(returnType == NULL) {
-			error(node, "Error: Type '%s' not found.\n", node->children[0]->lexVal._id);
+			error(node, "Error: Type '%s' not found.\n", typeName);
 			return 0;
 		}
 
 		std::vector<Symbol*> arguments;
 		for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 			Node *decl = node->children[1]->children[i];
-			Type *type = Type::find(decl->children[0]->lexVal._id);
+			std::string argTypeName = decl->children[0]->lexVal.s;
+			Type *type = Type::find(argTypeName);
 			if(type == NULL) {
-				error(node, "Error: Type '%s' not found.\n", decl->children[0]->lexVal._id);
+				error(node, "Error: Type '%s' not found.\n", argTypeName);
 				return 0;
 			}
-			arguments.push_back(new Symbol(type, decl->lexVal._id));
+			arguments.push_back(new Symbol(type, decl->lexVal.s));
 		}
 
-		Procedure *procedure = new Procedure(returnType, node->lexVal._id, arguments);
+		Procedure *procedure = new Procedure(returnType, node->lexVal.s, arguments);
 		mProcedures.push_back(procedure);
 
 		return procedure;
