@@ -5,13 +5,13 @@
 #include <vector>
 
 namespace Front {
-	struct SyntaxNode;
+	struct Node;
 	class Type;
 
 	class TypeChecker
 	{
 	public:
-		bool check(SyntaxNode *tree);
+		bool check(Node *tree);
 
 	private:
 		struct Symbol {
@@ -26,7 +26,7 @@ namespace Front {
 		public:
 			Scope(TypeChecker &typeChecker);
 
-			bool addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *tree);
+			bool addSymbol(const std::string &typeName, const std::string &name, Node *tree);
 			bool addSymbol(Symbol *symbol);
 			Symbol *findSymbol(const std::string &name);
 
@@ -45,13 +45,13 @@ namespace Front {
 
 		std::vector<Procedure*> mProcedures;
 
-		bool check(SyntaxNode *tree, Procedure *procedure, Scope &scope);
-		bool checkChildren(SyntaxNode *tree, Procedure *procedure, Scope &scope);
+		bool check(Node *tree, Procedure *procedure, Scope &scope);
+		bool checkChildren(Node *tree, Procedure *procedure, Scope &scope);
 
-		Procedure *addProcedure(SyntaxNode *tree);
+		Procedure *addProcedure(Node *tree);
 		Procedure *findProcedure(const std::string &name);
 
-		void error(SyntaxNode *node, char *fmt, ...);
+		void error(Node *node, char *fmt, ...);
 	};
 }
 #endif

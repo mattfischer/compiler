@@ -1,13 +1,12 @@
-#ifndef SYNTAX_NODE_H
-#define SYNTAX_NODE_H
+#ifndef FRONT_NODE_H
+#define FRONT_NODE_H
 
 #include <vector>
-#include "Front/ParseNode.h"
 
 namespace Front {
 	class Type;
 
-	struct SyntaxNode {
+	struct Node {
 		enum NodeType {
 			NodeTypeList,
 			NodeTypeProcedureDef,
@@ -34,20 +33,15 @@ namespace Front {
 			NodeSubtypeNequal
 		};
 
-		SyntaxNode(NodeType _nodeType, NodeSubtype _nodeSubtype = NodeSubtypeNone) : nodeType(_nodeType), nodeSubtype(_nodeSubtype) {}
-		SyntaxNode() {}
-
 		NodeType nodeType;
 		NodeSubtype nodeSubtype;
 		int line;
-		std::vector<SyntaxNode*> children;
+		std::vector<Node*> children;
 		Type *type;
 		union {
 			int _int;
 			char *_id;
 		} lexVal;
-
-		static SyntaxNode *fromParseTree(ParseNode *tree);
 	};
 }
 

@@ -1,20 +1,20 @@
 #include "Front/Interpreter.h"
 
-#include "Front/SyntaxNode.h"
+#include "Front/Node.h"
 #include "Front/Type.h"
 
 #include <stdio.h>
 
 namespace Front {
-	Interpreter::Interpreter(SyntaxNode *tree)
+	Interpreter::Interpreter(Node *tree)
 	{
 		mTree = tree;
 	}
 
 	void Interpreter::run()
 	{
-		for(int i=0; i<mTree->children.size(); i++) {
-			SyntaxNode *procedure = mTree->children[i];
+		for(unsigned int i=0; i<mTree->children.size(); i++) {
+			Node *procedure = mTree->children[i];
 			addProcedure(procedure->lexVal._id, procedure->children[1]);
 		}
 
@@ -22,16 +22,16 @@ namespace Front {
 		evaluateStatement(proc->body);
 	}
 
-	void Interpreter::evaluateStatement(SyntaxNode *node)
+	void Interpreter::evaluateStatement(Node *node)
 	{
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeList:
-				for(int i=0; i<node->children.size(); i++) {
+			case Node::NodeTypeList:
+				for(unsigned int i=0; i<node->children.size(); i++) {
 					evaluateStatement(node->children[i]);
 				}
 				break;
 
-			case SyntaxNode::NodeTypePrint:
+			case Node::NodeTypePrint:
 				{
 					int result;
 
@@ -46,14 +46,14 @@ namespace Front {
 
 					break;
 				}
-			case SyntaxNode::NodeTypeVarDecl:
+			case Node::NodeTypeVarDecl:
 				{
 					Type *type = Type::find(node->children[0]->lexVal._id);
 					addVariable(node->lexVal._id, type);
 					break;
 				}
 
-			case SyntaxNode::NodeTypeAssign:
+			case Node::NodeTypeAssign:
 				{
 					Variable *variable = findVariable(node->children[0]->lexVal._id);
 					evaluateExpression(node->children[1]);
@@ -62,7 +62,7 @@ namespace Front {
 					break;
 				}
 
-			case SyntaxNode::NodeTypeIf:
+			case Node::NodeTypeIf:
 				{
 					int a;
 					evaluateExpression(node->children[0]);
@@ -76,7 +76,7 @@ namespace Front {
 					break;
 				}
 
-			case SyntaxNode::NodeTypeWhile:
+			case Node::NodeTypeWhile:
 				for(;;) {
 					int a;
 					evaluateExpression(node->children[0]);
@@ -92,21 +92,21 @@ namespace Front {
 		}
 	}
 
-	void Interpreter::evaluateExpression(SyntaxNode *node)
+	void Interpreter::evaluateExpression(Node *node)
 	{
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeConstant:
+			case Node::NodeTypeConstant:
 				push(&node->lexVal._int, sizeof(int));
 				break;
 
-			case SyntaxNode::NodeTypeId:
+			case Node::NodeTypeId:
 				{
 					Variable *variable = findVariable(node->lexVal._id);
 					push(variable->data, node->type->size);
 					break;
 				}
 
-			case SyntaxNode::NodeTypeCompare:
+			case Node::NodeTypeCompare:
 				{
 					int a, b, c;
 
@@ -117,11 +117,11 @@ namespace Front {
 					pop(&b, sizeof(b));
 
 					switch(node->nodeSubtype) {
-						case SyntaxNode::NodeSubtypeEqual:
+						case Node::NodeSubtypeEqual:
 							c = (a == b) ? 1 : 0;
 							break;
 
-						case SyntaxNode::NodeSubtypeNequal:
+						case Node::NodeSubtypeNequal:
 							c = (a != b) ? 1 : 0;
 							break;
 					}
@@ -130,7 +130,7 @@ namespace Front {
 					break;
 				}
 
-			case SyntaxNode::NodeTypeArith:
+			case Node::NodeTypeArith:
 				{
 					int a, b, c;
 					evaluateExpression(node->children[0]);
@@ -140,11 +140,11 @@ namespace Front {
 					pop(&b, sizeof(b));
 
 					switch(node->nodeSubtype) {
-						case SyntaxNode::NodeSubtypeAdd:
+						case Node::NodeSubtypeAdd:
 							c = a + b;
 							break;
 
-						case SyntaxNode::NodeSubtypeMultiply:
+						case Node::NodeSubtypeMultiply:
 							c = a * b;
 							break;
 					}
@@ -195,7 +195,7 @@ namespace Front {
 		return NULL;
 	}
 
-	void Interpreter::addProcedure(const std::string &name, SyntaxNode *body)
+	void Interpreter::addProcedure(const std::string &name, Node *body)
 	{
 		Procedure *procedure = new Procedure;
 

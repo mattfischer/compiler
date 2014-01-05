@@ -1,18 +1,18 @@
 #include "TypeChecker.h"
 
-#include "Front/SyntaxNode.h"
+#include "Front/Node.h"
 #include "Front/Type.h"
 
 #include <stdio.h>
 #include <stdarg.h>
 
 namespace Front {
-	bool TypeChecker::check(SyntaxNode *node)
+	bool TypeChecker::check(Node *node)
 	{
 		bool result = true;
 
 		for(unsigned int i=0; i<node->children.size(); i++) {
-			SyntaxNode *child = node->children[i];
+			Node *child = node->children[i];
 			Procedure *procedure = addProcedure(child);
 			if(procedure) {
 				Scope scope(*this);
@@ -34,18 +34,18 @@ namespace Front {
 		return result;
 	}
 
-	bool TypeChecker::check(SyntaxNode *node, Procedure *procedure, Scope &scope)
+	bool TypeChecker::check(Node *node, Procedure *procedure, Scope &scope)
 	{
 		bool result = true;
 
 		switch(node->nodeType) {
-			case SyntaxNode::NodeTypeList:
-			case SyntaxNode::NodeTypePrint:
+			case Node::NodeTypeList:
+			case Node::NodeTypePrint:
 				result = checkChildren(node, procedure, scope);
 				node->type = TypeNone;
 				break;
 
-			case SyntaxNode::NodeTypeCall:
+			case Node::NodeTypeCall:
 				{
 					Procedure *procedure = findProcedure(node->children[0]->lexVal._id);
 					if(procedure) {
@@ -70,12 +70,12 @@ namespace Front {
 				break;
 				}
 
-			case SyntaxNode::NodeTypeVarDecl:
+			case Node::NodeTypeVarDecl:
 				result = scope.addSymbol(node->lexVal._id, node->children[1]->lexVal._id, node);
 				node->type = TypeNone;
 				break;
 
-			case SyntaxNode::NodeTypeAssign:
+			case Node::NodeTypeAssign:
 				result = check(node->children[1], procedure, scope);
 				if(result) {
 					char *name = node->children[0]->lexVal._id;
@@ -94,8 +94,8 @@ namespace Front {
 				}
 				break;
 
-			case SyntaxNode::NodeTypeIf:
-			case SyntaxNode::NodeTypeWhile:
+			case Node::NodeTypeIf:
+			case Node::NodeTypeWhile:
 				result = checkChildren(node, procedure, scope);
 				if(result) {
 					if(node->children[0]->type != TypeBool) {
@@ -107,7 +107,7 @@ namespace Front {
 				}
 				break;
 
-			case SyntaxNode::NodeTypeCompare:
+			case Node::NodeTypeCompare:
 				result = checkChildren(node, procedure, scope);
 
 				if(result) {
@@ -120,7 +120,7 @@ namespace Front {
 				}
 				break;
 
-			case SyntaxNode::NodeTypeArith:
+			case Node::NodeTypeArith:
 				result = checkChildren(node, procedure, scope);
 
 				if(result) {
@@ -133,7 +133,7 @@ namespace Front {
 				}
 				break;
 
-			case SyntaxNode::NodeTypeId:
+			case Node::NodeTypeId:
 				{
 					const char *name = node->lexVal._id;
 					Symbol *symbol = scope.findSymbol(name);
@@ -146,11 +146,11 @@ namespace Front {
 					break;
 				}
 
-			case SyntaxNode::NodeTypeConstant:
+			case Node::NodeTypeConstant:
 				node->type = TypeInt;
 				break;
 
-			case SyntaxNode::NodeTypeReturn:
+			case Node::NodeTypeReturn:
 				check(node->children[0], procedure, scope);
 				if(node->children[0]->type != procedure->returnType) {
 					error(node, "Type mismatch");
@@ -163,7 +163,7 @@ namespace Front {
 		return result;
 	}
 
-	bool TypeChecker::checkChildren(SyntaxNode *node, Procedure *procedure, Scope &scope)
+	bool TypeChecker::checkChildren(Node *node, Procedure *procedure, Scope &scope)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
 			bool result = check(node->children[i], procedure, scope);
@@ -179,7 +179,7 @@ namespace Front {
 	{
 	}
 
-	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, SyntaxNode *node)
+	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, Node *node)
 	{
 		Type *type = Type::find(typeName);
 		if(type == NULL) {
@@ -212,7 +212,7 @@ namespace Front {
 		return NULL;
 	}
 
-	TypeChecker::Procedure* TypeChecker::addProcedure(SyntaxNode *node)
+	TypeChecker::Procedure* TypeChecker::addProcedure(Node *node)
 	{
 		Type *returnType = Type::find(node->children[0]->lexVal._id);
 		if(returnType == NULL) {
@@ -222,7 +222,7 @@ namespace Front {
 
 		std::vector<Symbol*> arguments;
 		for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-			SyntaxNode *decl = node->children[1]->children[i];
+			Node *decl = node->children[1]->children[i];
 			Type *type = Type::find(decl->children[0]->lexVal._id);
 			if(type == NULL) {
 				error(node, "Error: Type '%s' not found.\n", decl->children[0]->lexVal._id);
@@ -248,7 +248,7 @@ namespace Front {
 		return NULL;
 	}
 
-	void TypeChecker::error(SyntaxNode *node, char *fmt, ...)
+	void TypeChecker::error(Node *node, char *fmt, ...)
 	{
 		va_list args;
 		va_start(args, fmt);

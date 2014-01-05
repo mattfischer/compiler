@@ -1,4 +1,7 @@
+#include "Front/Tokenizer.h"
 #include "Front/Parser.h"
+#include "Front/TypeChecker.h"
+#include "Front/IRGenerator.h"
 
 #include "Middle/Optimizer.h"
 #include "Middle/ErrorCheck.h"
@@ -11,7 +14,19 @@
 
 int main(int arg, char *argv[])
 {
-	IR::Program *irProgram = Front::Parser::parse("input.lang");
+	Front::Tokenizer tokenizer("input.lang");
+	Front::Parser parser(tokenizer);
+
+	Front::Node *syntaxTree = parser.parse();
+	Front::TypeChecker typeChecker;
+	bool result = typeChecker.check(syntaxTree);
+
+	IR::Program *irProgram = 0;
+	if(result) {
+		Front::IRGenerator generator;
+		irProgram = generator.generate(syntaxTree);
+	}
+
 	if(!irProgram) {
 		return 1;
 	}

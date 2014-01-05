@@ -4,22 +4,22 @@
 #include <vector>
 
 namespace Front {
-	struct SyntaxNode;
+	struct Node;
 	class Type;
 
 	class Interpreter
 	{
 	public:
-		Interpreter(Front::SyntaxNode *tree);
+		Interpreter(Front::Node *tree);
 
 		void run();
 
 	private:
-		Front::SyntaxNode *mTree;
+		Front::Node *mTree;
 
-		void evaluateStatementList(Front::SyntaxNode *node);
-		void evaluateStatement(Front::SyntaxNode *node);
-		void evaluateExpression(Front::SyntaxNode *node);
+		void evaluateStatementList(Front::Node *node);
+		void evaluateStatement(Front::Node *node);
+		void evaluateExpression(Front::Node *node);
 
 		void push(void *data, int size);
 		void pop(void *data, int size);
@@ -38,12 +38,12 @@ namespace Front {
 
 		struct Procedure {
 			std::string name;
-			Front::SyntaxNode *body;
+			Front::Node *body;
 		};
 
 		std::vector<Procedure*> mProcedures;
 
-		void addProcedure(const std::string &name, Front::SyntaxNode *body);
+		void addProcedure(const std::string &name, Front::Node *body);
 		Procedure *findProcedure(const std::string &name);
 	};
 }

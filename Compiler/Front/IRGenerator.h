@@ -11,17 +11,17 @@ namespace IR {
 }
 
 namespace Front {
-	struct SyntaxNode;
+	struct Node;
 
 	class IRGenerator {
 	public:
 		IRGenerator();
 
-		IR::Program *generate(SyntaxNode *tree);
+		IR::Program *generate(Node *tree);
 
 	private:
-		void processNode(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure);
-		IR::Symbol *processRValue(SyntaxNode *node, IR::Program *program, IR::Procedure *procedure);
+		void processNode(Node *node, IR::Program *program, IR::Procedure *procedure);
+		IR::Symbol *processRValue(Node *node, IR::Program *program, IR::Procedure *procedure);
 	};
 }
 

@@ -255,10 +255,6 @@
 				Name="Front"
 				>
 				<File
-					RelativePath=".\Front\HandParser.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Front\Interpreter.cpp"
 					>
 				</File>
@@ -267,27 +263,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Front\lang.l"
-					>
-				</File>
-				<File
-					RelativePath=".\lang.tab.c"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\lang.y"
-					>
-				</File>
-				<File
-					RelativePath=".\lex.lang.c"
-					>
-				</File>
-				<File
 					RelativePath=".\Front\Parser.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\SyntaxNode.cpp"
 					>
 				</File>
 				<File
@@ -445,10 +421,6 @@
 				Name="Front"
 				>
 				<File
-					RelativePath=".\Front\HandParser.h"
-					>
-				</File>
-				<File
 					RelativePath=".\Front\Interpreter.h"
 					>
 				</File>
@@ -457,15 +429,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Front\ParseNode.h"
+					RelativePath=".\Front\Node.h"
 					>
 				</File>
 				<File
 					RelativePath=".\Front\Parser.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\SyntaxNode.h"
 					>
 				</File>
 				<File
