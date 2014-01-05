@@ -24,6 +24,8 @@ bool Parser::expect(Tokenizer::Token::Type type)
 	if(mTokenizer.error()) {
 		mError = true;
 		mErrorMessage = mTokenizer.errorMessage();
+		mErrorLine = next().line;
+		mErrorColumn = next().column;
 		return false;
 	}
 
@@ -41,6 +43,8 @@ bool Parser::expectLiteral(const std::string &text)
 	if(mTokenizer.error()) {
 		mError = true;
 		mErrorMessage = mTokenizer.errorMessage();
+		mErrorLine = next().line;
+		mErrorColumn = next().column;
 		return false;
 	}
 
@@ -82,6 +86,8 @@ void Parser::errorExpected(const std::string &expected)
 	std::stringstream ss;
 	ss << "expected " << expected << ", '" << next().text << "' found instead";
 	mErrorMessage = ss.str();
+	mErrorLine = next().line;
+	mErrorColumn = next().column;
 }
 
 Node *Parser::newNode(Node::NodeType nodeType, Node::NodeSubtype nodeSubtype)
@@ -99,7 +105,7 @@ Node *Parser::parse()
 {
 	Node *procedureList = parseProcedureList();
 
-	if(!procedureList || !expect(Tokenizer::Token::TypeEnd)) {
+	if(error() || !expect(Tokenizer::Token::TypeEnd)) {
 		for(unsigned int i=0; i<mNodes.size(); i++) {
 			delete mNodes[i];
 		}

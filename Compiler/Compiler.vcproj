@@ -13,9 +13,6 @@
 		/>
 	</Platforms>
 	<ToolFiles>
-		<ToolFile
-			RelativePath=".\FlexBison.rules"
-		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -29,14 +26,7 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="FlexGenerator"
-			/>
-			<Tool
 				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="BisonParser"
-				Defines="true"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -113,13 +103,7 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="FlexGenerator"
-			/>
-			<Tool
 				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="BisonParser"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"

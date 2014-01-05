@@ -157,6 +157,8 @@ std::string Tokenizer::Token::typeName(Type type)
 			return "identifier";
 		case TypeNumber:
 			return "number";
+		case TypeEnd:
+			return "end";
 	}
 
 	return "";

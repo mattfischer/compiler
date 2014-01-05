@@ -12,11 +12,16 @@ public:
 	Node *parse();
 
 	bool error() { return mError; }
+	const std::string &errorMessage() { return mErrorMessage; }
+	int errorLine() { return mErrorLine; }
+	int errorColumn() { return mErrorColumn; }
 
 private:
 	Tokenizer &mTokenizer;
 	bool mError;
 	std::string mErrorMessage;
+	int mErrorLine;
+	int mErrorColumn;
 
 	const Tokenizer::Token &next();
 	bool expect(Tokenizer::Token::Type type);

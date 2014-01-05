@@ -17,14 +17,17 @@ int main(int arg, char *argv[])
 	Front::Tokenizer tokenizer("input.lang");
 	Front::Parser parser(tokenizer);
 
-	Front::Node *syntaxTree = parser.parse();
-	Front::TypeChecker typeChecker;
-	bool result = typeChecker.check(syntaxTree);
+	Front::Node *node = parser.parse();
+	if(!node) {
+		printf("Error, line %i column %i: %s\n", parser.errorLine(), parser.errorColumn(), parser.errorMessage().c_str());
+		return 1;
+	}
 
+	Front::TypeChecker typeChecker;
 	IR::Program *irProgram = 0;
-	if(result) {
+	if(typeChecker.check(node)) {
 		Front::IRGenerator generator;
-		irProgram = generator.generate(syntaxTree);
+		irProgram = generator.generate(node);
 	}
 
 	if(!irProgram) {
