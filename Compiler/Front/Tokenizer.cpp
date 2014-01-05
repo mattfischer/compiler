@@ -152,13 +152,13 @@ std::string Tokenizer::Token::typeName(Type type)
 {
 	switch(type) {
 		case TypeLiteral:
-			return "literal";
+			return "<literal>";
 		case TypeIdentifier:
-			return "identifier";
+			return "<identifier>";
 		case TypeNumber:
-			return "number";
+			return "<number>";
 		case TypeEnd:
-			return "end";
+			return "<end>";
 	}
 
 	return "";

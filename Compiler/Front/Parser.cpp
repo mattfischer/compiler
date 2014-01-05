@@ -271,7 +271,7 @@ Node *Parser::parseStatement(bool required)
 	}
 
 	if(required) {
-		errorExpected("Statement");
+		errorExpected("<statement>");
 	} else {
 		return 0;
 	}
@@ -361,7 +361,7 @@ Node *Parser::parseClause(bool required)
 Node *Parser::parseExpression(bool required)
 {
 	Node *arg1 = parseAddExpression();
-	if(!checkPresent(arg1, "Expression", required))	{
+	if(!checkPresent(arg1, "<expression>", required))	{
 		return 0;
 	}
 
@@ -385,7 +385,7 @@ Node *Parser::parseExpression(bool required)
 Node *Parser::parseAddExpression(bool required)
 {
 	Node *arg1 = parseMultiplyExpression();
-	if(!checkPresent(arg1, "AddExpression", required))	{
+	if(!checkPresent(arg1, "<add-expression>", required))	{
 		return 0;
 	}
 
@@ -405,7 +405,7 @@ Node *Parser::parseAddExpression(bool required)
 Node *Parser::parseMultiplyExpression(bool required)
 {
 	Node *arg1 = parseBaseExpression();
-	if(!checkPresent(arg1, "MultiplyExpression", required))	{
+	if(!checkPresent(arg1, "<multiply-expression>", required))	{
 		return 0;
 	}
 
@@ -452,7 +452,7 @@ Node *Parser::parseBaseExpression()
 		}
 		return node;
 	} else {
-		errorExpected("BaseExpression");
+		errorExpected("<base-expression>");
 		return 0;
 	}
 }
