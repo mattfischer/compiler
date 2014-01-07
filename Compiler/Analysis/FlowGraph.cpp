@@ -26,7 +26,6 @@ namespace Analysis {
 
 				case IR::Entry::TypeJump:
 				case IR::Entry::TypeCJump:
-				case IR::Entry::TypeReturn:
 					end = itEntry;
 					end++;
 					block->entries = IR::EntrySubList(begin, end);
@@ -82,12 +81,6 @@ namespace Analysis {
 					FlowGraph::Block *falseTarget = mFrontMap[cJump->falseTarget];
 					block->succ.insert(falseTarget);
 					falseTarget->pred.insert(block);
-					break;
-				}
-			case IR::Entry::TypeReturn:
-				{
-					block->succ.insert(mEnd);
-					mEnd->pred.insert(block);
 					break;
 				}
 			default:

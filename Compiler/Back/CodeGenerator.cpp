@@ -151,28 +151,36 @@ namespace Back {
 				case IR::Entry::TypeCall:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
-						for(int i=0; i<call->numArgs; i++) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, i, VM::RegSP, regMap[call->args[i]]));
-						}
 						int offset = procedureMap.find(call->target)->second;
 						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset - (int)instructions.size()));
-						if(call->lhs) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, 0, regMap[call->lhs]));
-						}
 						break;
 					}
 
-				case IR::Entry::TypeReturn:
+				case IR::Entry::TypeLoadRet:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, 0, regMap[threeAddr->lhs]));
+						break;
+					}
+
+				case IR::Entry::TypeStoreRet:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, 0, VM::RegSP, regMap[threeAddr->rhs1]));
 						break;
 					}
 
-				case IR::Entry::TypeArgument:
+				case IR::Entry::TypeLoadArg:
 					{
-						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, oneAddrImm->imm, regMap[oneAddrImm->lhs]));
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, twoAddrImm->imm, regMap[twoAddrImm->lhs]));
+						break;
+					}
+
+				case IR::Entry::TypeStoreArg:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, twoAddrImm->imm, VM::RegSP, regMap[twoAddrImm->rhs]));
 						break;
 					}
 			}

@@ -33,8 +33,16 @@ namespace Middle {
 					continue;
 				}
 
-				IR::Entry *endEntry = block->entries.back();
-				if(endEntry->type == IR::Entry::TypeReturn) {
+				bool foundRet = false;
+				for(IR::EntrySubList::reverse_iterator entryIt = block->entries.rbegin(); entryIt != block->entries.rend(); entryIt++) {
+					IR::Entry *entry = *entryIt;
+					if(entry->type == IR::Entry::TypeStoreRet) {
+						foundRet = true;
+						break;
+					}
+				}
+
+				if(foundRet) {
 					continue;
 				} else {
 					blockList.insert(blockList.end(), block->pred.begin(), block->pred.end());

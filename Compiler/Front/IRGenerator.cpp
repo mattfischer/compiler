@@ -22,7 +22,7 @@ namespace Front {
 			Node *args = proc->children[1];
 			for(unsigned int j=0; j<args->children.size(); j++) {
 				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal.s, Front::Type::find(args->children[j]->children[0]->lexVal.s));
-				procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeArgument, symbol, j));
+				procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, symbol, 0, j));
 			}
 			processNode(proc->children[2], program, procedure);
 			program->addProcedure(procedure);
@@ -95,9 +95,11 @@ namespace Front {
 
 			case Node::NodeTypeReturn:
 				{
-					IR::EntryLabel *label = procedure->newLabel();
 					rhs = processRValue(node->children[0], program, procedure);
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeReturn, 0, rhs));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreRet, 0, rhs));
+					procedure->emit(new IR::EntryJump(procedure->end()));
+
+					IR::EntryLabel *label = procedure->newLabel();
 					procedure->emit(label);
 					break;
 				}
@@ -139,10 +141,14 @@ namespace Front {
 						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
 						args.push_back(arg);
 					}
-					IR::Symbol **argList = args.size() > 0 ? &args[0] : 0;
 
+					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
+						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeStoreArg, 0, args[i], i));
+					}
+
+					procedure->emit(new IR::EntryCall(program->findProcedure(node->children[0]->lexVal.s)));
 					result = procedure->newTemp(node->type);
-					procedure->emit(new IR::EntryCall(result, program->findProcedure(node->children[0]->lexVal.s), argList, (int)args.size()));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 					break;
 				}
 

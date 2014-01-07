@@ -57,6 +57,8 @@ namespace Transform {
 				case IR::Entry::TypeLoadImm:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
+				case IR::Entry::TypeLoadRet:
+				case IR::Entry::TypeLoadArg:
 					{
 						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {

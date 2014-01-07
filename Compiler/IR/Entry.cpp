@@ -20,8 +20,10 @@ namespace IR {
 		/* TypeNCJump	*/	"ncjmp  ",
 		/* TypePhi	    */	"phi    ",
 		/* TypeCall     */  "call   ",
-		/* TypeReturn   */  "ret    ",
-		/* TypeArgument */  "arg    "
+		/* TypeLoadRet  */  "ldret  ",
+		/* TypeStoreRet */  "stret  ",
+		/* TypeLoadArg  */  "ldarg  ",
+		/* TypeStoreArg */  "starg  ",
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
@@ -113,7 +115,20 @@ namespace IR {
 
 	void EntryTwoAddrImm::print(const std::string &prefix)
 	{
-		printf("  %s%s%s, %s, %i", prefix.c_str(), names[type], lhs->name.c_str(), rhs->name.c_str(), imm);
+		bool needComma = false;
+		printf("  %s%s", prefix.c_str(), names[type]);
+
+		if(lhs) {
+			printf("%s", lhs->name.c_str());
+			needComma = true;
+		}
+
+		if(rhs) {
+			printf("%s%s", needComma ? ", " : "", rhs->name.c_str());
+			needComma = true;
+		}
+
+		printf("%s%i", needComma ? ", " : "", imm);
 	}
 
 	void EntryTwoAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
@@ -248,56 +263,13 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryCall::EntryCall(Symbol *_lhs, Procedure *_target, Symbol **_args, int _numArgs)
-		: Entry(TypeCall), lhs(_lhs), target(_target), numArgs(_numArgs)
+	EntryCall::EntryCall(Procedure *_target)
+		: Entry(TypeCall), target(_target)
 	{
-		args = new Symbol*[numArgs];
-		for(int i=0; i<numArgs; i++) {
-			args[i] = _args[i];
-		}
 	}
 
 	void EntryCall::print(const std::string &prefix)
 	{
-		printf("  %s", prefix.c_str());
-		if(lhs) {
-			printf("%s = ", lhs->name.c_str());
-		}
-		printf("%s%s(", names[type], target->name().c_str());
-		for(int i=0; i<numArgs; i++) {
-			printf("%s%s", args[i]->name.c_str(), i < numArgs - 1 ? ", " : "");
-		}
-		printf(")");
-	}
-
-	Symbol *EntryCall::assign()
-	{
-		return lhs;
-	}
-
-	bool EntryCall::uses(Symbol *symbol)
-	{
-		for(int i=0; i<numArgs; i++) {
-			if(args[i] == symbol)
-				return true;
-		}
-
-		return false;
-	}
-
-	void EntryCall::replaceAssign(Symbol *symbol, Symbol *newSymbol)
-	{
-		lhs = newSymbol;
-	}
-
-	void EntryCall::replaceUse(Symbol *symbol, Symbol *newSymbol)
-	{
-		for(int i=0; i<numArgs; i++) {
-			if(args[i] == symbol)
-			{
-				args[i] = newSymbol;
-				break;
-			}
-		}
+		printf("  %s%s%s", prefix.c_str(), names[type], target->name().c_str());
 	}
 }

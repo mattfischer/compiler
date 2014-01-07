@@ -26,8 +26,10 @@ namespace IR {
 			TypeNCJump,
 			TypePhi,
 			TypeCall,
-			TypeReturn,
-			TypeArgument
+			TypeLoadRet,
+			TypeStoreRet,
+			TypeLoadArg,
+			TypeStoreArg
 		};
 
 		Type type;
@@ -143,18 +145,10 @@ namespace IR {
 
 	struct EntryCall : public Entry {
 		Procedure *target;
-		Symbol *lhs;
-		int numArgs;
-		Symbol **args;
 
-		EntryCall(Symbol *_lhs, Procedure *_target, Symbol **_args, int _numArgs);
+		EntryCall(Procedure *_target);
 
 		virtual void print(const std::string &prefix);
-
-		virtual Symbol *assign();
-		virtual bool uses(Symbol *symbol);
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 }
 
