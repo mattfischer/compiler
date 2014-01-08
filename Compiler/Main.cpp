@@ -10,6 +10,8 @@
 #include "VM/Instruction.h"
 #include "VM/Interp.h"
 
+#include "Analysis/InterferenceGraph.h"
+
 #include <stdio.h>
 
 int main(int arg, char *argv[])
@@ -39,6 +41,8 @@ int main(int arg, char *argv[])
 	}
 
 	Middle::Optimizer::optimize(irProgram);
+
+	Analysis::InterferenceGraph interferenceGraph(irProgram->main());
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	printf("Code:\n");
