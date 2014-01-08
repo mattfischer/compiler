@@ -257,6 +257,7 @@ Node *Parser::parseStatement(bool required)
 
 		node->children.push_back(parseClause(true));
 		if(matchLiteral("else")) {
+			consume();
 			node->children.push_back(parseClause(true));
 		}
 

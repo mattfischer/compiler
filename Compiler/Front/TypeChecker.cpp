@@ -76,7 +76,7 @@ namespace Front {
 				}
 
 			case Node::NodeTypeVarDecl:
-				result = scope.addSymbol(node->lexVal.s, node->children[1]->lexVal.s, node);
+				result = scope.addSymbol(node->children[0]->lexVal.s, node->lexVal.s, node);
 				node->type = TypeNone;
 				break;
 

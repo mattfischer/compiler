@@ -279,6 +279,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Transform\LiveRangeRenaming.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Transform\LoopInvariantCodeMotion.cpp"
 					>
 				</File>
@@ -446,6 +450,10 @@
 				</File>
 				<File
 					RelativePath=".\Transform\DeadCodeElimination.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Transform\LiveRangeRenaming.h"
 					>
 				</File>
 				<File

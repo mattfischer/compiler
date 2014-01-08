@@ -1,12 +1,16 @@
-int foo(int x, int y)
-{
-  print x;
-  print y;
-  return 0;
-}
-
 int main()
 {
-  foo(1, 2) + 7;
+  int x;
+
+  x = 10;
+  print x;
+
+  if(1 == 2) {
+    x = 15;
+  } else {
+    x = 20;
+  }
+  print x;
+
   return 0;
 }
