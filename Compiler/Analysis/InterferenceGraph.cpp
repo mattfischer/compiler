@@ -23,16 +23,30 @@ InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
 		for(LiveVariables::SymbolSet::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
 			IR::Symbol *symbol1 = *symbolIt1;
 
-			for(LiveVariables::SymbolSet::iterator symbolIt2 = symbols.begin(); symbolIt2 != symbols.end(); symbolIt2++) {
+			for(LiveVariables::SymbolSet::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
 				IR::Symbol *symbol2 = *symbolIt2;
 
-				if(symbol1 == symbol2) {
-					continue;
-				}
-
-				mGraph[symbol1].insert(symbol2);
+				addEdge(symbol1, symbol2);
 			}
 		}
+	}
+}
+
+void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
+{
+	if(symbol1 != symbol2) {
+		mGraph[symbol1].insert(symbol2);
+		mGraph[symbol2].insert(symbol1);
+	}
+}
+
+void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
+{
+	mGraph.erase(mGraph.find(symbol));
+
+	for(SymbolToSymbolSetMap::iterator it = mGraph.begin(); it != mGraph.end(); it++) {
+		SymbolSet &set = it->second;
+		set.erase(set.find(symbol));
 	}
 }
 
