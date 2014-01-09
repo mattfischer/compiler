@@ -42,8 +42,6 @@ int main(int arg, char *argv[])
 
 	Middle::Optimizer::optimize(irProgram);
 
-	Analysis::InterferenceGraph interferenceGraph(irProgram->main());
-
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	printf("Code:\n");
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {

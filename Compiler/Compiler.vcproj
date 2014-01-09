@@ -330,6 +330,10 @@
 					RelativePath=".\Back\CodeGenerator.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\Back\RegisterAllocator.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -522,6 +526,10 @@
 				>
 				<File
 					RelativePath=".\Back\CodeGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Back\RegisterAllocator.h"
 					>
 				</File>
 			</Filter>
