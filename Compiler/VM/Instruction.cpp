@@ -18,10 +18,12 @@ namespace VM {
 						}
 					}
 				} else {
-					if(instr.u.two.imm == 0) {
+					if(instr.u.two.imm > 0) {
+						printf("add r%i, r%i, #%i", instr.u.two.regDst, instr.u.two.regSrc, instr.u.two.imm);
+					} else if(instr.u.two.imm == 0){
 						printf("mov r%i, r%i", instr.u.two.regDst, instr.u.two.regSrc);
 					} else {
-						printf("add r%i, r%i, #%i", instr.u.two.regDst, instr.u.two.regSrc, instr.u.two.imm);
+						printf("sub r%i, r%i, #%i", instr.u.two.regDst, instr.u.two.regSrc, -instr.u.two.imm);
 					}
 				}
 				break;
