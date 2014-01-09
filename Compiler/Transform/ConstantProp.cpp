@@ -130,7 +130,30 @@ namespace Transform {
 						}
 						break;
 					}
+				case IR::Entry::TypeAddImm:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						int rhs;
+						bool rhsConst;
 
+						rhs = getValue(twoAddrImm, twoAddrImm->rhs, useDefs, rhsConst);
+						if(rhsConst) {
+							int value = rhs + twoAddrImm->imm;
+
+							IR::Entry *newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, value);
+							const IR::EntrySet &entries = useDefs.uses(twoAddrImm);
+							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+								queue.push(*it);
+							}
+
+							useDefs.replace(twoAddrImm, newEntry);
+							procedure->entries().insert(twoAddrImm, newEntry);
+							procedure->entries().erase(twoAddrImm);
+							delete twoAddrImm;
+							changed = true;
+						}
+						break;
+					}
 				case IR::Entry::TypeCJump:
 					{
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
