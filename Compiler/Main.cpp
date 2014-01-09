@@ -43,7 +43,7 @@ int main(int arg, char *argv[])
 	Middle::Optimizer::optimize(irProgram);
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
-	printf("Code:\n");
+	printf("\nCode:\n");
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
 		printf("  ");
 		vmProgram.instructions[i].print();

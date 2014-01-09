@@ -1,3 +1,10 @@
+int foo(int x, int y)
+{
+  print x;
+  print y;
+  return 0;
+}
+
 int main()
 {
   int x;
@@ -13,6 +20,8 @@ int main()
     x = 20;
   }
   print x;
+  foo(x+1, y+2);
+    
   print y;
   
   return 0;
