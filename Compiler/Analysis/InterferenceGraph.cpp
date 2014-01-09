@@ -13,8 +13,6 @@ InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
 {
 	LiveVariables liveVariables(procedure);
 
-	liveVariables.print();
-
 	for(IR::Procedure::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
 		IR::Symbol *symbol = *symbolIt;
 		addSymbol(symbol);

@@ -42,7 +42,6 @@ namespace Back {
 
 		Transform::LiveRangeRenaming::instance()->transform(procedure);
 
-		procedure->print();
 		regMap = allocator.allocate(procedure);
 
 		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -1));
