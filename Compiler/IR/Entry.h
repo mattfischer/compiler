@@ -29,7 +29,9 @@ namespace IR {
 			TypeLoadRet,
 			TypeStoreRet,
 			TypeLoadArg,
-			TypeStoreArg
+			TypeStoreArg,
+			TypePrologue,
+			TypeEpilogue
 		};
 
 		Type type;

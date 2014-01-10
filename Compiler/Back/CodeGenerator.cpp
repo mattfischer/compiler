@@ -52,8 +52,6 @@ namespace Back {
 			}
 		}
 
-		instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
-
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
@@ -184,11 +182,31 @@ namespace Back {
 						}
 						break;
 					}
+
+				case IR::Entry::TypePrologue:
+					{
+						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
+
+						if(oneAddrImm->imm > 0) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -oneAddrImm->imm));
+						}
+						break;
+					}
+
+				case IR::Entry::TypeEpilogue:
+					{
+						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						if(oneAddrImm->imm > 0) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, oneAddrImm->imm));
+						}
+
+						instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
+						break;
+					}
 			}
 		}
-
-		instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
 
 		for(std::map<IR::Entry*, int>::iterator it = jumpMap.begin(); it != jumpMap.end(); it++) {
 			IR::Entry *entry = it->first;

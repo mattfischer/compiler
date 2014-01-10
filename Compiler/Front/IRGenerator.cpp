@@ -19,12 +19,14 @@ namespace Front {
 		for(unsigned int i=0; i<tree->children.size(); i++) {
 			Node *proc = tree->children[i];
 			IR::Procedure *procedure = new IR::Procedure(proc->lexVal.s);
+			procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypePrologue, 0, 0));
 			Node *args = proc->children[1];
 			for(unsigned int j=0; j<args->children.size(); j++) {
 				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal.s, Front::Type::find(args->children[j]->children[0]->lexVal.s));
 				procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, symbol, 0, j));
 			}
 			processNode(proc->children[2], program, procedure);
+			procedure->entries().insert(procedure->entries().end(), new IR::EntryOneAddrImm(IR::Entry::TypeEpilogue, 0, 0));
 			program->addProcedure(procedure);
 		}
 

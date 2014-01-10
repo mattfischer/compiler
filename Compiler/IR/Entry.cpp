@@ -24,6 +24,8 @@ namespace IR {
 		/* TypeStoreRet */  "stret  ",
 		/* TypeLoadArg  */  "ldarg  ",
 		/* TypeStoreArg */  "starg  ",
+		/* TypePrologue */  "prologue",
+		/* TypeEpilogue */  "epilogue"
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
@@ -91,7 +93,12 @@ namespace IR {
 
 	void EntryOneAddrImm::print(const std::string &prefix)
 	{
-		printf("  %s%s%s, %i", prefix.c_str(), names[type], lhs->name.c_str(), imm);
+		printf("  %s%s ", prefix.c_str(), names[type]);
+		if(lhs) {
+			printf("%s, ", lhs->name.c_str());
+		}
+
+		printf("%i", imm);
 	}
 
 	void EntryOneAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
