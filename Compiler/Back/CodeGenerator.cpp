@@ -183,6 +183,20 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeLoadStack:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, regMap[twoAddrImm->lhs], VM::RegSP, twoAddrImm->imm));
+						break;
+					}
+
+				case IR::Entry::TypeStoreStack:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, regMap[twoAddrImm->rhs], twoAddrImm->imm));
+						break;
+					}
+
 				case IR::Entry::TypePrologue:
 					{
 						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;

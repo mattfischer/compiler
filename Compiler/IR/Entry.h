@@ -30,6 +30,8 @@ namespace IR {
 			TypeStoreRet,
 			TypeLoadArg,
 			TypeStoreArg,
+			TypeLoadStack,
+			TypeStoreStack,
 			TypePrologue,
 			TypeEpilogue
 		};

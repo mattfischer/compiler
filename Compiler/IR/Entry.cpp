@@ -24,6 +24,8 @@ namespace IR {
 		/* TypeStoreRet */  "stret  ",
 		/* TypeLoadArg  */  "ldarg  ",
 		/* TypeStoreArg */  "starg  ",
+		/* TypeLoadStack */ "ldstk  ",
+		/* TypeStoreStack */"ststk  ",
 		/* TypePrologue */  "prologue",
 		/* TypeEpilogue */  "epilogue"
 	};

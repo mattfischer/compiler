@@ -7,22 +7,36 @@ int foo(int x, int y)
 
 int main()
 {
+  int i;
   int x;
   int y;
+  int z;
+  int a;
+  int b;
+  int c;
+  int d;
   
-  y = 10;
   x = 10;
-  print x;
-
-  if(1 == 2) {
-    x = 15;
-  } else {
-    x = 20;
-  }
-  print x;
-  foo(x+1, y+2);
-    
-  print y;
+  y = 20;
+  z = 30;
+  a = 40;
+  b = 50;
+  c = 60;
+  d = 70;
   
+  i = 0;
+  while(i != 10) {
+    foo(i, 20);
+    i = i + 1;
+  }
+  
+  print x;
+  print y;
+  print z;
+  print a;
+  print b;
+  print c;
+  print d;
+   
   return 0;
 }

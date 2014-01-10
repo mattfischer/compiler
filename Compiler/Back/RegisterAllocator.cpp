@@ -26,13 +26,54 @@ void addInterferences(Analysis::InterferenceGraph &graph, const Analysis::Interf
 	}
 }
 
+void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol)
+{
+	int idx = 0;
+
+	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+		IR::Entry *entry = *entryIt;
+
+		if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
+			IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+			idx = oneAddrImm->imm;
+			oneAddrImm->imm++;
+		}
+
+		if(entry->uses(symbol)) {
+			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx));
+		}
+
+		if(entry->assign() == symbol) {
+			entryIt++;
+			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeStoreStack, 0, symbol, idx));
+			entryIt--;
+		}
+	}
+}
+
 std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
+{
+	std::map<IR::Symbol*, int> registers;
+	bool success;
+
+	do {
+		registers = tryAllocate(procedure, success);
+	} while(!success);
+
+	return registers;
+}
+
+std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedure, bool &success)
 {
 	std::map<IR::Symbol*, int> registers;
 	std::map<IR::Symbol*, int> preferredRegisters;
 
 	Analysis::InterferenceGraph graph(procedure);
 	Analysis::LiveVariables liveVariables(procedure);
+
+	printf("Try Allocate:\n");
+	procedure->print();
+	printf("\n");
 
 	std::vector<IR::Symbol*> callerSavedRegisters;
 	for(int i=0; i<CallerSavedRegisters; i++) {
@@ -103,25 +144,46 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 	std::vector<IR::Symbol*> stack;
 	Analysis::InterferenceGraph simplifiedGraph(graph);
 
+	bool spilled = false;
+
 	while(true) {
-		bool found = false;
+		bool removed = false;
+		bool foundUnallocated = false;
+		IR::Symbol *spillCandidate = 0;
 		for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
 			IR::Symbol *symbol = *symbolIt;
 
 			if(registers.find(symbol) == registers.end()) {
+				foundUnallocated = true;
+				if(!spillCandidate) {
+					spillCandidate = symbol;
+				}
+
 				const Analysis::InterferenceGraph::SymbolSet &set = simplifiedGraph.interferences(symbol);
 				if(set.size() < MaxRegisters) {
 					simplifiedGraph.removeSymbol(symbol);
 					stack.push_back(symbol);
-					found = true;
+					removed = true;
 					break;
 				}
 			}
 		}
 
-		if(!found) {
+		if(foundUnallocated) {
+			if(!removed) {
+				spillVariable(procedure, spillCandidate);
+				simplifiedGraph.removeSymbol(spillCandidate);
+				stack.push_back(spillCandidate);
+				spilled = true;
+			}
+		} else {
 			break;
 		}
+	}
+
+	if(spilled) {
+		success = false;
+		return registers;
 	}
 
 	while(!stack.empty()) {
@@ -159,6 +221,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 		}
 	}
 
+	success = true;
 	return registers;
 }
 
