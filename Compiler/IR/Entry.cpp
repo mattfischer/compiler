@@ -5,29 +5,29 @@
 
 namespace IR {
 	static char* names[] = {
-		/* TypeNone		*/	"none	",
-		/* TypeMove		*/	"move   ",
-		/* TypeLoadImm	*/	"loadi  ",
-		/* TypeAdd		*/	"add    ",
-		/* TypeAddImm   */  "addi   ",
-		/* TypeMult		*/	"mult   ",
-		/* TypePrint	*/	"print  ",
-		/* TypeEqual	*/	"equ    ",
-		/* TypeNequal	*/	"neq    ",
-		/* TypeLabel    */	"       ",
-		/* TypeJump		*/	"jmp    ",
-		/* TypeCJump	*/	"cjmp   ",
-		/* TypeNCJump	*/	"ncjmp  ",
-		/* TypePhi	    */	"phi    ",
-		/* TypeCall     */  "call   ",
-		/* TypeLoadRet  */  "ldret  ",
-		/* TypeStoreRet */  "stret  ",
-		/* TypeLoadArg  */  "ldarg  ",
-		/* TypeStoreArg */  "starg  ",
-		/* TypeLoadStack */ "ldstk  ",
-		/* TypeStoreStack */"ststk  ",
-		/* TypePrologue */  "prologue",
-		/* TypeEpilogue */  "epilogue"
+		/* TypeNone		  */ "none	   ",
+		/* TypeMove		  */ "move     ",
+		/* TypeLoadImm	  */ "loadi    ",
+		/* TypeAdd		  */ "add      ",
+		/* TypeAddImm     */ "addi     ",
+		/* TypeMult		  */ "mult     ",
+		/* TypePrint	  */ "print    ",
+		/* TypeEqual	  */ "equ      ",
+		/* TypeNequal	  */ "neq      ",
+		/* TypeLabel      */ "         ",
+		/* TypeJump		  */ "jmp      ",
+		/* TypeCJump	  */ "cjmp     ",
+		/* TypeNCJump	  */ "ncjmp    ",
+		/* TypePhi	      */ "phi      ",
+		/* TypeCall       */ "call     ",
+		/* TypeLoadRet    */ "ldret    ",
+		/* TypeStoreRet   */ "stret    ",
+		/* TypeLoadArg    */ "ldarg    ",
+		/* TypeStoreArg   */ "starg    ",
+		/* TypeLoadStack  */ "ldstk    ",
+		/* TypeStoreStack */ "ststk    ",
+		/* TypePrologue   */ "prologue ",
+		/* TypeEpilogue   */ "epilogue "
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
@@ -95,7 +95,7 @@ namespace IR {
 
 	void EntryOneAddrImm::print(const std::string &prefix)
 	{
-		printf("  %s%s ", prefix.c_str(), names[type]);
+		printf("  %s%s", prefix.c_str(), names[type]);
 		if(lhs) {
 			printf("%s, ", lhs->name.c_str());
 		}
