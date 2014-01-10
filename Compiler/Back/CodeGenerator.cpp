@@ -45,10 +45,17 @@ namespace Back {
 		regMap = allocator.allocate(procedure);
 
 		unsigned long savedRegs = 0;
-		savedRegs |= (1 << VM::RegLR);
 		for(std::map<IR::Symbol*, int>::iterator regIt = regMap.begin(); regIt != regMap.end(); regIt++) {
 			if(regIt->second > 3) {
 				savedRegs |= (1 << regIt->second);
+			}
+		}
+
+		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+
+			if(entry->type == IR::Entry::TypeCall) {
+				savedRegs |= (1 << VM::RegLR);
 			}
 		}
 
@@ -200,7 +207,9 @@ namespace Back {
 				case IR::Entry::TypePrologue:
 					{
 						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
-						instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
+						if(savedRegs != 0) {
+							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
+						}
 
 						if(oneAddrImm->imm > 0) {
 							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -oneAddrImm->imm));
@@ -215,7 +224,10 @@ namespace Back {
 							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, oneAddrImm->imm));
 						}
 
-						instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
+						if(savedRegs != 0) {
+							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
+						}
+
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
 						break;
 					}
