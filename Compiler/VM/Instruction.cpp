@@ -105,6 +105,30 @@ namespace VM {
 		}
 	}
 
+	static void printMultReg(Instruction instr)
+	{
+		switch(instr.u.mult.type) {
+			case MultRegLoad:
+				printf("ldm ");
+				break;
+
+			case MultRegStore:
+				printf("stm ");
+				break;
+		}
+
+		bool needComma = false;
+		for(int i=0; i<16; i++) {
+			if(instr.u.mult.regs & (1 << i)) {
+				if(needComma) {
+					printf(", ");
+				}
+				printf("r%i", i);
+				needComma = true;
+			}
+		}
+	}
+
 	void Instruction::print()
 	{
 		switch(type) {
@@ -118,6 +142,10 @@ namespace VM {
 
 			case InstrThreeAddr:
 				printThreeAddr(*this);
+				break;
+
+			case InstrMultReg:
+				printMultReg(*this);
 				break;
 		}
 	}
@@ -157,6 +185,17 @@ namespace VM {
 		instr.u.three.regSrc1 = regSrc1;
 		instr.u.three.regSrc2 = regSrc2;
 		instr.u.three.imm = imm;
+
+		return instr;
+	}
+
+	Instruction Instruction::makeMultReg(unsigned char type, unsigned long regs)
+	{
+		Instruction instr;
+
+		instr.type = InstrMultReg;
+		instr.u.mult.type = type;
+		instr.u.mult.regs = regs;
 
 		return instr;
 	}

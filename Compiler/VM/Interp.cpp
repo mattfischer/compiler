@@ -75,6 +75,27 @@ namespace VM {
 							break;
 					}
 					break;
+				case VM::InstrMultReg:
+					switch(instr.u.mult.type) {
+						case VM::MultRegLoad:
+							for(int i=0; i<16; i++) {
+								if(instr.u.mult.regs & (1 << i)) {
+									regs[i] = mem[regs[VM::RegSP]];
+									regs[VM::RegSP]++;
+								}
+							}
+							break;
+
+						case VM::MultRegStore:
+							for(int i=15; i>=0; i--) {
+								if(instr.u.mult.regs & (1 << i)) {
+									regs[VM::RegSP]--;
+									mem[regs[VM::RegSP]] = regs[i];
+								}
+							}
+							break;
+					}
+					break;
 			}
 
 			if(regs[VM::RegPC] == curPC) {

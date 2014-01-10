@@ -26,6 +26,11 @@ namespace VM {
 				unsigned char reg : 4;
 				long imm : 20;
 			} one;
+
+			struct {
+				unsigned char type : 4;
+				unsigned long regs : 16;
+			} mult;
 		} u;
 
 		void print();
@@ -33,11 +38,13 @@ namespace VM {
 		static Instruction makeOneAddr(unsigned char type, unsigned char reg, long imm);
 		static Instruction makeTwoAddr(unsigned char type, unsigned char regDst, unsigned char regSrc, long imm);
 		static Instruction makeThreeAddr(unsigned char type, unsigned char regDst, unsigned char regSrc1, unsigned char regSrc2, short imm);
+		static Instruction makeMultReg(unsigned char type, unsigned long regs);
 	};
 
 	const int InstrTwoAddr = 0x0;
 	const int InstrThreeAddr = 0x1;
 	const int InstrOneAddr = 0x2;
+	const int InstrMultReg = 0x3;
 
 	const int TwoAddrAddImm = 0x0;
 	const int TwoAddrLoad = 0x1;
@@ -52,6 +59,9 @@ namespace VM {
 	const int OneAddrLoadImm = 0x0;
 	const int OneAddrPrint = 0x1;
 	const int OneAddrCall = 0x2;
+
+	const int MultRegStore = 0x0;
+	const int MultRegLoad = 0x1;
 
 	const int RegPC = 0xf;
 	const int RegLR = 0xe;

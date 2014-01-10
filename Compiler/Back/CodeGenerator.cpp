@@ -44,8 +44,15 @@ namespace Back {
 
 		regMap = allocator.allocate(procedure);
 
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -1));
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, VM::RegLR, 0));
+		unsigned long savedRegs = 0;
+		savedRegs |= (1 << VM::RegLR);
+		for(std::map<IR::Symbol*, int>::iterator regIt = regMap.begin(); regIt != regMap.end(); regIt++) {
+			if(regIt->second > 3) {
+				savedRegs |= (1 << regIt->second);
+			}
+		}
+
+		instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
 
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -180,8 +187,8 @@ namespace Back {
 			}
 		}
 
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, 1));
-		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, VM::RegPC, VM::RegSP, -1));
+		instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
+		instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
 
 		for(std::map<IR::Entry*, int>::iterator it = jumpMap.begin(); it != jumpMap.end(); it++) {
 			IR::Entry *entry = it->first;
