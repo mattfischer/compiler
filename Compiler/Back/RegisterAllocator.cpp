@@ -6,6 +6,7 @@
 #include "Analysis/InterferenceGraph.h"
 #include "Analysis/LiveVariables.h"
 #include "Analysis/Loops.h"
+#include "Analysis/UseDefs.h"
 
 #include "Front/Type.h"
 
@@ -148,7 +149,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 	return preferredRegisters;
 }
 
-void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables)
+void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables, Analysis::UseDefs &useDefs)
 {
 	int idx = 0;
 
@@ -165,7 +166,31 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		}
 
 		if(entry->uses(symbol) && !live) {
-			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx));
+			const IR::EntrySet &defs = useDefs.defines(entry, symbol);
+			int value = 0;
+			bool isConstant = false;
+			for(IR::EntrySet::const_iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
+				IR::Entry *def = *defIt;
+				if(def->type == IR::Entry::TypeLoadImm) {
+					IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)def;
+					if(!isConstant) {
+						value = oneAddrImm->imm;
+						isConstant = true;
+					} else if(oneAddrImm->imm != value) {
+						isConstant = false;
+						break;
+					}
+				} else {
+					isConstant = false;
+					break;
+				}
+			}
+
+			if(isConstant) {
+				procedure->entries().insert(entryIt, new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, symbol, value));
+			} else {
+				procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx));
+			}
 			live = true;
 			liveSet = liveVariables.variables(entry);
 		}
@@ -192,7 +217,6 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			}
 			liveSet = currentVariables;
 		}
-
 	}
 }
 
@@ -214,6 +238,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 
 	Analysis::InterferenceGraph graph(procedure);
 	Analysis::LiveVariables liveVariables(procedure);
+	Analysis::UseDefs useDefs(procedure);
 
 	std::vector<IR::Symbol*> callerSavedRegisters;
 	for(int i=0; i<CallerSavedRegisters; i++) {
@@ -252,7 +277,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		}
 
 		if(!removed) {
-			spillVariable(procedure, spillCandidate, liveVariables);
+			spillVariable(procedure, spillCandidate, liveVariables, useDefs);
 			simplifiedGraph.removeSymbol(spillCandidate);
 			stack.push_back(spillCandidate);
 			spilled = true;
