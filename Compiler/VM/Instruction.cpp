@@ -138,16 +138,34 @@ namespace VM {
 				break;
 		}
 
+		o << "{";
 		bool needComma = false;
+		int firstReg = -1;
 		for(int i=0; i<16; i++) {
-			if(instr.u.mult.regs & (1 << i)) {
+			if(firstReg != -1 && ((instr.u.mult.regs & (1 << i)) == 0 || i == VM::RegSP)) {
 				if(needComma) {
 					o << ", ";
 				}
-				o << regName(i);
+				o << regName(firstReg) << "-" << regName(i-1);
 				needComma = true;
+				firstReg = -1;
+			}
+
+			if(instr.u.mult.regs & (1 << i)) {
+				if(i < VM::RegSP) {
+					if(firstReg == -1) {
+						firstReg = i;
+					}
+				} else {
+					if(needComma) {
+						o << ", ";
+					}
+					o << regName(i);
+					needComma = true;
+				}
 			}
 		}
+		o << "}";
 	}
 
 	std::ostream &operator<<(std::ostream &o, const Instruction &instr)
