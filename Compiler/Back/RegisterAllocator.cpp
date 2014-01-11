@@ -155,15 +155,11 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 
 	bool live = false;
 	Analysis::LiveVariables::SymbolSet liveSet;
+	IR::EntrySet neededDefs;
+	IR::EntrySet spillLoads;
 
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
-
-		if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
-			IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
-			idx = oneAddrImm->imm;
-			oneAddrImm->imm++;
-		}
 
 		if(entry->uses(symbol) && !live) {
 			const IR::EntrySet &defs = useDefs.defines(entry, symbol);
@@ -186,19 +182,20 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 				}
 			}
 
+			IR::Entry *def;
 			if(isConstant) {
-				procedure->entries().insert(entryIt, new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, symbol, value));
+				def = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, symbol, value);
 			} else {
-				procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx));
+				def = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx);
+				neededDefs.insert(defs.begin(), defs.end());
 			}
+			procedure->entries().insert(entryIt, def);
+			spillLoads.insert(def);
 			live = true;
 			liveSet = liveVariables.variables(entry);
 		}
 
 		if(entry->assign() == symbol) {
-			entryIt++;
-			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeStoreStack, 0, symbol, idx));
-			entryIt--;
 			live = true;
 			liveSet = liveVariables.variables(entry);
 		}
@@ -216,6 +213,33 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 				}
 			}
 			liveSet = currentVariables;
+		}
+	}
+
+	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+		IR::Entry *entry = *entryIt;
+
+		if(entry->assign() == symbol) {
+			if(neededDefs.find(entry) != neededDefs.end()) {
+				entryIt++;
+				procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeStoreStack, 0, symbol, idx));
+				entryIt--;
+			} else if(spillLoads.find(entry) == spillLoads.end()) {
+				entryIt--;
+				procedure->entries().erase(entry);
+			}
+		}
+	}
+
+	if(neededDefs.size() > 0) {
+		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+			IR::Entry *entry = *entryIt;
+
+			if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
+				IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+				idx = oneAddrImm->imm;
+				oneAddrImm->imm++;
+			}
 		}
 	}
 }
