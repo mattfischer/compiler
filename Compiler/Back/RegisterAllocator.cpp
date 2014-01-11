@@ -148,9 +148,12 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 	return preferredRegisters;
 }
 
-void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol)
+void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables)
 {
 	int idx = 0;
+
+	bool live = false;
+	Analysis::LiveVariables::SymbolSet liveSet;
 
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
@@ -161,15 +164,35 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol)
 			oneAddrImm->imm++;
 		}
 
-		if(entry->uses(symbol)) {
+		if(entry->uses(symbol) && !live) {
 			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx));
+			live = true;
+			liveSet = liveVariables.variables(entry);
 		}
 
 		if(entry->assign() == symbol) {
 			entryIt++;
 			procedure->entries().insert(entryIt, new IR::EntryTwoAddrImm(IR::Entry::TypeStoreStack, 0, symbol, idx));
 			entryIt--;
+			live = true;
+			liveSet = liveVariables.variables(entry);
 		}
+
+		if(entry->type == IR::Entry::TypeLabel) {
+			live = false;
+		} else if(live) {
+			Analysis::LiveVariables::SymbolSet &currentVariables = liveVariables.variables(entry);
+			for(Analysis::LiveVariables::SymbolSet::iterator symbolIt = liveSet.begin(); symbolIt != liveSet.end(); symbolIt++) {
+				IR::Symbol *s = *symbolIt;
+
+				if(currentVariables.find(s) == currentVariables.end()) {
+					live = false;
+					break;
+				}
+			}
+			liveSet = currentVariables;
+		}
+
 	}
 }
 
@@ -229,7 +252,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		}
 
 		if(!removed) {
-			spillVariable(procedure, spillCandidate);
+			spillVariable(procedure, spillCandidate, liveVariables);
 			simplifiedGraph.removeSymbol(spillCandidate);
 			stack.push_back(spillCandidate);
 			spilled = true;

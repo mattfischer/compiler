@@ -31,11 +31,18 @@ int main()
   }
   
   print x;
+  print x;
+  print y;
   print y;
   print z;
+  print z;
+  print a;
   print a;
   print b;
+  print b;
   print c;
+  print c;
+  print d;
   print d;
    
   return 0;
