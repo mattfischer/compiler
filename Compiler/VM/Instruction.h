@@ -1,6 +1,8 @@
 #ifndef VM_INSTRUCTION_H
 #define VM_INSTRUCTION_H
 
+#include <iostream>
+
 namespace VM {
 	struct Instruction {
 		unsigned char type : 4;
@@ -33,13 +35,13 @@ namespace VM {
 			} mult;
 		} u;
 
-		void print();
-
 		static Instruction makeOneAddr(unsigned char type, unsigned char reg, long imm);
 		static Instruction makeTwoAddr(unsigned char type, unsigned char regDst, unsigned char regSrc, long imm);
 		static Instruction makeThreeAddr(unsigned char type, unsigned char regDst, unsigned char regSrc1, unsigned char regSrc2, short imm);
 		static Instruction makeMultReg(unsigned char type, unsigned long regs);
 	};
+
+	std::ostream &operator<<(std::ostream &o, const Instruction &instr);
 
 	const int InstrTwoAddr = 0x0;
 	const int InstrThreeAddr = 0x1;

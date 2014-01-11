@@ -2,118 +2,141 @@
 
 #include <stdio.h>
 
+#include <sstream>
+
 namespace VM {
-	static void printTwoAddr(Instruction instr)
+	std::string regName(int reg)
+	{
+		switch(reg) {
+			case VM::RegSP:
+				return "sp";
+
+			case VM::RegLR:
+				return "lr";
+
+			case VM::RegPC:
+				return "pc";
+
+			default:
+				{
+					std::stringstream s;
+					s << "r" << reg;
+					return s.str();
+				}
+		}
+	}
+
+	static void printTwoAddr(std::ostream &o, const Instruction &instr)
 	{
 		switch(instr.u.two.type) {
 			case TwoAddrAddImm:
 				if(instr.u.two.regDst == RegPC) {
 					if(instr.u.two.imm == 0) {
-						printf("jmp r%i", instr.u.two.regSrc);
+						o << "jmp " << regName(instr.u.two.regSrc);
 					} else {
 						if(instr.u.two.regSrc == RegPC) {
-							printf("jmp #%i", instr.u.two.imm);
+							o << "jmp #" << int(instr.u.two.imm);
 						} else {
-							printf("jmp r%i, #%i", instr.u.two.regSrc, instr.u.two.imm);
+							o << "jmp " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
 						}
 					}
 				} else {
 					if(instr.u.two.imm > 0) {
-						printf("add r%i, r%i, #%i", instr.u.two.regDst, instr.u.two.regSrc, instr.u.two.imm);
+						o << "add " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
 					} else if(instr.u.two.imm == 0){
-						printf("mov r%i, r%i", instr.u.two.regDst, instr.u.two.regSrc);
+						o << "mov " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc);
 					} else {
-						printf("sub r%i, r%i, #%i", instr.u.two.regDst, instr.u.two.regSrc, -instr.u.two.imm);
+						o << "sub " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << -int(instr.u.two.imm);
 					}
 				}
 				break;
 
 			case TwoAddrLoad:
 				if(instr.u.two.imm == 0) {
-					printf("ldr r%i, [r%i]", instr.u.two.regDst, instr.u.two.regSrc);
+					o << "ldr " << regName(instr.u.two.regDst) << ", [" << regName(instr.u.two.regSrc) << "]";
 				} else {
-					printf("ldr r%i, [r%i, #%i]", instr.u.two.regDst, instr.u.two.regSrc, instr.u.two.imm);
+					o << "ldr " << regName(instr.u.two.regDst) << ", [" << regName(instr.u.two.regSrc) << ", # " << int(instr.u.two.imm) << "]";
 				}
 				break;
 
 			case TwoAddrStore:
 				if(instr.u.two.imm == 0) {
-					printf("str r%i, [r%i]", instr.u.two.regSrc, instr.u.two.regDst);
+					o << "str " << regName(instr.u.two.regSrc) << ", [" << regName(instr.u.two.regDst) << "]";
 				} else {
-					printf("str r%i, [r%i, #%i]", instr.u.two.regSrc, instr.u.two.regDst, instr.u.two.imm);
+					o << "str " << regName(instr.u.two.regSrc) << ", [" << regName(instr.u.two.regDst) << ", #" << int(instr.u.two.imm) << "]";
 				}
 				break;
 
 		}
 	}
 
-	static void printThreeAddr(Instruction instr)
+	static void printThreeAddr(std::ostream &o, const Instruction &instr)
 	{
 		switch(instr.u.three.type) {
 			case ThreeAddrAdd:
-				printf("add r%i, r%i, r%i", instr.u.three.regDst, instr.u.three.regSrc1, instr.u.three.regSrc2);
+				o << "add " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 				break;
 
 			case ThreeAddrMult:
-				printf("mult r%i, r%i, r%i", instr.u.three.regDst, instr.u.three.regSrc1, instr.u.three.regSrc2);
+				o << "mult " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 				break;
 
 			case ThreeAddrAddCond:
 				if(instr.u.three.regDst == RegPC) {
 					if(instr.u.three.imm == 0) {
-						printf("cjmp r%i, r%i", instr.u.three.regSrc1, instr.u.three.regSrc2);
+						o << "cjmp " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 					} else {
 						if(instr.u.three.regSrc2 == RegPC) {
-							printf("cjmp r%i, #%i", instr.u.three.regSrc1, instr.u.three.imm);
+							o << "cjmp " << regName(instr.u.three.regSrc1) << ", #" << int(instr.u.three.imm);
 						} else {
-							printf("cjmp r%i, r%i, #%i", instr.u.three.regSrc1, instr.u.three.regSrc2, instr.u.three.imm);
+							o << "cjmp " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2) << ", #" << int(instr.u.three.imm);
 						}
 					}
 				} else {
 					if(instr.u.three.imm == 0) {
-						printf("cmov r%i, r%i, r%i", instr.u.three.regSrc1, instr.u.three.regDst, instr.u.three.regSrc2);
+						o << "cmov " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc2);
 					} else {
-						printf("cadd r%i, r%i, r%i, #%i", instr.u.three.regSrc1, instr.u.three.regDst, instr.u.three.regSrc2, instr.u.three.imm);
+						o << "cadd " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc2) << ", #" << int(instr.u.three.imm);
 					}
 				}
 				break;
 
 			case ThreeAddrEqual:
-				printf("equ r%i, r%i, r%i", instr.u.three.regDst, instr.u.three.regSrc1, instr.u.three.regSrc2);
+				o << "equ " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 				break;
 
 			case ThreeAddrNEqual:
-				printf("neq r%i, r%i, r%i", instr.u.three.regDst, instr.u.three.regSrc1, instr.u.three.regSrc2);
+				o << "neq " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 				break;
 		}
 	}
 
-	static void printOneAddr(Instruction instr)
+	static void printOneAddr(std::ostream &o, const Instruction &instr)
 	{
 		switch(instr.u.one.type) {
 			case OneAddrLoadImm:
-				printf("mov r%i, #%i", instr.u.one.reg, instr.u.one.imm);
+				o << "mov " << regName(instr.u.one.reg) << ", #" << int(instr.u.one.imm);
 				break;
 
 			case OneAddrPrint:
-				printf("print r%i", instr.u.one.reg);
+				o << "print " << regName(instr.u.one.reg);
 				break;
 
 			case OneAddrCall:
-				printf("call [r%i, #%i]", instr.u.one.reg, instr.u.one.imm);
+				o << "call [" << regName(instr.u.one.reg) << ", #" << int(instr.u.one.imm) << "]";
 				break;
 		}
 	}
 
-	static void printMultReg(Instruction instr)
+	static void printMultReg(std::ostream &o, const Instruction &instr)
 	{
 		switch(instr.u.mult.type) {
 			case MultRegLoad:
-				printf("ldm ");
+				o << "ldm ";
 				break;
 
 			case MultRegStore:
-				printf("stm ");
+				o << "stm ";
 				break;
 		}
 
@@ -121,33 +144,35 @@ namespace VM {
 		for(int i=0; i<16; i++) {
 			if(instr.u.mult.regs & (1 << i)) {
 				if(needComma) {
-					printf(", ");
+					o << ", ";
 				}
-				printf("r%i", i);
+				o << regName(i);
 				needComma = true;
 			}
 		}
 	}
 
-	void Instruction::print()
+	std::ostream &operator<<(std::ostream &o, const Instruction &instr)
 	{
-		switch(type) {
+		switch(instr.type) {
 			case InstrOneAddr:
-				printOneAddr(*this);
+				printOneAddr(o, instr);
 				break;
 
 			case InstrTwoAddr:
-				printTwoAddr(*this);
+				printTwoAddr(o, instr);
 				break;
 
 			case InstrThreeAddr:
-				printThreeAddr(*this);
+				printThreeAddr(o, instr);
 				break;
 
 			case InstrMultReg:
-				printMultReg(*this);
+				printMultReg(o, instr);
 				break;
 		}
+
+		return o;
 	}
 
 	Instruction Instruction::makeOneAddr(unsigned char type, unsigned char reg, long imm)

@@ -14,6 +14,8 @@
 
 #include <stdio.h>
 
+#include <iostream>
+
 int main(int arg, char *argv[])
 {
 	Front::Tokenizer tokenizer("input.lang");
@@ -45,9 +47,7 @@ int main(int arg, char *argv[])
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	printf("\nCode:\n");
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
-		printf("  ");
-		vmProgram.instructions[i].print();
-		printf("\n");
+		std::cout << "  " << vmProgram.instructions[i] << std::endl;
 	}
 	printf("\n");
 
