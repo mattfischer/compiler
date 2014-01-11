@@ -46,8 +46,17 @@ void InterferenceGraph::addSymbol(IR::Symbol *symbol)
 void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
 {
 	if(symbol1 != symbol2) {
-		mGraph[symbol1].insert(symbol2);
-		mGraph[symbol2].insert(symbol1);
+		SymbolToSymbolSetMap::iterator it;
+
+		it = mGraph.find(symbol1);
+		if(it != mGraph.end()) {
+			it->second.insert(symbol2);
+		}
+
+		it = mGraph.find(symbol2);
+		if(it != mGraph.end()) {
+			it->second.insert(symbol1);
+		}
 	}
 }
 

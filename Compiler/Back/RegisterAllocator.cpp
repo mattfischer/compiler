@@ -26,6 +26,88 @@ void addInterferences(Analysis::InterferenceGraph &graph, const Analysis::Interf
 	}
 }
 
+void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std::vector<IR::Symbol*> callerSavedRegisters, IR::Procedure *procedure, Analysis::LiveVariables &liveVariables)
+{
+	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+		IR::Entry *entry = *entryIt;
+		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+		IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+
+		const Analysis::LiveVariables::SymbolSet &variables = liveVariables.variables(entry);
+
+		switch(entry->type) {
+			case IR::Entry::TypeCall:
+				for(unsigned int i=0; i<callerSavedRegisters.size(); i++) {
+					addInterferences(graph, variables, callerSavedRegisters[i], 0);
+				}
+				break;
+
+			case IR::Entry::TypeLoadRet:
+				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->lhs);
+				break;
+
+			case IR::Entry::TypeStoreRet:
+				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->rhs1);
+				break;
+
+			case IR::Entry::TypeLoadArg:
+				addInterferences(graph, variables, callerSavedRegisters[twoAddrImm->imm], twoAddrImm->lhs);
+				break;
+
+			case IR::Entry::TypeStoreArg:
+				addInterferences(graph, variables, callerSavedRegisters[twoAddrImm->imm], twoAddrImm->rhs);
+				break;
+		}
+	}
+}
+
+std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
+{
+	std::map<IR::Symbol*, int> preferredRegisters;
+
+	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+		IR::Entry *entry = *entryIt;
+		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+		IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+
+		switch(entry->type) {
+			case IR::Entry::TypeLoadRet:
+				if(preferredRegisters.find(threeAddr->lhs) == preferredRegisters.end()) {
+					preferredRegisters[threeAddr->lhs] = 0;
+				} else {
+					preferredRegisters[threeAddr->lhs] = -1;
+				}
+				break;
+
+			case IR::Entry::TypeStoreRet:
+				if(preferredRegisters.find(threeAddr->rhs1) == preferredRegisters.end()) {
+					preferredRegisters[threeAddr->rhs1] = 0;
+				} else {
+					preferredRegisters[threeAddr->rhs1] = -1;
+				}
+				break;
+
+			case IR::Entry::TypeLoadArg:
+				if(preferredRegisters.find(twoAddrImm->lhs) == preferredRegisters.end()) {
+					preferredRegisters[twoAddrImm->lhs] = twoAddrImm->imm;
+				} else {
+					preferredRegisters[twoAddrImm->lhs] = -1;
+				}
+				break;
+
+			case IR::Entry::TypeStoreArg:
+				if(preferredRegisters.find(twoAddrImm->rhs) == preferredRegisters.end()) {
+					preferredRegisters[twoAddrImm->rhs] = twoAddrImm->imm;
+				} else {
+					preferredRegisters[twoAddrImm->rhs] = -1;
+				}
+				break;
+		}
+	}
+
+	return preferredRegisters;
+}
+
 void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol)
 {
 	int idx = 0;
@@ -66,7 +148,6 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedure, bool &success)
 {
 	std::map<IR::Symbol*, int> registers;
-	std::map<IR::Symbol*, int> preferredRegisters;
 
 	Analysis::InterferenceGraph graph(procedure);
 	Analysis::LiveVariables liveVariables(procedure);
@@ -81,103 +162,39 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		s << "arg" << i;
 		IR::Symbol *symbol = new IR::Symbol(s.str(), Front::Type::find("int"));
 		registers[symbol] = i;
-		procedure->addSymbol(symbol);
 		callerSavedRegisters.push_back(symbol);
 	}
 
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-		IR::Entry *entry = *entryIt;
-		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-		IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
-
-		const Analysis::LiveVariables::SymbolSet &variables = liveVariables.variables(entry);
-
-		switch(entry->type) {
-			case IR::Entry::TypeCall:
-				for(int i=0; i<CallerSavedRegisters; i++) {
-					addInterferences(graph, variables, callerSavedRegisters[i], 0);
-				}
-				break;
-
-			case IR::Entry::TypeLoadRet:
-				if(preferredRegisters.find(threeAddr->lhs) == preferredRegisters.end()) {
-					preferredRegisters[threeAddr->lhs] = 0;
-				} else {
-					preferredRegisters[threeAddr->lhs] = -1;
-				}
-
-				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->lhs);
-				break;
-
-			case IR::Entry::TypeStoreRet:
-				if(preferredRegisters.find(threeAddr->rhs1) == preferredRegisters.end()) {
-					preferredRegisters[threeAddr->rhs1] = 0;
-				} else {
-					preferredRegisters[threeAddr->rhs1] = -1;
-				}
-
-				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->rhs1);
-				break;
-
-			case IR::Entry::TypeLoadArg:
-				if(preferredRegisters.find(twoAddrImm->lhs) == preferredRegisters.end()) {
-					preferredRegisters[twoAddrImm->lhs] = twoAddrImm->imm;
-				} else {
-					preferredRegisters[twoAddrImm->lhs] = -1;
-				}
-
-				addInterferences(graph, variables, callerSavedRegisters[twoAddrImm->imm], twoAddrImm->lhs);
-				break;
-
-			case IR::Entry::TypeStoreArg:
-				if(preferredRegisters.find(twoAddrImm->rhs) == preferredRegisters.end()) {
-					preferredRegisters[twoAddrImm->rhs] = twoAddrImm->imm;
-				} else {
-					preferredRegisters[twoAddrImm->rhs] = -1;
-				}
-
-				addInterferences(graph, variables, callerSavedRegisters[twoAddrImm->imm], twoAddrImm->rhs);
-				break;
-		}
-	}
+	addProcedureCallInterferences(graph, callerSavedRegisters, procedure, liveVariables);
 
 	std::vector<IR::Symbol*> stack;
 	Analysis::InterferenceGraph simplifiedGraph(graph);
-
 	bool spilled = false;
 
-	while(true) {
+	while(simplifiedGraph.symbols().size() > 0) {
 		bool removed = false;
-		bool foundUnallocated = false;
 		IR::Symbol *spillCandidate = 0;
 		for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
 			IR::Symbol *symbol = *symbolIt;
 
-			if(registers.find(symbol) == registers.end()) {
-				foundUnallocated = true;
-				if(!spillCandidate) {
-					spillCandidate = symbol;
-				}
+			if(!spillCandidate) {
+				spillCandidate = symbol;
+			}
 
-				const Analysis::InterferenceGraph::SymbolSet &set = simplifiedGraph.interferences(symbol);
-				if(set.size() < MaxRegisters) {
-					simplifiedGraph.removeSymbol(symbol);
-					stack.push_back(symbol);
-					removed = true;
-					break;
-				}
+			const Analysis::InterferenceGraph::SymbolSet &set = simplifiedGraph.interferences(symbol);
+			if(set.size() < MaxRegisters) {
+				simplifiedGraph.removeSymbol(symbol);
+				stack.push_back(symbol);
+				removed = true;
+				break;
 			}
 		}
 
-		if(foundUnallocated) {
-			if(!removed) {
-				spillVariable(procedure, spillCandidate);
-				simplifiedGraph.removeSymbol(spillCandidate);
-				stack.push_back(spillCandidate);
-				spilled = true;
-			}
-		} else {
-			break;
+		if(!removed) {
+			spillVariable(procedure, spillCandidate);
+			simplifiedGraph.removeSymbol(spillCandidate);
+			stack.push_back(spillCandidate);
+			spilled = true;
 		}
 	}
 
@@ -185,6 +202,8 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		success = false;
 		return registers;
 	}
+
+	std::map<IR::Symbol*, int> preferredRegisters = getPreferredRegisters(procedure);
 
 	while(!stack.empty()) {
 		IR::Symbol *symbol = stack.back();
@@ -195,20 +214,19 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		for(int i=-1; i<MaxRegisters; i++) {
 			bool found = false;
 
-			int reg;
-			if(i == -1) {
+			int reg = i;
+			if(reg == -1) {
 				if(preferredRegisters.find(symbol) != preferredRegisters.end() && preferredRegisters[symbol] != -1) {
 					reg = preferredRegisters[symbol];
 				} else {
 					continue;
 				}
-			} else {
-				reg = i;
 			}
 
 			for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = set.begin(); symbolIt != set.end(); symbolIt++) {
 				IR::Symbol *otherSymbol = *symbolIt;
-				if(registers.find(otherSymbol) != registers.end() && registers.find(otherSymbol)->second == reg) {
+				std::map<IR::Symbol*, int>::iterator regIt = registers.find(otherSymbol);
+				if(regIt != registers.end() && regIt->second == reg) {
 					found = true;
 					break;
 				}
