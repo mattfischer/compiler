@@ -47,7 +47,6 @@ int main(int arg, char *argv[])
 	Middle::Optimizer::optimize(irProgram);
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
-	std::cout << std::endl;
 	std::cout << "Code:" << std::endl;
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
 		std::cout << "  " << vmProgram.instructions[i] << std::endl;

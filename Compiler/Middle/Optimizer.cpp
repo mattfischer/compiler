@@ -39,30 +39,10 @@ namespace Middle {
 		for(IR::Program::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
-			std::cout << "Start:" << std::endl;
-			procedure->print();
-			std::cout << std::endl;
-
 			Analysis::ReachingDefs reachingDefs(procedure);
 			Analysis::UseDefs useDefs(procedure);
 			Analysis::LiveVariables liveVariables(procedure);
 			Analysis::Loops loops(procedure);
-
-			std::cout << "Reaching Definitions:" << std::endl;
-			reachingDefs.print();
-			std::cout << std::endl;
-
-			std::cout << "Use-def chains:" << std::endl;
-			useDefs.print();
-			std::cout << std::endl;
-
-			std::cout << "Live Variables:" << std::endl;
-			liveVariables.print();
-			std::cout << std::endl;
-
-			std::cout << "Loops:" << std::endl;
-			loops.print();
-			std::cout << std::endl;
 
 			Util::UniqueQueue<Transform::Transform*> transforms;
 
@@ -76,10 +56,6 @@ namespace Middle {
 				transforms.pop();
 
 				bool changed = transform->transform(procedure);
-
-				printf("After %s:\n", transform->name().c_str());
-				procedure->print();
-				printf("\n");
 
 				if(changed) {
 					TransformVector &newTransforms = transformMap[transform];
