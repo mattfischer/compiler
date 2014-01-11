@@ -5,6 +5,7 @@
 
 #include "Analysis/InterferenceGraph.h"
 #include "Analysis/LiveVariables.h"
+#include "Analysis/Loops.h"
 
 #include "Front/Type.h"
 
@@ -15,6 +16,45 @@ namespace Back {
 
 static const int MaxRegisters = 13;
 static const int CallerSavedRegisters = 4;
+
+std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure)
+{
+	std::map<IR::Symbol*, int> costs;
+
+	Analysis::Loops loops(procedure);
+	Analysis::Loops::Loop *rootLoop = loops.rootLoop();
+
+	for(Analysis::FlowGraph::BlockSet::iterator blockIt = rootLoop->blocks.begin(); blockIt != rootLoop->blocks.end(); blockIt++) {
+		Analysis::FlowGraph::Block *block = *blockIt;
+
+		int cost = 1;
+		for(Analysis::Loops::LoopList::iterator loopIt = loops.loops().begin(); loopIt != loops.loops().end(); loopIt++) {
+			Analysis::Loops::Loop *loop = *loopIt;
+
+			if(loop->blocks.find(block) != loop->blocks.end()) {
+				cost *= 10;
+			}
+		}
+
+		for(IR::EntrySubList::iterator entryIt = block->entries.begin(); entryIt != block->entries.end(); entryIt++) {
+			IR::Entry *entry = *entryIt;
+
+			for(IR::Procedure::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
+				IR::Symbol *symbol = *symbolIt;
+
+				if(entry->assign() == symbol) {
+					costs[symbol] += cost;
+				}
+
+				if(entry->uses(symbol)) {
+					costs[symbol] += cost;
+				}
+			}
+		}
+	}
+
+	return costs;
+}
 
 void addInterferences(Analysis::InterferenceGraph &graph, const Analysis::InterferenceGraph::SymbolSet &symbols, IR::Symbol *symbol, IR::Symbol *exclude)
 {
@@ -163,6 +203,8 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 
 	addProcedureCallInterferences(graph, callerSavedRegisters, procedure, liveVariables);
 
+	std::map<IR::Symbol*, int> spillCosts = getSpillCosts(procedure);
+
 	std::vector<IR::Symbol*> stack;
 	Analysis::InterferenceGraph simplifiedGraph(graph);
 	bool spilled = false;
@@ -173,7 +215,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
 			IR::Symbol *symbol = *symbolIt;
 
-			if(!spillCandidate) {
+			if(!spillCandidate || spillCosts[symbol] < spillCosts[spillCandidate]) {
 				spillCandidate = symbol;
 			}
 
