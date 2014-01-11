@@ -30,8 +30,7 @@ namespace IR {
 		printf("%sBody:\n", prefix.c_str());
 		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			entry->print(prefix + "  ");
-			printf("\n");
+			std::cout << prefix << *entry << std::endl;
 		}
 		printf("%s\n", prefix.c_str());
 

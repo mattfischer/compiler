@@ -2,6 +2,7 @@
 #define IR_ENTRY_H
 
 #include <string>
+#include <iostream>
 
 namespace IR {
 	class Block;
@@ -44,7 +45,7 @@ namespace IR {
 		Entry(Type _type) : type(_type), prev(0), next(0) {}
 		virtual ~Entry() {}
 
-		virtual void print(const std::string &prefix = "") {}
+		virtual void print(std::ostream &o) const {}
 
 		virtual Symbol *assign() { return 0; }
 		virtual bool uses(Symbol *symbol) { return false; }
@@ -60,7 +61,7 @@ namespace IR {
 		EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1 = 0, Symbol *_rhs2 = 0);
 		virtual ~EntryThreeAddr();
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 
 		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
@@ -75,7 +76,7 @@ namespace IR {
 		EntryOneAddrImm(Type _type, Symbol *_lhs, int _imm);
 		virtual ~EntryOneAddrImm();
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 
 		virtual Symbol *assign();
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
@@ -89,7 +90,7 @@ namespace IR {
 		EntryTwoAddrImm(Type _type, Symbol *_lhs, Symbol *_rhs, int _imm);
 		virtual ~EntryTwoAddrImm();
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 
 		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
@@ -102,7 +103,7 @@ namespace IR {
 
 		EntryLabel(const std::string &_name);
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 	};
 
 	struct EntryJump : public Entry {
@@ -110,7 +111,7 @@ namespace IR {
 
 		EntryJump(EntryLabel *_target);
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 	};
 
 	struct EntryCJump : public Entry {
@@ -121,7 +122,7 @@ namespace IR {
 		EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget);
 		virtual ~EntryCJump();
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 
 		virtual bool uses(Symbol *symbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
@@ -139,7 +140,7 @@ namespace IR {
 		void setArg(int num, Symbol *symbol);
 		void removeArg(int num);
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 
 		virtual Symbol *assign();
 		virtual bool uses(Symbol *symbol);
@@ -152,8 +153,10 @@ namespace IR {
 
 		EntryCall(Procedure *_target);
 
-		virtual void print(const std::string &prefix);
+		virtual void print(std::ostream &o) const;
 	};
+
+	std::ostream &operator<<(std::ostream &o, const Entry &entry);
 }
 
 #endif

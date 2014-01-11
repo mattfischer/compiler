@@ -46,7 +46,7 @@ namespace Analysis {
 	{
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			entry->print();
+			std::cout << *entry;
 			printf(" | ");
 			SymbolSet &symbols = variables(entry);
 			for(SymbolSet::iterator itSymbol = symbols.begin(); itSymbol != symbols.end(); itSymbol++) {

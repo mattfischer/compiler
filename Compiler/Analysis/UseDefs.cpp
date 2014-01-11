@@ -153,7 +153,7 @@ namespace Analysis {
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 			printf("%i: ", lineMap[entry]);
-			entry->print();
+			std::cout << *entry;
 
 			bool printedOpen = false;
 			{

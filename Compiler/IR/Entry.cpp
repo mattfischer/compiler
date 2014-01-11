@@ -39,23 +39,24 @@ namespace IR {
 	{
 	}
 
-	void EntryThreeAddr::print(const std::string &prefix)
+	void EntryThreeAddr::print(std::ostream &o) const
 	{
 		bool needComma = false;
-		printf("  %s%s", prefix.c_str(), names[type]);
+		o << "  " << names[type];
 
 		if(lhs) {
-			printf("%s", lhs->name.c_str());
+			o << lhs->name;
 			needComma = true;
 		}
 
 		if(rhs1) {
-			printf("%s%s", needComma ? ", " : "", rhs1->name.c_str());
+			o << (needComma ? ", " : "") << rhs1->name;
 			needComma = true;
 		}
 
-		if(rhs2)
-			printf("%s%s", needComma ? ", " : "", rhs2->name.c_str());
+		if(rhs2) {
+			o << (needComma ? ", " : "") << rhs2->name;
+		}
 	}
 
 	void EntryThreeAddr::replaceAssign(Symbol *symbol, Symbol *newSymbol)
@@ -93,14 +94,14 @@ namespace IR {
 	{
 	}
 
-	void EntryOneAddrImm::print(const std::string &prefix)
+	void EntryOneAddrImm::print(std::ostream &o) const
 	{
-		printf("  %s%s", prefix.c_str(), names[type]);
+		o << "  " << names[type];
 		if(lhs) {
-			printf("%s, ", lhs->name.c_str());
+			o << lhs->name << ", ";
 		}
 
-		printf("%i", imm);
+		o << imm;
 	}
 
 	void EntryOneAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
@@ -122,22 +123,22 @@ namespace IR {
 	{
 	}
 
-	void EntryTwoAddrImm::print(const std::string &prefix)
+	void EntryTwoAddrImm::print(std::ostream &o) const
 	{
 		bool needComma = false;
-		printf("  %s%s", prefix.c_str(), names[type]);
+		o << "  " << names[type];
 
 		if(lhs) {
-			printf("%s", lhs->name.c_str());
+			o << lhs->name;
 			needComma = true;
 		}
 
 		if(rhs) {
-			printf("%s%s", needComma ? ", " : "", rhs->name.c_str());
+			o << (needComma ? ", " : "") << rhs->name;
 			needComma = true;
 		}
 
-		printf("%s%i", needComma ? ", " : "", imm);
+		o << (needComma ? ", " : "") << imm;
 	}
 
 	void EntryTwoAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
@@ -167,9 +168,9 @@ namespace IR {
 	{
 	}
 
-	void EntryLabel::print(const std::string &prefix)
+	void EntryLabel::print(std::ostream &o) const
 	{
-		printf("%s%s:", prefix.c_str(), name.c_str());
+		o << name << ":";
 	}
 
 	EntryJump::EntryJump(EntryLabel *_target)
@@ -177,9 +178,9 @@ namespace IR {
 	{
 	}
 
-	void EntryJump::print(const std::string &prefix)
+	void EntryJump::print(std::ostream &o) const
 	{
-		printf("  %s%s%s", prefix.c_str(), names[type], target->name.c_str());
+		o << "  " << names[type] << target->name;
 	}
 
 	EntryCJump::EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
@@ -191,9 +192,9 @@ namespace IR {
 	{
 	}
 
-	void EntryCJump::print(const std::string &prefix)
+	void EntryCJump::print(std::ostream &o) const
 	{
-		printf("  %s%s%s, %s, %s", prefix.c_str(), names[type], pred->name.c_str(), trueTarget->name.c_str(), falseTarget->name.c_str());
+		o << "  " << names[type] << pred->name << ", " << trueTarget->name << ", " << falseTarget->name;
 	}
 
 	bool EntryCJump::uses(Symbol *symbol)
@@ -232,13 +233,13 @@ namespace IR {
 		numArgs--;
 	}
 
-	void EntryPhi::print(const std::string &prefix)
+	void EntryPhi::print(std::ostream &o) const
 	{
-		printf("  %s%s = PHI(", prefix.c_str(), lhs->name.c_str());
+		o << "  " << lhs->name << " = PHI(";
 		for(int i=0; i<numArgs; i++) {
-			printf("%s%s", args[i] ? args[i]->name.c_str() : "<none>", (i < numArgs - 1) ? ", " : "");
+			o << (args[i] ? args[i]->name.c_str() : "<none>") << ((i < numArgs - 1) ? ", " : "");
 		}
-		printf(")");
+		o << ")";
 	}
 
 	void EntryPhi::replaceAssign(Symbol *symbol, Symbol *newSymbol)
@@ -277,8 +278,15 @@ namespace IR {
 	{
 	}
 
-	void EntryCall::print(const std::string &prefix)
+	void EntryCall::print(std::ostream &o) const
 	{
-		printf("  %s%s%s", prefix.c_str(), names[type], target->name().c_str());
+		o << "  " << names[type] << target->name();
+	}
+
+	std::ostream &operator<<(std::ostream &o, const Entry &entry)
+	{
+		entry.print(o);
+
+		return o;
 	}
 }
