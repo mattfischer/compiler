@@ -1,7 +1,5 @@
 #include "VM/Instruction.h"
 
-#include <stdio.h>
-
 #include <sstream>
 
 namespace VM {

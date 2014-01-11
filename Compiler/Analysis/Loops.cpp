@@ -132,20 +132,20 @@ namespace Analysis {
 
 		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
 			Loop *loop = *itLoop;
-			printf("%i: ", loopMap[loop]);
+			std::cout << loopMap[loop] << ": ";
 			if(loop->parent != &mRootLoop) {
-				printf("parent: %i | ", loopMap[loop->parent]);
+				std::cout << "parent: " << loopMap[loop->parent] << " | ";
 			}
-			printf("header: %s | ", ((IR::EntryLabel*)loop->header->entries.front())->name.c_str());
+			std::cout << "header: " << ((IR::EntryLabel*)loop->header->entries.front())->name << " | ";
 			if(loop->preheader) {
-				printf("preheader: %s | ", ((IR::EntryLabel*)loop->preheader->entries.front())->name.c_str());
+				std::cout << "preheader: " << ((IR::EntryLabel*)loop->preheader->entries.front())->name << " | ";
 			}
-			printf("blocks: ");
+			std::cout << "blocks: ";
 			for(FlowGraph::BlockSet::iterator itBlock = loop->blocks.begin(); itBlock != loop->blocks.end(); itBlock++) {
 				FlowGraph::Block *block = *itBlock;
-				printf("%s ", ((IR::EntryLabel*)block->entries.front())->name.c_str());
+				std::cout << ((IR::EntryLabel*)block->entries.front())->name << " ";
 			}
-			printf("\n");
+			std::cout << std::endl;
 		}
 	}
 }

@@ -39,30 +39,30 @@ namespace Middle {
 		for(IR::Program::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
-			printf("Start:\n");
+			std::cout << "Start:" << std::endl;
 			procedure->print();
-			printf("\n");
+			std::cout << std::endl;
 
 			Analysis::ReachingDefs reachingDefs(procedure);
 			Analysis::UseDefs useDefs(procedure);
 			Analysis::LiveVariables liveVariables(procedure);
 			Analysis::Loops loops(procedure);
 
-			printf("Reaching Definitions:\n");
+			std::cout << "Reaching Definitions:" << std::endl;
 			reachingDefs.print();
-			printf("\n");
+			std::cout << std::endl;
 
-			printf("Use-def chains:\n");
+			std::cout << "Use-def chains:" << std::endl;
 			useDefs.print();
-			printf("\n");
+			std::cout << std::endl;
 
-			printf("Live Variables:\n");
+			std::cout << "Live Variables:" << std::endl;
 			liveVariables.print();
-			printf("\n");
+			std::cout << std::endl;
 
-			printf("Loops:\n");
+			std::cout << "Loops:" << std::endl;
 			loops.print();
-			printf("\n");
+			std::cout << std::endl;
 
 			Util::UniqueQueue<Transform::Transform*> transforms;
 

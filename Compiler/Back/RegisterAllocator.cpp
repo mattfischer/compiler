@@ -152,10 +152,6 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 	Analysis::InterferenceGraph graph(procedure);
 	Analysis::LiveVariables liveVariables(procedure);
 
-	printf("Try Allocate:\n");
-	procedure->print();
-	printf("\n");
-
 	std::vector<IR::Symbol*> callerSavedRegisters;
 	for(int i=0; i<CallerSavedRegisters; i++) {
 		std::stringstream s;

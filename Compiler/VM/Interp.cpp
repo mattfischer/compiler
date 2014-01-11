@@ -24,7 +24,7 @@ namespace VM {
 							break;
 
 						case VM::OneAddrPrint:
-							printf("%i\n", regs[instr.u.one.reg]);
+							std::cout << int(regs[instr.u.one.reg]) << std::endl;
 							break;
 
 						case VM::OneAddrCall:

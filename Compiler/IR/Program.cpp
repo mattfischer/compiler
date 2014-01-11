@@ -33,7 +33,7 @@ namespace IR {
 	{
 		for(ProcedureList::const_iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
 			Procedure *procedure = *it;
-			printf("<%s>\n", procedure->name().c_str());
+			std::cout << "<" << procedure->name() << ">" << std::endl;
 			procedure->print("  ");
 		}
 	}

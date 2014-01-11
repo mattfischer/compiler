@@ -6,8 +6,6 @@
 
 #include "Analysis/ReachingDefs.h"
 
-#include <stdio.h>
-
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet;
 
@@ -152,8 +150,7 @@ namespace Analysis {
 
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			printf("%i: ", lineMap[entry]);
-			std::cout << *entry;
+			std::cout << lineMap[entry] << ": " << *entry;
 
 			bool printedOpen = false;
 			{
@@ -161,11 +158,11 @@ namespace Analysis {
 				if(it != mUses.end()) {
 					const IR::EntrySet &u = it->second;
 					if(!u.empty()) {
-						printf(" [ Uses: ");
+						std::cout << " [ Uses: ";
 						printedOpen = true;
 						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
 							IR::Entry *e = *it;
-							printf("%i ", lineMap[e]);
+							std::cout << lineMap[e] << " ";
 						}
 					}
 				}
@@ -177,24 +174,24 @@ namespace Analysis {
 					const SymbolToEntrySetMap &defs = it->second;
 					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
 						if(printedOpen) {
-							printf("| ");
+							std::cout << "| ";
 						} else {
-							printf(" [ ");
+							std::cout << " [ ";
 							printedOpen = true;
 						}
-						printf("Defs (%s): ", it->first->name.c_str());
+						std::cout << "Defs (" << it->first->name << "): ";
 						for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
 							IR::Entry *e = *it2;
-							printf("%i ", lineMap[e]);
+							std::cout << lineMap[e] << " ";
 						}
 					}
 				}
 			}
 
 			if(printedOpen) {
-				printf("]");
+				std::cout << "]";
 			}
-			printf("\n");
+			std::cout << std::endl;
 		}
 	}
 }

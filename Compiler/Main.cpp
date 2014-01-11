@@ -12,8 +12,6 @@
 
 #include "Analysis/InterferenceGraph.h"
 
-#include <stdio.h>
-
 #include <iostream>
 
 int main(int arg, char *argv[])
@@ -23,7 +21,7 @@ int main(int arg, char *argv[])
 
 	Front::Node *node = parser.parse();
 	if(!node) {
-		printf("Error, line %i column %i: %s\n", parser.errorLine(), parser.errorColumn(), parser.errorMessage().c_str());
+		std::cout << "Error, line " << parser.errorLine() << " column " << parser.errorColumn() << ": " << parser.errorMessage() << std::endl;
 		return 1;
 	}
 
@@ -45,13 +43,14 @@ int main(int arg, char *argv[])
 	Middle::Optimizer::optimize(irProgram);
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
-	printf("\nCode:\n");
+	std::cout << std::endl;
+	std::cout << "Code:" << std::endl;
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
 		std::cout << "  " << vmProgram.instructions[i] << std::endl;
 	}
-	printf("\n");
+	std::cout << std::endl;
 
-	printf("Output:\n");
+	std::cout << "Output:" << std::endl;
 	VM::Interp::run(vmProgram);
 
 	return 0;

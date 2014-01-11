@@ -3,7 +3,7 @@
 #include "Front/Node.h"
 #include "Front/Type.h"
 
-#include <stdio.h>
+#include <iostream>
 
 namespace Front {
 	Interpreter::Interpreter(Node *tree)
@@ -40,9 +40,9 @@ namespace Front {
 
 					Type *type = node->children[0]->type;
 					if(type == TypeInt)
-						printf("%i\n", result);
+						std::cout << result << std::endl;
 					else if(type == TypeBool)
-						printf("%s\n", (result == 1) ? "true" : "false");
+						std::cout << ((result == 1) ? "true" : "false") << std::endl;
 
 					break;
 				}

@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <iostream>
 
 #include "IR/EntryList.h"
 

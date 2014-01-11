@@ -21,53 +21,18 @@ namespace IR {
 
 	void Procedure::print(const std::string &prefix)
 	{
-		printf("%sSymbols:\n", prefix.c_str());
+		std::cout << prefix << "Symbols:" << std::endl;
 		for(SymbolList::const_iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
 			Symbol *symbol = *it;
-			printf("%s%s %s\n", (prefix + "  ").c_str(), symbol->type->name.c_str(), symbol->name.c_str());
+			std::cout << prefix << "  " << symbol->type->name << " " << symbol->name << std::endl;
 		}
-		printf("%s\n", prefix.c_str());
-		printf("%sBody:\n", prefix.c_str());
+		std::cout << prefix << std::endl;
+		std::cout << prefix << "Body:" << std::endl;
 		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 			std::cout << prefix << *entry << std::endl;
 		}
-		printf("%s\n", prefix.c_str());
-
-		/*	
-		printf("Graph:\n");
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			Block *block = mBlocks[i];
-			printf("%i -> ", block->number);
-			for(unsigned int j=0; j<block->succ.size(); j++)
-				printf("%i ", block->succ[j]->number);
-			printf("\n");
-		}
-		printf("\n");
-		*/
-
-		/*	
-		printf("Dominator tree:\n");
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			Block *block = mBlocks[i];
-
-			printf("%i -> %i\n", block->number, block->idom->number);
-		}
-		printf("\n");
-		*/
-
-		/*
-		printf("Dominance frontiers:\n");
-		for(unsigned int i=0; i<mBlocks.size(); i++) {
-			Block *block = mBlocks[i];
-
-			printf("%i -> ", block->number);
-			for(unsigned int j=0; j<block->domFrontiers.size(); j++)
-				printf("%i ", block->domFrontiers[j]->number);
-			printf("\n");
-		}
-		printf("\n");
-		*/
+		std::cout << prefix << std::endl;
 	}
 
 	Symbol *Procedure::newTemp(Front::Type *type)
