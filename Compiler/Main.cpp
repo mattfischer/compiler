@@ -27,16 +27,20 @@ int main(int arg, char *argv[])
 
 	Front::TypeChecker typeChecker;
 	IR::Program *irProgram = 0;
-	if(typeChecker.check(node)) {
-		Front::IRGenerator generator;
-		irProgram = generator.generate(node);
+	if(!typeChecker.check(node)) {
+		std::cout << "Error, line " << typeChecker.errorLine() << ": " << typeChecker.errorMessage() << std::endl;
+		return 1;
 	}
 
+	Front::IRGenerator generator;
+	irProgram = generator.generate(node);
 	if(!irProgram) {
 		return 1;
 	}
 
-	if(!Middle::ErrorCheck::check(irProgram)) {
+	Middle::ErrorCheck errorCheck;
+	if(!errorCheck.check(irProgram)) {
+		std::cout << "Error, procedure " << errorCheck.errorProcedure() << ": " << errorCheck.errorMessage() << std::endl;
 		return 1;
 	}
 

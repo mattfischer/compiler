@@ -8,6 +8,7 @@
 #include "Analysis/FlowGraph.h"
 
 #include <iostream>
+#include <sstream>
 
 namespace Middle {
 	bool ErrorCheck::check(IR::Program *program)
@@ -19,7 +20,10 @@ namespace Middle {
 			Analysis::LiveVariables::SymbolSet symbols = liveVariables.variables(procedure->entries().front());
 			if(symbols.size() != 0) {
 				IR::Symbol *symbol = *symbols.begin();
-				std::cout << "Error: Use of undefined variable " << symbol->name << " in procedure " << procedure->name() << std::endl;
+				std::stringstream s;
+				s << "Use of undefined variable " << symbol->name;
+				mErrorMessage = s.str();
+				mErrorProcedure = procedure;
 				return false;
 			}
 
@@ -51,7 +55,10 @@ namespace Middle {
 				}
 
 				if(block == flowGraph.start()) {
-					std::cout << "Error: Control reaches end of procedure " << procedure->name() << " without return" << std::endl;
+					std::stringstream s;
+					s << "Control reaches end of procedure without return";
+					mErrorMessage = s.str();
+					mErrorProcedure = procedure;
 					return false;
 				}
 

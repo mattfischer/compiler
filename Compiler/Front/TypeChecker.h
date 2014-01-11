@@ -13,6 +13,9 @@ namespace Front {
 	public:
 		bool check(Node *tree);
 
+		int errorLine() { return mErrorLine; }
+		const std::string &errorMessage() { return mErrorMessage; }
+
 	private:
 		struct Symbol {
 			Type *type;
@@ -24,14 +27,11 @@ namespace Front {
 
 		class Scope {
 		public:
-			Scope(TypeChecker &typeChecker);
-
 			bool addSymbol(const std::string &typeName, const std::string &name, Node *tree);
 			bool addSymbol(Symbol *symbol);
 			Symbol *findSymbol(const std::string &name);
 
 		private:
-			TypeChecker &mTypeChecker;
 			std::vector<Symbol*> mSymbols;
 		};
 
@@ -45,13 +45,14 @@ namespace Front {
 
 		std::vector<Procedure*> mProcedures;
 
-		bool check(Node *tree, Procedure *procedure, Scope &scope);
-		bool checkChildren(Node *tree, Procedure *procedure, Scope &scope);
+		int mErrorLine;
+		std::string mErrorMessage;
+
+		void check(Node *tree, Procedure *procedure, Scope &scope);
+		void checkChildren(Node *tree, Procedure *procedure, Scope &scope);
 
 		Procedure *addProcedure(Node *tree);
 		Procedure *findProcedure(const std::string &name);
-
-		void error(Node *node, char *fmt, ...);
 	};
 }
 #endif

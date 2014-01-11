@@ -3,45 +3,55 @@
 #include "Front/Node.h"
 #include "Front/Type.h"
 
+#include <exception>
+#include <sstream>
 #include <stdio.h>
 #include <stdarg.h>
 
 namespace Front {
+
+	class TypeError : public std::exception {
+	public:
+		TypeError(Node *node, const std::string &message)
+			: mNode(node), mMessage(message)
+		{}
+
+		Node *node() { return mNode; }
+		const std::string &message() { return mMessage; }
+
+	private:
+		Node *mNode;
+		std::string mMessage;
+	};
+
 	bool TypeChecker::check(Node *node)
 	{
-		bool result = true;
-
-		for(unsigned int i=0; i<node->children.size(); i++) {
-			Node *child = node->children[i];
-			Procedure *procedure = addProcedure(child);
-			if(procedure) {
-				Scope scope(*this);
+		try {
+			for(unsigned int i=0; i<node->children.size(); i++) {
+				Node *child = node->children[i];
+				Procedure *procedure = addProcedure(child);
+				Scope scope;
 				for(unsigned int j=0; j<procedure->arguments.size(); j++) {
 					scope.addSymbol(procedure->arguments[j]);
 				}
-				result = check(child->children[2], procedure, scope);
-			} else {
-				result = false;
+				check(child->children[2], procedure, scope);
+				child->type = TypeNone;
 			}
-
-			if(!result) {
-				break;
-			}
-
-			child->type = TypeNone;
+		} catch(TypeError error) {
+			mErrorLine = error.node()->line;
+			mErrorMessage = error.message();
+			return false;
 		}
 
-		return result;
+		return true;
 	}
 
-	bool TypeChecker::check(Node *node, Procedure *procedure, Scope &scope)
+	void TypeChecker::check(Node *node, Procedure *procedure, Scope &scope)
 	{
-		bool result = true;
-
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
 			case Node::NodeTypePrint:
-				result = checkChildren(node, procedure, scope);
+				checkChildren(node, procedure, scope);
 				node->type = TypeNone;
 				break;
 
@@ -54,92 +64,81 @@ namespace Front {
 								for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 									check(node->children[1]->children[i], procedure, scope);
 									if(node->children[1]->children[i]->type != procedure->arguments[i]->type) {
-										error(node, "Type mismatch on argument %i of procedure %s", i, procedure->name.c_str());
-										result = false;
-										break;
+										std::stringstream s;
+										s << "Type mismatch on argument " << i << " of procedure " << procedure->name;
+										throw TypeError(node, s.str());
 									}
 								}
 								node->type = procedure->returnType;
 							} else {
-								error(node, "Incorrect number of arguments to procedure %s", procedure->name.c_str());
-								result = false;
+								std::stringstream s;
+								s << "Incorrect number of arguments to procedure " << procedure->name;
+								throw TypeError(node, s.str());
 							}
 						} else {
-							error(node, "Undeclared procedure %s", node->children[0]->lexVal.s);
-							result = false;
+							std::stringstream s;
+							s << "Undeclared procedure " << node->children[0]->lexVal.s;
+							throw TypeError(node, s.str());
 						}
 					} else {
-						error(node, "Function call performed on non-function");
-						result = false;
+						throw TypeError(node, "Function call performed on non-function");
 					}
 				break;
 				}
 
 			case Node::NodeTypeVarDecl:
-				result = scope.addSymbol(node->children[0]->lexVal.s, node->lexVal.s, node);
+				scope.addSymbol(node->children[0]->lexVal.s, node->lexVal.s, node);
 				node->type = TypeNone;
 				break;
 
 			case Node::NodeTypeAssign:
-				result = checkChildren(node, procedure, scope);
-				if(result) {
-					if(node->children[0]->nodeType == Node::NodeTypeId) {
-						std::string name = node->children[0]->lexVal.s;
-						Symbol *symbol = scope.findSymbol(name);
-						if(symbol) {
-							if(symbol->type != node->children[1]->type) {
-								error(node, "Type mismatch");
-								result = false;
-							}
-						} else {
-							error(node, "Undeclared variable '%s'", name);
-							result = false;
+				checkChildren(node, procedure, scope);
+				if(node->children[0]->nodeType == Node::NodeTypeId) {
+					std::string name = node->children[0]->lexVal.s;
+					Symbol *symbol = scope.findSymbol(name);
+					if(symbol) {
+						if(symbol->type != node->children[1]->type) {
+							throw TypeError(node, "Type mismatch");
 						}
 					} else {
-						error(node, "Lvalue required");
-						result = false;
+						std::stringstream s;
+						s << "Undeclared variable '" << name << "'";
+						throw TypeError(node, s.str());
 					}
-					node->type = node->children[1]->type;
+				} else {
+					throw TypeError(node, "Lvalue required");
 				}
+				node->type = node->children[1]->type;
 				break;
 
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:
-				result = checkChildren(node, procedure, scope);
-				if(result) {
-					if(node->children[0]->type != TypeBool) {
-						error(node, "Type mismatch");
-						result = false;
-					}
-
-					node->type = TypeNone;
+				checkChildren(node, procedure, scope);
+				if(node->children[0]->type != TypeBool) {
+					throw TypeError(node, "Type mismatch");
 				}
+
+				node->type = TypeNone;
 				break;
 
 			case Node::NodeTypeCompare:
-				result = checkChildren(node, procedure, scope);
+				checkChildren(node, procedure, scope);
 
-				if(result) {
-					if(node->children[0]->type != TypeInt ||
-						node->children[1]->type != TypeInt) {
-							error(node, "Type mismatch");
-							result = false;
-					}
-					node->type = TypeBool;
+				if(node->children[0]->type != TypeInt ||
+					node->children[1]->type != TypeInt) {
+						throw TypeError(node, "Type mismatch");
 				}
+				node->type = TypeBool;
 				break;
 
 			case Node::NodeTypeArith:
-				result = checkChildren(node, procedure, scope);
+				checkChildren(node, procedure, scope);
 
-				if(result) {
-					if(node->children[0]->type != TypeInt ||
-						node->children[1]->type != TypeInt) {
-							error(node, "Type mismatch");
-							result = false;
-					}
-					node->type = TypeInt;
+				if(node->children[0]->type != TypeInt ||
+					node->children[1]->type != TypeInt) {
+						throw TypeError(node, "Type mismatch");
 				}
+				node->type = TypeInt;
 				break;
 
 			case Node::NodeTypeId:
@@ -147,8 +146,9 @@ namespace Front {
 					std::string name = node->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
 					if(!symbol) {
-						error(node, "Undefined variable '%s'", name);
-						return false;
+						std::stringstream s;
+						s << "Undefined variable '" << name << "'";
+						throw TypeError(node, s.str());
 					}
 
 					node->type = symbol->type;
@@ -162,38 +162,27 @@ namespace Front {
 			case Node::NodeTypeReturn:
 				check(node->children[0], procedure, scope);
 				if(node->children[0]->type != procedure->returnType) {
-					error(node, "Type mismatch");
-					return false;
+					throw TypeError(node, "Type mismatch");
 				}
 				node->type = TypeNone;
 				break;
 		}
-
-		return result;
 	}
 
-	bool TypeChecker::checkChildren(Node *node, Procedure *procedure, Scope &scope)
+	void TypeChecker::checkChildren(Node *node, Procedure *procedure, Scope &scope)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
-			bool result = check(node->children[i], procedure, scope);
-			if(!result) {
-				return false;
-			}
+			check(node->children[i], procedure, scope);
 		}
-		return true;
-	}
-
-	TypeChecker::Scope::Scope(TypeChecker &typeChecker)
-		: mTypeChecker(typeChecker)
-	{
 	}
 
 	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, Node *node)
 	{
 		Type *type = Type::find(typeName);
 		if(!type) {
-			mTypeChecker.error(node, "Error: Type '%s' not found.\n", typeName.c_str());
-			return false;
+			std::stringstream s;
+			s << "Type '" << typeName << "' not found.";
+			throw TypeError(node, s.str());
 		}
 		
 		Symbol *symbol = new Symbol(type, name);
@@ -226,8 +215,9 @@ namespace Front {
 		std::string typeName = node->children[0]->lexVal.s;
 		Type *returnType = Type::find(typeName);
 		if(!returnType) {
-			error(node, "Error: Type '%s' not found.\n", typeName);
-			return 0;
+			std::stringstream s;
+			s << "Type '" << typeName << "' not found.";
+			throw TypeError(node, s.str());
 		}
 
 		std::vector<Symbol*> arguments;
@@ -236,8 +226,9 @@ namespace Front {
 			std::string argTypeName = decl->children[0]->lexVal.s;
 			Type *type = Type::find(argTypeName);
 			if(!type) {
-				error(node, "Error: Type '%s' not found.\n", argTypeName);
-				return 0;
+				std::stringstream s;
+				s << "Type '" << argTypeName << "' not found.";
+				throw TypeError(node, s.str());
 			}
 			arguments.push_back(new Symbol(type, decl->lexVal.s));
 		}
@@ -257,17 +248,5 @@ namespace Front {
 		}
 
 		return 0;
-	}
-
-	void TypeChecker::error(Node *node, char *fmt, ...)
-	{
-		va_list args;
-		va_start(args, fmt);
-
-		printf("Error, line %i: ", node->line);
-		vprintf(fmt, args);
-		printf("\n");
-
-		va_end(args);
 	}
 }
