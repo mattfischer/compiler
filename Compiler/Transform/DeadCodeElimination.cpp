@@ -109,8 +109,8 @@ namespace Transform {
 			}
 		}
 
-		IR::Procedure::SymbolList::iterator itSymbolNext;
-		for(IR::Procedure::SymbolList::iterator itSymbol = procedure->symbols().begin(); itSymbol != procedure->symbols().end(); itSymbol = itSymbolNext) {
+		IR::SymbolList::iterator itSymbolNext;
+		for(IR::SymbolList::iterator itSymbol = procedure->symbols().begin(); itSymbol != procedure->symbols().end(); itSymbol = itSymbolNext) {
 			IR::Symbol *symbol = *itSymbol;
 			itSymbolNext = itSymbol;
 			itSymbolNext++;

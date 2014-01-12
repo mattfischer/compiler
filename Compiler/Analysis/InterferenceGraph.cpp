@@ -7,13 +7,13 @@
 
 namespace Analysis {
 
-InterferenceGraph::SymbolSet emptySymbolSet;
+IR::SymbolSet emptySymbolSet;
 
 InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
 {
 	LiveVariables liveVariables(procedure);
 
-	for(IR::Procedure::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
+	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
 		IR::Symbol *symbol = *symbolIt;
 		addSymbol(symbol);
 	}
@@ -21,12 +21,12 @@ InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
 
-		LiveVariables::SymbolSet &symbols = liveVariables.variables(entry);
+		IR::SymbolSet &symbols = liveVariables.variables(entry);
 
-		for(LiveVariables::SymbolSet::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
+		for(IR::SymbolSet::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
 			IR::Symbol *symbol1 = *symbolIt1;
 
-			for(LiveVariables::SymbolSet::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
+			for(IR::SymbolSet::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
 				IR::Symbol *symbol2 = *symbolIt2;
 
 				addEdge(symbol1, symbol2);
@@ -66,14 +66,14 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
 	mSymbols.erase(mSymbols.find(symbol));
 
 	for(SymbolToSymbolSetMap::iterator it = mGraph.begin(); it != mGraph.end(); it++) {
-		SymbolSet &set = it->second;
+		IR::SymbolSet &set = it->second;
 		if(set.find(symbol) != set.end()) {
 			set.erase(set.find(symbol));
 		}
 	}
 }
 
-const InterferenceGraph::SymbolSet &InterferenceGraph::interferences(IR::Symbol *symbol)
+const IR::SymbolSet &InterferenceGraph::interferences(IR::Symbol *symbol)
 {
 	SymbolToSymbolSetMap::const_iterator it = mGraph.find(symbol);
 
@@ -84,7 +84,7 @@ const InterferenceGraph::SymbolSet &InterferenceGraph::interferences(IR::Symbol 
 	}
 }
 
-const InterferenceGraph::SymbolSet &InterferenceGraph::symbols()
+const IR::SymbolSet &InterferenceGraph::symbols()
 {
 	return mSymbols;
 }

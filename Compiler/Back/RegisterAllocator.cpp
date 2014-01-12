@@ -40,7 +40,7 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure)
 		for(IR::EntrySubList::iterator entryIt = block->entries.begin(); entryIt != block->entries.end(); entryIt++) {
 			IR::Entry *entry = *entryIt;
 
-			for(IR::Procedure::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
+			for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
 				IR::Symbol *symbol = *symbolIt;
 
 				if(entry->assign() == symbol) {
@@ -57,9 +57,9 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure)
 	return costs;
 }
 
-void addInterferences(Analysis::InterferenceGraph &graph, const Analysis::InterferenceGraph::SymbolSet &symbols, IR::Symbol *symbol, IR::Symbol *exclude)
+void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &symbols, IR::Symbol *symbol, IR::Symbol *exclude)
 {
-	for(Analysis::LiveVariables::SymbolSet::const_iterator symbolIt = symbols.begin(); symbolIt != symbols.end(); symbolIt++) {
+	for(IR::SymbolSet::const_iterator symbolIt = symbols.begin(); symbolIt != symbols.end(); symbolIt++) {
 		IR::Symbol *otherSymbol = *symbolIt;
 		if(otherSymbol != exclude) {
 			graph.addEdge(symbol, otherSymbol);
@@ -74,7 +74,7 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 		IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
 
-		const Analysis::LiveVariables::SymbolSet &variables = liveVariables.variables(entry);
+		const IR::SymbolSet &variables = liveVariables.variables(entry);
 
 		switch(entry->type) {
 			case IR::Entry::TypeCall:
@@ -154,7 +154,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	int idx = 0;
 
 	bool live = false;
-	Analysis::LiveVariables::SymbolSet liveSet;
+	IR::SymbolSet liveSet;
 	IR::EntrySet neededDefs;
 	IR::EntrySet spillLoads;
 
@@ -203,8 +203,8 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		if(entry->type == IR::Entry::TypeLabel) {
 			live = false;
 		} else if(live) {
-			Analysis::LiveVariables::SymbolSet &currentVariables = liveVariables.variables(entry);
-			for(Analysis::LiveVariables::SymbolSet::iterator symbolIt = liveSet.begin(); symbolIt != liveSet.end(); symbolIt++) {
+			IR::SymbolSet &currentVariables = liveVariables.variables(entry);
+			for(IR::SymbolSet::iterator symbolIt = liveSet.begin(); symbolIt != liveSet.end(); symbolIt++) {
 				IR::Symbol *s = *symbolIt;
 
 				if(currentVariables.find(s) == currentVariables.end()) {
@@ -284,14 +284,14 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 	while(simplifiedGraph.symbols().size() > 0) {
 		bool removed = false;
 		IR::Symbol *spillCandidate = 0;
-		for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
+		for(IR::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
 			IR::Symbol *symbol = *symbolIt;
 
 			if(!spillCandidate || spillCosts[symbol] < spillCosts[spillCandidate]) {
 				spillCandidate = symbol;
 			}
 
-			const Analysis::InterferenceGraph::SymbolSet &set = simplifiedGraph.interferences(symbol);
+			const IR::SymbolSet &set = simplifiedGraph.interferences(symbol);
 			if(set.size() < MaxRegisters) {
 				simplifiedGraph.removeSymbol(symbol);
 				stack.push_back(symbol);
@@ -319,7 +319,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		IR::Symbol *symbol = stack.back();
 		stack.pop_back();
 
-		const Analysis::InterferenceGraph::SymbolSet &set = graph.interferences(symbol);
+		const IR::SymbolSet &set = graph.interferences(symbol);
 
 		for(int i=-1; i<MaxRegisters; i++) {
 			bool found = false;
@@ -333,7 +333,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 				}
 			}
 
-			for(Analysis::InterferenceGraph::SymbolSet::const_iterator symbolIt = set.begin(); symbolIt != set.end(); symbolIt++) {
+			for(IR::SymbolSet::const_iterator symbolIt = set.begin(); symbolIt != set.end(); symbolIt++) {
 				IR::Symbol *otherSymbol = *symbolIt;
 				std::map<IR::Symbol*, int>::iterator regIt = registers.find(otherSymbol);
 				if(regIt != registers.end() && regIt->second == reg) {

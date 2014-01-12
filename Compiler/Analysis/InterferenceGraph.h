@@ -4,13 +4,7 @@
 #include "IR/Procedure.h"
 #include "IR/Symbol.h"
 
-#include <set>
 #include <map>
-
-namespace IR {
-	class Procedure;
-	class Symbol;
-}
 
 namespace Analysis {
 
@@ -22,15 +16,14 @@ public:
 	void addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2);
 	void removeSymbol(IR::Symbol *symbol);
 
-	typedef std::set<IR::Symbol*> SymbolSet;
-	const SymbolSet &interferences(IR::Symbol *symbol);
-	const SymbolSet &symbols();
+	const IR::SymbolSet &interferences(IR::Symbol *symbol);
+	const IR::SymbolSet &symbols();
 
 private:
-	typedef std::map<IR::Symbol*, SymbolSet> SymbolToSymbolSetMap;
+	typedef std::map<IR::Symbol*, IR::SymbolSet> SymbolToSymbolSetMap;
 
 	SymbolToSymbolSetMap mGraph;
-	SymbolSet mSymbols;
+	IR::SymbolSet mSymbols;
 };
 
 }

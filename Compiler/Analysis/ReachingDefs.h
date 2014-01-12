@@ -1,7 +1,6 @@
 #ifndef ANALYSIS_REACHING_DEFS_H
 #define ANALYSIS_REACHING_DEFS_H
 
-#include "IR/EntrySet.h"
 #include "IR/Symbol.h"
 #include "IR/Entry.h"
 #include "IR/Procedure.h"

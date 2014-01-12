@@ -36,7 +36,7 @@ namespace Middle {
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::ConstantProp::instance());
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::CopyProp::instance());
 
-		for(IR::Program::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
+		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
 			Analysis::ReachingDefs reachingDefs(procedure);

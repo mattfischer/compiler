@@ -46,7 +46,7 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure)
 
 	Analysis::UseDefs useDefs(procedure);
 
-	for(IR::Procedure::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
+	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
 		IR::Symbol *symbol = *symbolIt;
 		int idx = 0;
 

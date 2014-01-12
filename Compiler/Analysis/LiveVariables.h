@@ -13,12 +13,11 @@ namespace Analysis {
 	public:
 		LiveVariables(IR::Procedure *procedure);
 
-		typedef std::set<IR::Symbol*> SymbolSet;
-		SymbolSet &variables(IR::Entry *entry);
+		IR::SymbolSet &variables(IR::Entry *entry);
 		void print();
 
 	private:
-		std::map<IR::Entry*, SymbolSet> mMap;
+		std::map<IR::Entry*, IR::SymbolSet> mMap;
 		IR::Procedure *mProcedure;
 	};
 }

@@ -4,6 +4,8 @@
 #include "Front/Type.h"
 
 #include <string>
+#include <set>
+#include <list>
 
 namespace IR {
 	class Symbol {
@@ -13,5 +15,8 @@ namespace IR {
 
 		Symbol(const std::string &_name, Front::Type *_type) : name(_name), type(_type) {}
 	};
+
+	typedef std::set<Symbol*> SymbolSet;
+	typedef std::list<Symbol*> SymbolList;
 }
 #endif

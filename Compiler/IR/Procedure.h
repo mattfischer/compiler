@@ -2,6 +2,8 @@
 #define IR_PROCEDURE_H
 
 #include "IR/EntryList.h"
+#include "IR/Symbol.h"
+#include "IR/Entry.h"
 
 #include "Front/Type.h"
 
@@ -11,10 +13,6 @@
 #include <iostream>
 
 namespace IR {
-	class Symbol;
-	class Entry;
-	struct EntryLabel;
-
 	class Procedure {
 	public:
 		Procedure(const std::string &name);
@@ -26,7 +24,6 @@ namespace IR {
 		const std::string &name() const { return mName; }
 		EntryList &entries() { return mEntries; }
 
-		typedef std::list<Symbol*> SymbolList;
 		SymbolList &symbols() { return mSymbols; }
 		Symbol *newTemp(Front::Type *type);
 		Symbol *addSymbol(const std::string &name, Front::Type *type);
@@ -47,6 +44,8 @@ namespace IR {
 		int mNextLabel;
 		EntryList mEntries;
 	};
+
+	typedef std::list<Procedure*> ProcedureList;
 }
 
 #endif

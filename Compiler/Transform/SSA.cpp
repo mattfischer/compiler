@@ -30,7 +30,7 @@ namespace Transform {
 		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
-		for(IR::Procedure::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
+		for(IR::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
 			IR::Symbol *symbol = *symIt;
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 

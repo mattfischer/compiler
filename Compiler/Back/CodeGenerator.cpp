@@ -18,7 +18,7 @@ namespace Back {
 
 		std::map<IR::Procedure*, int> procedureMap;
 
-		for(IR::Program::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
+		for(IR::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
 			IR::Procedure *irProcedure = *itProc;
 			if(irProcedure->name() == "main") {
 				vmProgram.start = (int)vmProgram.instructions.size();

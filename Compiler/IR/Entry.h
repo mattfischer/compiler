@@ -5,6 +5,7 @@
 
 #include <string>
 #include <iostream>
+#include <set>
 
 namespace IR {
 	class Procedure;
@@ -157,6 +158,8 @@ namespace IR {
 	};
 
 	std::ostream &operator<<(std::ostream &o, const Entry &entry);
+
+	typedef std::set<Entry*> EntrySet;
 }
 
 #endif

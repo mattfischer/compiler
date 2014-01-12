@@ -11,7 +11,6 @@ namespace IR {
 		Program();
 
 		Procedure *main() { return mMain; }
-		typedef std::list<Procedure*> ProcedureList;
 		ProcedureList &procedures() { return mProcedures; }
 
 		void addProcedure(Procedure *procedure);

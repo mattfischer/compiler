@@ -13,11 +13,11 @@
 namespace Middle {
 	bool ErrorCheck::check(IR::Program *program)
 	{
-		for(IR::Program::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
+		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
 			Analysis::LiveVariables liveVariables(procedure);
-			Analysis::LiveVariables::SymbolSet symbols = liveVariables.variables(procedure->entries().front());
+			IR::SymbolSet symbols = liveVariables.variables(procedure->entries().front());
 			if(symbols.size() != 0) {
 				IR::Symbol *symbol = *symbols.begin();
 				std::stringstream s;

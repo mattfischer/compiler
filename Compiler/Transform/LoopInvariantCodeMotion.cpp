@@ -3,7 +3,6 @@
 #include "Analysis/Loops.h"
 #include "Analysis/FlowGraph.h"
 
-#include "IR/EntrySet.h"
 #include "IR/Procedure.h"
 
 namespace Transform {
