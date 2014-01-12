@@ -1,13 +1,13 @@
 #ifndef TYPE_CHECKER_H
 #define TYPE_CHECKER_H
 
+#include "Front/Node.h"
+#include "Front/Type.h"
+
 #include <string>
 #include <vector>
 
 namespace Front {
-	struct Node;
-	class Type;
-
 	class TypeChecker
 	{
 	public:

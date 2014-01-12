@@ -1,11 +1,9 @@
 #ifndef IR_SYMBOL_H
 #define IR_SYMBOL_H
 
-#include <string>
+#include "Front/Type.h"
 
-namespace Front {
-	class Type;
-}
+#include <string>
 
 namespace IR {
 	class Symbol {

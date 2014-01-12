@@ -1,13 +1,11 @@
 #ifndef TRANSFORM_SSA_H
 #define TRANSFORM_SSA_H
 
-#include <string>
-
 #include "Transform/Transform.h"
 
-namespace IR {
-	class Symbol;
-}
+#include "IR/Symbol.h"
+
+#include <string>
 
 namespace Transform {
 	class SSA : public Transform {

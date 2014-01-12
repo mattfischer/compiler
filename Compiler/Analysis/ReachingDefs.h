@@ -2,18 +2,15 @@
 #define ANALYSIS_REACHING_DEFS_H
 
 #include "IR/EntrySet.h"
+#include "IR/Symbol.h"
+#include "IR/Entry.h"
+#include "IR/Procedure.h"
 
 #include "Analysis/FlowGraph.h"
 
 #include <vector>
 #include <set>
 #include <map>
-
-namespace IR {
-	class Entry;
-	class Symbol;
-	class Procedure;
-}
 
 namespace Analysis {
 	class ReachingDefs {

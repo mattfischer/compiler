@@ -1,19 +1,16 @@
 #ifndef ANALYSIS_USE_DEFS_H
 #define ANALYSIS_USE_DEFS_H
 
-#include <map>
-#include <set>
-#include <vector>
-
 #include "IR/EntrySet.h"
+#include "IR/Entry.h"
+#include "IR/Symbol.h"
+#include "IR/Procedure.h"
 
 #include "Analysis/ReachingDefs.h"
 
-namespace IR {
-	class Entry;
-	class Symbol;
-	class Procedure;
-}
+#include <map>
+#include <set>
+#include <vector>
 
 namespace Analysis {
 	class UseDefs

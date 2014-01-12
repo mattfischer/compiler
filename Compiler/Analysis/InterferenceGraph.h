@@ -1,6 +1,9 @@
 #ifndef ANALYSIS_INTERFERENCE_GRAPH_H
 #define ANALYSIS_INTERFERENCE_GRAPH_H
 
+#include "IR/Procedure.h"
+#include "IR/Symbol.h"
+
 #include <set>
 #include <map>
 

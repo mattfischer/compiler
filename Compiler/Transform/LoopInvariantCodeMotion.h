@@ -2,11 +2,8 @@
 #define TRANSFORM_LOOP_INVARIANT_CODE_MOTION_H
 
 #include "Transform/Transform.h"
-#include "Analysis/Loops.h"
 
-namespace IR {
-	class Procedure;
-}
+#include "Analysis/Loops.h"
 
 namespace Transform {
 	class LoopInvariantCodeMotion : public Transform {

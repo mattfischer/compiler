@@ -1,11 +1,11 @@
 #ifndef IR_PROGRAM_H
 #define IR_PROGRAM_H
 
+#include "IR/Procedure.h"
+
 #include <list>
 
 namespace IR {
-	class Procedure;
-
 	class Program {
 	public:
 		Program();

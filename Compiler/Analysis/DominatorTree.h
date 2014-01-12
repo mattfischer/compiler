@@ -1,11 +1,11 @@
 #ifndef ANALYSIS_DOMINANCE_H
 #define ANALYSIS_DOMINANCE_H
 
+#include "Analysis/FlowGraph.h"
+
 #include <vector>
 #include <map>
 #include <set>
-
-#include "Analysis/FlowGraph.h"
 
 namespace Analysis {
 	class DominatorTree {

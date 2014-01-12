@@ -1,11 +1,11 @@
 #ifndef ANALYSIS_BLOCK_SORT_H
 #define ANALYSIS_BLOCK_SORT_H
 
+#include "Analysis/FlowGraph.h"
+
 #include <vector>
 #include <set>
 #include <map>
-
-#include "Analysis/FlowGraph.h"
 
 namespace Analysis {
 	class BlockSort {

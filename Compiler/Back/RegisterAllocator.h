@@ -1,12 +1,10 @@
 #ifndef BACK_REGISTER_ALLOCATOR_H
 #define BACK_REGISTER_ALLOCATOR_H
 
-#include <map>
+#include "IR/Symbol.h"
+#include "IR/Procedure.h"
 
-namespace IR {
-	class Symbol;
-	class Procedure;
-}
+#include <map>
 
 namespace Back {
 

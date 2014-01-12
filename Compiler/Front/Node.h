@@ -1,11 +1,11 @@
 #ifndef FRONT_NODE_H
 #define FRONT_NODE_H
 
+#include "Front/Type.h"
+
 #include <vector>
 
 namespace Front {
-	class Type;
-
 	struct Node {
 		enum NodeType {
 			NodeTypeList,

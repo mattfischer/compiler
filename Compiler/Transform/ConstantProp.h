@@ -3,14 +3,10 @@
 
 #include "Transform/Transform.h"
 
-namespace IR {
-	class Entry;
-	class Symbol;
-}
+#include "IR/Entry.h"
+#include "IR/Symbol.h"
 
-namespace Analysis {
-	class UseDefs;
-}
+#include "Analysis/UseDefs.h"
 
 namespace Transform {
 	class ConstantProp : public Transform {

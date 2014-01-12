@@ -1,14 +1,12 @@
 #ifndef ANALYSIS_LIVE_VARIABLES_H
 #define ANALYSIS_LIVE_VARIABLES_H
 
+#include "IR/Procedure.h"
+#include "IR/Symbol.h"
+#include "IR/Entry.h"
+
 #include <set>
 #include <map>
-
-namespace IR {
-	class Procedure;
-	class Symbol;
-	class Entry;
-}
 
 namespace Analysis {
 	class LiveVariables {

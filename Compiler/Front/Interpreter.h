@@ -1,12 +1,12 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
+#include "Front/Node.h"
+#include "Front/Type.h"
+
 #include <vector>
 
 namespace Front {
-	struct Node;
-	class Type;
-
 	class Interpreter
 	{
 	public:

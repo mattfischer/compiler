@@ -1,12 +1,12 @@
 #ifndef IR_ENTRY_H
 #define IR_ENTRY_H
 
+#include "IR/Symbol.h"
+
 #include <string>
 #include <iostream>
 
 namespace IR {
-	class Block;
-	class Symbol;
 	class Procedure;
 
 	class Entry {

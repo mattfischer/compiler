@@ -1,12 +1,10 @@
 #ifndef MIDDLE_ERROR_CHECK_H
 #define MIDDLE_ERROR_CHECK_H
 
-#include <string>
+#include "IR/Program.h"
+#include "IR/Procedure.h"
 
-namespace IR {
-	class Program;
-	class Procedure;
-}
+#include <string>
 
 namespace Middle {
 	class ErrorCheck {

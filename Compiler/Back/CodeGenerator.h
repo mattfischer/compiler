@@ -1,15 +1,13 @@
 #ifndef BACK_CODE_GENERATOR_H
 #define BACK_CODE_GENERATOR_H
 
-#include <vector>
-#include <map>
-
 #include "VM/Program.h"
 
-namespace IR {
-	class Procedure;
-	class Program;
-}
+#include "IR/Procedure.h"
+#include "IR/Program.h"
+
+#include <vector>
+#include <map>
 
 namespace Back {
 	class CodeGenerator {

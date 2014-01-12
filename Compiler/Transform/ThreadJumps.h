@@ -3,9 +3,7 @@
 
 #include "Transform/Transform.h"
 
-namespace IR {
-	struct EntryLabel;
-}
+#include "IR/Entry.h"
 
 namespace Transform {
 	class ThreadJumps : public Transform {

@@ -3,9 +3,7 @@
 
 #include <string>
 
-namespace IR {
-	class Procedure;
-}
+#include "IR/Procedure.h"
 
 namespace Transform {
 	class Transform {

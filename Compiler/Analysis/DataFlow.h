@@ -5,12 +5,10 @@
 
 #include "Util/UniqueQueue.h"
 
+#include "IR/Entry.h"
+
 #include <map>
 #include <set>
-
-namespace IR {
-	class Entry;
-}
 
 namespace Analysis {
 	template<typename T>

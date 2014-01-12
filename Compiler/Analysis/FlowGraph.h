@@ -1,19 +1,15 @@
 #ifndef ANALYSIS_FLOW_GRAPH_H
 #define ANALYSIS_FLOW_GRAPH_H
 
+#include "IR/Entry.h"
+#include "IR/EntryList.h"
+#include "IR/EntrySubList.h"
+#include "IR/Procedure.h"
+
 #include <set>
 #include <vector>
 #include <map>
 #include <list>
-
-#include "IR/Entry.h"
-#include "IR/EntryList.h"
-#include "IR/EntrySubList.h"
-
-namespace IR {
-	class Entry;
-	class Procedure;
-};
 
 namespace Analysis {
 	class FlowGraph {

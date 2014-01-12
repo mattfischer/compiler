@@ -1,16 +1,14 @@
 #ifndef IR_PROCEDURE_H
 #define IR_PROCEDURE_H
 
+#include "IR/EntryList.h"
+
+#include "Front/Type.h"
+
 #include <string>
 #include <list>
 #include <vector>
 #include <iostream>
-
-#include "IR/EntryList.h"
-
-namespace Front {
-	class Type;
-}
 
 namespace IR {
 	class Symbol;
