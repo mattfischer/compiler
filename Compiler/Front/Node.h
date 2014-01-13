@@ -6,44 +6,56 @@
 #include <vector>
 
 namespace Front {
+	/*!
+	 * \brief Abstract syntax tree node
+	 */
 	struct Node {
+		/*!
+		 * \brief Node type
+		 */
 		enum NodeType {
-			NodeTypeList,
-			NodeTypeProcedureDef,
-			NodeTypeVarDecl,
-			NodeTypeReturn,
-			NodeTypePrint,
-			NodeTypeAssign,
-			NodeTypeIf,
-			NodeTypeWhile,
-			NodeTypeCompare,
-			NodeTypeArith,
-			NodeTypeConstant,
-			NodeTypeId,
-			NodeTypeCall
+			NodeTypeList, //!< Generic list of nodes
+			NodeTypeProcedureDef, //!< Procedure definition
+			NodeTypeVarDecl, //!< Variable declaration
+			NodeTypeReturn, //!< Return statement
+			NodeTypePrint, //!< Print statement
+			NodeTypeAssign, //!< Assignment operator
+			NodeTypeIf, //!< If statement
+			NodeTypeWhile, //!< While statement
+			NodeTypeCompare, //!< Comparison operators
+			NodeTypeArith, //!< Arithmetic operators
+			NodeTypeConstant, //!< Numeric constant
+			NodeTypeId, //!< Identifier
+			NodeTypeCall //!< Procedure call
 		};
 
+		/*!
+		 * \brief Node subtype, for node types which require it
+		 */
 		enum NodeSubtype {
-			NodeSubtypeNone,
+			NodeSubtypeNone, //!< No subtype
 
-			NodeSubtypeAdd,
-			NodeSubtypeMultiply,
+			NodeSubtypeAdd, //!< Addition operator
+			NodeSubtypeMultiply, //!< Multiplication operator
 
-			NodeSubtypeEqual,
-			NodeSubtypeNequal
+			NodeSubtypeEqual, //!< Equality comparison
+			NodeSubtypeNequal //!< Inequality comparison
 		};
 
-		NodeType nodeType;
-		NodeSubtype nodeSubtype;
-		int line;
-		std::vector<Node*> children;
-		Type *type;
+		NodeType nodeType; //!< Node type
+		NodeSubtype nodeSubtype; //!< Node subtype
+		int line; //!< Line in source file corresponding to node
+		std::vector<Node*> children; //!< Children of node
+		Type *type; //!< Assigned type of language element represented by node
 
+		/*!
+		 * \brief Structure containing various lexical types that can be associated with the node
+		 */
 		struct LexVal {
-			int i;
-			std::string s;
+			int i; //!< Integer value
+			std::string s; //!< String value
 		};
-		LexVal lexVal;
+		LexVal lexVal; //!< Lexical value from tokenizer
 	};
 }
 

@@ -10,10 +10,11 @@
 #include <string>
 
 namespace Front {
+	/*!
+	 * \brief Generates an IR instruction stream from a program syntax tree
+	 */
 	class IRGenerator {
 	public:
-		IRGenerator();
-
 		IR::Program *generate(Node *tree);
 
 	private:

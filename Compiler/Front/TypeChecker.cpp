@@ -10,26 +10,42 @@
 
 namespace Front {
 
+	/*!
+	 * \brief Exception thrown when a type error occurs
+	 */
 	class TypeError : public std::exception {
 	public:
+		/*!
+		 * \brief Constructor
+		 * \param node Node on which error occurred
+		 * \param message Error message
+		 */
 		TypeError(Node *node, const std::string &message)
 			: mNode(node), mMessage(message)
 		{}
 
-		Node *node() { return mNode; }
-		const std::string &message() { return mMessage; }
+		Node *node() { return mNode; } //!< Node of error
+		const std::string &message() { return mMessage; } //!< Error message
 
 	private:
-		Node *mNode;
-		std::string mMessage;
+		Node *mNode; //!< Node
+		std::string mMessage; //!< Error message
 	};
 
+	/*!
+	 * \brief Check a program's type correctness
+	 * \param node Root of syntax tree
+	 * \return True if types are correct
+	 */
 	bool TypeChecker::check(Node *node)
 	{
 		try {
+			// Check each procedure in turn
 			for(unsigned int i=0; i<node->children.size(); i++) {
 				Node *child = node->children[i];
 				Procedure *procedure = addProcedure(child);
+
+				// Construct a scope for the procedure, and add the parameters into it
 				Scope scope;
 				for(unsigned int j=0; j<procedure->arguments.size(); j++) {
 					scope.addSymbol(procedure->arguments[j]);
@@ -38,6 +54,7 @@ namespace Front {
 				child->type = TypeNone;
 			}
 		} catch(TypeError error) {
+			// Collect the error message and line from the exception
 			mErrorLine = error.node()->line;
 			mErrorMessage = error.message();
 			return false;
@@ -46,6 +63,12 @@ namespace Front {
 		return true;
 	}
 
+	/*!
+	 * \brief Check a node in the syntax tree
+	 * \param node Node to check
+	 * \param procedure Procedure being checked
+	 * \param scope Scope of variables
+	 */
 	void TypeChecker::check(Node *node, Procedure *procedure, Scope &scope)
 	{
 		switch(node->nodeType) {
@@ -60,6 +83,7 @@ namespace Front {
 					if(node->children[0]->nodeType == Node::NodeTypeId) {
 						Procedure *procedure = findProcedure(node->children[0]->lexVal.s);
 						if(procedure) {
+							// Check parameter number and types
 							if(procedure->arguments.size() == node->children[1]->children.size()) {
 								for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
 									check(node->children[1]->children[i], procedure, scope);
@@ -69,6 +93,8 @@ namespace Front {
 										throw TypeError(node, s.str());
 									}
 								}
+
+								// Checks succeeded, assign return type to the call node
 								node->type = procedure->returnType;
 							} else {
 								std::stringstream s;
@@ -87,16 +113,20 @@ namespace Front {
 				}
 
 			case Node::NodeTypeVarDecl:
+				// Add the declared variable to the current scope
 				scope.addSymbol(node->children[0]->lexVal.s, node->lexVal.s, node);
 				node->type = TypeNone;
 				break;
 
 			case Node::NodeTypeAssign:
 				checkChildren(node, procedure, scope);
+
 				if(node->children[0]->nodeType == Node::NodeTypeId) {
+					// Search for the target variable in the current scope
 					std::string name = node->children[0]->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
 					if(symbol) {
+						// Confirm target type matches source type
 						if(symbol->type != node->children[1]->type) {
 							throw TypeError(node, "Type mismatch");
 						}
@@ -124,6 +154,7 @@ namespace Front {
 			case Node::NodeTypeCompare:
 				checkChildren(node, procedure, scope);
 
+				// Check that types match
 				if(node->children[0]->type != TypeInt ||
 					node->children[1]->type != TypeInt) {
 						throw TypeError(node, "Type mismatch");
@@ -134,6 +165,7 @@ namespace Front {
 			case Node::NodeTypeArith:
 				checkChildren(node, procedure, scope);
 
+				// Check that types match
 				if(node->children[0]->type != TypeInt ||
 					node->children[1]->type != TypeInt) {
 						throw TypeError(node, "Type mismatch");
@@ -143,6 +175,7 @@ namespace Front {
 
 			case Node::NodeTypeId:
 				{
+					// Search for the named symbol in the current scope
 					std::string name = node->lexVal.s;
 					Symbol *symbol = scope.findSymbol(name);
 					if(!symbol) {
@@ -161,6 +194,8 @@ namespace Front {
 
 			case Node::NodeTypeReturn:
 				check(node->children[0], procedure, scope);
+
+				// Check that return argument matches the procedure's return type
 				if(node->children[0]->type != procedure->returnType) {
 					throw TypeError(node, "Type mismatch");
 				}
@@ -169,6 +204,12 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Check the children of a node
+	 * \param node Node to check
+	 * \param procedure Current procedure
+	 * \param scope Active scope
+	 */
 	void TypeChecker::checkChildren(Node *node, Procedure *procedure, Scope &scope)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
@@ -176,6 +217,12 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Add a symbol to the scope
+	 * \param typeName Name of type
+	 * \param name Name of variable
+	 * \return True if add was successful, false if variable already existed
+	 */
 	bool TypeChecker::Scope::addSymbol(const std::string &typeName, const std::string &name, Node *node)
 	{
 		Type *type = Type::find(typeName);
@@ -191,6 +238,10 @@ namespace Front {
 		return true;
 	}
 
+	/*!
+	 * \brief Add an already-created symbol to the scope
+	 * \param symbol Symbol to add
+	 */
 	bool TypeChecker::Scope::addSymbol(Symbol *symbol)
 	{
 		Symbol *localSymbol = new Symbol(*symbol);
@@ -199,6 +250,11 @@ namespace Front {
 		return true;
 	}
 
+	/*!
+	 * \brief Search for a symbol in the scope
+	 * \param name Name of symbol
+	 * \return Symbol if found, or 0 if not
+	 */
 	TypeChecker::Symbol *TypeChecker::Scope::findSymbol(const std::string &name)
 	{
 		for(unsigned int i=0; i<mSymbols.size(); i++) {
