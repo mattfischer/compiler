@@ -4,8 +4,23 @@
 #include "IR/Entry.h"
 
 namespace IR {
+	/*!
+	 * \brief A list of entries
+	 *
+	 * The nature of optimization requires many elaborate manipulations to the list
+	 * of entries, which can't quite be satisfied by the normal STL container types.
+	 * Specifically, many optimizations require the ability to insert or remove entries
+	 * from the list with only a direct entry pointer to the target location, instead
+	 * of an iterator.  In order to satisfy this need, an intrusive list is needed.
+	 * This class attempts to mimic the API of STL containers as closely as possible,
+	 * but contains the additional ability to reference locations based solely on an
+	 * Entry pointer.
+	 */
 	class EntryList {
 	public:
+		/*!
+		 * \brief Iterator class
+		 */
 		class iterator {
 			friend class EntryList;
 			friend class EntrySubList;
@@ -25,6 +40,9 @@ namespace IR {
 			Entry *mEntry;
 		};
 
+		/*!
+		 * \brief Reverse iterator class
+		 */
 		class reverse_iterator {
 			friend class EntryList;
 			friend class EntrySubList;

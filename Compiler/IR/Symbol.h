@@ -8,15 +8,23 @@
 #include <list>
 
 namespace IR {
+	/*!
+	 * \brief A named symbol in the Intermediate Representation
+	 */
 	class Symbol {
 	public:
-		std::string name;
-		Front::Type *type;
+		std::string name; //!< Symbol name
+		Front::Type *type; //!< Symbol type
 
+		/*!
+		 * \brief Constructor
+		 * \param _name Symbol name
+		 * \param _type Symbol type
+		 */
 		Symbol(const std::string &_name, Front::Type *_type) : name(_name), type(_type) {}
 	};
 
-	typedef std::set<Symbol*> SymbolSet;
-	typedef std::list<Symbol*> SymbolList;
+	typedef std::set<Symbol*> SymbolSet; //!< Convenience typedef
+	typedef std::list<Symbol*> SymbolList; //!< Convenience typedef
 }
 #endif

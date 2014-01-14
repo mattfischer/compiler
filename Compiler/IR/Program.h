@@ -6,19 +6,20 @@
 #include <list>
 
 namespace IR {
+	/*!
+	 * \param An entire program of IR entries
+	 */
 	class Program {
 	public:
 		Program();
 
-		Procedure *main() { return mMain; }
-		ProcedureList &procedures() { return mProcedures; }
+		Procedure *main() { return mMain; } //!< Main procedure
+		ProcedureList &procedures() { return mProcedures; } //!< List of all procedures
 
 		void addProcedure(Procedure *procedure);
 		Procedure *findProcedure(const std::string &name);
 
 		void print() const;
-
-		void computeDominance();
 
 	private:
 		ProcedureList mProcedures;
