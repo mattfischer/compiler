@@ -7,16 +7,19 @@
 #include <string>
 
 namespace Middle {
+	/*!
+	 * \brief Check for errors which require dataflow analysis
+	 */
 	class ErrorCheck {
 	public:
 		bool check(IR::Program *program);
 
-		IR::Procedure *errorProcedure() { return mErrorProcedure; }
-		const std::string &errorMessage() { return mErrorMessage; }
+		IR::Procedure *errorProcedure() { return mErrorProcedure; } //!< Procedure which contains error
+		const std::string &errorMessage() { return mErrorMessage; } //!< Error message, if any
 
 	private:
-		IR::Procedure *mErrorProcedure;
-		std::string mErrorMessage;
+		IR::Procedure *mErrorProcedure; //!< Procedure which contains error
+		std::string mErrorMessage; //!< Error message, if any
 	};
 }
 #endif

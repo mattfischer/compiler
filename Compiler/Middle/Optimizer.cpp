@@ -17,6 +17,10 @@
 #include "Util/UniqueQueue.h"
 
 namespace Middle {
+	/*!
+	 * \brief Optimize a program
+	 * \param program Program to optimize
+	 */
 	void Optimizer::optimize(IR::Program *program)
 	{
 		typedef std::vector<Transform::Transform*> TransformVector;
@@ -24,40 +28,46 @@ namespace Middle {
 		TransformVector startingTransforms;
 		TransformToTransformVectorMap transformMap;
 
+		// Build the list of all transforms
 		startingTransforms.push_back(Transform::CopyProp::instance());
 		startingTransforms.push_back(Transform::ConstantProp::instance());
 		startingTransforms.push_back(Transform::DeadCodeElimination::instance());
 		startingTransforms.push_back(Transform::ThreadJumps::instance());
 		startingTransforms.push_back(Transform::LoopInvariantCodeMotion::instance());
 
+		// Transforms to run after CopyProp
 		transformMap[Transform::CopyProp::instance()].push_back(Transform::DeadCodeElimination::instance());
+
+		// Transforms to run after Constant Prop
 		transformMap[Transform::ConstantProp::instance()].push_back(Transform::DeadCodeElimination::instance());
 
+		// Transforms to run after DeadCodeElimination
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::ConstantProp::instance());
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::CopyProp::instance());
 
+		// Optimize each procedure in turn
 		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
-			Analysis::ReachingDefs reachingDefs(procedure);
-			Analysis::UseDefs useDefs(procedure);
-			Analysis::LiveVariables liveVariables(procedure);
-			Analysis::Loops loops(procedure);
-
+			// Queue of transformations to run
 			Util::UniqueQueue<Transform::Transform*> transforms;
 
+			// Start by running each optimization pass once
 			for(TransformVector::iterator itTransform = startingTransforms.begin(); itTransform != startingTransforms.end(); itTransform++) {
 				Transform::Transform *transform = *itTransform;
 				transforms.push(transform);
 			}
 
+			// Run optimization passes until there are none left
 			while(!transforms.empty()) {
 				Transform::Transform *transform = transforms.front();
 				transforms.pop();
 
+				// Run the transform
 				bool changed = transform->transform(procedure);
 
 				if(changed) {
+					// If the transform changed the IR, add its follow-up transformations to the queue
 					TransformVector &newTransforms = transformMap[transform];
 					for(TransformVector::iterator itTransform = newTransforms.begin(); itTransform != newTransforms.end(); itTransform++) {
 						Transform::Transform *newTransform = *itTransform;
