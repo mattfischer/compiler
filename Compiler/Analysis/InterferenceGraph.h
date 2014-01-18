@@ -7,7 +7,14 @@
 #include <map>
 
 namespace Analysis {
-
+/*!
+ * \brief Graph of interferences between live variable ranges
+ *
+ * The interference graph is used to represent the sets of variables which
+ * are ever live at the same time in a procedure.  An edge between two symbols
+ * means they are simultaneously live at some point in the procedure, the absence
+ * of an edge means they are not
+ */
 class InterferenceGraph {
 public:
 	InterferenceGraph(IR::Procedure *procedure);
@@ -22,8 +29,8 @@ public:
 private:
 	typedef std::map<IR::Symbol*, IR::SymbolSet> SymbolToSymbolSetMap;
 
-	SymbolToSymbolSetMap mGraph;
-	IR::SymbolSet mSymbols;
+	SymbolToSymbolSetMap mGraph; //!< Map of graph edges
+	IR::SymbolSet mSymbols; //!< Set of symbols in the graph
 };
 
 }

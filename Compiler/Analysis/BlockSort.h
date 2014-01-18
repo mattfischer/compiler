@@ -8,6 +8,9 @@
 #include <map>
 
 namespace Analysis {
+	/*!
+	 * \brief Topologically sort a control flow graph
+	 */
 	class BlockSort {
 	public:
 		BlockSort(FlowGraph &flowGraph);
@@ -18,9 +21,9 @@ namespace Analysis {
 	private:
 		void sortRecurse(FlowGraph::Block *block, FlowGraph::BlockVector &blocks, FlowGraph::BlockSet &seenBlocks);
 
-		FlowGraph::BlockVector mSorted;
+		FlowGraph::BlockVector mSorted; //!< Sorted block list
 		typedef std::map<FlowGraph::Block*, int> OrderMap;
-		OrderMap mOrder;
+		OrderMap mOrder; //!< Mapping from block to position in list
 	};
 }
 #endif

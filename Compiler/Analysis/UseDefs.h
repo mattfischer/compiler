@@ -12,6 +12,12 @@
 #include <vector>
 
 namespace Analysis {
+	/*!
+	 * \brief Determine a set of def-use and use-def chains
+	 *
+	 * A use-def chain shows all definitions which can affect a given use of a variable.
+	 * Similarly, a def-use chain shows all uses which may make use of a given definition.
+	 */
 	class UseDefs
 	{
 	public:
@@ -29,10 +35,10 @@ namespace Analysis {
 	private:
 		typedef std::map<IR::Symbol*, IR::EntrySet> SymbolToEntrySetMap;
 
-		std::map<IR::Entry*, IR::EntrySet> mUses;
-		std::map<IR::Entry*, SymbolToEntrySetMap> mDefines;
-		IR::Procedure *mProcedure;
-		ReachingDefs mReachingDefs;
+		std::map<IR::Entry*, IR::EntrySet> mUses; //!< List of all uses
+		std::map<IR::Entry*, SymbolToEntrySetMap> mDefines; //!< List of all defines
+		IR::Procedure *mProcedure; //!< Procedure being analyzed
+		ReachingDefs mReachingDefs; //!< Reaching def information for the procedure
 	};
 }
 #endif

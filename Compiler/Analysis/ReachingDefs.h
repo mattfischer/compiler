@@ -11,7 +11,17 @@
 #include <set>
 #include <map>
 
+/*!
+ * \brief Utilities to analyze a program in various ways
+ */
 namespace Analysis {
+	/*!
+	 * \brief Determine the set of definitions which reach each point in the procedure
+	 *
+	 * A definition reaches a given entry if the value assigned to the variable in that
+	 * definition may still be present in the variable when control reaches the entry.
+	 * An entry may have more than one reaching definition for each variable
+	 */
 	class ReachingDefs {
 	public:
 		ReachingDefs(IR::Procedure *procedure);
@@ -26,9 +36,9 @@ namespace Analysis {
 	private:
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 
-		FlowGraph mFlowGraph;
-		EntryToEntrySetMap mDefs;
-		IR::Procedure *mProcedure;
+		FlowGraph mFlowGraph; //<! Flow graph being analyzed
+		EntryToEntrySetMap mDefs; //!< List of definitions
+		IR::Procedure *mProcedure; //!< Procedure being analyzed
 	};
 }
 #endif

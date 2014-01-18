@@ -3,29 +3,41 @@
 #include "IR/Procedure.h"
 
 namespace Analysis {
+	/*!
+	 * \brief Constructor
+	 * \param procedure Procedure to analyze
+	 */
 	FlowGraph::FlowGraph(IR::Procedure *procedure)
 	{
 		Block *block = 0;
 		IR::EntrySubList::iterator begin;
 		IR::EntrySubList::iterator end;
 
+		// First, break up the procedure into blocks
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
 			switch(entry->type) {
 				case IR::Entry::TypeLabel:
+					// A label forces the start of a new block
 					if(block) {
+						// If a previous block was under construction, it is now complete.
+						// Construct its entry list, now that we know its endpoint, and add
+						// it to the list.
 						end = itEntry;
 						block->entries = IR::EntrySubList(begin, end);
 						mBlockSet.insert(block);
 						mFrontMap[block->entries.front()] = block;
 					}
+					// Start a new block, beginning with the label just encountered
 					block = new Block;
 					begin = itEntry;
 					break;
 
 				case IR::Entry::TypeJump:
 				case IR::Entry::TypeCJump:
+					// A jump instruction forces the end of the current block.  Construct
+					// its entry list now that we know its endpoint, and add it to the list.
 					end = itEntry;
 					end++;
 					block->entries = IR::EntrySubList(begin, end);
@@ -36,6 +48,7 @@ namespace Analysis {
 			}
 		}
 
+		// Add the final block, if present
 		if(block) {
 			end = procedure->entries().end();
 			block->entries = IR::EntrySubList(begin, end);
@@ -43,15 +56,20 @@ namespace Analysis {
 			mFrontMap[block->entries.front()] = block;
 		}
 
+		// Save off the start and end pointers
 		mStart = mFrontMap[procedure->start()];
 		mEnd = mFrontMap[procedure->end()];
 
+		// Now loop through the blocks and construct the links between them
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
 			Block *block = *it;
 			linkBlock(block, block->entries.back());
 		}
 	}
 
+	/*!
+	 * \brief Destructor
+	 */
 	FlowGraph::~FlowGraph()
 	{
 		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
@@ -60,12 +78,19 @@ namespace Analysis {
 		}
 	}
 
+	/*!
+	 * \brief Link a block to its predecessors and successors
+	 * \param block Block to link
+	 * \param back Back entry of the block
+	 */
 	void FlowGraph::linkBlock(Block *block, IR::Entry *back)
 	{
+		// Examine the back entry in the block to determine which blocks it links to
 		mBackMap[back] = block;
 		switch(back->type) {
 			case IR::Entry::TypeJump:
 				{
+					// Unconditional jump.  Link the block to the jump target
 					IR::EntryJump *jump = (IR::EntryJump*)back;
 					FlowGraph::Block *target = mFrontMap[jump->target];
 					block->succ.insert(target);
@@ -74,6 +99,7 @@ namespace Analysis {
 				}
 			case IR::Entry::TypeCJump:
 				{
+					// Conditional jump.  Link th block to the true and false jump targets
 					IR::EntryCJump *cJump = (IR::EntryCJump*)back;
 					FlowGraph::Block *trueTarget = mFrontMap[cJump->trueTarget];
 					block->succ.insert(trueTarget);
@@ -85,6 +111,8 @@ namespace Analysis {
 				}
 			default:
 				{
+					// The block ended with a non-jump instruction.  Link the block to the
+					// block started by the next entry
 					IR::Entry *nextLabel = *block->entries.end();
 					Block *succ = mFrontMap[nextLabel];
 					if(succ) {
@@ -96,16 +124,25 @@ namespace Analysis {
 		}
 	}
 
+	/*!
+	 * \brief Replace an entry with a new entry, updating graph edges as necessary
+	 * \param oldEntry Entry to replace
+	 * \param newEntry Entry to replace with
+	 */
 	void FlowGraph::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
 	{
+		// Check if entry was the back of a block
 		Block *block = mBackMap[oldEntry];
 		if(block) {
+			// Break links with all successor blocks
 			for(BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
 				Block *succ = *it;
 				succ->pred.erase(block);
 			}
 			block->succ.clear();
 			mBackMap.erase(oldEntry);
+
+			// Re-link the block with respect to the new entry
 			linkBlock(block, newEntry);
 		}
 	}

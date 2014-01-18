@@ -5,9 +5,15 @@
 #include <algorithm>
 
 namespace Analysis {
+	/*!
+	 * \brief Constructor
+	 * \param procedure Procedure to analyze
+	 * \param flowGraph Flow graph for procedure
+	 */
 	DominatorTree::DominatorTree(IR::Procedure *procedure, FlowGraph &flowGraph)
 		: mFlowGraph(flowGraph)
 	{
+		// Assign an order to the blocks
 		BlockSort sort(mFlowGraph);
 		mBlocks = sort.sorted();
 
@@ -49,21 +55,37 @@ namespace Analysis {
 		} while(changed);
 	}
 
+	/*!
+	 * \brief Return the immediate dominator of a block--the nearest block which dominates it
+	 * \param block Block to search for
+	 * \return Immediate dominator for block
+	 */
 	FlowGraph::Block *DominatorTree::idom(FlowGraph::Block *block)
 	{
 		return mIDoms[block];
 	}
 
+	/*!
+	 * \brief Return list of all blocks
+	 * \return List of blocks
+	 */
 	const FlowGraph::BlockVector &DominatorTree::blocks() const
 	{
 		return mBlocks;
 	}
 
+	/*!
+	 * \brief Determine if a given block is dominated by another
+	 * \param block Block to check for dominance of
+	 * \param dominator Block which may dominate the given block
+	 * \return True if dominator dominates block, otherwise false
+	 */
 	bool DominatorTree::dominates(FlowGraph::Block *block, FlowGraph::Block *dominator)
 	{
 		FlowGraph::Block *cursor = block;
 		FlowGraph::Block *id = idom(cursor);
 
+		// Iterate upwards through the dominator tree, looking for dominance
 		while(id != cursor) {
 			cursor = id;
 			id = idom(cursor);
