@@ -6,6 +6,12 @@
 #include "IR/Entry.h"
 
 namespace Transform {
+	/*!
+	 * \brief Perform jump threading on a procedure
+	 *
+	 * Jump threading looks for jumps whose target is another jump, and updates
+	 * their targets to their final location to bypass the unnecessary jumps
+	 */
 	class ThreadJumps : public Transform {
 	public:
 		virtual bool transform(IR::Procedure *procedure);

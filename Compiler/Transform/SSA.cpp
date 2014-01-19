@@ -15,6 +15,12 @@
 #include <set>
 
 namespace Transform {
+	/*!
+	 * \brief Construct a new symbol name out of a base symbol
+	 * \param base Base symbol
+	 * \param version Version number to give to the symbol
+	 * \return New symbol name
+	 */
 	std::string SSA::newSymbolName(IR::Symbol *base, int version)
 	{
 		std::stringstream ss;
@@ -26,10 +32,13 @@ namespace Transform {
 	bool SSA::transform(IR::Procedure *proc)
 	{
 		std::vector<IR::Symbol*> newSymbols;
+
+		// Perform flow graph and dominance analysis on the procedure
 		Analysis::FlowGraph flowGraph(proc);
 		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
+		// Iterate through the list of symbols in the procedure
 		for(IR::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
 			IR::Symbol *symbol = *symIt;
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
@@ -45,7 +54,7 @@ namespace Transform {
 				}
 			}
 
-			// Insert Phi functions
+			// Insert Phi functions at each dominance frontier for the block
 			while(!blocks.empty()) {
 				Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
@@ -117,6 +126,10 @@ namespace Transform {
 		return true;
 	}
 
+	/*!
+	 * \brief Singleton
+	 * \return Instance
+	 */
 	SSA *SSA::instance()
 	{
 		static SSA inst;

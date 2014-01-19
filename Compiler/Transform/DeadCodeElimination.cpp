@@ -11,11 +11,16 @@ namespace Transform {
 	bool DeadCodeElimination::transform(IR::Procedure *procedure)
 	{
 		bool changed = false;
+
+		// Construct a flow graph and use-def chains for the procedure
 		Analysis::FlowGraph flowGraph(procedure);
 		Analysis::UseDefs useDefs(procedure);
 
+		// Iterate through the blocks of the graph
 		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
+
+			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block != flowGraph.start()) {
 				IR::EntryList::iterator itNext;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
@@ -34,6 +39,7 @@ namespace Transform {
 			}
 		}
 
+		// Iterate backwards through the procedure's entries
 		IR::EntryList::reverse_iterator itNext;
 		for(IR::EntryList::reverse_iterator itEntry = procedure->entries().rbegin(); itEntry != procedure->entries().rend(); itEntry = itNext) {
 			itNext = itEntry;
@@ -42,6 +48,7 @@ namespace Transform {
 			switch(entry->type) {
 				case IR::Entry::TypeMove:
 					{
+						// If the move's LHS and RHS are the same, the move is unnecessary
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
 						if(load->lhs == load->rhs1) {
 							procedure->entries().erase(entry);
@@ -60,6 +67,7 @@ namespace Transform {
 				case IR::Entry::TypeLoadRet:
 				case IR::Entry::TypeLoadArg:
 					{
+						// If an assignment has no uses, it is unnecessary
 						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
@@ -69,17 +77,9 @@ namespace Transform {
 						}
 						break;
 					}
-				case IR::Entry::TypeCall:
-					{
-						const IR::EntrySet &uses = useDefs.uses(entry);
-						if(uses.empty()) {
-							entry->replaceAssign(entry->assign(), 0);
-							changed = true;
-						}
-						break;
-					}
 				case IR::Entry::TypeJump:
 					{
+						// If a jump's target is the next instruction in the procedure, it is unnecessary
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						for(IR::EntryList::iterator itLabel = ++(procedure->entries().find(entry)); itLabel != procedure->entries().end(); itLabel++) {
 							IR::Entry *label = *itLabel;
@@ -100,6 +100,7 @@ namespace Transform {
 			}
 		}
 
+		// Count the number of assignments to each symbol in the procedure
 		std::map<IR::Symbol*, int> symbolCount;
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -109,6 +110,7 @@ namespace Transform {
 			}
 		}
 
+		// Iterate through the procedure's symbols
 		IR::SymbolList::iterator itSymbolNext;
 		for(IR::SymbolList::iterator itSymbol = procedure->symbols().begin(); itSymbol != procedure->symbols().end(); itSymbol = itSymbolNext) {
 			IR::Symbol *symbol = *itSymbol;
@@ -116,6 +118,7 @@ namespace Transform {
 			itSymbolNext++;
 
 			if(symbolCount[symbol] == 0) {
+				// If there are no assignments to the symbol, it can be removed from the procedure
 				procedure->symbols().erase(itSymbol);
 				changed = true;
 			}
@@ -124,6 +127,10 @@ namespace Transform {
 		return changed;
 	}
 
+	/*!
+	 * \brief Singleton
+	 * \return Instance
+	 */
 	DeadCodeElimination *DeadCodeElimination::instance()
 	{
 		static DeadCodeElimination inst;

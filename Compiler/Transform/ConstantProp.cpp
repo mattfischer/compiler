@@ -9,15 +9,25 @@
 #include "Util/UniqueQueue.h"
 
 namespace Transform {
+	/*!
+	 * \brief Get the value of a symbol at an entry, if it can be determined to be a constant
+	 * \param entry Entry to examine
+	 * \param symbol Symbol to evaluate
+	 * \param useDefs Use-def chains for procedure
+	 * \param isConstant [out] True if symbol has a constant value, false otherwise
+	 * \return Value of symbol
+	 */
 	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant)
 	{
 		isConstant = false;
 		int ret = 0;
 
+		// Check each definition that reaches this entry
 		const IR::EntrySet &set = useDefs.defines(entry, symbol);
 		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 			IR::Entry *def = *it;
 			if(def->type != IR::Entry::TypeLoadImm) {
+				// This definition is not constant, therefore the symbol can't be
 				ret = 0;
 				isConstant = false;
 				break;
@@ -25,10 +35,14 @@ namespace Transform {
 
 			IR::EntryOneAddrImm *imm = (IR::EntryOneAddrImm*)def;
 			if(isConstant && ret != imm->imm) {
+				// If the definition is a constant, and is either the first constant
+				// encountered, or is equal to the value previously encountered, then
+				// it can still be considered a constant
 				ret = 0;
 				isConstant = false;
 				break;
 			} else {
+				// Otherwise, the entry is not constant
 				ret = imm->imm;
 				isConstant = true;
 			}
@@ -44,15 +58,18 @@ namespace Transform {
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
+		// Start by iterating through the entire procedure
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 			queue.push(entry);
 		}
 
+		// Process the queue until it is empty
 		while(!queue.empty()) {
 			IR::Entry *entry = queue.front();
 			queue.pop();
 
+			// Examine the current entry
 			switch(entry->type) {
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeMult:
@@ -65,6 +82,7 @@ namespace Transform {
 						bool rhs1Const;
 						bool rhs2Const;
 
+						// Examine the right hand side arguments and determine if they are constant
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						rhs1 = getValue(threeAddr, threeAddr->rhs1, useDefs, rhs1Const);
 						if(threeAddr->rhs2) {
@@ -74,8 +92,10 @@ namespace Transform {
 							rhs2Const = true;
 						}
 
+						// If both RHS symbols are constant, the entry can be evaluated
 						IR::Entry *newEntry = 0;
 						if(rhs1Const && rhs2Const) {
+							// Calculate the value of the entry
 							int value;
 							switch(entry->type) {
 								case IR::Entry::TypeAdd:
@@ -99,8 +119,11 @@ namespace Transform {
 									break;
 							}
 
+							// Create a new immediate load entry with the calculated value
 							newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
 						} else if(rhs1Const || rhs2Const) {
+							// If one argument is constant and the other is not, an Add entry can
+							// at least be turned into an Add Immediate entry
 							if(threeAddr->type == IR::Entry::TypeAdd) {
 								int constant;
 								IR::Symbol *symbol;
@@ -116,13 +139,19 @@ namespace Transform {
 							}
 						}
 
+						// If a new entry was created, subsitute it into the procedure
 						if(newEntry) {
+							// Add all uses of the entry into the queue, it may now be possible
+							// to do further constant propagation on them
 							const IR::EntrySet &entries = useDefs.uses(threeAddr);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);
 							}
 
+							// Update the useDef chains to reflect the new entry
 							useDefs.replace(threeAddr, newEntry);
+
+							// Substitute the new entry into the procedure
 							procedure->entries().insert(threeAddr, newEntry);
 							procedure->entries().erase(threeAddr);
 							delete threeAddr;
@@ -136,16 +165,19 @@ namespace Transform {
 						int rhs;
 						bool rhsConst;
 
+						// Determine if the symbol on the right hand side is constant
 						rhs = getValue(twoAddrImm, twoAddrImm->rhs, useDefs, rhsConst);
 						if(rhsConst) {
 							int value = rhs + twoAddrImm->imm;
 
+							// Construct a Load Immediate entry to replace the current entry
 							IR::Entry *newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, value);
 							const IR::EntrySet &entries = useDefs.uses(twoAddrImm);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);
 							}
 
+							// Replace the entry in the useDef chains and the procedure itself
 							useDefs.replace(twoAddrImm, newEntry);
 							procedure->entries().insert(twoAddrImm, newEntry);
 							procedure->entries().erase(twoAddrImm);
@@ -156,6 +188,7 @@ namespace Transform {
 					}
 				case IR::Entry::TypeCJump:
 					{
+						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
 						int value = getValue(cJump, cJump->pred, useDefs, isConstant);
@@ -163,6 +196,9 @@ namespace Transform {
 							continue;
 						}
 
+						// If the predicate is constant, the conditional jump can be turned into
+						// an uconditional jump.  Determine which jump target should be used, based
+						// on the value of the predicate, and construct a new jump entry.
 						IR::EntryJump *jump;
 						if(value) {
 							jump = new IR::EntryJump(cJump->trueTarget);
@@ -170,6 +206,7 @@ namespace Transform {
 							jump = new IR::EntryJump(cJump->falseTarget);
 						}
 
+						// Update the useDef chains and the procedure itself
 						useDefs.replace(cJump, jump);
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);
@@ -184,6 +221,10 @@ namespace Transform {
 		return changed;
 	}
 
+	/*!
+	 * \brief Singleton
+	 * \return Instance
+	 */
 	ConstantProp *ConstantProp::instance()
 	{
 		static ConstantProp inst;

@@ -4,6 +4,13 @@
 #include "Transform/Transform.h"
 
 namespace Transform {
+	/*!
+	 * \brief Propagate copies through a procedure
+	 *
+	 * Copy propagation attempts to locate copies of one symbol into another.  In
+	 * cases where the symbol is only assigned from this location, the original symbol
+	 * can simply be substituted in its place, and the copy entry eliminated completely.
+	 */
 	class CopyProp : public Transform {
 	public:
 		virtual bool transform(IR::Procedure *procedure);

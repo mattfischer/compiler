@@ -9,6 +9,14 @@
 #include "Analysis/UseDefs.h"
 
 namespace Transform {
+	/*!
+	 * \brief Propagate constants through a procedure
+	 *
+	 * This transform examines use-def information to determine when an entry can be
+	 * guaranteed to evaluate to a constant value.  In cases where this is possible, it
+	 * substitutes Load Immediate entries into the procedure in place of the original
+	 * arithmetic instruction
+	 */
 	class ConstantProp : public Transform {
 	public:
 		virtual bool transform(IR::Procedure *procedure);
