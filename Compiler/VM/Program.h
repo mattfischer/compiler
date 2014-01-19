@@ -5,10 +5,16 @@
 
 #include <vector>
 
+/*!
+ * \brief A virtual machine that is targeted by the compiler
+ */
 namespace VM {
+	/*!
+	 * \brief A program to be executed by the VM
+	 */
 	struct Program {
-		std::vector<Instruction> instructions;
-		int start;
+		std::vector<Instruction> instructions; //!< Instruction list
+		int start; //!< Program start point
 	};
 }
 
