@@ -12,25 +12,43 @@
 #include <map>
 
 namespace Back {
+	/*!
+	 * \brief Generate code for an IR program
+	 * \param irProgram IR program input
+	 * \return Final code for the program
+	 */
 	VM::Program CodeGenerator::generate(IR::Program *irProgram)
 	{
 		VM::Program vmProgram;
 
 		std::map<IR::Procedure*, int> procedureMap;
 
+		// Iterate through the procedures, generating each in turn
 		for(IR::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
 			IR::Procedure *irProcedure = *itProc;
+
+			// If this procedure is main(), save its location as the program start point
 			if(irProcedure->name() == "main") {
 				vmProgram.start = (int)vmProgram.instructions.size();
 			}
 
+			// Save the procedure's start location, so that call instructions can be directed
+			// to the correct point
 			procedureMap[irProcedure] = (int)vmProgram.instructions.size();
+
+			// Generate code for the procedure
 			generateProcedure(irProcedure, vmProgram.instructions, procedureMap);
 		}
 
 		return vmProgram;
 	}
 
+	/*!
+	 * \brief Generate code for an IR procedure
+	 * \param procedure Procedure to generate code for
+	 * \param instructions Instruction stream to write to
+	 * \param procedureMap Map of starting locations for procedures
+	 */
 	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions, const std::map<IR::Procedure*, int> &procedureMap)
 	{
 		std::map<IR::Symbol*, int> regMap;
@@ -38,12 +56,12 @@ namespace Back {
 		std::map<IR::Entry*, int> jumpMap;
 		int reg = 1;
 
-		RegisterAllocator allocator;
-
+		// Allocate registers for the procedure
 		Transform::LiveRangeRenaming::instance()->transform(procedure);
-
+		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
 
+		// Determine the set of registers that need to be saved/restored in the prologue/epilogue
 		unsigned long savedRegs = 0;
 		for(std::map<IR::Symbol*, int>::iterator regIt = regMap.begin(); regIt != regMap.end(); regIt++) {
 			if(regIt->second > 3) {
@@ -51,6 +69,7 @@ namespace Back {
 			}
 		}
 
+		// If any calls are made in the procedure, LR must be saved as well
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
@@ -59,6 +78,7 @@ namespace Back {
 			}
 		}
 
+		// Iterate through each entry, and emit the appropriate code depending on its type
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
@@ -207,10 +227,12 @@ namespace Back {
 				case IR::Entry::TypePrologue:
 					{
 						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						// Save all required registers for this function
 						if(savedRegs != 0) {
 							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
 						}
 
+						// Make space on the stack frame for any necessary spilled values
 						if(oneAddrImm->imm > 0) {
 							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -oneAddrImm->imm));
 						}
@@ -220,20 +242,25 @@ namespace Back {
 				case IR::Entry::TypeEpilogue:
 					{
 						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+
+						// Advance the stack pointer past the spilled value range
 						if(oneAddrImm->imm > 0) {
 							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, oneAddrImm->imm));
 						}
 
+						// Reload all required registers
 						if(savedRegs != 0) {
 							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
 						}
 
+						// Jump back to the return location
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
 						break;
 					}
 			}
 		}
 
+		// Now that all locations have been placed, loop back through the entries and fill in jump target locations
 		for(std::map<IR::Entry*, int>::iterator it = jumpMap.begin(); it != jumpMap.end(); it++) {
 			IR::Entry *entry = it->first;
 			int idx = it->second;

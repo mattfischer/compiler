@@ -9,7 +9,15 @@
 #include <vector>
 #include <map>
 
+/*!
+ * \brief Back-end functions for the compiler
+ *
+ * The Back namespace contains the register allocater and code generator for the compiler.
+ */
 namespace Back {
+	/*!
+	 * \brief Convert the IR procedure into final code instructions
+	 */
 	class CodeGenerator {
 	public:
 		static VM::Program generate(IR::Program *irProgram);
