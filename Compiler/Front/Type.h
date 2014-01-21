@@ -9,6 +9,7 @@ namespace Front {
 	public:
 		enum TypeType {
 			TypeIntrinsic,
+			TypeProcedure,
 			TypeNone
 		};
 
@@ -44,6 +45,16 @@ namespace Front {
 		}
 
 		IntrinsicType intrinsicType;
+	};
+
+	class TypeProcedure : public Type {
+	public:
+		Type *returnType;
+		std::vector<Type*> argumentTypes;
+
+		TypeProcedure(Type *_returnType, std::vector<Type*> _argumentTypes)
+			: Type(Type::TypeProcedure, "", 0), returnType(_returnType), argumentTypes(_argumentTypes)
+		{}
 	};
 
 	extern Type *TypeNone;
