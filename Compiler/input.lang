@@ -8,21 +8,14 @@ int foo(int x, int y)
 int main()
 {
   int i;
-  int x;
-  int y;
-  int z;
-  int a;
-  int b;
-  int c;
-  int d;
   
-  x = 10;
-  y = 20;
-  z = 30;
-  a = 40;
-  b = 50;
-  c = 60;
-  d = 70;
+  int x = 10;
+  int y = 20;
+  int z = 30;
+  int a = 40;
+  int b = 50;
+  int c = 60;
+  int d = 70;
   
   i = 0;
   while(i != 10) {

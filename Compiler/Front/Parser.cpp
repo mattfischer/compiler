@@ -291,7 +291,16 @@ Node *Parser::parseStatement(bool required)
 	Node *node;
 
 	if(node = parseVariableDeclaration()) {
-		// <Statement> := <VariableDeclaration> ';'
+		if(matchLiteral("=")) {
+			// <Statement> := <VariableDeclaration> = <Expression> ';'
+			consume();
+			Node *assign = newNode(Node::NodeTypeAssign, node->line);
+			assign->children.push_back(node);
+			assign->children.push_back(parseExpression(true));
+			node = assign;
+		} else {
+			// <Statement> := <VariableDeclaration> ';'
+		}
 		expectLiteral(";");
 
 		return node;

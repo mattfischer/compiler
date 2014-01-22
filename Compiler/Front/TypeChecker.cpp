@@ -176,27 +176,31 @@ namespace Front {
 				}
 
 			case Node::NodeTypeAssign:
-				checkChildren(node, scope);
+				{
+					checkChildren(node, scope);
 
-				if(node->children[0]->nodeType == Node::NodeTypeId) {
-					// Search for the target variable in the current scope
-					std::string name = node->children[0]->lexVal.s;
-					Symbol *symbol = scope.findSymbol(name);
-					if(symbol) {
-						// Confirm target type matches source type
-						if(symbol->type != node->children[1]->type) {
-							throw TypeError(node, "Type mismatch");
+					Node *lhs = node->children[0];
+					Node *rhs = node->children[1];
+					if(lhs->nodeType == Node::NodeTypeId || lhs->nodeType == Node::NodeTypeVarDecl) {
+						// Search for the target variable in the current scope
+						std::string name = lhs->lexVal.s;
+						Symbol *symbol = scope.findSymbol(name);
+						if(symbol) {
+							// Confirm target type matches source type
+							if(symbol->type != rhs->type) {
+								throw TypeError(node, "Type mismatch");
+							}
+						} else {
+							std::stringstream s;
+							s << "Undeclared variable '" << name << "'";
+							throw TypeError(node, s.str());
 						}
 					} else {
-						std::stringstream s;
-						s << "Undeclared variable '" << name << "'";
-						throw TypeError(node, s.str());
+						throw TypeError(node, "Lvalue required");
 					}
-				} else {
-					throw TypeError(node, "Lvalue required");
+					node->type = rhs->type;
+					break;
 				}
-				node->type = node->children[1]->type;
-				break;
 
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:

@@ -181,6 +181,11 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeAssign:
+				// If the LHS is a declaration, process it so that the symbol gets added
+				if(node->children[0]->nodeType == Node::NodeTypeVarDecl) {
+					processNode(node->children[0], program, procedure);
+				}
+
 				// Locate symbol to assign into
 				a = procedure->findSymbol(node->children[0]->lexVal.s);
 
@@ -188,9 +193,9 @@ namespace Front {
 				b = processRValue(node->children[1], program, procedure);
 
 				// Emit a move into the target symbol
-				if(a != b) {
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
-				}
+				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+
+				// Return the resulting node
 				result = b;
 				break;
 
