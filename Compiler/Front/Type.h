@@ -26,6 +26,7 @@ namespace Front {
 
 		static void init();
 		static Type *find(const std::string& name);
+		static bool equals(Type *a, Type *b);
 
 	private:
 		static std::vector<Type*> sTypes;

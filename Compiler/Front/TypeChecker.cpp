@@ -154,7 +154,7 @@ namespace Front {
 
 					// Check call target has correct parameter types
 					for(unsigned int i=0; i<argumentsNode->children.size(); i++) {
-						if(argumentsNode->children[i]->type != procedureType->argumentTypes[i]) {
+						if(!Type::equals(argumentsNode->children[i]->type, procedureType->argumentTypes[i])) {
 							std::stringstream s;
 							s << "Type mismatch on procedure argument " << i;
 							throw TypeError(node, s.str());
@@ -187,7 +187,7 @@ namespace Front {
 						Symbol *symbol = scope.findSymbol(name);
 						if(symbol) {
 							// Confirm target type matches source type
-							if(symbol->type != rhs->type) {
+							if(!Type::equals(symbol->type, rhs->type)) {
 								throw TypeError(node, "Type mismatch");
 							}
 						} else {
@@ -205,7 +205,7 @@ namespace Front {
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:
 				checkChildren(node, scope);
-				if(node->children[0]->type != TypeBool) {
+				if(!Type::equals(node->children[0]->type, TypeBool)) {
 					throw TypeError(node, "Type mismatch");
 				}
 
@@ -216,8 +216,8 @@ namespace Front {
 				checkChildren(node, scope);
 
 				// Check that types match
-				if(node->children[0]->type != TypeInt ||
-					node->children[1]->type != TypeInt) {
+				if(!Type::equals(node->children[0]->type, TypeInt) ||
+					!Type::equals(node->children[1]->type, TypeInt)) {
 						throw TypeError(node, "Type mismatch");
 				}
 				node->type = TypeBool;
@@ -227,8 +227,8 @@ namespace Front {
 				checkChildren(node, scope);
 
 				// Check that types match
-				if(node->children[0]->type != TypeInt ||
-					node->children[1]->type != TypeInt) {
+				if(!Type::equals(node->children[0]->type, TypeInt) ||
+					!Type::equals(node->children[1]->type, TypeInt)) {
 						throw TypeError(node, "Type mismatch");
 				}
 				node->type = TypeInt;
