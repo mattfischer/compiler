@@ -15,6 +15,7 @@ namespace Front {
 
 		bool addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
+		const std::vector<Symbol*> &symbols() { return mSymbols; } //!< Symbols
 
 	private:
 		Scope *mParent; //!< Parent scope

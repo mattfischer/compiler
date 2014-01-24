@@ -54,18 +54,7 @@ namespace IR {
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		return addSymbol(name, type);
-	}
-
-	/*!
-	 * \brief Add a symbol to the procedure symbol table
-	 * \param name Symbol name
-	 * \param type Symbol type
-	 * \return New symbol
-	 */
-	Symbol *Procedure::addSymbol(const std::string &name, Front::Type *type)
-	{
-		Symbol *symbol = new Symbol(name, type);
+		IR::Symbol *symbol = new Symbol(name, type);
 		addSymbol(symbol);
 
 		return symbol;

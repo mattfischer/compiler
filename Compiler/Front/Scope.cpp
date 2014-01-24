@@ -17,9 +17,7 @@ namespace Front {
 	 */
 	bool Scope::addSymbol(Symbol *symbol)
 	{
-		Symbol *localSymbol = new Symbol(*symbol);
-		mSymbols.push_back(localSymbol);
-
+		mSymbols.push_back(symbol);
 		return true;
 	}
 

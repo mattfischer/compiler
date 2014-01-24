@@ -29,7 +29,6 @@ namespace IR {
 
 		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
 		Symbol *newTemp(Front::Type *type);
-		Symbol *addSymbol(const std::string &name, Front::Type *type);
 		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
 		EntryLabel *newLabel();

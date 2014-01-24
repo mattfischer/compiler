@@ -25,10 +25,18 @@ namespace Front {
 			// Emit procedure prologue
 			irProcedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypePrologue, 0, 0));
 
-			// Emit argument loads for each procedure argument
-			for(unsigned int j=0; j<procedure->arguments.size(); j++) {
-				IR::Symbol *symbol = irProcedure->addSymbol(procedure->arguments[j]->name, procedure->arguments[j]->type);
-				irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, symbol, 0, j));
+			// Add local variables to the procedure
+			const std::vector<Symbol*> locals = procedure->locals->symbols();
+			for(unsigned int j=0; j<locals.size(); j++) {
+				IR::Symbol *irSymbol = new IR::Symbol(locals[j]->name, locals[j]->type);
+				irProcedure->addSymbol(irSymbol);
+
+				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
+					if(procedure->arguments[k] == locals[j]) {
+						// If this symbol is an argument, emit an argument load instruction
+						irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, irSymbol, 0, k));
+					}
+				}
 			}
 
 			// Emit procedure body
@@ -71,8 +79,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeVarDecl:
-				// Add symbol to procedure's variable list
-				procedure->addSymbol(node->lexVal.s, Type::find(node->children[0]->lexVal.s));
+				// No work to do, symbol was already added when creating the procedure
 				break;
 
 			case Node::NodeTypeIf:
