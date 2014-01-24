@@ -1,6 +1,6 @@
 #include "Front/Tokenizer.h"
 #include "Front/Parser.h"
-#include "Front/TypeChecker.h"
+#include "Front/ProgramGenerator.h"
 #include "Front/IRGenerator.h"
 
 #include "Middle/Optimizer.h"
@@ -25,15 +25,15 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
-	Front::TypeChecker typeChecker;
-	IR::Program *irProgram = 0;
-	if(!typeChecker.check(node)) {
-		std::cout << "Error, line " << typeChecker.errorLine() << ": " << typeChecker.errorMessage() << std::endl;
+	Front::ProgramGenerator programGenerator(node);
+	Front::Program *program = programGenerator.generate();
+	if(!program) {
+		std::cout << "Error, line " << programGenerator.errorLine() << ": " << programGenerator.errorMessage() << std::endl;
 		return 1;
 	}
 
 	Front::IRGenerator generator;
-	irProgram = generator.generate(node);
+	IR::Program *irProgram = generator.generate(program);
 	if(!irProgram) {
 		return 1;
 	}

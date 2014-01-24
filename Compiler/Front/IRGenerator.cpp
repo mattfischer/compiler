@@ -13,36 +13,35 @@ namespace Front {
 	 * \param tree Syntax tree to process
 	 * \return Generated IR program
 	 */
-	IR::Program *IRGenerator::generate(Node *tree)
+	IR::Program *IRGenerator::generate(Program *program)
 	{
-		IR::Program *program = new IR::Program;
+		IR::Program *irProgram = new IR::Program;
 
 		// Create an IR procedure for each procedure definition node
-		for(unsigned int i=0; i<tree->children.size(); i++) {
-			Node *proc = tree->children[i];
-			IR::Procedure *procedure = new IR::Procedure(proc->lexVal.s);
+		for(unsigned int i=0; i<program->procedures.size(); i++) {
+			Procedure *procedure = program->procedures[i];
+			IR::Procedure *irProcedure = new IR::Procedure(procedure->name);
 
 			// Emit procedure prologue
-			procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypePrologue, 0, 0));
+			irProcedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypePrologue, 0, 0));
 
 			// Emit argument loads for each procedure argument
-			Node *args = proc->children[1];
-			for(unsigned int j=0; j<args->children.size(); j++) {
-				IR::Symbol *symbol = procedure->addSymbol(args->children[j]->lexVal.s, Front::Type::find(args->children[j]->children[0]->lexVal.s));
-				procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, symbol, 0, j));
+			for(unsigned int j=0; j<procedure->arguments.size(); j++) {
+				IR::Symbol *symbol = irProcedure->addSymbol(procedure->arguments[j]->name, procedure->arguments[j]->type);
+				irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, symbol, 0, j));
 			}
 
 			// Emit procedure body
-			processNode(proc->children[2], program, procedure);
+			processNode(procedure->body, irProgram, irProcedure);
 
 			// Emit function epilogue
-			procedure->entries().insert(procedure->entries().end(), new IR::EntryOneAddrImm(IR::Entry::TypeEpilogue, 0, 0));
+			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryOneAddrImm(IR::Entry::TypeEpilogue, 0, 0));
 
 			// Add procedure to procedure list
-			program->addProcedure(procedure);
+			irProgram->addProcedure(irProcedure);
 		}
 
-		return program;
+		return irProgram;
 	}
 
 	/*!

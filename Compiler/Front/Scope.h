@@ -11,15 +11,13 @@ namespace Front {
 	 */
 	class Scope {
 	public:
-		Scope(Scope *parent = 0, Symbol *procedure = 0);
+		Scope(Scope *parent = 0);
 
-		Symbol *procedure() { return mProcedure; } //!< Procedure containing scope
 		bool addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
 
 	private:
 		Scope *mParent; //!< Parent scope
-		Symbol *mProcedure; //!< Procedure containing scope
 		std::vector<Symbol*> mSymbols; //!< Collection of symbols
 	};
 }

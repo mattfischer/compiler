@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Front\ProgramGenerator.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Front\Scope.cpp"
 				>
 			</File>
@@ -267,10 +271,6 @@
 					RelativePath=".\Front\Type.cpp"
 					>
 				</File>
-				<File
-					RelativePath=".\Front\TypeChecker.cpp"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Transform"
@@ -346,6 +346,18 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\Front\Procedure.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Front\Program.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Front\ProgramGenerator.h"
+				>
+			</File>
 			<File
 				RelativePath=".\Front\Scope.h"
 				>
@@ -451,10 +463,6 @@
 				</File>
 				<File
 					RelativePath=".\Front\Type.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\TypeChecker.h"
 					>
 				</File>
 			</Filter>

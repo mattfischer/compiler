@@ -6,6 +6,7 @@
 #include "IR/Symbol.h"
 
 #include "Front/Node.h"
+#include "Front/Program.h"
 
 #include <string>
 
@@ -15,7 +16,7 @@ namespace Front {
 	 */
 	class IRGenerator {
 	public:
-		IR::Program *generate(Node *tree);
+		IR::Program *generate(Program *program);
 
 	private:
 		void processNode(Node *node, IR::Program *program, IR::Procedure *procedure);

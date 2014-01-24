@@ -1,15 +1,8 @@
-#include "TypeChecker.h"
+#include "Front/ProgramGenerator.h"
 
-#include "Front/Node.h"
-#include "Front/Type.h"
-
-#include <exception>
 #include <sstream>
-#include <stdio.h>
-#include <stdarg.h>
 
 namespace Front {
-
 	/*!
 	 * \brief Exception thrown when a type error occurs
 	 */
@@ -33,71 +26,115 @@ namespace Front {
 	};
 
 	/*!
-	 * \brief Check a program's type correctness
-	 * \param node Root of syntax tree
-	 * \return True if types are correct
+	 * \brief Constructor
+	 * \param tree Abstract syntax tree
 	 */
-	bool TypeChecker::check(Node *node)
+	ProgramGenerator::ProgramGenerator(Node *tree)
+	{
+		mTree = tree;
+	}
+
+	/*!
+	 * \brief Generate a program
+	 * \return Program structure
+	 */
+	Program *ProgramGenerator::generate()
 	{
 		try {
-			Scope globalScope;
+			// Create the root program object
+			Program *program = new Program;
+			program->globals = new Scope();
 
-			// Check each procedure in turn
-			for(unsigned int i=0; i<node->children.size(); i++) {
-				Node *procedureNode = node->children[i];
+			// Iterate through the tree's procedure definitions
+			for(unsigned int i=0; i<mTree->children.size(); i++) {
+				// Construct a procedure object
+				Procedure *procedure = new Procedure;
+				Node *procedureNode = mTree->children[i];
 
-				// Construct the procedure type
-				Type *returnType = findType(procedureNode->children[0]);
+				// Begin populating the procedure object
+				procedure->name = procedureNode->lexVal.s;
+				procedure->locals = new Scope(program->globals);
+
+				// Iterate the tree's argument items
 				Node *argumentList = procedureNode->children[1];
 				std::vector<Type*> argumentTypes;
-				for(unsigned int i=0; i<argumentList->children.size(); i++) {
-					argumentTypes.push_back(findType(argumentList->children[i]->children[0]));
+				for(unsigned int j=0; j<argumentList->children.size(); j++) {
+					// Construct the argument type, and add it to the list of types
+					Type *argumentType = createType(argumentList->children[j]->children[0]);
+					argumentTypes.push_back(argumentType);
+
+					// Construct a symbol for the argument, and add it to the procedure's scope and argument list
+					Symbol *argument = new Symbol(argumentType, argumentList->children[j]->lexVal.s);
+					procedure->locals->addSymbol(argument);
+					procedure->arguments.push_back(argument);
 				}
+
+				// Construct the procedure type
+				Type *returnType = createType(procedureNode->children[0]);
 				TypeProcedure *procedureType = new TypeProcedure(returnType, argumentTypes);
+				procedure->type = procedureType;
 
 				// Construct the procedure symbol
-				Symbol *procedure = new Symbol(procedureType, procedureNode->lexVal.s);
-				globalScope.addSymbol(procedure);
+				Symbol *procedureSymbol = new Symbol(procedure->type, procedure->name);
+				program->globals->addSymbol(procedureSymbol);
 
-				// Construct a scope for the procedure, and add the parameters into it
-				Scope localScope(&globalScope, procedure);
-				for(unsigned int j=0; j<procedureType->argumentTypes.size(); j++) {
-					localScope.addSymbol(new Symbol(procedureType->argumentTypes[j], argumentList->children[j]->lexVal.s));
-				}
-
-				// Check the procedure body
-				check(procedureNode->children[2], localScope);
+				// Type check the body of the procedure
+				procedure->body = procedureNode->children[2];
+				checkType(procedure->body, procedure);
 				procedureNode->type = TypeNone;
+
+				// Add the procedure to the program's procedure list
+				program->procedures.push_back(procedure);
 			}
+			return program;
 		} catch(TypeError error) {
 			// Collect the error message and line from the exception
 			mErrorLine = error.node()->line;
 			mErrorMessage = error.message();
-			return false;
+			return 0;
 		}
-
-		return true;
 	}
 
 	/*!
-	 * \brief Check a node in the syntax tree
-	 * \param node Node to check
-	 * \param procedure Procedure being checked
-	 * \param scope Scope of variables
+	 * \brief Search for a type named by a node
+	 * \param node Node describing type
+	 * \return Type
 	 */
-	void TypeChecker::check(Node *node, Scope &scope)
+	Type *ProgramGenerator::createType(Node *node)
+	{
+		std::string name = node->lexVal.s;
+		Type *type = Type::find(name);
+		if(!type) {
+			std::stringstream s;
+			s << "Type '" << name << "' not found.";
+			throw TypeError(node, s.str());
+		}
+
+		return type;
+	}
+
+	/*!
+	 * \brief Type check a syntax tree node
+	 * \param node Node to check
+	 * \param procedure Procedure that contains the current node
+	 */
+	void ProgramGenerator::checkType(Node *node, Procedure *procedure)
 	{
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
+				checkChildren(node, procedure);
+				node->type = TypeNone;
+				break;
+
 			case Node::NodeTypePrint:
-				checkChildren(node, scope);
+				checkChildren(node, procedure);
 				node->type = TypeNone;
 				break;
 
 			case Node::NodeTypeCall:
 				{
 					// First, check all child nodes
-					checkChildren(node, scope);
+					checkChildren(node, procedure);
 
 					// Check that call target is a procedure type
 					Node *procedureNode = node->children[0];
@@ -125,28 +162,28 @@ namespace Front {
 
 					// Checks succeeded, assign return type to the call node
 					node->type = procedureType->returnType;
-				break;
+					break;
 				}
 
 			case Node::NodeTypeVarDecl:
 				{
 					// Add the declared variable to the current scope
-					Type *type = findType(node->children[0]);
-					scope.addSymbol(new Symbol(type, node->lexVal.s));
+					Type *type = createType(node->children[0]);
+					procedure->locals->addSymbol(new Symbol(type, node->lexVal.s));
 					node->type = TypeNone;
 					break;
 				}
 
 			case Node::NodeTypeAssign:
 				{
-					checkChildren(node, scope);
+					checkChildren(node, procedure);
 
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
 					if(lhs->nodeType == Node::NodeTypeId || lhs->nodeType == Node::NodeTypeVarDecl) {
 						// Search for the target variable in the current scope
 						std::string name = lhs->lexVal.s;
-						Symbol *symbol = scope.findSymbol(name);
+						Symbol *symbol = procedure->locals->findSymbol(name);
 						if(symbol) {
 							// Confirm target type matches source type
 							if(!Type::equals(symbol->type, rhs->type)) {
@@ -166,7 +203,7 @@ namespace Front {
 
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:
-				checkChildren(node, scope);
+				checkChildren(node, procedure);
 				if(!Type::equals(node->children[0]->type, TypeBool)) {
 					throw TypeError(node, "Type mismatch");
 				}
@@ -175,7 +212,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeCompare:
-				checkChildren(node, scope);
+				checkChildren(node, procedure);
 
 				// Check that types match
 				if(!Type::equals(node->children[0]->type, TypeInt) ||
@@ -186,7 +223,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeArith:
-				checkChildren(node, scope);
+				checkChildren(node, procedure);
 
 				// Check that types match
 				if(!Type::equals(node->children[0]->type, TypeInt) ||
@@ -200,7 +237,7 @@ namespace Front {
 				{
 					// Search for the named symbol in the current scope
 					std::string name = node->lexVal.s;
-					Symbol *symbol = scope.findSymbol(name);
+					Symbol *symbol = procedure->locals->findSymbol(name);
 					if(!symbol) {
 						std::stringstream s;
 						s << "Undefined variable '" << name << "'";
@@ -216,11 +253,10 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeReturn:
-				check(node->children[0], scope);
+				checkType(node->children[0], procedure);
 
 				// Check that return argument matches the procedure's return type
-				TypeProcedure *procedureType = (TypeProcedure*)scope.procedure()->type;
-				if(node->children[0]->type != procedureType->returnType) {
+				if(!Type::equals(node->children[0]->type, procedure->type->returnType)) {
 					throw TypeError(node, "Type mismatch");
 				}
 				node->type = TypeNone;
@@ -229,33 +265,14 @@ namespace Front {
 	}
 
 	/*!
-	 * \brief Check the children of a node
+	 * \brief Check all children of a node
 	 * \param node Node to check
-	 * \param procedure Current procedure
-	 * \param scope Active scope
+	 * \param procedure Procedure current node belongs to
 	 */
-	void TypeChecker::checkChildren(Node *node, Scope &scope)
+	void ProgramGenerator::checkChildren(Node *node, Procedure *procedure)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
-			check(node->children[i], scope);
+			checkType(node->children[i], procedure);
 		}
-	}
-
-	/*!
-	 * \brief Search for a type named by a node
-	 * \param node Node describing type
-	 * \return Type
-	 */
-	Type *TypeChecker::findType(Node *node)
-	{
-		std::string name = node->lexVal.s;
-		Type *type = Type::find(name);
-		if(!type) {
-			std::stringstream s;
-			s << "Type '" << name << "' not found.";
-			throw TypeError(node, s.str());
-		}
-
-		return type;
 	}
 }

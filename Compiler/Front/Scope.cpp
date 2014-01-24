@@ -6,10 +6,9 @@ namespace Front {
 	* \param parent Parent scope
 	* \param procedure Procedure containing scope
 	*/
-	Scope::Scope(Scope *parent, Symbol *procedure)
+	Scope::Scope(Scope *parent)
 	{
 		mParent = parent;
-		mProcedure = procedure;
 	}
 
 	/*!
