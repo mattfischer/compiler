@@ -27,7 +27,8 @@ namespace Front {
 			NodeTypeArith, //!< Arithmetic operators
 			NodeTypeConstant, //!< Numeric constant
 			NodeTypeId, //!< Identifier
-			NodeTypeCall //!< Procedure call
+			NodeTypeCall, //!< Procedure call
+			NodeTypeArray //!< Array type
 		};
 
 		/*!

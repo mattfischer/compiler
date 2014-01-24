@@ -68,6 +68,9 @@ namespace Front {
 				return true;
 			}
 
+			case TypeArray:
+				return Type::equals(((Front::TypeArray*)a)->baseType, ((Front::TypeArray*)b)->baseType);
+
 			case TypeNone:
 				return true;
 		}

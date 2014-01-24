@@ -264,10 +264,19 @@ Node *Parser::parseVariableDeclaration()
 
 Node *Parser::parseType()
 {
-	// <Type> := <Identifier>
+	Node *node;
+
 	if(match(Tokenizer::Token::TypeIdentifier)) {
 		if(Type::find(next().text)) {
-			return parseIdentifier();
+			node = parseIdentifier();
+			if(matchLiteral("[")) {
+				consume();
+				expectLiteral("]");
+				Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
+				arrayNode->children.push_back(node);
+				node = arrayNode;
+			}
+			return node;
 		}
 	}
 

@@ -102,12 +102,17 @@ namespace Front {
 	 */
 	Type *ProgramGenerator::createType(Node *node)
 	{
-		std::string name = node->lexVal.s;
-		Type *type = Type::find(name);
-		if(!type) {
-			std::stringstream s;
-			s << "Type '" << name << "' not found.";
-			throw TypeError(node, s.str());
+		Type *type = 0;
+		if(node->nodeType == Node::NodeTypeArray) {
+			type = new TypeArray(createType(node->children[0]));
+		} else {
+			std::string name = node->lexVal.s;
+			type = Type::find(name);
+			if(!type) {
+				std::stringstream s;
+				s << "Type '" << name << "' not found.";
+				throw TypeError(node, s.str());
+			}
 		}
 
 		return type;

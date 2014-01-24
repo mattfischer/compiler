@@ -10,6 +10,7 @@ namespace Front {
 		enum TypeType {
 			TypeIntrinsic,
 			TypeProcedure,
+			TypeArray,
 			TypeNone
 		};
 
@@ -59,6 +60,15 @@ namespace Front {
 
 	private:
 		std::string getTypeName(Type *returnType, std::vector<Type*> argumentTypes);
+	};
+
+	class TypeArray : public Type {
+	public:
+		Type *baseType;
+
+		TypeArray(Type *_baseType)
+			: Type(Type::TypeArray, _baseType->name + "[]", 0), baseType(_baseType)
+		{}
 	};
 
 	extern Type *TypeNone;
