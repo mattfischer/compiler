@@ -1,5 +1,7 @@
 #include "Type.h"
 
+#include <sstream>
+
 namespace Front {
 	TypeIntrinsic _TypeInt(TypeIntrinsic::Int, "int", 4);
 	Type *TypeInt = &_TypeInt;
@@ -71,5 +73,19 @@ namespace Front {
 		}
 
 		return false;
+	}
+
+	std::string TypeProcedure::getTypeName(Type *returnType, std::vector<Type*> argumentTypes)
+	{
+		std::stringstream s;
+		s << returnType->name << "(";
+		for(unsigned int i=0; i<argumentTypes.size(); i++) {
+			s << argumentTypes[i]->name;
+			if(i < argumentTypes.size() - 1) {
+				s << ", ";
+			}
+		}
+		s << ")";
+		return s.str();
 	}
 }

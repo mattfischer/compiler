@@ -54,8 +54,11 @@ namespace Front {
 		std::vector<Type*> argumentTypes;
 
 		TypeProcedure(Type *_returnType, std::vector<Type*> _argumentTypes)
-			: Type(Type::TypeProcedure, "", 0), returnType(_returnType), argumentTypes(_argumentTypes)
+			: Type(Type::TypeProcedure, getTypeName(_returnType, _argumentTypes), 0), returnType(_returnType), argumentTypes(_argumentTypes)
 		{}
+
+	private:
+		std::string getTypeName(Type *returnType, std::vector<Type*> argumentTypes);
 	};
 
 	extern Type *TypeNone;
