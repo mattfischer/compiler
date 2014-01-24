@@ -3,6 +3,7 @@
 
 #include "Front/Node.h"
 #include "Front/Type.h"
+#include "Front/Scope.h"
 
 #include <string>
 #include <vector>
