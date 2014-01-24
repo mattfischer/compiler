@@ -32,6 +32,10 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
+	std::cout << "Program:" << std::endl;
+	program->print();
+	std::cout << std::endl;
+
 	Front::IRGenerator generator;
 	IR::Program *irProgram = generator.generate(program);
 	if(!irProgram) {
@@ -44,7 +48,15 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
+	std::cout << "IR (before optimization): " << std::endl;
+	irProgram->print();
+	std::cout << std::endl;
+
 	Middle::Optimizer::optimize(irProgram);
+
+	std::cout << "IR (after optimization): " << std::endl;
+	irProgram->print();
+	std::cout << std::endl;
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	std::cout << "Code:" << std::endl;

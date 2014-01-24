@@ -4,6 +4,7 @@
 #include "Front/Type.h"
 
 #include <vector>
+#include <iostream>
 
 namespace Front {
 	/*!
@@ -57,6 +58,8 @@ namespace Front {
 		};
 		LexVal lexVal; //!< Lexical value from tokenizer
 	};
+
+	std::ostream &operator<<(std::ostream &o, Node *node);
 }
 
 #endif

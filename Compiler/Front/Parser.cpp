@@ -152,6 +152,7 @@ Node *Parser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeS
 	Node *node = new Node;
 	node->nodeType = nodeType;
 	node->nodeSubtype = nodeSubtype;
+	node->type = 0;
 	node->line = line;
 
 	// Add the node to the list of nodes, so that they can all be deleted if an error occurs

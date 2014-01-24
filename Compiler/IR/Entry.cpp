@@ -17,7 +17,6 @@ namespace IR {
 		/* TypeLabel      */ "         ",
 		/* TypeJump		  */ "jmp      ",
 		/* TypeCJump	  */ "cjmp     ",
-		/* TypeNCJump	  */ "ncjmp    ",
 		/* TypePhi	      */ "phi      ",
 		/* TypeCall       */ "call     ",
 		/* TypeLoadRet    */ "ldret    ",
