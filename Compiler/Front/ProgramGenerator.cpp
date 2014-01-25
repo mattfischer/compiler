@@ -266,6 +266,19 @@ namespace Front {
 				}
 				node->type = TypeNone;
 				break;
+
+			case Node::NodeTypeNew:
+				{
+					Node *typeNode = node->children[0];
+					node->type = createType(typeNode);
+					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
+						checkType(typeNode->children[1], procedure);
+						if(!Type::equals(typeNode->children[1]->type, TypeInt)) {
+							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
+						}
+					}
+					break;
+				}
 		}
 	}
 

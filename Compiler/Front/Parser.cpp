@@ -268,7 +268,7 @@ Node *Parser::parseVariableDeclaration()
 	return node;
 }
 
-Node *Parser::parseType()
+Node *Parser::parseType(bool required)
 {
 	Node *node;
 
@@ -283,6 +283,11 @@ Node *Parser::parseType()
 			}
 			return node;
 		}
+	}
+
+	// Throw an error if a type was required and none was found
+	if(required) {
+		errorExpected("<type>");
 	}
 
 	return 0;
@@ -532,6 +537,26 @@ Node *Parser::parseBaseExpression(bool required)
 		return node;
 	} else if(node = parseIdentifier()) {
 		// <BaseExpression> := <Identifier>
+		return node;
+	} else if(matchLiteral("new")) {
+		node = newNode(Node::NodeTypeNew, next().line);
+		consume();
+
+		Node *type = parseType(true);
+		if(matchLiteral("[")) {
+			// <BaseExpression> := 'new' <Type> '[' <Expression> ']'
+			consume();
+			Node *count = parseExpression(true);
+			expectLiteral("]");
+			Node *arrayType = newNode(Node::NodeTypeArray, type->line);
+			arrayType->children.push_back(type);
+			arrayType->children.push_back(count);
+			type = arrayType;
+		} else {
+			// <BaseExpression> := 'new' <Type>
+		}
+
+		node->children.push_back(type);
 		return node;
 	}
 

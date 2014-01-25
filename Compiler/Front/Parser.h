@@ -46,7 +46,7 @@ private:
 	Node *parseProcedure();
 	Node *parseArgumentDeclarationList();
 	Node *parseVariableDeclaration();
-	Node *parseType();
+	Node *parseType(bool required = false);
 	Node *parseStatementList();
 	Node *parseStatement(bool required = false);
 	Node *parseClause(bool required = false);

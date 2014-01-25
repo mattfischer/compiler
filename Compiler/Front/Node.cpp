@@ -14,7 +14,8 @@ const char *typeNames[] = {
 	/* NodeTypeConstant     */ "constant",
 	/* NodeTypeId           */ "identifier",
 	/* NodeTypeCall         */ "call",
-	/* NodeTypeArray        */ "array"
+	/* NodeTypeArray        */ "array",
+	/* NodeTypeNew          */ "new"
 };
 
 const char *subtypeNames[] = {

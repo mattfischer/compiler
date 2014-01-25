@@ -28,7 +28,8 @@ namespace Front {
 			NodeTypeConstant, //!< Numeric constant
 			NodeTypeId, //!< Identifier
 			NodeTypeCall, //!< Procedure call
-			NodeTypeArray //!< Array type
+			NodeTypeArray, //!< Array type
+			NodeTypeNew //!< Allocate new object
 		};
 
 		/*!
