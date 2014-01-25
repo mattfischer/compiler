@@ -19,8 +19,10 @@ Tokenizer::Tokenizer(const std::string &filename)
 	mColumn = 0;
 	mError = false;
 
-	// Get the first token in the stream
-	getNext();
+	for(int i=0; i<NumLookahead; i++) {
+		// Get the first token in the stream
+		mNext[i] = getNext();
+	}
 }
 
 /*!
@@ -28,26 +30,31 @@ Tokenizer::Tokenizer(const std::string &filename)
  */
 void Tokenizer::consume()
 {
-	if(!mError && mNext.type != Token::TypeEnd) {
-		getNext();
+	if(!mError && mNext[0].type != Token::TypeEnd) {
+		for(int i=0; i<NumLookahead - 1; i++) {
+			mNext[i] = mNext[i+1];
+		}
+		mNext[NumLookahead - 1] = getNext();
 	}
 }
 
 /*!
  * \brief Get the next token in the stream
  */
-void Tokenizer::getNext()
+Tokenizer::Token Tokenizer::getNext()
 {
+	Token next;
+
 	// Start out by moving past any whitespace
 	skipWhitespace();
 
 	// Check if we've reached the end of the file
 	if(!fillBuffer(1)) {
-		mNext.type = Token::TypeEnd;
-		mNext.text = "";
-		mNext.line = mLine;
-		mNext.column = mColumn;
-		return;
+		next.type = Token::TypeEnd;
+		next.text = "";
+		next.line = mLine;
+		next.column = mColumn;
+		return next;
 	}
 
 	// Scan through the list of literals and see if any match
@@ -62,12 +69,12 @@ void Tokenizer::getNext()
 
 		// If the buffer matches, construct a token out of it and remove it from the buffer
 		if(mBuffer.substr(0, len) == lit) {
-			mNext.type = Token::TypeLiteral;
-			mNext.text = mBuffer.substr(0, len);
-			mNext.line = mLine;
-			mNext.column = mColumn;
+			next.type = Token::TypeLiteral;
+			next.text = mBuffer.substr(0, len);
+			next.line = mLine;
+			next.column = mColumn;
 			emptyBuffer(len);
-			return;
+			return next;
 		}
 	}
 
@@ -82,12 +89,12 @@ void Tokenizer::getNext()
 		}
 
 		// Construct a token out of the characters found
-		mNext.type = Token::TypeIdentifier;
-		mNext.text = mBuffer.substr(0, len);
-		mNext.line = mLine;
-		mNext.column = mColumn;
+		next.type = Token::TypeIdentifier;
+		next.text = mBuffer.substr(0, len);
+		next.line = mLine;
+		next.column = mColumn;
 		emptyBuffer(len);
-		return;
+		return next;
 	}
 
 	// If an identifier couldn't be found, check for a number
@@ -101,12 +108,12 @@ void Tokenizer::getNext()
 		}
 
 		// Construct a token out of the characters found
-		mNext.type = Token::TypeNumber;
-		mNext.text = mBuffer.substr(0, len);
-		mNext.line = mLine;
-		mNext.column = mColumn;
+		next.type = Token::TypeNumber;
+		next.text = mBuffer.substr(0, len);
+		next.line = mLine;
+		next.column = mColumn;
 		emptyBuffer(len);
-		return;
+		return next;
 	}
 
 	// Nothing matched, log an error
@@ -114,6 +121,8 @@ void Tokenizer::getNext()
 	std::stringstream ss;
 	ss << "Illegal symbol '" << mBuffer[0] << "'";
 	mErrorMessage = ss.str();
+
+	return next;
 }
 
 /*!

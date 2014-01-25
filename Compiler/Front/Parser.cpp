@@ -43,11 +43,12 @@ Parser::Parser(Tokenizer &tokenizer)
 
 /*!
  * \brief Get the next token in the stream
+ * \param Token number
  * \return Next token
  */
-const Tokenizer::Token &Parser::next()
+const Tokenizer::Token &Parser::next(int num)
 {
-	return mTokenizer.next();
+	return mTokenizer.next(num);
 }
 
 /*!
@@ -93,12 +94,13 @@ void Parser::expectLiteral(const std::string &text)
 /*!
  * \brief Check if the next token is of a given type
  * \param type Type of token to match
+ * \param num Lookahead number
  * \return True if next token matches
  */
-bool Parser::match(Tokenizer::Token::Type type)
+bool Parser::match(Tokenizer::Token::Type type, int num)
 {
 	// Check if the tokenizer has an error or if the next token is of a different type
-	if(mTokenizer.error() || next().type != type) {
+	if(mTokenizer.error() || next(num).type != type) {
 		return false;
 	}
 
@@ -108,12 +110,13 @@ bool Parser::match(Tokenizer::Token::Type type)
 /*!
  * \brief Check if the next token is a literal with the given text
  * \param text Text of literal to match
+ * \param num Lookahead number
  * \return True if next token matches
  */
-bool Parser::matchLiteral(const std::string &text)
+bool Parser::matchLiteral(const std::string &text, int num)
 {
 	// Check if the tokenizer has an error or if the next token is a literal with the given text
-	if(mTokenizer.error() || next().type != Tokenizer::Token::TypeLiteral || next().text != text) {
+	if(mTokenizer.error() || next(num).type != Tokenizer::Token::TypeLiteral || next(num).text != text) {
 		return false;
 	}
 
@@ -121,11 +124,14 @@ bool Parser::matchLiteral(const std::string &text)
 }
 
 /*!
- * \brief Consume the next token
+ * \brief Consume the next tokens
+ * \param num Number of tokens to conume
  */
-void Parser::consume()
+void Parser::consume(int num)
 {
-	mTokenizer.consume();
+	for(int i=0; i<num; i++) {
+		mTokenizer.consume();
+	}
 }
 
 /*!
@@ -269,9 +275,8 @@ Node *Parser::parseType()
 	if(match(Tokenizer::Token::TypeIdentifier)) {
 		if(Type::find(next().text)) {
 			node = parseIdentifier();
-			if(matchLiteral("[")) {
-				consume();
-				expectLiteral("]");
+			if(matchLiteral("[") && matchLiteral("]", 1)) {
+				consume(2);
 				Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
 				arrayNode->children.push_back(node);
 				node = arrayNode;

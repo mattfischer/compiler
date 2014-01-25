@@ -43,7 +43,7 @@ public:
 		static std::string typeName(Type type);
 	};
 
-	const Token &next() { return mNext; } //!< Next token in token stream
+	const Token &next(int num = 0) { return mNext[num]; } //!< Next token in token stream
 	bool error() { return mError; } //!< True if an error has occurred
 	const std::string &errorMessage() { return mErrorMessage; } //!< Error message, if any
 
@@ -55,7 +55,8 @@ public:
 private:
 	std::ifstream mStream; //!< Underlying file stream
 
-	Token mNext; //!< Next token
+	static const int NumLookahead = 2;
+	Token mNext[NumLookahead]; //!< Next tokens
 	std::string mBuffer; //!< Buffer containing upcoming characters
 	int mLine; //!< Current line
 	int mColumn; //!< Current column
@@ -63,7 +64,7 @@ private:
 	bool mError; //!< True if error
 	std::string mErrorMessage; //!< Error message, if any
 
-	void getNext();
+	Token getNext();
 	bool fillBuffer(size_t length);
 	void emptyBuffer(size_t length);
 	void skipWhitespace();

@@ -29,13 +29,13 @@ private:
 	int mErrorLine; //!< Error line
 	int mErrorColumn; //!< Error column
 
-	const Tokenizer::Token &next();
+	const Tokenizer::Token &next(int num = 0);
 	void expect(Tokenizer::Token::Type type);
 	void expectLiteral(const std::string &text);
-	bool match(Tokenizer::Token::Type type);
-	bool matchLiteral(const std::string &text);
+	bool match(Tokenizer::Token::Type type, int num = 0);
+	bool matchLiteral(const std::string &text, int num = 0);
 	void errorExpected(const std::string &expected);
-	void consume();
+	void consume(int num = 1);
 
 	std::vector<Node*> mNodes; //!< List of all nodes created so far
 
