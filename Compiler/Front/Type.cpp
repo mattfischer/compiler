@@ -45,7 +45,7 @@ namespace Front {
 
 		switch(a->type) {
 			case TypeIntrinsic:
-				return ((Front::TypeIntrinsic*)a)->intrinsicType == ((Front::TypeIntrinsic*)b)->intrinsicType;
+				return a == b;
 
 			case TypeProcedure:
 			{
