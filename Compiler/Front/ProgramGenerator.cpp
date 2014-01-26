@@ -115,6 +115,7 @@ namespace Front {
 			}
 		}
 
+		node->type = type;
 		return type;
 	}
 
@@ -270,7 +271,9 @@ namespace Front {
 			case Node::NodeTypeNew:
 				{
 					Node *typeNode = node->children[0];
-					node->type = createType(typeNode);
+					typeNode->type = createType(typeNode);
+					node->type = typeNode->type;
+
 					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], procedure);
 						if(!Type::equals(typeNode->children[1]->type, TypeInt)) {

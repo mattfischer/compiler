@@ -70,6 +70,7 @@ namespace VM {
 	const int TwoAddrMultImm = 0x1; //!< Multiply immediate with a register
 	const int TwoAddrLoad = 0x2; //!< Load register from stack
 	const int TwoAddrStore = 0x3; //!< Store register to stack
+	const int TwoAddrNew = 0x4; //!< Allocate new memory
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
 	const int ThreeAddrMult = 0x1; //!< Multiply two registers

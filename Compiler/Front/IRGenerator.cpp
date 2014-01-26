@@ -267,6 +267,30 @@ namespace Front {
 						break;
 				}
 				break;
+
+			case Node::NodeTypeNew:
+				// Construct a new temporary to hold value
+				result = procedure->newTemp(node->type);
+
+				Node *arg = node->children[0];
+				IR::Symbol *size = procedure->newTemp(TypeInt);
+				if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
+					// Array allocation: total size is typeSize * count
+					Type *type = arg->children[0]->type;
+					IR::Symbol *typeSize = procedure->newTemp(TypeInt);
+					procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, typeSize, type->size));
+
+					IR::Symbol *count = processRValue(arg->children[1], program, procedure);
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
+				} else {
+					// Single allocation: total size is typeSize
+					Type *type = arg->type;
+					procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, size, type->size));
+				}
+
+				// Emit new entry
+				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNew, result, size));
+				break;
 		}
 
 		return result;

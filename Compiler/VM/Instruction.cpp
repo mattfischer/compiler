@@ -86,6 +86,9 @@ namespace VM {
 				}
 				break;
 
+			case TwoAddrNew:
+				o << "new " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc);
+				break;
 		}
 	}
 

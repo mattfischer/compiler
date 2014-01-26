@@ -264,6 +264,14 @@ namespace Back {
 						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
 						break;
 					}
+
+				case IR::Entry::TypeNew:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrNew, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						break;
+					}
+
 			}
 		}
 
