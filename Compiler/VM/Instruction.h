@@ -67,8 +67,9 @@ namespace VM {
 	const int InstrMultReg = 0x3; //!< Multiple-register instruction type
 
 	const int TwoAddrAddImm = 0x0; //!< Add immediate to register
-	const int TwoAddrLoad = 0x1; //!< Load register from stack
-	const int TwoAddrStore = 0x2; //!< Store register to stack
+	const int TwoAddrMultImm = 0x1; //!< Multiply immediate with a register
+	const int TwoAddrLoad = 0x2; //!< Load register from stack
+	const int TwoAddrStore = 0x3; //!< Store register to stack
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
 	const int ThreeAddrMult = 0x1; //!< Multiply two registers

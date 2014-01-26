@@ -482,7 +482,7 @@ Node *Parser::parseMultiplyExpression(bool required)
 		// <MultiplyExpression> := <FunctionExpression> '*' <MultiplyExpression>
 		consume();
 
-		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeAdd);
+		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeMultiply);
 		node->children.push_back(arg1);
 		node->children.push_back(parseMultiplyExpression(true));
 

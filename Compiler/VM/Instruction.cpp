@@ -66,6 +66,10 @@ namespace VM {
 				}
 				break;
 
+			case TwoAddrMultImm:
+				o << "mult " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
+				break;
+
 			case TwoAddrLoad:
 				if(instr.u.two.imm == 0) {
 					o << "ldr " << regName(instr.u.two.regDst) << ", [" << regName(instr.u.two.regSrc) << "]";

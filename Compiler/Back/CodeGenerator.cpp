@@ -118,6 +118,13 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeMultImm:
+					{
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrMultImm, regMap[twoAddrImm->lhs], regMap[twoAddrImm->rhs], twoAddrImm->imm));
+						break;
+					}
+
 				case IR::Entry::TypePrint:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;

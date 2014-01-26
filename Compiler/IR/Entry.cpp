@@ -11,6 +11,7 @@ namespace IR {
 		/* TypeAdd		  */ "add      ",
 		/* TypeAddImm     */ "addi     ",
 		/* TypeMult		  */ "mult     ",
+		/* TypeMultImm	  */ "multi    ",
 		/* TypePrint	  */ "print    ",
 		/* TypeEqual	  */ "equ      ",
 		/* TypeNequal	  */ "neq      ",

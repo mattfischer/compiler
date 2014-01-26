@@ -30,6 +30,7 @@ namespace IR {
 			TypeAdd, //!< Add two symbols together
 			TypeAddImm, //!< Add a constant to a symbol
 			TypeMult, //!< Multiply two symbols together
+			TypeMultImm, //!< Multiply a constant with a symbol
 			TypePrint, //!< Print a symbol
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality

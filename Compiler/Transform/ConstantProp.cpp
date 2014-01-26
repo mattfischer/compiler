@@ -122,20 +122,25 @@ namespace Transform {
 							// Create a new immediate load entry with the calculated value
 							newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
 						} else if(rhs1Const || rhs2Const) {
-							// If one argument is constant and the other is not, an Add entry can
-							// at least be turned into an Add Immediate entry
-							if(threeAddr->type == IR::Entry::TypeAdd) {
-								int constant;
-								IR::Symbol *symbol;
-								if(rhs1Const) {
-									constant = rhs1;
-									symbol = threeAddr->rhs2;
-								} else {
-									constant = rhs2;
-									symbol = threeAddr->rhs1;
-								}
+							// If one argument is constant and the other is not, an entry can
+							// at least be turned into an Immediate entry
+							int constant;
+							IR::Symbol *symbol;
+							if(rhs1Const) {
+								constant = rhs1;
+								symbol = threeAddr->rhs2;
+							} else {
+								constant = rhs2;
+								symbol = threeAddr->rhs1;
+							}
 
-								newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
+							switch(threeAddr->type) {
+								case IR::Entry::TypeAdd:
+									newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
+									break;
+								case IR::Entry::TypeMult:
+									newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeMultImm, threeAddr->lhs, symbol, constant);
+									break;
 							}
 						}
 
@@ -160,6 +165,7 @@ namespace Transform {
 						break;
 					}
 				case IR::Entry::TypeAddImm:
+				case IR::Entry::TypeMultImm:
 					{
 						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
 						int rhs;
@@ -168,7 +174,16 @@ namespace Transform {
 						// Determine if the symbol on the right hand side is constant
 						rhs = getValue(twoAddrImm, twoAddrImm->rhs, useDefs, rhsConst);
 						if(rhsConst) {
-							int value = rhs + twoAddrImm->imm;
+							int value;
+							switch(twoAddrImm->type) {
+								case IR::Entry::TypeAddImm:
+									value = rhs + twoAddrImm->imm;
+									break;
+
+								case IR::Entry::TypeMultImm:
+									value = rhs * twoAddrImm->imm;
+									break;
+							}
 
 							// Construct a Load Immediate entry to replace the current entry
 							IR::Entry *newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, value);

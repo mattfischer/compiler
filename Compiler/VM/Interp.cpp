@@ -53,6 +53,10 @@ namespace VM {
 							regs[instr.u.two.regDst] = regs[instr.u.two.regSrc] + instr.u.two.imm;
 							break;
 
+						case VM::TwoAddrMultImm:
+							regs[instr.u.two.regDst] = regs[instr.u.two.regSrc] * instr.u.two.imm;
+							break;
+
 						case VM::TwoAddrLoad:
 							regs[instr.u.two.regDst] = mem[regs[instr.u.two.regSrc] + instr.u.two.imm];
 							break;

@@ -19,7 +19,7 @@ int main()
   
   i = 0;
   while(i != 10) {
-    foo(i, 20);
+    foo(i * 10, 20);
     i = i + 1;
   }
   

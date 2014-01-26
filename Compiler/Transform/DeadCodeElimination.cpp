@@ -61,6 +61,7 @@ namespace Transform {
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeAddImm:
 				case IR::Entry::TypeMult:
+				case IR::Entry::TypeMultImm:
 				case IR::Entry::TypeLoadImm:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
