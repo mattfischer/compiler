@@ -71,7 +71,7 @@ namespace Front {
 		{}
 	};
 
-	extern Type *TypeNone;
+	extern Type *TypeVoid;
 	extern Type *TypeInt;
 	extern Type *TypeBool;
 }

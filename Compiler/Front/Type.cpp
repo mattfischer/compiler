@@ -9,13 +9,13 @@ namespace Front {
 	TypeIntrinsic _TypeBool(TypeIntrinsic::Int, "bool", 4);
 	Type *TypeBool = &_TypeBool;
 
-	Type _TypeNone(Type::TypeNone, "", 0);
-	Type *TypeNone = &_TypeNone;
+	Type _TypeVoid(Type::TypeNone, "void", 0);
+	Type *TypeVoid = &_TypeVoid;
 
 	std::vector<Type*> Type::sTypes;
 
 	void Type::init() {
-		sTypes.push_back(Front::TypeNone);
+		sTypes.push_back(Front::TypeVoid);
 		sTypes.push_back(Front::TypeInt);
 		sTypes.push_back(Front::TypeBool);
 	}

@@ -44,7 +44,7 @@ int main(int arg, char *argv[])
 
 	Middle::ErrorCheck errorCheck;
 	if(!errorCheck.check(irProgram)) {
-		std::cout << "Error, procedure " << errorCheck.errorProcedure() << ": " << errorCheck.errorMessage() << std::endl;
+		std::cout << "Error, procedure " << errorCheck.errorProcedure()->name() << ": " << errorCheck.errorMessage() << std::endl;
 		return 1;
 	}
 

@@ -20,7 +20,7 @@ namespace Front {
 		// Create an IR procedure for each procedure definition node
 		for(unsigned int i=0; i<program->procedures.size(); i++) {
 			Procedure *procedure = program->procedures[i];
-			IR::Procedure *irProcedure = new IR::Procedure(procedure->name);
+			IR::Procedure *irProcedure = new IR::Procedure(procedure->name, !Type::equals(procedure->type->returnType, TypeVoid));
 
 			// Emit procedure prologue
 			irProcedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypePrologue, 0, 0));
@@ -222,9 +222,11 @@ namespace Front {
 					// Emit procedure call
 					procedure->emit(new IR::EntryCall(program->findProcedure(node->children[0]->lexVal.s)));
 
-					// Assign return value to a new temporary
 					result = procedure->newTemp(node->type);
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+					if(procedure->returnsValue()) {
+						// Assign return value to a new temporary
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+					}
 					break;
 				}
 

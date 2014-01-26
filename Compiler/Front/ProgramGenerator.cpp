@@ -61,6 +61,9 @@ namespace Front {
 				for(unsigned int j=0; j<argumentList->children.size(); j++) {
 					// Construct the argument type, and add it to the list of types
 					Type *argumentType = createType(argumentList->children[j]->children[0]);
+					if(Type::equals(argumentType, TypeVoid)) {
+						throw TypeError(argumentList->children[j], "Cannot declare procedure argument of type void");
+					}
 					argumentTypes.push_back(argumentType);
 
 					// Construct a symbol for the argument, and add it to the procedure's scope and argument list
@@ -81,7 +84,7 @@ namespace Front {
 				// Type check the body of the procedure
 				procedure->body = procedureNode->children[2];
 				checkType(procedure->body, procedure);
-				procedureNode->type = TypeNone;
+				procedureNode->type = TypeVoid;
 
 				// Add the procedure to the program's procedure list
 				program->procedures.push_back(procedure);
@@ -104,7 +107,11 @@ namespace Front {
 	{
 		Type *type = 0;
 		if(node->nodeType == Node::NodeTypeArray) {
-			type = new TypeArray(createType(node->children[0]));
+			type = createType(node->children[0]);
+			if(Type::equals(type, TypeVoid)) {
+				throw TypeError(node, "Cannot declare array of voids");
+			}
+			type = new TypeArray(type);
 		} else {
 			std::string name = node->lexVal.s;
 			type = Type::find(name);
@@ -129,12 +136,12 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
 				checkChildren(node, procedure);
-				node->type = TypeNone;
+				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypePrint:
 				checkChildren(node, procedure);
-				node->type = TypeNone;
+				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypeCall:
@@ -175,8 +182,12 @@ namespace Front {
 				{
 					// Add the declared variable to the current scope
 					Type *type = createType(node->children[0]);
+					if(Type::equals(type, TypeVoid)) {
+						throw TypeError(node, "Cannot declare variable of void type");
+					}
+
 					procedure->locals->addSymbol(new Symbol(type, node->lexVal.s));
-					node->type = TypeNone;
+					node->type = TypeVoid;
 					break;
 				}
 
@@ -214,7 +225,7 @@ namespace Front {
 					throw TypeError(node, "Type mismatch");
 				}
 
-				node->type = TypeNone;
+				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypeCompare:
@@ -259,13 +270,17 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeReturn:
+				if(Type::equals(procedure->type->returnType, TypeVoid)) {
+					throw TypeError(node, "Return statement in void procedure");
+				}
+
 				checkType(node->children[0], procedure);
 
 				// Check that return argument matches the procedure's return type
 				if(!Type::equals(node->children[0]->type, procedure->type->returnType)) {
 					throw TypeError(node, "Type mismatch");
 				}
-				node->type = TypeNone;
+				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypeNew:

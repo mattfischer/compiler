@@ -1,11 +1,10 @@
-int foo(int x, int y)
+void foo(int x, int y)
 {
   print x;
   print y;
-  return 0;
 }
 
-int main()
+void main()
 {
   int i;
   int[] arr = new int[10];
@@ -37,6 +36,4 @@ int main()
   print c;
   print d;
   print d;
-   
-  return 0;
 }
