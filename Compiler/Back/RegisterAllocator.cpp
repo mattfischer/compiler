@@ -338,6 +338,12 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 	do {
 		// Attempt an allocation
 		registers = tryAllocate(procedure, success);
+
+		if(!success) {
+			std::cout << "*** IR (after spilling) ***" << std::endl;
+			procedure->print();
+			std::cout << std::endl;
+		}
 	} while(!success);
 
 	return registers;
