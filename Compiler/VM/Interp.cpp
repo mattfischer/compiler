@@ -1,5 +1,7 @@
 #include "VM/Interp.h"
 
+#include "VM/Heap.h"
+
 namespace VM {
 	/*!
 	 * \brief Run a VM program
@@ -10,6 +12,7 @@ namespace VM {
 		int regs[16];
 		int curPC;
 		int mem[1024];
+		Heap heap(mem, 1024, 0);
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
@@ -61,8 +64,12 @@ namespace VM {
 							regs[instr.u.two.regDst] = mem[regs[instr.u.two.regSrc] + instr.u.two.imm];
 							break;
 
-						case::VM::TwoAddrStore:
+						case VM::TwoAddrStore:
 							mem[regs[instr.u.two.regDst] + instr.u.two.imm] = regs[instr.u.two.regSrc];
+							break;
+
+						case VM::TwoAddrNew:
+							regs[instr.u.two.regDst] = heap.allocate(regs[instr.u.two.regSrc]);
 							break;
 					}
 					break;
