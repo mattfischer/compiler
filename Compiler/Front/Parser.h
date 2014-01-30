@@ -54,7 +54,7 @@ private:
 	Node *parseCompareExpression(bool required = false);
 	Node *parseAddExpression(bool required = false);
 	Node *parseMultiplyExpression(bool required = false);
-	Node *parseFunctionExpression(bool required = false);
+	Node *parseSuffixExpression(bool required = false);
 	Node *parseBaseExpression(bool required = false);
 	Node *parseExpressionList();
 	Node *parseIdentifier();

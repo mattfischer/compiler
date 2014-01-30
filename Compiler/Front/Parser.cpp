@@ -476,8 +476,8 @@ Node *Parser::parseAddExpression(bool required)
 
 Node *Parser::parseMultiplyExpression(bool required)
 {
-	// <MultiplyExpression> := <FunctionExpression> { '*' <FunctionExpression> }*
-	Node *node = parseFunctionExpression(required);
+	// <MultiplyExpression> := <SuffixExpression> { '*' <SuffixExpression> }*
+	Node *node = parseSuffixExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -488,7 +488,7 @@ Node *Parser::parseMultiplyExpression(bool required)
 
 			Node *multiplyNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeMultiply);
 			multiplyNode->children.push_back(node);
-			multiplyNode->children.push_back(parseFunctionExpression(true));
+			multiplyNode->children.push_back(parseSuffixExpression(true));
 			node = multiplyNode;
 			continue;
 		}
@@ -498,16 +498,18 @@ Node *Parser::parseMultiplyExpression(bool required)
 	return node;
 }
 
-Node *Parser::parseFunctionExpression(bool required)
+Node *Parser::parseSuffixExpression(bool required)
 {
-	// <FunctionExpression> := <BaseExpression> { '(' <ExpressionList> ')' }*
+	// <SuffixExpression> := <BaseExpression> ...
 	Node *node = parseBaseExpression(required);
 	if(!node) {
 		return 0;
 	}
 
+	// { ... }*
 	while(true) {
 		if(matchLiteral("(")) {
+			// '(' <ExpressionList> ')'
 			consume();
 
 			Node *callNode = newNode(Node::NodeTypeCall, node->line);
@@ -515,6 +517,18 @@ Node *Parser::parseFunctionExpression(bool required)
 			callNode->children.push_back(parseExpressionList());
 			expectLiteral(")");
 			node = callNode;
+
+			continue;
+		} else if(matchLiteral("[")) {
+			// '[' <Expression> ']'
+			consume();
+
+			Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
+			arrayNode->children.push_back(node);
+			arrayNode->children.push_back(parseExpression(true));
+			expectLiteral("]");
+			node = arrayNode;
+
 			continue;
 		}
 		break;

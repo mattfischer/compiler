@@ -297,6 +297,25 @@ namespace Front {
 					}
 					break;
 				}
+
+			case Node::NodeTypeArray:
+				{
+					checkChildren(node, procedure);
+					Node *arrayNode = node->children[0];
+					Node *indexNode = node->children[1];
+
+					if(arrayNode->type->type != Type::TypeArray) {
+						throw TypeError(arrayNode, "Attempt to take subscript of non-array");
+					}
+
+					if(!Type::equals(indexNode->type, TypeInt)) {
+						throw TypeError(indexNode, "Non-integral subscript");
+					}
+
+					TypeArray *typeArray = (TypeArray*)arrayNode->type;
+					node->type = typeArray->baseType;
+					break;
+				}
 		}
 	}
 
