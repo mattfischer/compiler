@@ -33,8 +33,8 @@ namespace Transform {
 				break;
 			}
 
-			IR::EntryOneAddrImm *imm = (IR::EntryOneAddrImm*)def;
-			if(isConstant && ret != imm->imm) {
+			IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)def;
+			if(isConstant && ret != twoAddrImm->imm) {
 				// If the definition is a constant, and is either the first constant
 				// encountered, or is equal to the value previously encountered, then
 				// it can still be considered a constant
@@ -43,7 +43,7 @@ namespace Transform {
 				break;
 			} else {
 				// Otherwise, the entry is not constant
-				ret = imm->imm;
+				ret = twoAddrImm->imm;
 				isConstant = true;
 			}
 		}
@@ -120,7 +120,7 @@ namespace Transform {
 							}
 
 							// Create a new immediate load entry with the calculated value
-							newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, value);
+							newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, threeAddr->lhs, 0, value);
 						} else if(rhs1Const || rhs2Const) {
 							// If one argument is constant and the other is not, an entry can
 							// at least be turned into an Immediate entry
@@ -186,7 +186,7 @@ namespace Transform {
 							}
 
 							// Construct a Load Immediate entry to replace the current entry
-							IR::Entry *newEntry = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, value);
+							IR::Entry *newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, 0, value);
 							const IR::EntrySet &entries = useDefs.uses(twoAddrImm);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);

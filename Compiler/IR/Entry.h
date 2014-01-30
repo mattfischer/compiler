@@ -128,28 +128,6 @@ namespace IR {
 	};
 
 	/*!
-	 * \brief One-address symbol plus an immediate constant
-	 */
-	struct EntryOneAddrImm : public Entry {
-		Symbol *lhs; //!< Left-hand side
-		int imm; //!< Immediate constant
-
-		/*!
-		 * \brief Constructor
-		 * \param _type Entry type
-		 * \param _lhs Left-hand side
-		 * \param _imm Immediate value
-		 */
-		EntryOneAddrImm(Type _type, Symbol *_lhs, int _imm);
-		virtual ~EntryOneAddrImm();
-
-		virtual void print(std::ostream &o) const;
-
-		virtual Symbol *assign();
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-	};
-
-	/*!
 	 * \brief Two-address entry: Left-hand side, right-hand side, and immediate constant
 	 */
 	struct EntryTwoAddrImm : public Entry {

@@ -231,11 +231,11 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			for(IR::EntrySet::const_iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
 				IR::Entry *def = *defIt;
 				if(def->type == IR::Entry::TypeLoadImm) {
-					IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)def;
+					IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)def;
 					if(!isConstant) {
-						value = oneAddrImm->imm;
+						value = twoAddrImm->imm;
 						isConstant = true;
-					} else if(oneAddrImm->imm != value) {
+					} else if(twoAddrImm->imm != value) {
 						isConstant = false;
 						break;
 					}
@@ -248,7 +248,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			IR::Entry *def;
 			if(isConstant) {
 				// If the entry was constant, then just rematerialize the constant
-				def = new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, symbol, value);
+				def = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, symbol, 0, value);
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx);
@@ -317,9 +317,9 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			IR::Entry *entry = *entryIt;
 
 			if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
-				IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
-				idx = oneAddrImm->imm;
-				oneAddrImm->imm++;
+				IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
+				idx = twoAddrImm->imm;
+				twoAddrImm->imm++;
 			}
 		}
 	}

@@ -92,7 +92,7 @@ namespace Back {
 
 				case IR::Entry::TypeLoadImm:
 					{
-						IR::EntryOneAddrImm *imm = (IR::EntryOneAddrImm*)entry;
+						IR::EntryTwoAddrImm *imm = (IR::EntryTwoAddrImm*)entry;
 						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[imm->lhs], imm->imm));
 						break;
 					}
@@ -233,26 +233,26 @@ namespace Back {
 
 				case IR::Entry::TypePrologue:
 					{
-						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
 						// Save all required registers for this function
 						if(savedRegs != 0) {
 							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
 						}
 
 						// Make space on the stack frame for any necessary spilled values
-						if(oneAddrImm->imm > 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -oneAddrImm->imm));
+						if(twoAddrImm->imm > 0) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -twoAddrImm->imm));
 						}
 						break;
 					}
 
 				case IR::Entry::TypeEpilogue:
 					{
-						IR::EntryOneAddrImm *oneAddrImm = (IR::EntryOneAddrImm*)entry;
+						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
 
 						// Advance the stack pointer past the spilled value range
-						if(oneAddrImm->imm > 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, oneAddrImm->imm));
+						if(twoAddrImm->imm > 0) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, twoAddrImm->imm));
 						}
 
 						// Reload all required registers

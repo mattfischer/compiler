@@ -87,35 +87,6 @@ namespace IR {
 		}
 	}
 
-	EntryOneAddrImm::EntryOneAddrImm(Type _type, Symbol *_lhs, int _imm)
-		: Entry(_type), lhs(_lhs), imm(_imm)
-	{
-	}
-
-	EntryOneAddrImm::~EntryOneAddrImm()
-	{
-	}
-
-	void EntryOneAddrImm::print(std::ostream &o) const
-	{
-		o << "  " << names[type];
-		if(lhs) {
-			o << lhs->name << ", ";
-		}
-
-		o << imm;
-	}
-
-	void EntryOneAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
-	{
-		lhs = newSymbol;
-	}
-
-	Symbol *EntryOneAddrImm::assign()
-	{
-		return lhs;
-	}
-
 	EntryTwoAddrImm::EntryTwoAddrImm(Type _type, IR::Symbol *_lhs, IR::Symbol *_rhs, int _imm)
 		: Entry(_type), lhs(_lhs), rhs(_rhs), imm(_imm)
 	{
