@@ -136,10 +136,18 @@ namespace Transform {
 
 							switch(threeAddr->type) {
 								case IR::Entry::TypeAdd:
-									newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
+									if(constant == 0) {
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+									} else {
+										newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
+									}
 									break;
 								case IR::Entry::TypeMult:
-									newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeMultImm, threeAddr->lhs, symbol, constant);
+									if(constant == 1) {
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+									} else {
+										newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeMultImm, threeAddr->lhs, symbol, constant);
+									}
 									break;
 							}
 						}
