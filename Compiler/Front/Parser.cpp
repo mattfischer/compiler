@@ -311,15 +311,13 @@ Node *Parser::parseStatement(bool required)
 	Node *node;
 
 	if(node = parseVariableDeclaration()) {
+		// <Statement> := <VariableDeclaration> { = <Expression> ';' }?
 		if(matchLiteral("=")) {
-			// <Statement> := <VariableDeclaration> = <Expression> ';'
 			consume();
 			Node *assign = newNode(Node::NodeTypeAssign, node->line);
 			assign->children.push_back(node);
 			assign->children.push_back(parseExpression(true));
 			node = assign;
-		} else {
-			// <Statement> := <VariableDeclaration> ';'
 		}
 		expectLiteral(";");
 
@@ -403,117 +401,126 @@ Node *Parser::parseClause(bool required)
 
 Node *Parser::parseExpression(bool required)
 {
-	Node *lhs = parseCompareExpression(required);
-	if(!lhs) {
+	// <Expression> := <CompareExpression> { '=' <CompareExpression> }*
+	Node *node = parseCompareExpression(required);
+	if(!node) {
 		return 0;
 	}
 
-	if(matchLiteral("=")) {
-		// <Expression> := <CompareExpression> '=' <Expression>
-		consume();
+	while(true) {
+		if(matchLiteral("=")) {
+			consume();
 
-		Node *node = newNode(Node::NodeTypeAssign, lhs->line);
-		node->children.push_back(lhs);
-		node->children.push_back(parseExpression(true));
-
-		return node;
-	} else {
-		// <Expression> := <CompareExpression>
-		return lhs;
+			Node *assignNode = newNode(Node::NodeTypeAssign, node->line);
+			assignNode->children.push_back(node);
+			assignNode->children.push_back(parseCompareExpression(true));
+			node = assignNode;
+			continue;
+		}
+		break;
 	}
+
+	return node;
 }
 
 Node *Parser::parseCompareExpression(bool required)
 {
-	Node *arg1 = parseAddExpression(required);
-	if(!arg1) {
+	// <CompareExpression> := <AddExpression> { [ '==' | '!=' ] <AddExpression> }*
+	Node *node = parseAddExpression(required);
+	if(!node) {
 		return 0;
 	}
 
-	if(matchLiteral("==") || matchLiteral("!=")) {
-		// <CompareExpression> := <AddExpression> [ '==' | '!=' ] <CompareExpression>
-		Node::NodeSubtype subtype;
-		if(matchLiteral("==")) subtype = Node::NodeSubtypeEqual;
-		else if(matchLiteral("!=")) subtype = Node::NodeSubtypeNequal;
-		consume();
+	while(true) {
+		if(matchLiteral("==") || matchLiteral("!=")) {
+			Node::NodeSubtype subtype;
+			if(matchLiteral("==")) subtype = Node::NodeSubtypeEqual;
+			else if(matchLiteral("!=")) subtype = Node::NodeSubtypeNequal;
+			consume();
 
-		Node *node = newNode(Node::NodeTypeCompare, arg1->line, subtype);
-
-		node->children.push_back(arg1);
-		node->children.push_back(parseCompareExpression(true));
-
-		return node;
-	} else {
-		// <CompareExpression> := <AddExpression>
-		return arg1;
+			Node *compareNode = newNode(Node::NodeTypeCompare, node->line, subtype);
+			compareNode->children.push_back(node);
+			compareNode->children.push_back(parseAddExpression(true));
+			node = compareNode;
+			continue;
+		}
+		break;
 	}
+
+	return node;
 }
 
 Node *Parser::parseAddExpression(bool required)
 {
-	Node *arg1 = parseMultiplyExpression(required);
-	if(!arg1) {
+	// <AddExpression> := <MultiplyExpression> { '+' <MultiplyExpression> }*
+	Node *node = parseMultiplyExpression(required);
+	if(!node) {
 		return 0;
 	}
 
-	if(matchLiteral("+")) {
-		// <AddExpression> := <MultiplyExpression> '+' <AddExpression>
-		consume();
+	while(true) {
+		if(matchLiteral("+")) {
+			consume();
 
-		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeAdd);
-		node->children.push_back(arg1);
-		node->children.push_back(parseAddExpression(true));
-
-		return node;
-	} else {
-		// <AddExpression> := <MultiplyExpression>
-		return arg1;
+			Node *addNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeAdd);
+			addNode->children.push_back(node);
+			addNode->children.push_back(parseMultiplyExpression(true));
+			node = addNode;
+			continue;
+		}
+		break;
 	}
+
+	return node;
 }
 
 Node *Parser::parseMultiplyExpression(bool required)
 {
-	Node *arg1 = parseFunctionExpression(required);
-	if(!arg1) {
+	// <MultiplyExpression> := <FunctionExpression> { '*' <FunctionExpression> }*
+	Node *node = parseFunctionExpression(required);
+	if(!node) {
 		return 0;
 	}
 
-	if(matchLiteral("*")) {
-		// <MultiplyExpression> := <FunctionExpression> '*' <MultiplyExpression>
-		consume();
+	while(true) {
+		if(matchLiteral("*")) {
+			consume();
 
-		Node *node = newNode(Node::NodeTypeArith, arg1->line, Node::NodeSubtypeMultiply);
-		node->children.push_back(arg1);
-		node->children.push_back(parseMultiplyExpression(true));
-
-		return node;
-	} else {
-		// <MultiplyExpression> := <FunctionExpression>
-		return arg1;
+			Node *multiplyNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeMultiply);
+			multiplyNode->children.push_back(node);
+			multiplyNode->children.push_back(parseFunctionExpression(true));
+			node = multiplyNode;
+			continue;
+		}
+		break;
 	}
+
+	return node;
 }
 
 Node *Parser::parseFunctionExpression(bool required)
 {
+	// <FunctionExpression> := <BaseExpression> { '(' <ExpressionList> ')' }*
 	Node *node = parseBaseExpression(required);
 	if(!node) {
 		return 0;
 	}
 
-	if(matchLiteral("(")) {
-		// <FunctionExpression> := <BaseExpression> '(' <ExpressionList> ')'
-		consume();
+	while(true) {
+		if(matchLiteral("(")) {
+			consume();
 
-		Node *call = newNode(Node::NodeTypeCall, node->line);
-		call->children.push_back(node);
-		call->children.push_back(parseExpressionList());
-		expectLiteral(")");
-
-		return call;
-	} else {
-		// <FunctionExpression> := <BaseExpression>
-		return node;
+			Node *callNode = newNode(Node::NodeTypeCall, node->line);
+			callNode->children.push_back(node);
+			callNode->children.push_back(parseExpressionList());
+			expectLiteral(")");
+			node = callNode;
+			continue;
+		}
+		break;
 	}
+
+	return node;
 }
 
 Node *Parser::parseBaseExpression(bool required)
@@ -539,21 +546,20 @@ Node *Parser::parseBaseExpression(bool required)
 		// <BaseExpression> := <Identifier>
 		return node;
 	} else if(matchLiteral("new")) {
+		// <BaseExpression> := 'new' <Type> { '[' <Expression> ']' }?
 		node = newNode(Node::NodeTypeNew, next().line);
 		consume();
 
 		Node *type = parseType(true);
 		if(matchLiteral("[")) {
-			// <BaseExpression> := 'new' <Type> '[' <Expression> ']'
 			consume();
+
 			Node *count = parseExpression(true);
 			expectLiteral("]");
 			Node *arrayType = newNode(Node::NodeTypeArray, type->line);
 			arrayType->children.push_back(type);
 			arrayType->children.push_back(count);
 			type = arrayType;
-		} else {
-			// <BaseExpression> := 'new' <Type>
 		}
 
 		node->children.push_back(type);
