@@ -8,34 +8,19 @@ void main()
 {
   int i;
   int[] arr = new int[10];
-  arr[1] = 0;
-  print arr[1];
-  int x = 10;
-  int y = 20;
-  int z = 30;
-  int a = 40;
-  int b = 50;
-  int c = 60;
-  int d = 70;
-  
+  arr[0] = 0;
+  arr[1] = 5;
+  arr[2] = 10;
+  arr[3] = 15;
+  arr[4] = 20;
+  arr[5] = 25;
+  arr[6] = 30;
+  arr[7] = 35;
+  arr[8] = 40;
+  arr[9] = 45;
   i = 0;
   while(i != 10) {
-    foo(i * 10, 20);
+    print arr[i];
     i = i + 1;
   }
-  
-  print x;
-  print x;
-  print y;
-  print y;
-  print z;
-  print z;
-  print a;
-  print a;
-  print b;
-  print b;
-  print c;
-  print c;
-  print d;
-  print d;
 }
