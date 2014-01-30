@@ -187,7 +187,7 @@ namespace Front {
 					}
 
 					procedure->locals->addSymbol(new Symbol(type, node->lexVal.s));
-					node->type = TypeVoid;
+					node->type = type;
 					break;
 				}
 
@@ -197,22 +197,17 @@ namespace Front {
 
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
-					if(lhs->nodeType == Node::NodeTypeId || lhs->nodeType == Node::NodeTypeVarDecl) {
-						// Search for the target variable in the current scope
-						std::string name = lhs->lexVal.s;
-						Symbol *symbol = procedure->locals->findSymbol(name);
-						if(symbol) {
+					switch(lhs->nodeType) {
+						case Node::NodeTypeId:
+						case Node::NodeTypeVarDecl:
+						case Node::NodeTypeArray:
 							// Confirm target type matches source type
-							if(!Type::equals(symbol->type, rhs->type)) {
+							if(!Type::equals(lhs->type, rhs->type)) {
 								throw TypeError(node, "Type mismatch");
 							}
-						} else {
-							std::stringstream s;
-							s << "Undeclared variable '" << name << "'";
-							throw TypeError(node, s.str());
-						}
-					} else {
-						throw TypeError(node, "Lvalue required");
+							break;
+						default:
+							throw TypeError(node, "Lvalue required");
 					}
 					node->type = rhs->type;
 					break;

@@ -279,6 +279,13 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeStoreMem:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->rhs1], regMap[threeAddr->lhs], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
 			}
 		}
 

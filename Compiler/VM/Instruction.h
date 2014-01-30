@@ -78,6 +78,7 @@ namespace VM {
 	const int ThreeAddrEqual = 0x3; //!< Compare two registers for equality
 	const int ThreeAddrNEqual = 0x4; //!< Compare two registers for inequality
 	const int ThreeAddrLoad = 0x5; //!< Load register from memory
+	const int ThreeAddrStore = 0x6; //!< Store register into memory
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrPrint = 0x1; //!< Print register

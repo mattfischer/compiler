@@ -29,7 +29,8 @@ namespace IR {
 		/* TypePrologue   */ "prologue ",
 		/* TypeEpilogue   */ "epilogue ",
 		/* TypeNew        */ "new      ",
-		/* TypeLoadMem    */ "ldmem    "
+		/* TypeStoreMem   */ "stmem    ",
+		/* TypeLoadMem    */ "ldmem    ",
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)

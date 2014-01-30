@@ -192,14 +192,34 @@ namespace Front {
 					processNode(node->children[0], program, procedure);
 				}
 
-				// Locate symbol to assign into
-				a = procedure->findSymbol(node->children[0]->lexVal.s);
-
 				// Emit code for R-Value of assignment
 				b = processRValue(node->children[1], program, procedure);
 
-				// Emit a move into the target symbol
-				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+				if(node->children[0]->nodeType == Node::NodeTypeId || node->children[0]->nodeType == Node::NodeTypeVarDecl) {
+					// Locate symbol to assign into
+					a = procedure->findSymbol(node->children[0]->lexVal.s);
+
+					// Emit a move into the target symbol
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+				} else if(node->children[0]->nodeType == Node::NodeTypeArray) {
+					Node *arrayNode = node->children[0];
+
+					// Emit code to calculate the array's base address
+					a = processRValue(arrayNode->children[0], program, procedure);
+
+					// Emit code to calculate the array subscript
+					IR::Symbol *subscript = processRValue(arrayNode->children[1], program, procedure);
+
+					// Compute the offset into array memory based o subscript and type size
+					IR::Symbol *offset = procedure->newTemp(TypeInt);
+					IR::Symbol *size = procedure->newTemp(TypeInt);
+
+					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
+
+					// Emit the store into the calculated memory location
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
+				}
 
 				// Return the resulting node
 				result = b;
@@ -300,14 +320,20 @@ namespace Front {
 				{
 					result = procedure->newTemp(node->type);
 
+					// Emit code to calculate the array's base address
 					IR::Symbol *base = processRValue(node->children[0], program, procedure);
+
+					// Emit code to calculate the array subscript
 					IR::Symbol *subscript = processRValue(node->children[1], program, procedure);
 
+					// Compute the offset into array memory based o subscript and type size
 					IR::Symbol *offset = procedure->newTemp(TypeInt);
 					IR::Symbol *size = procedure->newTemp(TypeInt);
 
 					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
+
+					// Emit the load from the calculated memory location
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
 					break;
 				}
