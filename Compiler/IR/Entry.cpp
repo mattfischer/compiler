@@ -28,7 +28,8 @@ namespace IR {
 		/* TypeStoreStack */ "ststk    ",
 		/* TypePrologue   */ "prologue ",
 		/* TypeEpilogue   */ "epilogue ",
-		/* TypeNew        */ "new      "
+		/* TypeNew        */ "new      ",
+		/* TypeLoadMem    */ "ldmem    "
 	};
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)

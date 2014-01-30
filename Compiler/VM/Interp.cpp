@@ -97,6 +97,10 @@ namespace VM {
 						case VM::ThreeAddrNEqual:
 							regs[instr.u.three.regDst] = (regs[instr.u.three.regSrc1] != regs[instr.u.three.regSrc2]);
 							break;
+
+						case VM::ThreeAddrLoad:
+							regs[instr.u.three.regDst] = mem[regs[instr.u.three.regSrc1] + regs[instr.u.three.regSrc2]];
+							break;
 					}
 					break;
 

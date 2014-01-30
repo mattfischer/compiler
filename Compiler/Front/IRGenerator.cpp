@@ -271,28 +271,46 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeNew:
-				// Construct a new temporary to hold value
-				result = procedure->newTemp(node->type);
+				{
+					// Construct a new temporary to hold value
+					result = procedure->newTemp(node->type);
 
-				Node *arg = node->children[0];
-				IR::Symbol *size = procedure->newTemp(TypeInt);
-				if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
-					// Array allocation: total size is typeSize * count
-					Type *type = arg->children[0]->type;
-					IR::Symbol *typeSize = procedure->newTemp(TypeInt);
-					procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, typeSize, type->size));
+					Node *arg = node->children[0];
+					IR::Symbol *size = procedure->newTemp(TypeInt);
+					if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
+						// Array allocation: total size is typeSize * count
+						Type *type = arg->children[0]->type;
+						IR::Symbol *typeSize = procedure->newTemp(TypeInt);
+						procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, typeSize, type->size));
 
-					IR::Symbol *count = processRValue(arg->children[1], program, procedure);
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
-				} else {
-					// Single allocation: total size is typeSize
-					Type *type = arg->type;
-					procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, size, type->size));
+						IR::Symbol *count = processRValue(arg->children[1], program, procedure);
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
+					} else {
+						// Single allocation: total size is typeSize
+						Type *type = arg->type;
+						procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, size, type->size));
+					}
+
+					// Emit new entry
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNew, result, size));
+					break;
 				}
 
-				// Emit new entry
-				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNew, result, size));
-				break;
+			case Node::NodeTypeArray:
+				{
+					result = procedure->newTemp(node->type);
+
+					IR::Symbol *base = processRValue(node->children[0], program, procedure);
+					IR::Symbol *subscript = processRValue(node->children[1], program, procedure);
+
+					IR::Symbol *offset = procedure->newTemp(TypeInt);
+					IR::Symbol *size = procedure->newTemp(TypeInt);
+
+					procedure->emit(new IR::EntryOneAddrImm(IR::Entry::TypeLoadImm, size, node->type->size / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
+					break;
+				}
 		}
 
 		return result;

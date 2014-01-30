@@ -8,6 +8,7 @@ void main()
 {
   int i;
   int[] arr = new int[10];
+  print arr[1];
   int x = 10;
   int y = 20;
   int z = 30;

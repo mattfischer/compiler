@@ -139,6 +139,11 @@ namespace VM {
 			case ThreeAddrNEqual:
 				o << "neq " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
 				break;
+
+			case ThreeAddrLoad:
+				o << "ldr " << regName(instr.u.three.regDst) << ", [" << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2) << "]";
+				break;
+
 		}
 	}
 

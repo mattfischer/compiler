@@ -302,14 +302,14 @@ namespace Front {
 				{
 					checkChildren(node, procedure);
 					Node *arrayNode = node->children[0];
-					Node *indexNode = node->children[1];
+					Node *subscriptNode = node->children[1];
 
 					if(arrayNode->type->type != Type::TypeArray) {
 						throw TypeError(arrayNode, "Attempt to take subscript of non-array");
 					}
 
-					if(!Type::equals(indexNode->type, TypeInt)) {
-						throw TypeError(indexNode, "Non-integral subscript");
+					if(!Type::equals(subscriptNode->type, TypeInt)) {
+						throw TypeError(subscriptNode, "Non-integral subscript");
 					}
 
 					TypeArray *typeArray = (TypeArray*)arrayNode->type;

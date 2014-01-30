@@ -47,7 +47,8 @@ namespace IR {
 			TypeStoreStack, //!< Store a value to a stack location
 			TypePrologue, //!< Function prologue
 			TypeEpilogue, //!< Function epilogue
-			TypeNew //!< Allocate memory
+			TypeNew, //!< Allocate memory
+			TypeLoadMem //!< Load from memory
 		};
 
 		Type type; //!< Entry type
