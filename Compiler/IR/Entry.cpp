@@ -69,12 +69,12 @@ namespace IR {
 
 	Symbol *EntryThreeAddr::assign()
 	{
-		return lhs;
+		return (type == TypeStoreMem) ? 0 : lhs;
 	}
 
 	bool EntryThreeAddr::uses(Symbol *symbol)
 	{
-		return (rhs1 == symbol || rhs2 == symbol);
+		return (rhs1 == symbol || rhs2 == symbol || (type == TypeStoreMem && lhs == symbol));
 	}
 
 	void EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
@@ -85,6 +85,10 @@ namespace IR {
 
 		if(rhs2 == symbol) {
 			rhs2 = newSymbol;
+		}
+
+		if(type == TypeStoreMem && lhs == symbol) {
+			lhs = newSymbol;
 		}
 	}
 
