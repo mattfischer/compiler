@@ -5,56 +5,16 @@
 
 #include "Analysis/ReachingDefs.h"
 #include "Analysis/UseDefs.h"
+#include "Analysis/Constants.h"
 
 #include "Util/UniqueQueue.h"
 
 namespace Transform {
-	/*!
-	 * \brief Get the value of a symbol at an entry, if it can be determined to be a constant
-	 * \param entry Entry to examine
-	 * \param symbol Symbol to evaluate
-	 * \param useDefs Use-def chains for procedure
-	 * \param isConstant [out] True if symbol has a constant value, false otherwise
-	 * \return Value of symbol
-	 */
-	int ConstantProp::getValue(IR::Entry *entry, IR::Symbol *symbol, Analysis::UseDefs &useDefs, bool &isConstant)
-	{
-		isConstant = false;
-		int ret = 0;
-
-		// Check each definition that reaches this entry
-		const IR::EntrySet &set = useDefs.defines(entry, symbol);
-		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
-			IR::Entry *def = *it;
-			if(def->type != IR::Entry::TypeLoadImm) {
-				// This definition is not constant, therefore the symbol can't be
-				ret = 0;
-				isConstant = false;
-				break;
-			}
-
-			IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)def;
-			if(isConstant && ret != twoAddrImm->imm) {
-				// If the definition is a constant, and is either the first constant
-				// encountered, or is equal to the value previously encountered, then
-				// it can still be considered a constant
-				ret = 0;
-				isConstant = false;
-				break;
-			} else {
-				// Otherwise, the entry is not constant
-				ret = twoAddrImm->imm;
-				isConstant = true;
-			}
-		}
-
-		return ret;
-	}
-
 	bool ConstantProp::transform(IR::Procedure *procedure)
 	{
 		bool changed = false;
 		Analysis::UseDefs useDefs(procedure);
+		Analysis::Constants constants(procedure);
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
@@ -84,9 +44,9 @@ namespace Transform {
 
 						// Examine the right hand side arguments and determine if they are constant
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = getValue(threeAddr, threeAddr->rhs1, useDefs, rhs1Const);
+						rhs1 = constants.getValue(threeAddr, threeAddr->rhs1, rhs1Const);
 						if(threeAddr->rhs2) {
-							rhs2 = getValue(threeAddr, threeAddr->rhs2, useDefs, rhs2Const);
+							rhs2 = constants.getValue(threeAddr, threeAddr->rhs2, rhs2Const);
 						} else {
 							rhs2 = 0;
 							rhs2Const = true;
@@ -180,7 +140,7 @@ namespace Transform {
 						bool rhsConst;
 
 						// Determine if the symbol on the right hand side is constant
-						rhs = getValue(twoAddrImm, twoAddrImm->rhs, useDefs, rhsConst);
+						rhs = constants.getValue(twoAddrImm, twoAddrImm->rhs, rhsConst);
 						if(rhsConst) {
 							int value;
 							switch(twoAddrImm->type) {
@@ -214,7 +174,7 @@ namespace Transform {
 						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = getValue(cJump, cJump->pred, useDefs, isConstant);
+						int value = constants.getValue(cJump, cJump->pred, isConstant);
 						if(!isConstant) {
 							continue;
 						}

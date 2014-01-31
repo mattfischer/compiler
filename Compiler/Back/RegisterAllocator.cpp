@@ -7,6 +7,7 @@
 #include "Analysis/LiveVariables.h"
 #include "Analysis/Loops.h"
 #include "Analysis/UseDefs.h"
+#include "Analysis/Constants.h"
 
 #include "Front/Type.h"
 
@@ -217,6 +218,8 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	IR::EntrySet neededDefs;
 	IR::EntrySet spillLoads;
 
+	Analysis::Constants constants(procedure);
+
 	// Iterate through the entries in the procedure
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
@@ -224,26 +227,8 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		// If the entry uses the symbol and the symbol was not already live, the symbol must be
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
-			// Check the definitions for the current entry and see if they are all constant
-			const IR::EntrySet &defs = useDefs.defines(entry, symbol);
-			int value = 0;
-			bool isConstant = false;
-			for(IR::EntrySet::const_iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
-				IR::Entry *def = *defIt;
-				if(def->type == IR::Entry::TypeLoadImm) {
-					IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)def;
-					if(!isConstant) {
-						value = twoAddrImm->imm;
-						isConstant = true;
-					} else if(twoAddrImm->imm != value) {
-						isConstant = false;
-						break;
-					}
-				} else {
-					isConstant = false;
-					break;
-				}
-			}
+			bool isConstant;
+			int value = constants.getValue(entry, symbol, isConstant);
 
 			IR::Entry *def;
 			if(isConstant) {
@@ -252,6 +237,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx);
+				const IR::EntrySet &defs = useDefs.defines(entry, symbol);
 				neededDefs.insert(defs.begin(), defs.end());
 			}
 
