@@ -6,6 +6,8 @@
 
 #include "Analysis/ReachingDefs.h"
 
+#include "Util/Timer.h"
+
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when entry lookup fails
 
@@ -16,6 +18,9 @@ namespace Analysis {
 	UseDefs::UseDefs(IR::Procedure *procedure)
 	: mProcedure(procedure), mReachingDefs(procedure)
 	{
+		Util::Timer timer;
+		timer.start();
+
 		// Iterate through the procedure, examining the reaching definition information at each entry
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
@@ -33,6 +38,7 @@ namespace Analysis {
 				}
 			}
 		}
+		std::cout << "  UseDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!

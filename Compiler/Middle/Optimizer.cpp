@@ -15,6 +15,7 @@
 #include "IR/Procedure.h"
 
 #include "Util/UniqueQueue.h"
+#include "Util/Timer.h"
 
 namespace Middle {
 	/*!
@@ -58,13 +59,18 @@ namespace Middle {
 				transforms.push(transform);
 			}
 
+			std::cout << "Optimizations:" << std::endl;
+
 			// Run optimization passes until there are none left
 			while(!transforms.empty()) {
 				Transform::Transform *transform = transforms.front();
 				transforms.pop();
 
 				// Run the transform
+				Util::Timer timer;
+				timer.start();
 				bool changed = transform->transform(procedure);
+				std::cout << transform->name() << ": " << timer.stop() << "ms" << std::endl;
 
 				if(changed) {
 					// If the transform changed the IR, add its follow-up transformations to the queue

@@ -7,6 +7,7 @@
 #include "IR/Procedure.h"
 
 #include "Util/UniqueQueue.h"
+#include "Util/Timer.h"
 
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
@@ -18,6 +19,9 @@ namespace Analysis {
 	ReachingDefs::ReachingDefs(IR::Procedure *procedure)
 		: mFlowGraph(procedure), mProcedure(procedure)
 	{
+		Util::Timer timer;
+		timer.start();
+
 		// Find all definitions in the procedure
 		IR::EntrySet allDefs;
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
@@ -54,6 +58,7 @@ namespace Analysis {
 		// Perform a forward data flow analysis using the gen/kill sets constructed above
 		DataFlow<IR::Entry*> dataFlow;
 		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::MeetTypeUnion, DataFlow<IR::Entry*>::DirectionForward);
+		std::cout << "  ReachingDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!

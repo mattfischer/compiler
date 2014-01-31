@@ -5,6 +5,8 @@
 #include "IR/Procedure.h"
 #include "IR/Symbol.h"
 
+#include "Util/Timer.h"
+
 namespace Analysis {
 	/*!
 	 * \brief Constructor
@@ -13,6 +15,9 @@ namespace Analysis {
 	LiveVariables::LiveVariables(IR::Procedure *procedure)
 		: mProcedure(procedure)
 	{
+		Util::Timer timer;
+		timer.start();
+
 		// Break the procedure down into a flow graph
 		FlowGraph graph(procedure);
 
@@ -47,6 +52,8 @@ namespace Analysis {
 		// constructed above.
 		DataFlow<IR::Symbol*> dataFlow;
 		mMap = dataFlow.analyze(graph, gen, kill, all, DataFlow<IR::Symbol*>::MeetTypeUnion, DataFlow<IR::Symbol*>::DirectionBackward);
+
+		std::cout << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!

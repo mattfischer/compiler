@@ -430,6 +430,10 @@
 				RelativePath=".\Front\Symbol.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Util\Timer.h"
+				>
+			</File>
 			<Filter
 				Name="Analysis"
 				>

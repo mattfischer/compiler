@@ -9,6 +9,8 @@
 
 #include "Transform/LiveRangeRenaming.h"
 
+#include "Util/Timer.h"
+
 #include <map>
 
 namespace Back {
@@ -57,9 +59,13 @@ namespace Back {
 		int reg = 1;
 
 		// Allocate registers for the procedure
+		Util::Timer timer;
+		timer.start();
 		Transform::LiveRangeRenaming::instance()->transform(procedure);
 		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
+
+		std::cout << "Register allocation (" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 
 		// Determine the set of registers that need to be saved/restored in the prologue/epilogue
 		unsigned long savedRegs = 0;
