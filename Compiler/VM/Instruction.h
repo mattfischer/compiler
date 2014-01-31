@@ -19,8 +19,8 @@ namespace VM {
 			 */
 			struct {
 				unsigned char type : 4; //!< Type of two-address instruction
-				unsigned char regDst : 4; //!< Destination register
-				unsigned char regSrc : 4; //!< Source register
+				unsigned char regLhs : 4; //!< Destination register
+				unsigned char regRhs : 4; //!< Source register
 				short imm : 16; //!< Immediate constant
 			} two;
 
@@ -29,9 +29,9 @@ namespace VM {
 			 */
 			struct {
 				unsigned char type : 4; //!< Type of three-address instruction
-				unsigned char regDst : 4; //!< Destination register
-				unsigned char regSrc1 : 4; //!< First source register
-				unsigned char regSrc2 : 4; //!< Second source register
+				unsigned char regLhs : 4; //!< Destination register
+				unsigned char regRhs1 : 4; //!< First source register
+				unsigned char regRhs2 : 4; //!< Second source register
 				long imm : 12; //!< Immediate constant
 			} three;
 
@@ -54,8 +54,8 @@ namespace VM {
 		} u;
 
 		static Instruction makeOneAddr(unsigned char type, unsigned char reg, long imm);
-		static Instruction makeTwoAddr(unsigned char type, unsigned char regDst, unsigned char regSrc, long imm);
-		static Instruction makeThreeAddr(unsigned char type, unsigned char regDst, unsigned char regSrc1, unsigned char regSrc2, short imm);
+		static Instruction makeTwoAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs, long imm);
+		static Instruction makeThreeAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs1, unsigned char regRhs2, short imm);
 		static Instruction makeMultReg(unsigned char type, unsigned long regs);
 	};
 

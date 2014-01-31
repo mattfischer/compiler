@@ -53,23 +53,23 @@ namespace VM {
 				case VM::InstrTwoAddr:
 					switch(instr.u.two.type) {
 						case VM::TwoAddrAddImm:
-							regs[instr.u.two.regDst] = regs[instr.u.two.regSrc] + instr.u.two.imm;
+							regs[instr.u.two.regLhs] = regs[instr.u.two.regRhs] + instr.u.two.imm;
 							break;
 
 						case VM::TwoAddrMultImm:
-							regs[instr.u.two.regDst] = regs[instr.u.two.regSrc] * instr.u.two.imm;
+							regs[instr.u.two.regLhs] = regs[instr.u.two.regRhs] * instr.u.two.imm;
 							break;
 
 						case VM::TwoAddrLoad:
-							regs[instr.u.two.regDst] = mem[regs[instr.u.two.regSrc] + instr.u.two.imm];
+							regs[instr.u.two.regLhs] = mem[regs[instr.u.two.regRhs] + instr.u.two.imm];
 							break;
 
 						case VM::TwoAddrStore:
-							mem[regs[instr.u.two.regDst] + instr.u.two.imm] = regs[instr.u.two.regSrc];
+							mem[regs[instr.u.two.regRhs] + instr.u.two.imm] = regs[instr.u.two.regLhs];
 							break;
 
 						case VM::TwoAddrNew:
-							regs[instr.u.two.regDst] = heap.allocate(regs[instr.u.two.regSrc]);
+							regs[instr.u.two.regLhs] = heap.allocate(regs[instr.u.two.regRhs]);
 							break;
 					}
 					break;
@@ -77,33 +77,33 @@ namespace VM {
 				case VM::InstrThreeAddr:
 					switch(instr.u.three.type) {
 						case VM::ThreeAddrAdd:
-							regs[instr.u.three.regDst] = regs[instr.u.three.regSrc1] + regs[instr.u.three.regSrc2];
+							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrMult:
-							regs[instr.u.three.regDst] = regs[instr.u.three.regSrc1] * regs[instr.u.three.regSrc2];
+							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] * regs[instr.u.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrAddCond:
-							if(regs[instr.u.three.regSrc1]) {
-								regs[instr.u.three.regDst] = regs[instr.u.three.regSrc2] + instr.u.three.imm;
+							if(regs[instr.u.three.regRhs1]) {
+								regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs2] + instr.u.three.imm;
 							}
 							break;
 
 						case VM::ThreeAddrEqual:
-							regs[instr.u.three.regDst] = (regs[instr.u.three.regSrc1] == regs[instr.u.three.regSrc2]);
+							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] == regs[instr.u.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrNEqual:
-							regs[instr.u.three.regDst] = (regs[instr.u.three.regSrc1] != regs[instr.u.three.regSrc2]);
+							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] != regs[instr.u.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.u.three.regDst] = mem[regs[instr.u.three.regSrc1] + regs[instr.u.three.regSrc2]];
+							regs[instr.u.three.regLhs] = mem[regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2]];
 							break;
 
 						case VM::ThreeAddrStore:
-							mem[regs[instr.u.three.regDst] + regs[instr.u.three.regSrc2]] = regs[instr.u.three.regSrc1];
+							mem[regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2]] = regs[instr.u.three.regLhs];
 							break;
 					}
 					break;

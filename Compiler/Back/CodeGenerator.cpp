@@ -282,7 +282,7 @@ namespace Back {
 				case IR::Entry::TypeStoreMemInd:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->rhs1], regMap[threeAddr->lhs], regMap[threeAddr->rhs2], 0));
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
 						break;
 					}
 
@@ -296,7 +296,7 @@ namespace Back {
 				case IR::Entry::TypeStoreMem:
 					{
 						IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, regMap[twoAddrImm->rhs], regMap[twoAddrImm->lhs], twoAddrImm->imm));
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, regMap[twoAddrImm->lhs], regMap[twoAddrImm->rhs], twoAddrImm->imm));
 						break;
 					}
 

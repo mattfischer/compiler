@@ -40,54 +40,54 @@ namespace VM {
 	{
 		switch(instr.u.two.type) {
 			case TwoAddrAddImm:
-				if(instr.u.two.regDst == RegPC) {
+				if(instr.u.two.regLhs == RegPC) {
 					// Adds to PC should be printed as a jump
 					if(instr.u.two.imm == 0) {
-						o << "jmp " << regName(instr.u.two.regSrc);
+						o << "jmp " << regName(instr.u.two.regRhs);
 					} else {
-						if(instr.u.two.regSrc == RegPC) {
+						if(instr.u.two.regRhs == RegPC) {
 							// PC-relative jumps can be printed with their constant only
 							o << "jmp #" << int(instr.u.two.imm);
 						} else {
-							o << "jmp " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
+							o << "jmp " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
 						}
 					}
 				} else {
 					if(instr.u.two.imm > 0) {
 						// Print add with constant
-						o << "add " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
+						o << "add " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
 					} else if(instr.u.two.imm == 0){
 						// With no immediate value, print as a move
-						o << "mov " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc);
+						o << "mov " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs);
 					} else {
 						// With a negative constant, print as a subtract
-						o << "sub " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << -int(instr.u.two.imm);
+						o << "sub " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << -int(instr.u.two.imm);
 					}
 				}
 				break;
 
 			case TwoAddrMultImm:
-				o << "mult " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc) << ", #" << int(instr.u.two.imm);
+				o << "mult " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
 				break;
 
 			case TwoAddrLoad:
 				if(instr.u.two.imm == 0) {
-					o << "ldr " << regName(instr.u.two.regDst) << ", [" << regName(instr.u.two.regSrc) << "]";
+					o << "ldr " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << "]";
 				} else {
-					o << "ldr " << regName(instr.u.two.regDst) << ", [" << regName(instr.u.two.regSrc) << ", # " << int(instr.u.two.imm) << "]";
+					o << "ldr " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << ", # " << int(instr.u.two.imm) << "]";
 				}
 				break;
 
 			case TwoAddrStore:
 				if(instr.u.two.imm == 0) {
-					o << "str " << regName(instr.u.two.regSrc) << ", [" << regName(instr.u.two.regDst) << "]";
+					o << "str " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << "]";
 				} else {
-					o << "str " << regName(instr.u.two.regSrc) << ", [" << regName(instr.u.two.regDst) << ", #" << int(instr.u.two.imm) << "]";
+					o << "str " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm) << "]";
 				}
 				break;
 
 			case TwoAddrNew:
-				o << "new " << regName(instr.u.two.regDst) << ", " << regName(instr.u.two.regSrc);
+				o << "new " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs);
 				break;
 		}
 	}
@@ -101,51 +101,51 @@ namespace VM {
 	{
 		switch(instr.u.three.type) {
 			case ThreeAddrAdd:
-				o << "add " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
+				o << "add " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrMult:
-				o << "mult " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
+				o << "mult " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrAddCond:
-				if(instr.u.three.regDst == RegPC) {
+				if(instr.u.three.regLhs == RegPC) {
 					// If target register is PC, print as a conditional jump
 					if(instr.u.three.imm == 0) {
-						o << "cjmp " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
+						o << "cjmp " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 					} else {
-						if(instr.u.three.regSrc2 == RegPC) {
+						if(instr.u.three.regRhs2 == RegPC) {
 							// PC-relative jumps can be printed with their constant only
-							o << "cjmp " << regName(instr.u.three.regSrc1) << ", #" << int(instr.u.three.imm);
+							o << "cjmp " << regName(instr.u.three.regRhs1) << ", #" << int(instr.u.three.imm);
 						} else {
-							o << "cjmp " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2) << ", #" << int(instr.u.three.imm);
+							o << "cjmp " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << ", #" << int(instr.u.three.imm);
 						}
 					}
 				} else {
 					if(instr.u.three.imm == 0) {
 						// With no immediate value, print as a conditional move
-						o << "cmov " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc2);
+						o << "cmov " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2);
 					} else {
 						// With a positive immediate value, print as a conditional add
-						o << "cadd " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc2) << ", #" << int(instr.u.three.imm);
+						o << "cadd " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2) << ", #" << int(instr.u.three.imm);
 					}
 				}
 				break;
 
 			case ThreeAddrEqual:
-				o << "equ " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
+				o << "equ " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrNEqual:
-				o << "neq " << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2);
+				o << "neq " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrLoad:
-				o << "ldr " << regName(instr.u.three.regDst) << ", [" << regName(instr.u.three.regSrc1) << ", " << regName(instr.u.three.regSrc2) << "]";
+				o << "ldr " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
 				break;
 
 			case ThreeAddrStore:
-				o << "str " << regName(instr.u.three.regSrc1) << ", [" << regName(instr.u.three.regDst) << ", " << regName(instr.u.three.regSrc2) << "]";
+				o << "str " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
 				break;
 		}
 	}
@@ -273,19 +273,19 @@ namespace VM {
 	/*!
 	 * \brief Construct a two-address form instruction
 	 * \param type Type of two-address instruction
-	 * \param regDst Destination register
-	 * \param regSrc Source register
+	 * \param regLhs Destination register
+	 * \param regRhs Source register
 	 * \param imm Immediate constant
 	 * \return Instruction
 	 */
-	Instruction Instruction::makeTwoAddr(unsigned char type, unsigned char regDst, unsigned char regSrc, long imm)
+	Instruction Instruction::makeTwoAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs, long imm)
 	{
 		Instruction instr;
 
 		instr.type = InstrTwoAddr;
 		instr.u.two.type = type;
-		instr.u.two.regDst = regDst;
-		instr.u.two.regSrc = regSrc;
+		instr.u.two.regLhs = regLhs;
+		instr.u.two.regRhs = regRhs;
 		instr.u.two.imm = imm;
 
 		return instr;
@@ -294,21 +294,21 @@ namespace VM {
 	/*!
 	 * \brief Construct a three-address form instruction
 	 * \param type Type of three-address instruction
-	 * \param regDst Destination register
-	 * \param regSrc1 Source register 1
-	 * \param regSrc2 Source register 2
+	 * \param regLhs Destination register
+	 * \param regRhs1 Source register 1
+	 * \param regRhs2 Source register 2
 	 * \param imm Immediate constant
 	 * \return Instruction
 	 */
-	Instruction Instruction::makeThreeAddr(unsigned char type, unsigned char regDst, unsigned char regSrc1, unsigned char regSrc2, short imm)
+	Instruction Instruction::makeThreeAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs1, unsigned char regRhs2, short imm)
 	{
 		Instruction instr;
 
 		instr.type = InstrThreeAddr;
 		instr.u.three.type = type;
-		instr.u.three.regDst = regDst;
-		instr.u.three.regSrc1 = regSrc1;
-		instr.u.three.regSrc2 = regSrc2;
+		instr.u.three.regLhs = regLhs;
+		instr.u.three.regRhs1 = regRhs1;
+		instr.u.three.regRhs2 = regRhs2;
 		instr.u.three.imm = imm;
 
 		return instr;
