@@ -48,6 +48,8 @@ namespace IR {
 			TypePrologue, //!< Function prologue
 			TypeEpilogue, //!< Function epilogue
 			TypeNew, //!< Allocate memory
+			TypeStoreMemInd, //!< Store to memory indexed
+			TypeLoadMemInd, //!< Load from memory indexed
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem //!< Load from memory
 		};

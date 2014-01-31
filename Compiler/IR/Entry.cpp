@@ -29,9 +29,23 @@ namespace IR {
 		/* TypePrologue   */ "prologue ",
 		/* TypeEpilogue   */ "epilogue ",
 		/* TypeNew        */ "new      ",
+		/* TypeStoreMemInd*/ "stmem    ",
+		/* TypeLoadMemInd */ "ldmem    ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
 	};
+
+	static bool lhsAssign(Entry::Type type)
+	{
+		switch(type) {
+			case Entry::TypeStoreMemInd:
+			case Entry::TypeStoreMem:
+				return false;
+
+			default:
+				return true;
+		}
+	}
 
 	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
 		: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2)
@@ -64,17 +78,19 @@ namespace IR {
 
 	void EntryThreeAddr::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 	{
-		lhs = newSymbol;
+		if(lhsAssign(type)) {
+			lhs = newSymbol;
+		}
 	}
 
 	Symbol *EntryThreeAddr::assign()
 	{
-		return (type == TypeStoreMem) ? 0 : lhs;
+		return lhsAssign(type) ? lhs : 0;
 	}
 
 	bool EntryThreeAddr::uses(Symbol *symbol)
 	{
-		return (rhs1 == symbol || rhs2 == symbol || (type == TypeStoreMem && lhs == symbol));
+		return (rhs1 == symbol || rhs2 == symbol || (!lhsAssign(type) && lhs == symbol));
 	}
 
 	void EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
@@ -87,7 +103,7 @@ namespace IR {
 			rhs2 = newSymbol;
 		}
 
-		if(type == TypeStoreMem && lhs == symbol) {
+		if(!lhsAssign(type) && lhs == symbol) {
 			lhs = newSymbol;
 		}
 	}
@@ -121,23 +137,29 @@ namespace IR {
 
 	void EntryTwoAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
 	{
-		lhs = newSymbol;
+		if(lhsAssign(type)) {
+			lhs = newSymbol;
+		}
 	}
 
 	Symbol *EntryTwoAddrImm::assign()
 	{
-		return lhs;
+		return lhsAssign(type) ? lhs : 0;
 	}
 
 	bool EntryTwoAddrImm::uses(Symbol *symbol)
 	{
-		return (rhs == symbol);
+		return (rhs == symbol || (!lhsAssign(type) && lhs == symbol));
 	}
 
 	void EntryTwoAddrImm::replaceUse(Symbol *symbol, Symbol *newSymbol)
 	{
 		if(rhs == symbol) {
 			rhs = newSymbol;
+		}
+
+		if(!lhsAssign(type) && lhs == symbol) {
+			lhs = newSymbol;
 		}
 	}
 

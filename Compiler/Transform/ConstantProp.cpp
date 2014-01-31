@@ -169,6 +169,31 @@ namespace Transform {
 						}
 						break;
 					}
+				case IR::Entry::TypeLoadMemInd:
+				case IR::Entry::TypeStoreMemInd:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						bool isConstant;
+						int value = constants.getValue(threeAddr, threeAddr->rhs2, isConstant);
+						if(isConstant) {
+							IR::Entry::Type type;
+							switch(entry->type) {
+								case IR::Entry::TypeLoadMemInd:
+									type = IR::Entry::TypeLoadMem;
+									break;
+								case IR::Entry::TypeStoreMemInd:
+									type = IR::Entry::TypeStoreMem;
+									break;
+							}
+							IR::Entry *newEntry = new IR::EntryTwoAddrImm(type, threeAddr->lhs, threeAddr->rhs1, value);
+							useDefs.replace(threeAddr, newEntry);
+							procedure->entries().insert(threeAddr, newEntry);
+							procedure->entries().erase(threeAddr);
+							delete threeAddr;
+							changed = true;
+						}
+						break;
+					}
 				case IR::Entry::TypeCJump:
 					{
 						// Check if the predicate of the conditional jump is constant

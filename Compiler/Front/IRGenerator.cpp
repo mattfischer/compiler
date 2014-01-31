@@ -218,7 +218,7 @@ namespace Front {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the store into the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMemInd, b, a, offset));
 				}
 
 				// Return the resulting node
@@ -334,7 +334,7 @@ namespace Front {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMemInd, result, base, offset));
 					break;
 				}
 		}
