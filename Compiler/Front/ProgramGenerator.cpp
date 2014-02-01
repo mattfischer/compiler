@@ -191,8 +191,10 @@ namespace Front {
 						throw TypeError(node, "Cannot declare variable of void type");
 					}
 
-					context.scope->addSymbol(new Symbol(type, node->lexVal.s));
+					Symbol *symbol = new Symbol(type, node->lexVal.s);
+					context.scope->addSymbol(symbol);
 					node->type = type;
+					node->symbol = symbol;
 					break;
 				}
 
@@ -286,6 +288,7 @@ namespace Front {
 					}
 
 					node->type = symbol->type;
+					node->symbol = symbol;
 					break;
 				}
 

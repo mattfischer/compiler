@@ -160,6 +160,7 @@ Node *Parser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeS
 	node->nodeSubtype = nodeSubtype;
 	node->type = 0;
 	node->line = line;
+	node->symbol = 0;
 
 	// Add the node to the list of nodes, so that they can all be deleted if an error occurs
 	mNodes.push_back(node);

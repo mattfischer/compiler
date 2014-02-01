@@ -2,6 +2,7 @@
 #define IR_SYMBOL_H
 
 #include "Front/Type.h"
+#include "Front/Symbol.h"
 
 #include <string>
 #include <set>
@@ -15,13 +16,14 @@ namespace IR {
 	public:
 		std::string name; //!< Symbol name
 		Front::Type *type; //!< Symbol type
+		Front::Symbol *symbol; //!< Front-end symbol that this one corresponds to
 
 		/*!
 		 * \brief Constructor
 		 * \param _name Symbol name
 		 * \param _type Symbol type
 		 */
-		Symbol(const std::string &_name, Front::Type *_type) : name(_name), type(_type) {}
+		Symbol(const std::string &_name, Front::Type *_type, Front::Symbol *_symbol) : name(_name), type(_type), symbol(_symbol) {}
 	};
 
 	typedef std::set<Symbol*> SymbolSet; //!< Convenience typedef

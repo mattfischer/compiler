@@ -28,7 +28,7 @@ namespace Front {
 			// Add local variables to the procedure
 			const std::vector<Symbol*> locals = procedure->locals->symbols();
 			for(unsigned int j=0; j<locals.size(); j++) {
-				IR::Symbol *irSymbol = new IR::Symbol(locals[j]->name, locals[j]->type);
+				IR::Symbol *irSymbol = new IR::Symbol(locals[j]->name, locals[j]->type, locals[j]);
 				irProcedure->addSymbol(irSymbol);
 
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
@@ -208,7 +208,7 @@ namespace Front {
 
 			case Node::NodeTypeId:
 				// Return the already-existing variable node
-				result = procedure->findSymbol(node->lexVal.s);
+				result = procedure->findSymbol(node->symbol);
 				break;
 
 			case Node::NodeTypeAssign:
@@ -222,7 +222,7 @@ namespace Front {
 
 				if(node->children[0]->nodeType == Node::NodeTypeId || node->children[0]->nodeType == Node::NodeTypeVarDecl) {
 					// Locate symbol to assign into
-					a = procedure->findSymbol(node->children[0]->lexVal.s);
+					a = procedure->findSymbol(node->children[0]->symbol);
 
 					// Emit a move into the target symbol
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));

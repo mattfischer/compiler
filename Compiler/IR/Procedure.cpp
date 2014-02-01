@@ -55,7 +55,7 @@ namespace IR {
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		IR::Symbol *symbol = new Symbol(name, type);
+		IR::Symbol *symbol = new Symbol(name, type, 0);
 		addSymbol(symbol);
 
 		return symbol;
@@ -75,12 +75,12 @@ namespace IR {
 	 * \param name Symbol name
 	 * \return Symbol if found, or 0
 	 */
-	Symbol *Procedure::findSymbol(const std::string &name)
+	Symbol *Procedure::findSymbol(Front::Symbol *symbol)
 	{
 		for(SymbolList::iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
-			Symbol *symbol = *it;
-			if(symbol->name == name) {
-				return symbol;
+			Symbol *irSymbol = *it;
+			if(irSymbol->symbol == symbol) {
+				return irSymbol;
 			}
 		}
 

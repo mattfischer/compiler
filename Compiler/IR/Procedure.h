@@ -30,7 +30,7 @@ namespace IR {
 		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
 		Symbol *newTemp(Front::Type *type);
 		void addSymbol(Symbol *symbol);
-		Symbol *findSymbol(const std::string &name);
+		Symbol *findSymbol(Front::Symbol *symbol);
 		EntryLabel *newLabel();
 		void setPosition(Entry *entry);
 

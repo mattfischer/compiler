@@ -2,6 +2,7 @@
 #define FRONT_NODE_H
 
 #include "Front/Type.h"
+#include "Front/Symbol.h"
 
 #include <vector>
 #include <iostream>
@@ -69,6 +70,8 @@ namespace Front {
 			std::string s; //!< String value
 		};
 		LexVal lexVal; //!< Lexical value from tokenizer
+
+		Symbol *symbol; //!< Symbol the node corresponds to
 	};
 
 	std::ostream &operator<<(std::ostream &o, Node *node);
