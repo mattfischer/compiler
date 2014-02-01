@@ -29,6 +29,7 @@ namespace IR {
 			TypeLoadImm, //!< Load a constant into a symbol
 			TypeAdd, //!< Add two symbols together
 			TypeAddImm, //!< Add a constant to a symbol
+			TypeSubtract, //!< Subtract two symbols
 			TypeMult, //!< Multiply two symbols together
 			TypeMultImm, //!< Multiply a constant with a symbol
 			TypePrint, //!< Print a symbol

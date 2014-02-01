@@ -104,6 +104,10 @@ namespace VM {
 				o << "add " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
+			case ThreeAddrSub:
+				o << "sub " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
 			case ThreeAddrMult:
 				o << "mult " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;

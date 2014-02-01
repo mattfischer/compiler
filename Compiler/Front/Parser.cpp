@@ -489,10 +489,13 @@ Node *Parser::parseAddExpression(bool required)
 	}
 
 	while(true) {
-		if(matchLiteral("+")) {
+		if(matchLiteral("+") || matchLiteral("-")) {
+			Node::NodeSubtype subtype;
+			if(matchLiteral("+")) subtype = Node::NodeSubtypeAdd;
+			else if(matchLiteral("-")) subtype = Node::NodeSubtypeSubtract;
 			consume();
 
-			Node *addNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeAdd);
+			Node *addNode = newNode(Node::NodeTypeArith, node->line, subtype);
 			addNode->children.push_back(node);
 			addNode->children.push_back(parseMultiplyExpression(true));
 			node = addNode;
@@ -560,11 +563,14 @@ Node *Parser::parseSuffixExpression(bool required)
 			node = arrayNode;
 
 			continue;
-		} else if(matchLiteral("++")) {
-			// '++'
+		} else if(matchLiteral("++") || matchLiteral("--")) {
+			// '++' | '--'
+			Node::NodeSubtype subtype;
+			if(matchLiteral("++")) subtype = Node::NodeSubtypeIncrement;
+			else if(matchLiteral("--")) subtype = Node::NodeSubtypeDecrement;
 			consume();
 
-			Node *incrementNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeIncrement);
+			Node *incrementNode = newNode(Node::NodeTypeArith, node->line, subtype);
 			incrementNode->children.push_back(node);
 			node = incrementNode;
 

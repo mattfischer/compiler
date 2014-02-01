@@ -10,6 +10,7 @@ namespace IR {
 		/* TypeLoadImm	  */ "loadi    ",
 		/* TypeAdd		  */ "add      ",
 		/* TypeAddImm     */ "addi     ",
+		/* TypeSubtract	  */ "sub      ",
 		/* TypeMult		  */ "mult     ",
 		/* TypeMultImm	  */ "multi    ",
 		/* TypePrint	  */ "print    ",

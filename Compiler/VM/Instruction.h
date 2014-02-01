@@ -73,16 +73,17 @@ namespace VM {
 	const int TwoAddrNew = 0x4; //!< Allocate new memory
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
-	const int ThreeAddrMult = 0x1; //!< Multiply two registers
-	const int ThreeAddrAddCond = 0x2; //!< Add immediate to src2 if src1 is nonzero
-	const int ThreeAddrEqual = 0x3; //!< Compare two registers for equality
-	const int ThreeAddrNEqual = 0x4; //!< Compare two registers for inequality
-	const int ThreeAddrLessThan = 0x5; //!< Compare two registers for less-than
-	const int ThreeAddrLessThanE = 0x6; //!< Compare two registers for less-than-equal
-	const int ThreeAddrGreaterThan = 0x7; //!< Compare two registers for greater-than
-	const int ThreeAddrGreaterThanE = 0x8; //!< Compare two registers for greater-than-equal
-	const int ThreeAddrLoad = 0x9; //!< Load register from memory
-	const int ThreeAddrStore = 0xa; //!< Store register into memory
+	const int ThreeAddrSub = 0x1; //!< Subtract two registers
+	const int ThreeAddrMult = 0x2; //!< Multiply two registers
+	const int ThreeAddrAddCond = 0x3; //!< Add immediate to src2 if src1 is nonzero
+	const int ThreeAddrEqual = 0x4; //!< Compare two registers for equality
+	const int ThreeAddrNEqual = 0x5; //!< Compare two registers for inequality
+	const int ThreeAddrLessThan = 0x6; //!< Compare two registers for less-than
+	const int ThreeAddrLessThanE = 0x7; //!< Compare two registers for less-than-equal
+	const int ThreeAddrGreaterThan = 0x8; //!< Compare two registers for greater-than
+	const int ThreeAddrGreaterThanE = 0x9; //!< Compare two registers for greater-than-equal
+	const int ThreeAddrLoad = 0xa; //!< Load register from memory
+	const int ThreeAddrStore = 0xb; //!< Store register into memory
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrPrint = 0x1; //!< Print register

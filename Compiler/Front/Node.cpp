@@ -22,8 +22,10 @@ const char *typeNames[] = {
 const char *subtypeNames[] = {
 	/* NodeSubtypeNone             */ "none",
 	/* NodeSubtypeAdd              */ "add",
+	/* NodeSubtypeSubtract         */ "subtract",
 	/* NodeSubtypeMultiply         */ "multiply",
 	/* NodeSubtypeIncrement        */ "increment",
+	/* NodeSubtypeDecrement        */ "decrement",
 	/* NodeSubtypeEqual            */ "equal",
 	/* NodeSubtypeNequal           */ "not-equal",
 	/* NodeSubtypeLessThan         */ "less-than",

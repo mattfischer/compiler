@@ -28,6 +28,7 @@ namespace Transform {
 			// Examine the current entry
 			switch(entry->type) {
 				case IR::Entry::TypeAdd:
+				case IR::Entry::TypeSubtract:
 				case IR::Entry::TypeMult:
 				case IR::Entry::TypeMove:
 				case IR::Entry::TypeEqual:
@@ -60,6 +61,10 @@ namespace Transform {
 							switch(entry->type) {
 								case IR::Entry::TypeAdd:
 									value = rhs1 + rhs2;
+									break;
+
+								case IR::Entry::TypeSubtract:
+									value = rhs1 - rhs2;
 									break;
 
 								case IR::Entry::TypeMult:
@@ -116,6 +121,13 @@ namespace Transform {
 										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
 									} else {
 										newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, constant);
+									}
+									break;
+								case IR::Entry::TypeSubtract:
+									if(constant == 0) {
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+									} else {
+										newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, -constant);
 									}
 									break;
 								case IR::Entry::TypeMult:

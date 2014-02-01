@@ -80,6 +80,10 @@ namespace VM {
 							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2];
 							break;
 
+						case VM::ThreeAddrSub:
+							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] - regs[instr.u.three.regRhs2];
+							break;
+
 						case VM::ThreeAddrMult:
 							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] * regs[instr.u.three.regRhs2];
 							break;
