@@ -23,6 +23,7 @@ namespace Front {
 			NodeTypeAssign, //!< Assignment operator
 			NodeTypeIf, //!< If statement
 			NodeTypeWhile, //!< While statement
+			NodeTypeFor, //!< For statement
 			NodeTypeCompare, //!< Comparison operators
 			NodeTypeArith, //!< Arithmetic operators
 			NodeTypeConstant, //!< Numeric constant

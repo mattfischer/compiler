@@ -9,6 +9,7 @@ const char *typeNames[] = {
 	/* NodeTypeAssign       */ "assign",
 	/* NodeTypeIf           */ "if",
 	/* NodeTypeWhile        */ "while",
+	/* NodeTypeFor          */ "for",
 	/* NodeTypeCompare      */ "compare",
 	/* NodeTypeArith        */ "arithmetic",
 	/* NodeTypeConstant     */ "constant",

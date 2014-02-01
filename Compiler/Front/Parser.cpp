@@ -373,6 +373,32 @@ Node *Parser::parseStatement(bool required)
 		node->children.push_back(parseClause(true));
 
 		return node;
+	} else if(matchLiteral("for")) {
+		// <Statement> := 'for' '(' { <VarDecl> '=' }? <Expression> ';' <Expression> ';' <Expression> ')' <Clause>
+		node = newNode(Node::NodeTypeFor, next().line);
+		consume();
+
+		expectLiteral("(");
+		Node *varDecl = parseVariableDeclaration();
+		if(varDecl) {
+			Node *assign = newNode(Node::NodeTypeAssign, varDecl->line);
+			assign->children.push_back(varDecl);
+
+			expectLiteral("=");
+			assign->children.push_back(parseExpression(true));
+			node->children.push_back(assign);
+		} else {
+			node->children.push_back(parseExpression(true));
+		}
+		expectLiteral(";");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(";");
+		node->children.push_back(parseExpression(true));
+		expectLiteral(")");
+
+		node->children.push_back(parseClause(true));
+
+		return node;
 	}
 
 	// Throw an error if a statement was required and none was found

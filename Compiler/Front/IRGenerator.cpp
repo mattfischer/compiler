@@ -141,6 +141,31 @@ namespace Front {
 					break;
 				}
 
+			case Node::NodeTypeFor:
+				{
+					IR::EntryLabel *testLabel = procedure->newLabel();
+					IR::EntryLabel *mainLabel = procedure->newLabel();
+					IR::EntryLabel *nextLabel = procedure->newLabel();
+
+					// Emit initialization
+					processNode(node->children[0], program, procedure);
+
+					// Emit test of predicate and conditional jump
+					procedure->emit(testLabel);
+					lhs = processRValue(node->children[1], program, procedure);
+					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
+
+					// Emit body label
+					procedure->emit(mainLabel);
+					processNode(node->children[3], program, procedure);
+					processNode(node->children[2], program, procedure);
+					procedure->emit(new IR::EntryJump(testLabel));
+
+					// Emit label following statement
+					procedure->emit(nextLabel);
+					break;
+				}
+
 			case Node::NodeTypeReturn:
 				{
 					// Emit code for return value

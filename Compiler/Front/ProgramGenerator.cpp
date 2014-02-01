@@ -223,6 +223,15 @@ namespace Front {
 				node->type = TypeVoid;
 				break;
 
+			case Node::NodeTypeFor:
+				checkChildren(node, procedure);
+				if(!Type::equals(node->children[1]->type, TypeBool)) {
+					throw TypeError(node, "Type mismatch");
+				}
+
+				node->type = TypeVoid;
+				break;
+
 			case Node::NodeTypeCompare:
 				checkChildren(node, procedure);
 
