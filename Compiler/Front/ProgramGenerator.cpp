@@ -81,9 +81,14 @@ namespace Front {
 				Symbol *procedureSymbol = new Symbol(procedure->type, procedure->name);
 				program->globals->addSymbol(procedureSymbol);
 
+				// Create a context for the procedure
+				Context context;
+				context.procedure = procedure;
+				context.scope = procedure->locals;
+
 				// Type check the body of the procedure
 				procedure->body = procedureNode->children[2];
-				checkType(procedure->body, procedure);
+				checkType(procedure->body, context);
 				procedureNode->type = TypeVoid;
 
 				// Add the procedure to the program's procedure list
@@ -131,23 +136,23 @@ namespace Front {
 	 * \param node Node to check
 	 * \param procedure Procedure that contains the current node
 	 */
-	void ProgramGenerator::checkType(Node *node, Procedure *procedure)
+	void ProgramGenerator::checkType(Node *node, Context &context)
 	{
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypePrint:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 				node->type = TypeVoid;
 				break;
 
 			case Node::NodeTypeCall:
 				{
 					// First, check all child nodes
-					checkChildren(node, procedure);
+					checkChildren(node, context);
 
 					// Check that call target is a procedure type
 					Node *procedureNode = node->children[0];
@@ -186,14 +191,14 @@ namespace Front {
 						throw TypeError(node, "Cannot declare variable of void type");
 					}
 
-					procedure->locals->addSymbol(new Symbol(type, node->lexVal.s));
+					context.scope->addSymbol(new Symbol(type, node->lexVal.s));
 					node->type = type;
 					break;
 				}
 
 			case Node::NodeTypeAssign:
 				{
-					checkChildren(node, procedure);
+					checkChildren(node, context);
 
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
@@ -215,7 +220,7 @@ namespace Front {
 
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 				if(!Type::equals(node->children[0]->type, TypeBool)) {
 					throw TypeError(node, "Type mismatch");
 				}
@@ -224,7 +229,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeFor:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 				if(!Type::equals(node->children[1]->type, TypeBool)) {
 					throw TypeError(node, "Type mismatch");
 				}
@@ -233,7 +238,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeCompare:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 
 				// Check that types match
 				if(!Type::equals(node->children[0]->type, node->children[1]->type)) {
@@ -258,7 +263,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeArith:
-				checkChildren(node, procedure);
+				checkChildren(node, context);
 
 				// Check that types match
 				for(unsigned int i=0; i<node->children.size(); i++) {
@@ -273,7 +278,7 @@ namespace Front {
 				{
 					// Search for the named symbol in the current scope
 					std::string name = node->lexVal.s;
-					Symbol *symbol = procedure->locals->findSymbol(name);
+					Symbol *symbol = context.scope->findSymbol(name);
 					if(!symbol) {
 						std::stringstream s;
 						s << "Undefined variable '" << name << "'";
@@ -289,14 +294,14 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeReturn:
-				if(Type::equals(procedure->type->returnType, TypeVoid)) {
+				if(Type::equals(context.procedure->type->returnType, TypeVoid)) {
 					throw TypeError(node, "Return statement in void procedure");
 				}
 
-				checkType(node->children[0], procedure);
+				checkType(node->children[0], context);
 
 				// Check that return argument matches the procedure's return type
-				if(!Type::equals(node->children[0]->type, procedure->type->returnType)) {
+				if(!Type::equals(node->children[0]->type, context.procedure->type->returnType)) {
 					throw TypeError(node, "Type mismatch");
 				}
 				node->type = TypeVoid;
@@ -309,7 +314,7 @@ namespace Front {
 					node->type = typeNode->type;
 
 					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
-						checkType(typeNode->children[1], procedure);
+						checkType(typeNode->children[1], context);
 						if(!Type::equals(typeNode->children[1]->type, TypeInt)) {
 							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
 						}
@@ -319,7 +324,7 @@ namespace Front {
 
 			case Node::NodeTypeArray:
 				{
-					checkChildren(node, procedure);
+					checkChildren(node, context);
 					Node *arrayNode = node->children[0];
 					Node *subscriptNode = node->children[1];
 
@@ -343,10 +348,10 @@ namespace Front {
 	 * \param node Node to check
 	 * \param procedure Procedure current node belongs to
 	 */
-	void ProgramGenerator::checkChildren(Node *node, Procedure *procedure)
+	void ProgramGenerator::checkChildren(Node *node, Context &context)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
-			checkType(node->children[i], procedure);
+			checkType(node->children[i], context);
 		}
 	}
 }

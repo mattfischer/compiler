@@ -24,8 +24,13 @@ namespace Front {
 		std::string mErrorMessage; //!< Error message
 		int mErrorLine; //!< Error line
 
-		void checkType(Node *node, Procedure *procedure);
-		void checkChildren(Node *node, Procedure *procedure);
+		struct Context {
+			Procedure *procedure;
+			Scope *scope;
+		};
+
+		void checkType(Node *node, Context &context);
+		void checkChildren(Node *node, Context &context);
 		Type *createType(Node *node);
 	};
 }
