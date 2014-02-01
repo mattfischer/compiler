@@ -149,6 +149,34 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeLessThan:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLessThan, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
+				case IR::Entry::TypeLessThanE:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLessThanE, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
+				case IR::Entry::TypeGreaterThan:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrGreaterThan, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
+				case IR::Entry::TypeGreaterThanE:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrGreaterThanE, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
 				case IR::Entry::TypeLabel:
 					{
 						IR::EntryLabel *label = (IR::EntryLabel*)entry;

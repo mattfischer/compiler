@@ -32,6 +32,10 @@ namespace Transform {
 				case IR::Entry::TypeMove:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
+				case IR::Entry::TypeLessThan:
+				case IR::Entry::TypeLessThanE:
+				case IR::Entry::TypeGreaterThan:
+				case IR::Entry::TypeGreaterThanE:
 					{
 						int rhs1;
 						int rhs2;
@@ -72,6 +76,22 @@ namespace Transform {
 
 								case IR::Entry::TypeNequal:
 									value = rhs1 != rhs2;
+									break;
+
+								case IR::Entry::TypeLessThan:
+									value = rhs1 < rhs2;
+									break;
+
+								case IR::Entry::TypeLessThanE:
+									value = rhs1 <= rhs2;
+									break;
+
+								case IR::Entry::TypeGreaterThan:
+									value = rhs1 > rhs2;
+									break;
+
+								case IR::Entry::TypeGreaterThanE:
+									value = rhs1 >= rhs2;
 									break;
 							}
 

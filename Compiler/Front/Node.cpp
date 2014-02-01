@@ -20,12 +20,16 @@ const char *typeNames[] = {
 };
 
 const char *subtypeNames[] = {
-	/* NodeSubtypeNone     */ "none",
-	/* NodeSubtypeAdd      */ "add",
-	/* NodeSubtypeMultiply */ "multiply",
-	/* NodeSubtypeIncrement*/ "increment",
-	/* NodeSubtypeEqual    */ "equal",
-	/* NodeSubtypeNequal   */ "not-equal"
+	/* NodeSubtypeNone             */ "none",
+	/* NodeSubtypeAdd              */ "add",
+	/* NodeSubtypeMultiply         */ "multiply",
+	/* NodeSubtypeIncrement        */ "increment",
+	/* NodeSubtypeEqual            */ "equal",
+	/* NodeSubtypeNequal           */ "not-equal",
+	/* NodeSubtypeLessThan         */ "less-than",
+	/* NodeSubtypeLessThanEqual    */ "less-than-equal",
+	/* NodeSubtypeGreaterThan      */ "greater-than",
+	/* NodeSubtypeGreaterThanEqual */ "greater-than-equal",
 };
 
 namespace Front {

@@ -34,6 +34,10 @@ namespace IR {
 			TypePrint, //!< Print a symbol
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality
+			TypeLessThan, //!< Test two symbols for less-than
+			TypeLessThanE, //!< Test two symbols for less-than-equal
+			TypeGreaterThan, //!< Test two symbols for greater-than
+			TypeGreaterThanE, //!< Test two symbols for greater-than-equal
 			TypeLabel, //!< A label, used as a jump target
 			TypeJump, //!< Jump to a specified label
 			TypeCJump, //!< Jump to one of two labels based on a symbol's value

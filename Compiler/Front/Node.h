@@ -44,7 +44,11 @@ namespace Front {
 			NodeSubtypeIncrement, //!< Increment operator
 
 			NodeSubtypeEqual, //!< Equality comparison
-			NodeSubtypeNequal //!< Inequality comparison
+			NodeSubtypeNequal, //!< Inequality comparison
+			NodeSubtypeLessThan, //!< Less-than comparison
+			NodeSubtypeLessThanEqual, //!< Less-than-equal comparison
+			NodeSubtypeGreaterThan, //!< Greater-than comparison
+			NodeSubtypeGreaterThanEqual, //!< Greater-than-equal comparison
 		};
 
 		NodeType nodeType; //!< Node type

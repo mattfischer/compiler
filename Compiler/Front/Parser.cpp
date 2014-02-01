@@ -458,10 +458,14 @@ Node *Parser::parseCompareExpression(bool required)
 	}
 
 	while(true) {
-		if(matchLiteral("==") || matchLiteral("!=")) {
+		if(matchLiteral("==") || matchLiteral("!=") || matchLiteral("<") || matchLiteral(">") || matchLiteral("<=") || matchLiteral(">=")) {
 			Node::NodeSubtype subtype;
 			if(matchLiteral("==")) subtype = Node::NodeSubtypeEqual;
 			else if(matchLiteral("!=")) subtype = Node::NodeSubtypeNequal;
+			else if(matchLiteral("<")) subtype = Node::NodeSubtypeLessThan;
+			else if(matchLiteral("<=")) subtype = Node::NodeSubtypeLessThanEqual;
+			else if(matchLiteral(">")) subtype = Node::NodeSubtypeGreaterThan;
+			else if(matchLiteral(">=")) subtype = Node::NodeSubtypeGreaterThanEqual;
 			consume();
 
 			Node *compareNode = newNode(Node::NodeTypeCompare, node->line, subtype);

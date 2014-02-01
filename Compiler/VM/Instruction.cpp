@@ -140,6 +140,22 @@ namespace VM {
 				o << "neq " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
+			case ThreeAddrLessThan:
+				o << "lt " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
+			case ThreeAddrLessThanE:
+				o << "lte " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
+			case ThreeAddrGreaterThan:
+				o << "gt " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
+			case ThreeAddrGreaterThanE:
+				o << "gte " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
 			case ThreeAddrLoad:
 				o << "ldr " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
 				break;

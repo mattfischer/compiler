@@ -320,6 +320,23 @@ namespace Front {
 					case Node::NodeSubtypeNequal:
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNequal, result, a, b));
 						break;
+
+					case Node::NodeSubtypeLessThan:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLessThan, result, a, b));
+						break;
+
+					case Node::NodeSubtypeLessThanEqual:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLessThanE, result, a, b));
+						break;
+
+					case Node::NodeSubtypeGreaterThan:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeGreaterThan, result, a, b));
+						break;
+
+					case Node::NodeSubtypeGreaterThanEqual:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeGreaterThanE, result, a, b));
+						break;
+
 				}
 				break;
 

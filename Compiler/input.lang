@@ -17,7 +17,7 @@ void main()
   arr[7] = 35;
   arr[8] = 40;
   arr[9] = 45;
-  for(int i=0; i!=10; i++) {
+  for(int i=0; i<10; i++) {
     print arr[i];
   }
 }
