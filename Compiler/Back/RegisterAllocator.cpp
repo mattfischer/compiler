@@ -9,6 +9,8 @@
 #include "Analysis/UseDefs.h"
 #include "Analysis/Constants.h"
 
+#include "Transform/LiveRangeRenaming.h"
+
 #include "Front/Type.h"
 
 #include <vector>
@@ -324,6 +326,8 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 	Analysis::Analysis analysis(procedure);
 
 	do {
+		Transform::LiveRangeRenaming::instance()->transform(procedure, analysis);
+
 		// Attempt an allocation
 		registers = tryAllocate(procedure, success, analysis);
 

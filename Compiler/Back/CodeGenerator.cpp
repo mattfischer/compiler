@@ -7,8 +7,6 @@
 
 #include "Back/RegisterAllocator.h"
 
-#include "Transform/LiveRangeRenaming.h"
-
 #include "Util/Timer.h"
 
 #include <map>
@@ -61,8 +59,6 @@ namespace Back {
 		// Allocate registers for the procedure
 		Util::Timer timer;
 		timer.start();
-		Analysis::Analysis analysis(procedure);
-		Transform::LiveRangeRenaming::instance()->transform(procedure, analysis);
 		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
 
