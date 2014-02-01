@@ -4,6 +4,7 @@
 #include "Analysis/UseDefs.h"
 #include "Analysis/LiveVariables.h"
 #include "Analysis/Loops.h"
+#include "Analysis/Analysis.h"
 
 #include "Transform/ConstantProp.h"
 #include "Transform/DeadCodeElimination.h"
@@ -50,6 +51,8 @@ namespace Middle {
 		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
 			IR::Procedure *procedure = *it;
 
+			Analysis::Analysis analysis(procedure);
+
 			// Queue of transformations to run
 			Util::UniqueQueue<Transform::Transform*> transforms;
 
@@ -59,7 +62,7 @@ namespace Middle {
 				transforms.push(transform);
 			}
 
-			std::cout << "Optimizations:" << std::endl;
+			std::cout << "Optimizations (" << procedure->name() << "):" << std::endl;
 
 			// Run optimization passes until there are none left
 			while(!transforms.empty()) {
@@ -69,7 +72,7 @@ namespace Middle {
 				// Run the transform
 				Util::Timer timer;
 				timer.start();
-				bool changed = transform->transform(procedure);
+				bool changed = transform->transform(procedure, analysis);
 				std::cout << transform->name() << ": " << timer.stop() << "ms" << std::endl;
 
 				if(changed) {
@@ -81,6 +84,8 @@ namespace Middle {
 					}
 				}
 			}
+
+			std::cout << std::endl;
 		}
 	}
 }

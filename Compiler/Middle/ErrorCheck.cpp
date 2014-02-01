@@ -4,8 +4,8 @@
 #include "IR/Procedure.h"
 #include "IR/Symbol.h"
 
+#include "Analysis/Analysis.h"
 #include "Analysis/LiveVariables.h"
-#include "Analysis/FlowGraph.h"
 
 #include <iostream>
 #include <sstream>
@@ -23,7 +23,8 @@ namespace Middle {
 
 			// *** Check for variables which are used before they are defined ***
 
-			Analysis::LiveVariables liveVariables(procedure);
+			Analysis::Analysis analysis(procedure);
+			Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
 
 			// Any variable which is live at the beginning of the function has no initial definition
 			IR::SymbolSet symbols = liveVariables.variables(procedure->entries().front());

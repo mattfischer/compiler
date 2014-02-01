@@ -13,7 +13,7 @@ namespace Analysis {
 	 */
 	class BlockSort {
 	public:
-		BlockSort(FlowGraph &flowGraph);
+		BlockSort(FlowGraph *flowGraph);
 
 		const FlowGraph::BlockVector &sorted() const;
 		int position(FlowGraph::Block *block) const;

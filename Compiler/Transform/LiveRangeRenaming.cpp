@@ -18,7 +18,7 @@ namespace Transform {
  * \param newSymbol Symbol to rename to
  * \param useDefs Use-def chains for the procedure
  */
-void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs &useDefs)
+void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs *useDefs)
 {
 	std::queue<IR::Entry*> entries;
 
@@ -34,7 +34,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry assigns to the symbol, rename it and add all uses of the assignment
 			// to the queue for further processing
 			entry->replaceAssign(symbol, newSymbol);
-			const IR::EntrySet &set = useDefs.uses(entry);
+			const IR::EntrySet &set = useDefs->uses(entry);
 			for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 				entries.push(*it);
 			}
@@ -44,7 +44,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry uses the symbol, rename it and add all definitions of the symbol
 			// to the queue for further processing
 			entry->replaceUse(symbol, newSymbol);
-			const IR::EntrySet &set = useDefs.defines(entry, symbol);
+			const IR::EntrySet &set = useDefs->defines(entry, symbol);
 			for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 				entries.push(*it);
 			}
@@ -52,14 +52,14 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 	}
 }
 
-bool LiveRangeRenaming::transform(IR::Procedure *procedure)
+bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 {
 	bool changed = false;
 
 	std::vector<IR::Symbol*> newSymbols;
 
 	// Construct use-def chains for the procedure
-	Analysis::UseDefs useDefs(procedure);
+	Analysis::UseDefs *useDefs = analysis.useDefs();
 
 	// Iterate through each symbol in the procedure
 	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
@@ -99,6 +99,10 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure)
 
 	procedure->symbols().clear();
 	procedure->symbols().insert(procedure->symbols().begin(), newSymbols.begin(), newSymbols.end());
+
+	if(changed) {
+		analysis.invalidate();
+	}
 
 	return changed;
 }

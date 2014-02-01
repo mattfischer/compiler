@@ -5,6 +5,8 @@
 #include "IR/Symbol.h"
 #include "IR/Entry.h"
 
+#include "Analysis/FlowGraph.h"
+
 #include <set>
 #include <map>
 
@@ -19,7 +21,7 @@ namespace Analysis {
 	 */
 	class LiveVariables {
 	public:
-		LiveVariables(IR::Procedure *procedure);
+		LiveVariables(IR::Procedure *procedure, FlowGraph *flowGraph);
 
 		IR::SymbolSet &variables(IR::Entry *entry);
 		void print();

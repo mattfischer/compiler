@@ -25,7 +25,7 @@ namespace Transform {
 		return label;
 	}
 
-	bool ThreadJumps::transform(IR::Procedure *proc)
+	bool ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 
@@ -68,6 +68,10 @@ namespace Transform {
 						break;
 					}
 			}
+		}
+
+		if(changed) {
+			analysis.invalidate();
 		}
 
 		return changed;

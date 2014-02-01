@@ -8,20 +8,20 @@
 #include "Analysis/ReachingDefs.h"
 
 namespace Transform {
-	bool DeadCodeElimination::transform(IR::Procedure *procedure)
+	bool DeadCodeElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 
 		// Construct a flow graph and use-def chains for the procedure
-		Analysis::FlowGraph flowGraph(procedure);
-		Analysis::UseDefs useDefs(procedure);
+		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
+		Analysis::UseDefs *useDefs = analysis.useDefs();
 
 		// Iterate through the blocks of the graph
-		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
+		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph->blocks().begin(); it != flowGraph->blocks().end(); it++) {
 			Analysis::FlowGraph::Block *block = *it;
 
 			// If no control path leads to the block, it can be removed from the graph
-			if(block->pred.size() == 0 && block != flowGraph.start()) {
+			if(block->pred.size() == 0 && block != flowGraph->start()) {
 				IR::EntryList::iterator itNext;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
 					itNext = itEntry;
@@ -32,7 +32,7 @@ namespace Transform {
 					}
 
 					procedure->entries().erase(entry);
-					useDefs.remove(entry);
+					analysis.remove(entry);
 					delete entry;
 				}
 				changed = true;
@@ -52,7 +52,7 @@ namespace Transform {
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
 						if(load->lhs == load->rhs1) {
 							procedure->entries().erase(entry);
-							useDefs.remove(entry);
+							analysis.remove(entry);
 							delete entry;
 							break;
 						}
@@ -69,10 +69,10 @@ namespace Transform {
 				case IR::Entry::TypeLoadArg:
 					{
 						// If an assignment has no uses, it is unnecessary
-						const IR::EntrySet &uses = useDefs.uses(entry);
+						const IR::EntrySet &uses = useDefs->uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
-							useDefs.remove(entry);
+							analysis.remove(entry);
 							delete entry;
 							changed = true;
 						}
@@ -90,7 +90,7 @@ namespace Transform {
 
 							if(jump->target == label) {
 								procedure->entries().erase(jump);
-								useDefs.remove(entry);
+								analysis.remove(entry);
 								delete entry;
 								changed = true;
 								break;

@@ -1,8 +1,8 @@
 #include "Analysis/Constants.h"
 
 namespace Analysis {
-	Constants::Constants(IR::Procedure *procedure)
-		: mUseDefs(procedure)
+	Constants::Constants(IR::Procedure *procedure, UseDefs *useDefs)
+		: mUseDefs(useDefs)
 	{
 	}
 
@@ -20,7 +20,7 @@ namespace Analysis {
 		int ret = 0;
 
 		// Check each definition that reaches this entry
-		const IR::EntrySet &set = mUseDefs.defines(entry, symbol);
+		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
 		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 			IR::Entry *def = *it;
 			if(def->type != IR::Entry::TypeLoadImm) {

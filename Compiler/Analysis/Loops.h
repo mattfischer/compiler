@@ -33,7 +33,7 @@ namespace Analysis {
 			LoopSet children; //!< Loops inside of this loop
 		};
 
-		Loops(IR::Procedure *procedure);
+		Loops(IR::Procedure *procedure, FlowGraph *flowGraph);
 		~Loops();
 
 		LoopList &loops();
@@ -50,7 +50,6 @@ namespace Analysis {
 		LoopList mLoops; //!< List of all loops
 		typedef std::map<FlowGraph::Block*, Loop*> BlockToLoopMap;
 		BlockToLoopMap mLoopMap; //!< Map from blocks to the loop they are the header of
-		FlowGraph mFlowGraph; //!< Control flow graph
 		Loop mRootLoop; //!< Root loop of the procedure
 	};
 }

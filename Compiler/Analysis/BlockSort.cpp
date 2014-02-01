@@ -32,12 +32,12 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param flowGraph Control flow graph to sort
 	 */
-	BlockSort::BlockSort(FlowGraph &flowGraph)
+	BlockSort::BlockSort(FlowGraph *flowGraph)
 	{
 		FlowGraph::BlockSet seenBlocks;
 
 		// Add each block into the list in sequence
-		for(FlowGraph::BlockSet::iterator it = flowGraph.blocks().begin(); it != flowGraph.blocks().end(); it++) {
+		for(FlowGraph::BlockSet::iterator it = flowGraph->blocks().begin(); it != flowGraph->blocks().end(); it++) {
 			FlowGraph::Block *block = *it;
 			sortRecurse(block, mSorted, seenBlocks);
 		}

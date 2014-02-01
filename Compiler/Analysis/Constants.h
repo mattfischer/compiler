@@ -8,12 +8,12 @@
 namespace Analysis {
 	class Constants {
 	public:
-		Constants(IR::Procedure *procedure);
+		Constants(IR::Procedure *procedure, UseDefs *useDefs);
 
 		int getValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);
 
 	private:
-		UseDefs mUseDefs;
+		UseDefs *mUseDefs;
 	};
 }
 

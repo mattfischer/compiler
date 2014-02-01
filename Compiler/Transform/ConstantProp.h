@@ -6,8 +6,6 @@
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
 
-#include "Analysis/UseDefs.h"
-
 namespace Transform {
 	/*!
 	 * \brief Propagate constants through a procedure
@@ -19,7 +17,7 @@ namespace Transform {
 	 */
 	class ConstantProp : public Transform {
 	public:
-		virtual bool transform(IR::Procedure *procedure);
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
 		virtual std::string name() { return "ConstantProp"; }
 
 		static ConstantProp *instance();

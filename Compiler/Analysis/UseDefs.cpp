@@ -15,8 +15,8 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedur to analyze
 	 */
-	UseDefs::UseDefs(IR::Procedure *procedure)
-	: mProcedure(procedure), mReachingDefs(procedure)
+	UseDefs::UseDefs(IR::Procedure *procedure, ReachingDefs *reachingDefs)
+	: mProcedure(procedure), mReachingDefs(reachingDefs)
 	{
 		Util::Timer timer;
 		timer.start();
@@ -26,7 +26,7 @@ namespace Analysis {
 			IR::Entry *entry = *itEntry;
 
 			// Iterate through the definitions which reach this entry
-			const IR::EntrySet &defs = mReachingDefs.defs(entry);
+			const IR::EntrySet &defs = mReachingDefs->defs(entry);
 			for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
 				IR::Entry *defEntry = *it;
 				IR::Symbol *symbol = defEntry->assign();
@@ -98,12 +98,13 @@ namespace Analysis {
 		mDefines.erase(oldEntry);
 
 		// Construct new def-use information for the new entry from the reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
+		const IR::EntrySet &newDefs = mReachingDefs->defs(oldEntry);
 		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
 			IR::Entry *def = *it;
 			IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
 				mDefines[newEntry][symbol].insert(def);
+				mUses[def].insert(newEntry);
 			}
 		}
 
@@ -117,9 +118,6 @@ namespace Analysis {
 			defs.erase(oldEntry);
 			defs.insert(newEntry);
 		}
-
-		// Replace the entry in the reaching def information
-		mReachingDefs.replace(oldEntry, newEntry);
 	}
 
 	/*!
@@ -162,9 +160,6 @@ namespace Analysis {
 			mDefines[use][entry->assign()].erase(entry);
 		}
 		mUses.erase(entry);
-
-		// Remove the entry from the reaching def information
-		mReachingDefs.remove(entry);
 	}
 
 	/*!
@@ -184,7 +179,7 @@ namespace Analysis {
 		mDefines[entry].erase(oldSymbol);
 
 		// Construct new use-def and def-use information from the underlying reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
+		const IR::EntrySet &newDefs = mReachingDefs->defsForSymbol(entry, newSymbol);
 		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
 			IR::Entry *def = *it;
 			mUses[def].insert(entry);

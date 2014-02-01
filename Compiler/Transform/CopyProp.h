@@ -13,13 +13,13 @@ namespace Transform {
 	 */
 	class CopyProp : public Transform {
 	public:
-		virtual bool transform(IR::Procedure *procedure);
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
 		virtual std::string name() { return "CopyProp"; }
 
 		static CopyProp *instance();
 	private:
-		bool forward(IR::Procedure *procedure);
-		bool backward(IR::Procedure *procedure);
+		bool forward(IR::Procedure *procedure, Analysis::Analysis &analysis);
+		bool backward(IR::Procedure *procedure, Analysis::Analysis &analysis);
 	};
 }
 #endif

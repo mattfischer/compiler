@@ -13,11 +13,8 @@ IR::SymbolSet emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
  * \brief Constructor
  * \param procedure Procedure to analyze
  */
-InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
+InterferenceGraph::InterferenceGraph(IR::Procedure *procedure, LiveVariables *liveVariables)
 {
-	// Perform a live variable analysis to find the live ranges
-	LiveVariables liveVariables(procedure);
-
 	// Collect the set of all symbols in the procedure
 	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
 		IR::Symbol *symbol = *symbolIt;
@@ -28,7 +25,7 @@ InterferenceGraph::InterferenceGraph(IR::Procedure *procedure)
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
 
-		IR::SymbolSet &symbols = liveVariables.variables(entry);
+		IR::SymbolSet &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges
 		for(IR::SymbolSet::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {

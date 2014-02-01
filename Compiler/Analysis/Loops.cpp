@@ -7,23 +7,22 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	Loops::Loops(IR::Procedure *procedure)
-		: mFlowGraph(procedure)
+	Loops::Loops(IR::Procedure *procedure, FlowGraph *flowGraph)
 	{
 		// Construct a dominator tree for the procedure
-		DominatorTree dominatorTree(procedure, mFlowGraph);
+		DominatorTree dominatorTree(procedure, flowGraph);
 
 		// Construct the root loop
 		mRootLoop.parent = &mRootLoop;
-		mRootLoop.header = mFlowGraph.start();
-		for(FlowGraph::BlockSet::iterator itBlock = mFlowGraph.blocks().begin(); itBlock != mFlowGraph.blocks().end(); itBlock++) {
+		mRootLoop.header = flowGraph->start();
+		for(FlowGraph::BlockSet::iterator itBlock = flowGraph->blocks().begin(); itBlock != flowGraph->blocks().end(); itBlock++) {
 			FlowGraph::Block *block = *itBlock;
 			mRootLoop.blocks.insert(block);
 		}
 		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		// Iterate through the graph, looking for loops
-		for(FlowGraph::BlockSet::iterator itBlock = mFlowGraph.blocks().begin(); itBlock != mFlowGraph.blocks().end(); itBlock++) {
+		for(FlowGraph::BlockSet::iterator itBlock = flowGraph->blocks().begin(); itBlock != flowGraph->blocks().end(); itBlock++) {
 			FlowGraph::Block *block = *itBlock;
 			for(FlowGraph::BlockSet::iterator itSucc = block->succ.begin(); itSucc != block->succ.end(); itSucc++) {
 				FlowGraph::Block *succ = *itSucc;

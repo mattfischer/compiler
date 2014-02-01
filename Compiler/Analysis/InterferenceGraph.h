@@ -4,6 +4,8 @@
 #include "IR/Procedure.h"
 #include "IR/Symbol.h"
 
+#include "Analysis/LiveVariables.h"
+
 #include <map>
 
 namespace Analysis {
@@ -17,7 +19,7 @@ namespace Analysis {
  */
 class InterferenceGraph {
 public:
-	InterferenceGraph(IR::Procedure *procedure);
+	InterferenceGraph(IR::Procedure *procedure, LiveVariables *liveVariables);
 
 	void addSymbol(IR::Symbol *symbol);
 	void addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2);

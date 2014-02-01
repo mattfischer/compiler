@@ -12,14 +12,11 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	LiveVariables::LiveVariables(IR::Procedure *procedure)
+	LiveVariables::LiveVariables(IR::Procedure *procedure, FlowGraph *flowGraph)
 		: mProcedure(procedure)
 	{
 		Util::Timer timer;
 		timer.start();
-
-		// Break the procedure down into a flow graph
-		FlowGraph graph(procedure);
 
 		// Construct the set of all variables in the procedure
 		IR::SymbolSet all(procedure->symbols().begin(), procedure->symbols().end());
@@ -51,7 +48,7 @@ namespace Analysis {
 		// Perform a backwards data flow analysis on the procedure, using the gen and kill sets
 		// constructed above.
 		DataFlow<IR::Symbol*> dataFlow;
-		mMap = dataFlow.analyze(graph, gen, kill, all, DataFlow<IR::Symbol*>::MeetTypeUnion, DataFlow<IR::Symbol*>::DirectionBackward);
+		mMap = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Symbol*>::MeetTypeUnion, DataFlow<IR::Symbol*>::DirectionBackward);
 
 		std::cout << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}

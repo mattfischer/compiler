@@ -3,18 +3,14 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
-#include "Analysis/ReachingDefs.h"
-#include "Analysis/UseDefs.h"
-#include "Analysis/Constants.h"
-
 #include "Util/UniqueQueue.h"
 
 namespace Transform {
-	bool ConstantProp::transform(IR::Procedure *procedure)
+	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
-		Analysis::UseDefs useDefs(procedure);
-		Analysis::Constants constants(procedure);
+		Analysis::UseDefs *useDefs = analysis.useDefs();
+		Analysis::Constants *constants = analysis.constants();
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
@@ -44,9 +40,9 @@ namespace Transform {
 
 						// Examine the right hand side arguments and determine if they are constant
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = constants.getValue(threeAddr, threeAddr->rhs1, rhs1Const);
+						rhs1 = constants->getValue(threeAddr, threeAddr->rhs1, rhs1Const);
 						if(threeAddr->rhs2) {
-							rhs2 = constants.getValue(threeAddr, threeAddr->rhs2, rhs2Const);
+							rhs2 = constants->getValue(threeAddr, threeAddr->rhs2, rhs2Const);
 						} else {
 							rhs2 = 0;
 							rhs2Const = true;
@@ -116,13 +112,13 @@ namespace Transform {
 						if(newEntry) {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them
-							const IR::EntrySet &entries = useDefs.uses(threeAddr);
+							const IR::EntrySet &entries = useDefs->uses(threeAddr);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);
 							}
 
 							// Update the useDef chains to reflect the new entry
-							useDefs.replace(threeAddr, newEntry);
+							analysis.replace(threeAddr, newEntry);
 
 							// Substitute the new entry into the procedure
 							procedure->entries().insert(threeAddr, newEntry);
@@ -140,7 +136,7 @@ namespace Transform {
 						bool rhsConst;
 
 						// Determine if the symbol on the right hand side is constant
-						rhs = constants.getValue(twoAddrImm, twoAddrImm->rhs, rhsConst);
+						rhs = constants->getValue(twoAddrImm, twoAddrImm->rhs, rhsConst);
 						if(rhsConst) {
 							int value;
 							switch(twoAddrImm->type) {
@@ -155,13 +151,13 @@ namespace Transform {
 
 							// Construct a Load Immediate entry to replace the current entry
 							IR::Entry *newEntry = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, twoAddrImm->lhs, 0, value);
-							const IR::EntrySet &entries = useDefs.uses(twoAddrImm);
+							const IR::EntrySet &entries = useDefs->uses(twoAddrImm);
 							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
 								queue.push(*it);
 							}
 
 							// Replace the entry in the useDef chains and the procedure itself
-							useDefs.replace(twoAddrImm, newEntry);
+							analysis.replace(twoAddrImm, newEntry);
 							procedure->entries().insert(twoAddrImm, newEntry);
 							procedure->entries().erase(twoAddrImm);
 							delete twoAddrImm;
@@ -174,7 +170,7 @@ namespace Transform {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						bool isConstant;
-						int value = constants.getValue(threeAddr, threeAddr->rhs2, isConstant);
+						int value = constants->getValue(threeAddr, threeAddr->rhs2, isConstant);
 						if(isConstant) {
 							IR::Entry::Type type;
 							switch(entry->type) {
@@ -186,7 +182,7 @@ namespace Transform {
 									break;
 							}
 							IR::Entry *newEntry = new IR::EntryTwoAddrImm(type, threeAddr->lhs, threeAddr->rhs1, value);
-							useDefs.replace(threeAddr, newEntry);
+							analysis.replace(threeAddr, newEntry);
 							procedure->entries().insert(threeAddr, newEntry);
 							procedure->entries().erase(threeAddr);
 							delete threeAddr;
@@ -199,7 +195,7 @@ namespace Transform {
 						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = constants.getValue(cJump, cJump->pred, isConstant);
+						int value = constants->getValue(cJump, cJump->pred, isConstant);
 						if(!isConstant) {
 							continue;
 						}
@@ -215,7 +211,7 @@ namespace Transform {
 						}
 
 						// Update the useDef chains and the procedure itself
-						useDefs.replace(cJump, jump);
+						analysis.replace(cJump, jump);
 						procedure->entries().insert(cJump, jump);
 						procedure->entries().erase(cJump);
 						delete cJump;

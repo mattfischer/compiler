@@ -15,7 +15,7 @@ namespace Transform {
 class LiveRangeRenaming : public Transform
 {
 public:
-	virtual bool transform(IR::Procedure *procedure);
+	virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
 	virtual std::string name() { return "LiveRangeRenaming"; }
 
 	static LiveRangeRenaming *instance();

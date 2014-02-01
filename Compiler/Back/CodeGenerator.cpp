@@ -61,7 +61,8 @@ namespace Back {
 		// Allocate registers for the procedure
 		Util::Timer timer;
 		timer.start();
-		Transform::LiveRangeRenaming::instance()->transform(procedure);
+		Analysis::Analysis analysis(procedure);
+		Transform::LiveRangeRenaming::instance()->transform(procedure, analysis);
 		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
 

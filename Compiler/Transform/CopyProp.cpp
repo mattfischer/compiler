@@ -3,16 +3,16 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
-#include "Analysis/UseDefs.h"
-#include "Analysis/ReachingDefs.h"
+
 #include "Analysis/DataFlow.h"
 
 namespace Transform {
-	bool CopyProp::transform(IR::Procedure *procedure)
+	bool CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
-		changed |= backward(procedure);
-		changed |= forward(procedure);
+		changed |= backward(procedure, analysis);
+		changed |= forward(procedure, analysis);
+
 		return changed;
 	}
 
@@ -21,7 +21,7 @@ namespace Transform {
 	 * \param procedure Procedure to transform
 	 * \return Whether the procedure was changed
 	 */
-	bool CopyProp::forward(IR::Procedure *procedure)
+	bool CopyProp::forward(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 		IR::EntrySet allLoads;
@@ -60,7 +60,7 @@ namespace Transform {
 
 		// Perform forward data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		Analysis::FlowGraph flowGraph(procedure);
+		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
 		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
 
 		// Iterate through the procedure's entries
@@ -73,6 +73,7 @@ namespace Transform {
 			for(IR::EntrySet::iterator itLoad = c.begin(); itLoad != c.end(); itLoad++) {
 				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
 				if(entry->uses(load->lhs)) {
+					analysis.replaceUse(entry, load->lhs, load->rhs1);
 					entry->replaceUse(load->lhs, load->rhs1);
 					changed = true;
 				}
@@ -87,7 +88,7 @@ namespace Transform {
 	 * \param procedure Procedure to transform
 	 * \return Whether the procedure was changed
 	 */
-	bool CopyProp::backward(IR::Procedure *procedure)
+	bool CopyProp::backward(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 		IR::EntrySet allLoads;
@@ -122,7 +123,7 @@ namespace Transform {
 
 		// Perform backwards data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		Analysis::FlowGraph flowGraph(procedure);
+		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
 		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionBackward);
 
 		IR::EntrySet deleted;
@@ -150,6 +151,10 @@ namespace Transform {
 		for(IR::EntrySet::iterator itEntry = deleted.begin(); itEntry != deleted.end(); itEntry++) {
 			IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itEntry;
 			load->rhs1 = load->lhs;
+		}
+
+		if(changed) {
+			analysis.invalidate();
 		}
 
 		return changed;

@@ -29,12 +29,12 @@ namespace Transform {
 		return ss.str();
 	}
 
-	bool SSA::transform(IR::Procedure *proc)
+	bool SSA::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
 	{
 		std::vector<IR::Symbol*> newSymbols;
 
 		// Perform flow graph and dominance analysis on the procedure
-		Analysis::FlowGraph flowGraph(proc);
+		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
 		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
@@ -44,7 +44,7 @@ namespace Transform {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph->blocks().begin(); blockIt != flowGraph->blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
 					IR::Entry *entry = *itEntry;
@@ -74,9 +74,9 @@ namespace Transform {
 			// Rename variables
 			int nextVersion = 0;
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
-			activeList[flowGraph.start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
-			newSymbols.push_back(activeList[flowGraph.start()]);
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph.blocks().begin(); blockIt != flowGraph.blocks().end(); blockIt++) {
+			activeList[flowGraph->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->type);
+			newSymbols.push_back(activeList[flowGraph->start()]);
+			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph->blocks().begin(); blockIt != flowGraph->blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[dominatorTree.idom(block)];
@@ -122,6 +122,8 @@ namespace Transform {
 		for(unsigned int i=0; i<newSymbols.size(); i++) {
 			proc->addSymbol(newSymbols[i]);
 		}
+
+		analysis.invalidate();
 
 		return true;
 	}

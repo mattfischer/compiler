@@ -69,14 +69,14 @@ namespace Analysis {
 		 * \param direction Direction of data flow
 		 * \return Set of items attached to each entry of the graph
 		 */
-		EntryToItemSetMap analyze(FlowGraph &graph, EntryToItemSetMap &gen, EntryToItemSetMap &kill, ItemSet &all, MeetType meetType, Direction direction)
+		EntryToItemSetMap analyze(FlowGraph *graph, EntryToItemSetMap &gen, EntryToItemSetMap &kill, ItemSet &all, MeetType meetType, Direction direction)
 		{
 			EntryToItemSetMap map;
 			std::map<FlowGraph::Block*, ItemSet> genBlock;
 			std::map<FlowGraph::Block*, ItemSet> killBlock;
 
 			// Aggregate the gen/kill sets from each entry into gen/kill sets for each block
-			for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
+			for(FlowGraph::BlockSet::const_iterator it = graph->blocks().begin(); it != graph->blocks().end(); it++) {
 				FlowGraph::Block *block = *it;
 
 				ItemSet g;
@@ -112,7 +112,7 @@ namespace Analysis {
 			Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
 			// Populate the initial states of each block, based on meet type
-			for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
+			for(FlowGraph::BlockSet::const_iterator it = graph->blocks().begin(); it != graph->blocks().end(); it++) {
 				FlowGraph::Block *block = *it;
 				blockQueue.push(block);
 
@@ -140,8 +140,8 @@ namespace Analysis {
 						break;
 
 					case MeetTypeIntersect:
-						if((direction == DirectionForward && block == graph.start()) ||
-							(direction == DirectionBackward && block == graph.end())) {
+						if((direction == DirectionForward && block == graph->start()) ||
+							(direction == DirectionBackward && block == graph->end())) {
 							states[block].in.clear();
 						} else {
 							states[block].in = all;
@@ -197,7 +197,7 @@ namespace Analysis {
 			// The core algorithm is now complete--each block has information about its starting set
 			// of items.  Now proceed through each block, using the state information and the gen/kill
 			// sets to assign an item set to each entry within the block
-			for(FlowGraph::BlockSet::iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
+			for(FlowGraph::BlockSet::iterator it = graph->blocks().begin(); it != graph->blocks().end(); it++) {
 				FlowGraph::Block *block = *it;
 				ItemSet set = states[block].in;
 				switch(direction) {

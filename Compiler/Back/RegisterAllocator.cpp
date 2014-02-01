@@ -24,12 +24,12 @@ static const int CallerSavedRegisters = 4;
  * \param procedure Procedure to analyze
  * \return Map from symbol to its spill cost
  */
-std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure)
+std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::FlowGraph *flowGraph)
 {
 	std::map<IR::Symbol*, int> costs;
 
 	// Perform flow graph and loop analysis on the procedure
-	Analysis::Loops loops(procedure);
+	Analysis::Loops loops(procedure, flowGraph);
 	Analysis::Loops::Loop *rootLoop = loops.rootLoop();
 
 	// Iterate through the blocks of the procedure
@@ -209,16 +209,16 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
  * \param liveVariables Live variables in procedure
  * \param useDefs Use-def chains in procedure
  */
-void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables, Analysis::UseDefs &useDefs)
+void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables, Analysis::Analysis &analysis)
 {
 	int idx = 0;
-
 	bool live = false;
 	IR::SymbolSet liveSet;
 	IR::EntrySet neededDefs;
 	IR::EntrySet spillLoads;
 
-	Analysis::Constants constants(procedure);
+	Analysis::UseDefs *useDefs = analysis.useDefs();
+	Analysis::Constants *constants = analysis.constants();
 
 	// Iterate through the entries in the procedure
 	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
@@ -228,7 +228,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
 			bool isConstant;
-			int value = constants.getValue(entry, symbol, isConstant);
+			int value = constants->getValue(entry, symbol, isConstant);
 
 			IR::Entry *def;
 			if(isConstant) {
@@ -237,7 +237,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryTwoAddrImm(IR::Entry::TypeLoadStack, symbol, 0, idx);
-				const IR::EntrySet &defs = useDefs.defines(entry, symbol);
+				const IR::EntrySet &defs = useDefs->defines(entry, symbol);
 				neededDefs.insert(defs.begin(), defs.end());
 			}
 
@@ -321,9 +321,11 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 	std::map<IR::Symbol*, int> registers;
 	bool success;
 
+	Analysis::Analysis analysis(procedure);
+
 	do {
 		// Attempt an allocation
-		registers = tryAllocate(procedure, success);
+		registers = tryAllocate(procedure, success, analysis);
 
 		if(!success) {
 			std::cout << "*** IR (after spilling) ***" << std::endl;
@@ -341,14 +343,14 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
  * \param success [out] True if allocation was successful
  * \return Map from symbol to register number
  */
-std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedure, bool &success)
+std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedure, bool &success, Analysis::Analysis &analysis)
 {
 	std::map<IR::Symbol*, int> registers;
 
 	// Construct an interference graph, live variable list, and use-def chains for the procedure
-	Analysis::InterferenceGraph graph(procedure);
-	Analysis::LiveVariables liveVariables(procedure);
-	Analysis::UseDefs useDefs(procedure);
+	Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
+	Analysis::InterferenceGraph graph(procedure, &liveVariables);
+	Analysis::UseDefs *useDefs = analysis.useDefs();
 
 	// Construct artificial graph nodes for each register which is not preserved across procedure calls
 	std::vector<IR::Symbol*> callerSavedRegisters;
@@ -364,7 +366,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 	addProcedureCallInterferences(graph, callerSavedRegisters, procedure, liveVariables);
 
 	// Estimate spill costs for each symbol in the procedure
-	std::map<IR::Symbol*, int> spillCosts = getSpillCosts(procedure);
+	std::map<IR::Symbol*, int> spillCosts = getSpillCosts(procedure, analysis.flowGraph());
 
 	// Build a copy of the graph, so that it can be simplified
 	std::vector<IR::Symbol*> stack;
@@ -402,7 +404,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		if(!removed) {
 			// If no variable could be removed from the graph, then one needs to be spilled.
 			// Spill the variable with the lowest spill cost that was determined above
-			spillVariable(procedure, spillCandidate, liveVariables, useDefs);
+			spillVariable(procedure, spillCandidate, liveVariables, analysis);
 			simplifiedGraph.removeSymbol(spillCandidate);
 			stack.push_back(spillCandidate);
 			spilled = true;

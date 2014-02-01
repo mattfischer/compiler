@@ -14,13 +14,13 @@ namespace Transform {
 	 */
 	class LoopInvariantCodeMotion : public Transform {
 	public:
-		virtual bool transform(IR::Procedure *procedure);
+		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis);
 		virtual std::string name() { return "LoopInvariantCodeMotion"; }
 
 		static LoopInvariantCodeMotion *instance();
 
 	private:
-		void processLoop(Analysis::Loops::Loop *loop, IR::Procedure *procedure, Analysis::Loops &loops);
+		bool processLoop(Analysis::Loops::Loop *loop, IR::Procedure *procedure, Analysis::Loops &loops);
 	};
 }
 #endif
