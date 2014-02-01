@@ -118,6 +118,14 @@ namespace VM {
 							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] >= regs[instr.u.three.regRhs2]);
 							break;
 
+						case VM::ThreeAddrOr:
+							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] || regs[instr.u.three.regRhs2]);
+							break;
+
+						case VM::ThreeAddrAnd:
+							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] && regs[instr.u.three.regRhs2]);
+							break;
+
 						case VM::ThreeAddrLoad:
 							regs[instr.u.three.regLhs] = mem[regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2]];
 							break;

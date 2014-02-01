@@ -51,6 +51,8 @@ namespace Front {
 			NodeSubtypeLessThanEqual, //!< Less-than-equal comparison
 			NodeSubtypeGreaterThan, //!< Greater-than comparison
 			NodeSubtypeGreaterThanEqual, //!< Greater-than-equal comparison
+			NodeSubtypeOr, //!< Or comparison
+			NodeSubtypeAnd, //!< And comparison
 		};
 
 		NodeType nodeType; //!< Node type

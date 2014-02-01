@@ -346,6 +346,13 @@ namespace Front {
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeGreaterThanE, result, a, b));
 						break;
 
+					case Node::NodeSubtypeOr:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeOr, result, a, b));
+						break;
+
+					case Node::NodeSubtypeAnd:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAnd, result, a, b));
+						break;
 				}
 				break;
 

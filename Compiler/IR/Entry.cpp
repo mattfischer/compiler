@@ -20,6 +20,8 @@ namespace IR {
 		/* TypeLessThanE  */ "lte      ",
 		/* TypeGreaterThan*/ "gt       ",
 		/* TypeGreaterThanE*/ "gte      ",
+		/* TypeOr         */ "or       ",
+		/* TypeAnd        */ "and      ",
 		/* TypeLabel      */ "         ",
 		/* TypeJump		  */ "jmp      ",
 		/* TypeCJump	  */ "cjmp     ",

@@ -177,6 +177,20 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeOr:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrOr, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
+				case IR::Entry::TypeAnd:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrAnd, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
+
 				case IR::Entry::TypeLabel:
 					{
 						IR::EntryLabel *label = (IR::EntryLabel*)entry;

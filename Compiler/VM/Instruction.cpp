@@ -160,6 +160,14 @@ namespace VM {
 				o << "gte " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
 				break;
 
+			case ThreeAddrOr:
+				o << "or " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
+			case ThreeAddrAnd:
+				o << "and " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				break;
+
 			case ThreeAddrLoad:
 				o << "ldr " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
 				break;

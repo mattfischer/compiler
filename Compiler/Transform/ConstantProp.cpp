@@ -37,6 +37,8 @@ namespace Transform {
 				case IR::Entry::TypeLessThanE:
 				case IR::Entry::TypeGreaterThan:
 				case IR::Entry::TypeGreaterThanE:
+				case IR::Entry::TypeOr:
+				case IR::Entry::TypeAnd:
 					{
 						int rhs1;
 						int rhs2;
@@ -97,6 +99,14 @@ namespace Transform {
 
 								case IR::Entry::TypeGreaterThanE:
 									value = rhs1 >= rhs2;
+									break;
+
+								case IR::Entry::TypeOr:
+									value = (rhs1 || rhs2);
+									break;
+
+								case IR::Entry::TypeAnd:
+									value = (rhs1 && rhs2);
 									break;
 							}
 

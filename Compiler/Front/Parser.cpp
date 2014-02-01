@@ -427,8 +427,8 @@ Node *Parser::parseClause(bool required)
 
 Node *Parser::parseExpression(bool required)
 {
-	// <Expression> := <CompareExpression> { '=' <CompareExpression> }*
-	Node *node = parseCompareExpression(required);
+	// <Expression> := <OrExpression> { '=' <OrExpression> }*
+	Node *node = parseOrExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -439,8 +439,56 @@ Node *Parser::parseExpression(bool required)
 
 			Node *assignNode = newNode(Node::NodeTypeAssign, node->line);
 			assignNode->children.push_back(node);
-			assignNode->children.push_back(parseCompareExpression(true));
+			assignNode->children.push_back(parseOrExpression(true));
 			node = assignNode;
+			continue;
+		}
+		break;
+	}
+
+	return node;
+}
+
+Node *Parser::parseOrExpression(bool required)
+{
+	// <OrExpression> := <AndExpression> { '||' <AndExpression> }*
+	Node *node = parseAndExpression(required);
+	if(!node) {
+		return 0;
+	}
+
+	while(true) {
+		if(matchLiteral("||")) {
+			consume();
+
+			Node *orNode = newNode(Node::NodeTypeCompare, node->line, Node::NodeSubtypeOr);
+			orNode->children.push_back(node);
+			orNode->children.push_back(parseAndExpression(true));
+			node = orNode;
+			continue;
+		}
+		break;
+	}
+
+	return node;
+}
+
+Node *Parser::parseAndExpression(bool required)
+{
+	// <AndExpression> := <CompareExpression> { '&&' <CompareExpression> }*
+	Node *node = parseCompareExpression(required);
+	if(!node) {
+		return 0;
+	}
+
+	while(true) {
+		if(matchLiteral("&&")) {
+			consume();
+
+			Node *andNode = newNode(Node::NodeTypeCompare, node->line, Node::NodeSubtypeAnd);
+			andNode->children.push_back(node);
+			andNode->children.push_back(parseCompareExpression(true));
+			node = andNode;
 			continue;
 		}
 		break;

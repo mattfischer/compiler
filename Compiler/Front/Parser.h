@@ -51,6 +51,8 @@ private:
 	Node *parseStatement(bool required = false);
 	Node *parseClause(bool required = false);
 	Node *parseExpression(bool required = false);
+	Node *parseOrExpression(bool required = false);
+	Node *parseAndExpression(bool required = false);
 	Node *parseCompareExpression(bool required = false);
 	Node *parseAddExpression(bool required = false);
 	Node *parseMultiplyExpression(bool required = false);

@@ -82,8 +82,10 @@ namespace VM {
 	const int ThreeAddrLessThanE = 0x7; //!< Compare two registers for less-than-equal
 	const int ThreeAddrGreaterThan = 0x8; //!< Compare two registers for greater-than
 	const int ThreeAddrGreaterThanE = 0x9; //!< Compare two registers for greater-than-equal
-	const int ThreeAddrLoad = 0xa; //!< Load register from memory
-	const int ThreeAddrStore = 0xb; //!< Store register into memory
+	const int ThreeAddrOr = 0xa; //!< Boolean OR
+	const int ThreeAddrAnd = 0xb; //!< Boolean AND
+	const int ThreeAddrLoad = 0xc; //!< Load register from memory
+	const int ThreeAddrStore = 0xd; //!< Store register into memory
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrPrint = 0x1; //!< Print register

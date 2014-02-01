@@ -39,6 +39,8 @@ namespace IR {
 			TypeLessThanE, //!< Test two symbols for less-than-equal
 			TypeGreaterThan, //!< Test two symbols for greater-than
 			TypeGreaterThanE, //!< Test two symbols for greater-than-equal
+			TypeAnd, //!< Boolean AND
+			TypeOr, //!< Boolean OR
 			TypeLabel, //!< A label, used as a jump target
 			TypeJump, //!< Jump to a specified label
 			TypeCJump, //!< Jump to one of two labels based on a symbol's value
