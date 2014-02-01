@@ -276,24 +276,32 @@ namespace Front {
 				}
 
 			case Node::NodeTypeArith:
-				// Construct a new temporary to hold value
-				result = procedure->newTemp(node->type);
+				{
+					// Emit code for operator arguments
+					std::vector<IR::Symbol*> arguments;
+					for(unsigned int i=0; i<node->children.size(); i++) {
+						arguments.push_back(processRValue(node->children[i], program, procedure));
+					}
 
-				// Emit code for operator arguments
-				a = processRValue(node->children[0], program, procedure);
-				b = processRValue(node->children[1], program, procedure);
+					// Emit the appropriate type of arithmetic operation
+					switch(node->nodeSubtype) {
+						case Node::NodeSubtypeAdd:
+							result = procedure->newTemp(node->type);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, arguments[0], arguments[1]));
+							break;
 
-				// Emit the appropriate type of arithmetic operation
-				switch(node->nodeSubtype) {
-					case Node::NodeSubtypeAdd:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, a, b));
-						break;
+						case Node::NodeSubtypeMultiply:
+							result = procedure->newTemp(node->type);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, result, arguments[0], arguments[1]));
+							break;
 
-					case Node::NodeSubtypeMultiply:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, result, a, b));
-						break;
+						case Node::NodeSubtypeIncrement:
+							result = arguments[0];
+							procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, result, arguments[0], 1));
+							break;
+					}
+					break;
 				}
-				break;
 
 			case Node::NodeTypeCompare:
 				// Construct a new temporary to hold value

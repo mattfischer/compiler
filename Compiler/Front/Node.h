@@ -41,6 +41,7 @@ namespace Front {
 
 			NodeSubtypeAdd, //!< Addition operator
 			NodeSubtypeMultiply, //!< Multiplication operator
+			NodeSubtypeIncrement, //!< Increment operator
 
 			NodeSubtypeEqual, //!< Equality comparison
 			NodeSubtypeNequal //!< Inequality comparison

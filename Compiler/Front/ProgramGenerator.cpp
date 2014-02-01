@@ -247,9 +247,10 @@ namespace Front {
 				checkChildren(node, procedure);
 
 				// Check that types match
-				if(!Type::equals(node->children[0]->type, TypeInt) ||
-					!Type::equals(node->children[1]->type, TypeInt)) {
-						throw TypeError(node, "Type mismatch");
+				for(unsigned int i=0; i<node->children.size(); i++) {
+					if(!Type::equals(node->children[i]->type, TypeInt)) {
+						throw TypeError(node->children[i], "Type mismatch");
+					}
 				}
 				node->type = TypeInt;
 				break;

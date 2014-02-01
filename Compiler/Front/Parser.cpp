@@ -556,7 +556,17 @@ Node *Parser::parseSuffixExpression(bool required)
 			node = arrayNode;
 
 			continue;
+		} else if(matchLiteral("++")) {
+			// '++'
+			consume();
+
+			Node *incrementNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeIncrement);
+			incrementNode->children.push_back(node);
+			node = incrementNode;
+
+			continue;
 		}
+
 		break;
 	}
 
