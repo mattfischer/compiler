@@ -85,6 +85,7 @@ namespace Front {
 				Context context;
 				context.procedure = procedure;
 				context.scope = procedure->locals;
+				context.inLoop = false;
 
 				// Type check the body of the procedure
 				procedure->body = procedureNode->children[2];
@@ -221,11 +222,24 @@ namespace Front {
 				}
 
 			case Node::NodeTypeIf:
+				{
+					Context childContext = context;
+					childContext.scope = new Scope(context.scope);
+
+					checkChildren(node, childContext);
+					if(!Type::equals(node->children[0]->type, TypeBool)) {
+						throw TypeError(node, "Type mismatch");
+					}
+
+					node->type = TypeVoid;
+					break;
+				}
+
 			case Node::NodeTypeWhile:
 				{
-					Context childContext;
-					childContext.procedure = context.procedure;
+					Context childContext = context;
 					childContext.scope = new Scope(context.scope);
+					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
 					if(!Type::equals(node->children[0]->type, TypeBool)) {
@@ -238,9 +252,9 @@ namespace Front {
 
 			case Node::NodeTypeFor:
 				{
-					Context childContext;
-					childContext.procedure = context.procedure;
+					Context childContext = context;
 					childContext.scope = new Scope(context.scope);
+					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
 					if(!Type::equals(node->children[1]->type, TypeBool)) {
@@ -355,6 +369,20 @@ namespace Front {
 					node->type = typeArray->baseType;
 					break;
 				}
+
+			case Node::NodeTypeBreak:
+				if(!context.inLoop) {
+					throw TypeError(node, "Break statement outside of loop");
+				}
+				node->type = TypeVoid;
+				break;
+
+			case Node::NodeTypeContinue:
+				if(!context.inLoop) {
+					throw TypeError(node, "Continue statement outside of loop");
+				}
+				node->type = TypeVoid;
+				break;
 		}
 	}
 

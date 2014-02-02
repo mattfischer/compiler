@@ -60,6 +60,8 @@ namespace Front {
 			Context context;
 			context.program = irProgram;
 			context.procedure = irProcedure;
+			context.breakTarget = 0;
+			context.continueTarget = 0;
 
 			// Emit procedure body
 			processNode(procedure->body, context);
@@ -153,9 +155,14 @@ namespace Front {
 					lhs = processRValue(node->children[0], context);
 					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
 
+					// Construct child context
+					Context childContext = context;
+					childContext.breakTarget = nextLabel;
+					childContext.continueTarget = testLabel;
+
 					// Emit body label
 					procedure->emit(mainLabel);
-					processNode(node->children[1], context);
+					processNode(node->children[1], childContext);
 					procedure->emit(new IR::EntryJump(testLabel));
 
 					// Emit label following statement
@@ -167,6 +174,7 @@ namespace Front {
 				{
 					IR::EntryLabel *testLabel = procedure->newLabel();
 					IR::EntryLabel *mainLabel = procedure->newLabel();
+					IR::EntryLabel *postLabel = procedure->newLabel();
 					IR::EntryLabel *nextLabel = procedure->newLabel();
 
 					// Emit initialization
@@ -177,9 +185,16 @@ namespace Front {
 					lhs = processRValue(node->children[1], context);
 					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
 
+					// Construct child context
+					Context childContext = context;
+					childContext.breakTarget = nextLabel;
+					childContext.continueTarget = postLabel;
+
 					// Emit body label
 					procedure->emit(mainLabel);
-					processNode(node->children[3], context);
+					processNode(node->children[3], childContext);
+
+					procedure->emit(postLabel);
 					processNode(node->children[2], context);
 					procedure->emit(new IR::EntryJump(testLabel));
 
@@ -202,6 +217,14 @@ namespace Front {
 					procedure->emit(label);
 					break;
 				}
+
+			case Node::NodeTypeBreak:
+				procedure->emit(new IR::EntryJump(context.breakTarget));
+				break;
+
+			case Node::NodeTypeContinue:
+				procedure->emit(new IR::EntryJump(context.continueTarget));
+				break;
 
 			default:
 				processRValue(node, context);

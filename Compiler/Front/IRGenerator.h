@@ -22,6 +22,8 @@ namespace Front {
 		struct Context {
 			IR::Program *program;
 			IR::Procedure *procedure;
+			IR::EntryLabel *breakTarget;
+			IR::EntryLabel *continueTarget;
 		};
 
 		void processNode(Node *node, Context &context);

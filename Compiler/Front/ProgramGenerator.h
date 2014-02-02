@@ -27,6 +27,7 @@ namespace Front {
 		struct Context {
 			Procedure *procedure;
 			Scope *scope;
+			bool inLoop;
 		};
 
 		void checkType(Node *node, Context &context);

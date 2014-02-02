@@ -400,6 +400,20 @@ Node *Parser::parseStatement(bool required)
 		node->children.push_back(parseClause(true));
 
 		return node;
+	} else if(matchLiteral("break")) {
+		// 'break' ';'
+		node = newNode(Node::NodeTypeBreak, next().line);
+		consume();
+		expectLiteral(";");
+
+		return node;
+	} else if(matchLiteral("continue")) {
+		// 'continue' ';'
+		node = newNode(Node::NodeTypeContinue, next().line);
+		consume();
+		expectLiteral(";");
+
+		return node;
 	}
 
 	// Throw an error if a statement was required and none was found

@@ -31,7 +31,9 @@ namespace Front {
 			NodeTypeId, //!< Identifier
 			NodeTypeCall, //!< Procedure call
 			NodeTypeArray, //!< Array type
-			NodeTypeNew //!< Allocate new object
+			NodeTypeNew, //!< Allocate new object
+			NodeTypeBreak, //!< Break statement
+			NodeTypeContinue //!< Continue statement
 		};
 
 		/*!
