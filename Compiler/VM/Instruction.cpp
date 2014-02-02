@@ -31,6 +31,63 @@ namespace VM {
 		}
 	}
 
+	static void printStd(std::ostream &o, const std::string &name, int reg0 = -1, int reg1 = -1, int reg2 = -1)
+	{
+		o << name << " ";
+		if(reg0 != -1) {
+			o << regName(reg0);
+		}
+
+		if(reg1 != -1) {
+			o << ", " << regName(reg1);
+		}
+
+		if(reg2 != -1) {
+			o << ", " << regName(reg2);
+		}
+	}
+
+	static void printImm(std::ostream &o, const std::string &name, int reg0, int reg1, int imm)
+	{
+		bool needComma = false;
+		o << name << " ";
+		if(reg0 != -1) {
+			o << regName(reg0);
+			needComma = true;
+		}
+
+		if(reg1 != -1) {
+			if(needComma) {
+				o << ", ";
+			}
+			o << regName(reg1);
+			needComma = true;
+		}
+
+		if(needComma) {
+			o << ", ";
+		}
+		o << "#" << imm;
+	}
+
+	static void printInd(std::ostream &o, const std::string &name, int reg0, int reg1, int reg2, int imm = 0)
+	{
+		o << name << " ";
+		if(reg0 != -1) {
+			o << regName(reg0) << ", ";
+		}
+
+		o << "[" << regName(reg1);
+		if(reg2 != -1) {
+			o << ", " << regName(reg2);
+		}
+
+		if(imm != 0) {
+			o << ", #" << imm;
+		}
+		o << "]";
+	}
+
 	/*!
 	 * \brief Print a two-address instruction
 	 * \param o Output stream
@@ -43,51 +100,43 @@ namespace VM {
 				if(instr.u.two.regLhs == RegPC) {
 					// Adds to PC should be printed as a jump
 					if(instr.u.two.imm == 0) {
-						o << "jmp " << regName(instr.u.two.regRhs);
+						printStd(o, "jmp", instr.u.two.regRhs);
 					} else {
 						if(instr.u.two.regRhs == RegPC) {
 							// PC-relative jumps can be printed with their constant only
-							o << "jmp #" << int(instr.u.two.imm);
+							printImm(o, "jmp", -1, -1, instr.u.two.imm);
 						} else {
-							o << "jmp " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
+							printImm(o, "jmp", instr.u.two.regRhs, -1, instr.u.two.imm);
 						}
 					}
 				} else {
 					if(instr.u.two.imm > 0) {
 						// Print add with constant
-						o << "add " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
+						printImm(o, "add", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
 					} else if(instr.u.two.imm == 0){
 						// With no immediate value, print as a move
-						o << "mov " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs);
+						printStd(o, "mov", instr.u.two.regLhs, instr.u.two.regRhs);
 					} else {
 						// With a negative constant, print as a subtract
-						o << "sub " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << -int(instr.u.two.imm);
+						printImm(o, "sub", instr.u.two.regLhs, instr.u.two.regRhs, -instr.u.two.imm);
 					}
 				}
 				break;
 
 			case TwoAddrMultImm:
-				o << "mult " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm);
+				printImm(o, "mult", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
 				break;
 
 			case TwoAddrLoad:
-				if(instr.u.two.imm == 0) {
-					o << "ldr " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << "]";
-				} else {
-					o << "ldr " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << ", # " << int(instr.u.two.imm) << "]";
-				}
+				printInd(o, "ldr", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
 				break;
 
 			case TwoAddrStore:
-				if(instr.u.two.imm == 0) {
-					o << "str " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << "]";
-				} else {
-					o << "str " << regName(instr.u.two.regLhs) << ", [" << regName(instr.u.two.regRhs) << ", #" << int(instr.u.two.imm) << "]";
-				}
+				printInd(o, "str", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
 				break;
 
 			case TwoAddrNew:
-				o << "new " << regName(instr.u.two.regLhs) << ", " << regName(instr.u.two.regRhs);
+				printStd(o, "new", instr.u.two.regLhs, instr.u.two.regRhs);
 				break;
 		}
 	}
@@ -101,79 +150,79 @@ namespace VM {
 	{
 		switch(instr.u.three.type) {
 			case ThreeAddrAdd:
-				o << "add " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "add", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrSub:
-				o << "sub " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "sub", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrMult:
-				o << "mult " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "mult", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrAddCond:
 				if(instr.u.three.regLhs == RegPC) {
 					// If target register is PC, print as a conditional jump
 					if(instr.u.three.imm == 0) {
-						o << "cjmp " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+						printStd(o, "cjmp", instr.u.three.regRhs1, instr.u.three.regRhs2);
 					} else {
 						if(instr.u.three.regRhs2 == RegPC) {
 							// PC-relative jumps can be printed with their constant only
-							o << "cjmp " << regName(instr.u.three.regRhs1) << ", #" << int(instr.u.three.imm);
+							printImm(o, "cjmp", instr.u.three.regRhs1, -1, instr.u.three.imm);
 						} else {
-							o << "cjmp " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << ", #" << int(instr.u.three.imm);
+							printImm(o, "cjmp", instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
 						}
 					}
 				} else {
 					if(instr.u.three.imm == 0) {
 						// With no immediate value, print as a conditional move
-						o << "cmov " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2);
+						printStd(o, "cmov", instr.u.three.regRhs1, instr.u.three.regRhs2);
 					} else {
 						// With a positive immediate value, print as a conditional add
-						o << "cadd " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2) << ", #" << int(instr.u.three.imm);
+						o << "cadd " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2) << ", #" << instr.u.three.imm;
 					}
 				}
 				break;
 
 			case ThreeAddrEqual:
-				o << "equ " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "equ", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrNEqual:
-				o << "neq " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "neq", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrLessThan:
-				o << "lt " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "lt", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrLessThanE:
-				o << "lte " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "lte", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrGreaterThan:
-				o << "gt " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "gt", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrGreaterThanE:
-				o << "gte " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "gte", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrOr:
-				o << "or " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "or", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrAnd:
-				o << "and " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2);
+				printStd(o, "and", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrLoad:
-				o << "ldr " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
+				printInd(o, "ldr", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 
 			case ThreeAddrStore:
-				o << "str " << regName(instr.u.three.regLhs) << ", [" << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regRhs2) << "]";
+				printInd(o, "str", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
 				break;
 		}
 	}
@@ -187,15 +236,15 @@ namespace VM {
 	{
 		switch(instr.u.one.type) {
 			case OneAddrLoadImm:
-				o << "mov " << regName(instr.u.one.reg) << ", #" << int(instr.u.one.imm);
+				printImm(o, "mov", instr.u.one.reg, -1, instr.u.one.imm);
 				break;
 
 			case OneAddrPrint:
-				o << "print " << regName(instr.u.one.reg);
+				printStd(o, "print", instr.u.one.reg);
 				break;
 
 			case OneAddrCall:
-				o << "call [" << regName(instr.u.one.reg) << ", #" << int(instr.u.one.imm) << "]";
+				printInd(o, "call", -1, instr.u.one.reg, instr.u.one.imm);
 				break;
 		}
 	}
@@ -227,7 +276,10 @@ namespace VM {
 				if(needComma) {
 					o << ", ";
 				}
-				o << regName(firstReg) << "-" << regName(i-1);
+				if(firstReg != i-1) {
+					o << regName(firstReg) << "-";
+				}
+				o << regName(i-1);
 				needComma = true;
 				firstReg = -1;
 			}
