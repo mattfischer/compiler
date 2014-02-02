@@ -222,22 +222,34 @@ namespace Front {
 
 			case Node::NodeTypeIf:
 			case Node::NodeTypeWhile:
-				checkChildren(node, context);
-				if(!Type::equals(node->children[0]->type, TypeBool)) {
-					throw TypeError(node, "Type mismatch");
-				}
+				{
+					Context childContext;
+					childContext.procedure = context.procedure;
+					childContext.scope = new Scope(context.scope);
 
-				node->type = TypeVoid;
-				break;
+					checkChildren(node, childContext);
+					if(!Type::equals(node->children[0]->type, TypeBool)) {
+						throw TypeError(node, "Type mismatch");
+					}
+
+					node->type = TypeVoid;
+					break;
+				}
 
 			case Node::NodeTypeFor:
-				checkChildren(node, context);
-				if(!Type::equals(node->children[1]->type, TypeBool)) {
-					throw TypeError(node, "Type mismatch");
-				}
+				{
+					Context childContext;
+					childContext.procedure = context.procedure;
+					childContext.scope = new Scope(context.scope);
 
-				node->type = TypeVoid;
-				break;
+					checkChildren(node, childContext);
+					if(!Type::equals(node->children[1]->type, TypeBool)) {
+						throw TypeError(node, "Type mismatch");
+					}
+
+					node->type = TypeVoid;
+					break;
+				}
 
 			case Node::NodeTypeCompare:
 				checkChildren(node, context);
