@@ -654,6 +654,18 @@ Node *Parser::parseBaseExpression(bool required)
 		// <BaseExpression> := NUMBER
 		node = newNode(Node::NodeTypeConstant, next().line);
 		node->lexVal.i = std::atoi(next().text.c_str());
+		node->type = TypeInt;
+		consume();
+
+		return node;
+	} else if(matchLiteral("true") || matchLiteral("false")) {
+		// <BaseExpression> := 'true' | 'false'
+		int value;
+		node = newNode(Node::NodeTypeConstant, next().line);
+		if(matchLiteral("true")) value = 1;
+		else if(matchLiteral("false")) value = 0;
+		node->lexVal.i = value;
+		node->type = TypeBool;
 		consume();
 
 		return node;

@@ -319,7 +319,7 @@ namespace Front {
 				}
 
 			case Node::NodeTypeConstant:
-				node->type = TypeInt;
+				// Type provided by parser
 				break;
 
 			case Node::NodeTypeReturn:
