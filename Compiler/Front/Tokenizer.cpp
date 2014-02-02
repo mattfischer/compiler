@@ -18,8 +18,8 @@ namespace Front {
 Tokenizer::Tokenizer(const std::string &filename)
 : mStream(filename.c_str())
 {
-	mLine = 0;
-	mColumn = 0;
+	mLine = 1;
+	mColumn = 1;
 	mError = false;
 
 	for(int i=0; i<NumLookahead; i++) {
@@ -165,7 +165,7 @@ void Tokenizer::emptyBuffer(size_t length)
 		mColumn++;
 		if(mBuffer[i] == '\n') {
 			mLine++;
-			mColumn = 0;
+			mColumn = 1;
 		}
 	}
 
