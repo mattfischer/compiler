@@ -45,7 +45,7 @@ namespace Front {
 						break;
 					}
 				}
-				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]->type, locals[j]);
+				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]);
 				irProcedure->addSymbol(irSymbol);
 
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {

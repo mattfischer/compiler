@@ -30,13 +30,6 @@ namespace IR {
 	 */
 	void Procedure::print(const std::string &prefix)
 	{
-		std::cout << prefix << "Symbols:" << std::endl;
-		for(SymbolList::const_iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
-			Symbol *symbol = *it;
-			std::cout << prefix << "  " << symbol->type->name << " " << symbol->name << std::endl;
-		}
-		std::cout << prefix << std::endl;
-		std::cout << prefix << "Body:" << std::endl;
 		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 			std::cout << prefix << *entry << std::endl;
@@ -55,7 +48,7 @@ namespace IR {
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		IR::Symbol *symbol = new Symbol(name, type, 0);
+		IR::Symbol *symbol = new Symbol(name, 0);
 		addSymbol(symbol);
 
 		return symbol;
