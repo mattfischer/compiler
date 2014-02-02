@@ -56,8 +56,13 @@ namespace Front {
 				}
 			}
 
+			// Construct context
+			Context context;
+			context.program = irProgram;
+			context.procedure = irProcedure;
+
 			// Emit procedure body
-			processNode(procedure->body, irProgram, irProcedure);
+			processNode(procedure->body, context);
 
 			// Emit function epilogue
 			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryTwoAddrImm(IR::Entry::TypeEpilogue, 0, 0, 0));
@@ -72,24 +77,24 @@ namespace Front {
 	/*!
 	 * \brief Process a node in the syntax tree
 	 * \param node Node to process
-	 * \param program Program being constructed
-	 * \param procedure Procedure being constructed
+	 * \param context Context object
 	 */
-	void IRGenerator::processNode(Node *node, IR::Program *program, IR::Procedure *procedure)
+	void IRGenerator::processNode(Node *node, Context &context)
 	{
 		IR::Symbol *lhs, *rhs;
+		IR::Procedure *procedure = context.procedure;
 
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
 				// Process each item in the list
 				for(unsigned int i=0; i<node->children.size(); i++) {
-					processNode(node->children[i], program, procedure);
+					processNode(node->children[i], context);
 				}
 				break;
 
 			case Node::NodeTypePrint:
 				// Process RHS value
-				rhs = processRValue(node->children[0], program, procedure);
+				rhs = processRValue(node->children[0], context);
 
 				// Emit print instruction
 				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
@@ -101,7 +106,7 @@ namespace Front {
 
 			case Node::NodeTypeIf:
 				// Process statement predicate
-				lhs = processRValue(node->children[0], program, procedure);
+				lhs = processRValue(node->children[0], context);
 				if(node->children.size() == 2) {
 					IR::EntryLabel *trueLabel = procedure->newLabel();
 					IR::EntryLabel *nextLabel = procedure->newLabel();
@@ -111,7 +116,7 @@ namespace Front {
 
 					// Process true body
 					procedure->emit(trueLabel);
-					processNode(node->children[1], program, procedure);
+					processNode(node->children[1], context);
 
 					// Emit label following statement
 					procedure->emit(nextLabel);
@@ -125,12 +130,12 @@ namespace Front {
 
 					// Process true body
 					procedure->emit(trueLabel);
-					processNode(node->children[1], program, procedure);
+					processNode(node->children[1], context);
 					procedure->emit(new IR::EntryJump(nextLabel));
 
 					// Process false body
 					procedure->emit(falseLabel);
-					processNode(node->children[2], program, procedure);
+					processNode(node->children[2], context);
 
 					// Emit label following statement
 					procedure->emit(nextLabel);
@@ -145,12 +150,12 @@ namespace Front {
 
 					// Emit test of predicate and conditional jump
 					procedure->emit(testLabel);
-					lhs = processRValue(node->children[0], program, procedure);
+					lhs = processRValue(node->children[0], context);
 					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
 
 					// Emit body label
 					procedure->emit(mainLabel);
-					processNode(node->children[1], program, procedure);
+					processNode(node->children[1], context);
 					procedure->emit(new IR::EntryJump(testLabel));
 
 					// Emit label following statement
@@ -165,17 +170,17 @@ namespace Front {
 					IR::EntryLabel *nextLabel = procedure->newLabel();
 
 					// Emit initialization
-					processNode(node->children[0], program, procedure);
+					processNode(node->children[0], context);
 
 					// Emit test of predicate and conditional jump
 					procedure->emit(testLabel);
-					lhs = processRValue(node->children[1], program, procedure);
+					lhs = processRValue(node->children[1], context);
 					procedure->emit(new IR::EntryCJump(lhs, mainLabel, nextLabel));
 
 					// Emit body label
 					procedure->emit(mainLabel);
-					processNode(node->children[3], program, procedure);
-					processNode(node->children[2], program, procedure);
+					processNode(node->children[3], context);
+					processNode(node->children[2], context);
 					procedure->emit(new IR::EntryJump(testLabel));
 
 					// Emit label following statement
@@ -186,7 +191,7 @@ namespace Front {
 			case Node::NodeTypeReturn:
 				{
 					// Emit code for return value
-					rhs = processRValue(node->children[0], program, procedure);
+					rhs = processRValue(node->children[0], context);
 
 					// Emit procedure return and jump to end block
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreRet, 0, rhs));
@@ -199,7 +204,7 @@ namespace Front {
 				}
 
 			default:
-				processRValue(node, program, procedure);
+				processRValue(node, context);
 				break;
 		}
 	}
@@ -207,14 +212,14 @@ namespace Front {
 	/*!
 	 * \brief Process an R-Value expression
 	 * \param node Tree node to process
-	 * \param program Program being constructed
-	 * \param procedure Procedure being constructed
+	 * \param context Context object
 	 * \return Symbol containing value
 	 */
-	IR::Symbol *IRGenerator::processRValue(Node *node, IR::Program *program, IR::Procedure *procedure)
+	IR::Symbol *IRGenerator::processRValue(Node *node, Context &context)
 	{
 		IR::Symbol *result;
 		IR::Symbol *a, *b;
+		IR::Procedure *procedure = context.procedure;
 
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
@@ -231,11 +236,11 @@ namespace Front {
 			case Node::NodeTypeAssign:
 				// If the LHS is a declaration, process it so that the symbol gets added
 				if(node->children[0]->nodeType == Node::NodeTypeVarDecl) {
-					processNode(node->children[0], program, procedure);
+					processNode(node->children[0], context);
 				}
 
 				// Emit code for R-Value of assignment
-				b = processRValue(node->children[1], program, procedure);
+				b = processRValue(node->children[1], context);
 
 				if(node->children[0]->nodeType == Node::NodeTypeId || node->children[0]->nodeType == Node::NodeTypeVarDecl) {
 					// Locate symbol to assign into
@@ -247,10 +252,10 @@ namespace Front {
 					Node *arrayNode = node->children[0];
 
 					// Emit code to calculate the array's base address
-					a = processRValue(arrayNode->children[0], program, procedure);
+					a = processRValue(arrayNode->children[0], context);
 
 					// Emit code to calculate the array subscript
-					IR::Symbol *subscript = processRValue(arrayNode->children[1], program, procedure);
+					IR::Symbol *subscript = processRValue(arrayNode->children[1], context);
 
 					// Compute the offset into array memory based o subscript and type size
 					IR::Symbol *offset = procedure->newTemp(TypeInt);
@@ -272,7 +277,7 @@ namespace Front {
 					// Emit code for each argument, building a list of resulting symbols
 					std::vector<IR::Symbol*> args;
 					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-						IR::Symbol *arg = processRValue(node->children[1]->children[i], program, procedure);
+						IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
 						args.push_back(arg);
 					}
 
@@ -282,7 +287,7 @@ namespace Front {
 					}
 
 					// Emit procedure call
-					procedure->emit(new IR::EntryCall(program->findProcedure(node->children[0]->lexVal.s)));
+					procedure->emit(new IR::EntryCall(context.program->findProcedure(node->children[0]->lexVal.s)));
 
 					result = procedure->newTemp(node->type);
 					if(procedure->returnsValue()) {
@@ -299,7 +304,7 @@ namespace Front {
 					// Emit code for operator arguments
 					std::vector<IR::Symbol*> arguments;
 					for(unsigned int i=0; i<node->children.size(); i++) {
-						arguments.push_back(processRValue(node->children[i], program, procedure));
+						arguments.push_back(processRValue(node->children[i], context));
 					}
 
 					// Emit the appropriate type of arithmetic operation
@@ -334,8 +339,8 @@ namespace Front {
 				result = procedure->newTemp(node->type);
 
 				// Emit code for operator arguments
-				a = processRValue(node->children[0], program, procedure);
-				b = processRValue(node->children[1], program, procedure);
+				a = processRValue(node->children[0], context);
+				b = processRValue(node->children[1], context);
 
 				// Emit the appropriate type of comparison operation
 				switch(node->nodeSubtype) {
@@ -386,7 +391,7 @@ namespace Front {
 						IR::Symbol *typeSize = procedure->newTemp(TypeInt);
 						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, typeSize, 0, type->size));
 
-						IR::Symbol *count = processRValue(arg->children[1], program, procedure);
+						IR::Symbol *count = processRValue(arg->children[1], context);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
 					} else {
 						// Single allocation: total size is typeSize
@@ -404,10 +409,10 @@ namespace Front {
 					result = procedure->newTemp(node->type);
 
 					// Emit code to calculate the array's base address
-					IR::Symbol *base = processRValue(node->children[0], program, procedure);
+					IR::Symbol *base = processRValue(node->children[0], context);
 
 					// Emit code to calculate the array subscript
-					IR::Symbol *subscript = processRValue(node->children[1], program, procedure);
+					IR::Symbol *subscript = processRValue(node->children[1], context);
 
 					// Compute the offset into array memory based o subscript and type size
 					IR::Symbol *offset = procedure->newTemp(TypeInt);

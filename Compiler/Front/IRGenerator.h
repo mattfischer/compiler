@@ -19,8 +19,13 @@ namespace Front {
 		IR::Program *generate(Program *program);
 
 	private:
-		void processNode(Node *node, IR::Program *program, IR::Procedure *procedure);
-		IR::Symbol *processRValue(Node *node, IR::Program *program, IR::Procedure *procedure);
+		struct Context {
+			IR::Program *program;
+			IR::Procedure *procedure;
+		};
+
+		void processNode(Node *node, Context &context);
+		IR::Symbol *processRValue(Node *node, Context &context);
 	};
 }
 
