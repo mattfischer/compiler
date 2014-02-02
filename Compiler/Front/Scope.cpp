@@ -9,6 +9,9 @@ namespace Front {
 	Scope::Scope(Scope *parent)
 	{
 		mParent = parent;
+		if(mParent) {
+			mParent->addChild(this);
+		}
 	}
 
 	/*!
@@ -40,5 +43,29 @@ namespace Front {
 		} else {
 			return 0;
 		}
+	}
+
+	/*!
+	 * \brief Add child scope
+	 * \param child Child scope
+	 */
+	void Scope::addChild(Scope *child)
+	{
+		mChildren.push_back(child);
+	}
+
+	/*!
+	 * \brief Return all symbols in scope and children
+	 * \return Symbols
+	 */
+	std::vector<Symbol*> Scope::symbols()
+	{
+		std::vector<Symbol*> result = mSymbols;
+		for(unsigned int i=0; i<mChildren.size(); i++) {
+			std::vector<Symbol*> childSymbols = mChildren[i]->symbols();
+			result.insert(result.end(), childSymbols.begin(), childSymbols.end());
+		}
+
+		return result;
 	}
 }

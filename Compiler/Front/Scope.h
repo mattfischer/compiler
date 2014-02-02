@@ -15,10 +15,12 @@ namespace Front {
 
 		bool addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
-		const std::vector<Symbol*> &symbols() { return mSymbols; } //!< Symbols
+		std::vector<Symbol*> symbols();
+		void addChild(Scope *child);
 
 	private:
 		Scope *mParent; //!< Parent scope
+		std::vector<Scope*> mChildren; //!< Child scopes
 		std::vector<Symbol*> mSymbols; //!< Collection of symbols
 	};
 }
