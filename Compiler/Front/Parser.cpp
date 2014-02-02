@@ -435,17 +435,13 @@ Node *Parser::parseExpression(bool required)
 		return 0;
 	}
 
-	while(true) {
-		if(matchLiteral("=")) {
-			consume();
+	if(matchLiteral("=")) {
+		consume();
 
-			Node *assignNode = newNode(Node::NodeTypeAssign, node->line);
-			assignNode->children.push_back(node);
-			assignNode->children.push_back(parseOrExpression(true));
-			node = assignNode;
-			continue;
-		}
-		break;
+		Node *assignNode = newNode(Node::NodeTypeAssign, node->line);
+		assignNode->children.push_back(node);
+		assignNode->children.push_back(parseExpression(true));
+		node = assignNode;
 	}
 
 	return node;
