@@ -7,6 +7,9 @@
 #include "IR/Procedure.h"
 #include "IR/Entry.h"
 
+#include <set>
+#include <sstream>
+
 namespace Front {
 	/*!
 	 * \brief Generate an IR program
@@ -27,8 +30,22 @@ namespace Front {
 
 			// Add local variables to the procedure
 			const std::vector<Symbol*> locals = procedure->locals->symbols();
+			std::set<std::string> names;
 			for(unsigned int j=0; j<locals.size(); j++) {
-				IR::Symbol *irSymbol = new IR::Symbol(locals[j]->name, locals[j]->type, locals[j]);
+				std::string name;
+				for(int idx=0;; idx++) {
+					std::stringstream s;
+					s << locals[j]->name;
+					if(idx > 0) {
+						s << "." << idx;
+					}
+					name = s.str();
+					if(names.find(name) == names.end()) {
+						names.insert(name);
+						break;
+					}
+				}
+				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]->type, locals[j]);
 				irProcedure->addSymbol(irSymbol);
 
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
