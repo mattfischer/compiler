@@ -42,9 +42,7 @@ private:
 	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
 
 	Node *parseProgram();
-	Node *parseProcedureList();
 	Node *parseProcedure();
-	Node *parseArgumentDeclarationList();
 	Node *parseVariableDeclaration();
 	Node *parseType(bool required = false);
 	Node *parseStatementList();
@@ -58,8 +56,6 @@ private:
 	Node *parseMultiplyExpression(bool required = false);
 	Node *parseSuffixExpression(bool required = false);
 	Node *parseBaseExpression(bool required = false);
-	Node *parseExpressionList();
-	Node *parseIdentifier();
 };
 }
 #endif

@@ -194,22 +194,13 @@ Node *Parser::parse()
 
 Node *Parser::parseProgram()
 {
-	// <Program> := <ProcedureList> END
-	Node *node = parseProcedureList();
-	expect(Tokenizer::Token::TypeEnd);
-
-	return node;
-}
-
-Node *Parser::parseProcedureList()
-{
-	// <ProcedureList> := { <Procedure> }*
+	// <Program> := { <Procedure> }* END
 	Node *node = newNode(Node::NodeTypeList, next().line);
-
 	Node *procedure;
 	while(procedure = parseProcedure()) {
 		node->children.push_back(procedure);
 	}
+	expect(Tokenizer::Token::TypeEnd);
 
 	return node;
 }
@@ -226,30 +217,22 @@ Node *Parser::parseProcedure()
 	expect(Tokenizer::Token::TypeIdentifier);
 
 	expectLiteral("(");
-	node->children.push_back(parseArgumentDeclarationList());
+	Node *argumentsNode = newNode(Node::NodeTypeList, next().line);
+	Node *argument;
+	while(argument = parseVariableDeclaration()) {
+		argumentsNode->children.push_back(argument);
+		if(!matchLiteral(",")) {
+			break;
+		}
+		consume();
+	}
+
+	node->children.push_back(argumentsNode);
 	expectLiteral(")");
 
 	expectLiteral("{");
 	node->children.push_back(parseStatementList());
 	expectLiteral("}");
-
-	return node;
-}
-
-Node *Parser::parseArgumentDeclarationList()
-{
-	// <ArgumentDeclarationList> := <VariableDeclaration> { ',' <VariableDeclaration> }*
-	Node *node = newNode(Node::NodeTypeList, next().line);
-
-	Node *argument;
-	while(argument = parseVariableDeclaration()) {
-		node->children.push_back(argument);
-		if(matchLiteral(",")) {
-			consume();
-		} else {
-			break;
-		}
-	}
 
 	return node;
 }
@@ -271,12 +254,16 @@ Node *Parser::parseVariableDeclaration()
 
 Node *Parser::parseType(bool required)
 {
+	// <Type> := IDENTIFIER { '[' ']' }*
 	Node *node;
 
 	if(match(Tokenizer::Token::TypeIdentifier)) {
 		if(Type::find(next().text)) {
-			node = parseIdentifier();
-			if(matchLiteral("[") && matchLiteral("]", 1)) {
+			node = newNode(Node::NodeTypeId, next().line);
+			node->lexVal.s = mTokenizer.next().text;
+			consume();
+
+			while(matchLiteral("[") && matchLiteral("]", 1)) {
 				consume(2);
 				Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
 				arrayNode->children.push_back(node);
@@ -514,7 +501,7 @@ Node *Parser::parseAndExpression(bool required)
 
 Node *Parser::parseCompareExpression(bool required)
 {
-	// <CompareExpression> := <AddExpression> { [ '==' | '!=' ] <AddExpression> }*
+	// <CompareExpression> := <AddExpression> { [ '==' | '!=' | '<' | '<=' | '>' | '>=' ] <AddExpression> }*
 	Node *node = parseAddExpression(required);
 	if(!node) {
 		return 0;
@@ -545,7 +532,7 @@ Node *Parser::parseCompareExpression(bool required)
 
 Node *Parser::parseAddExpression(bool required)
 {
-	// <AddExpression> := <MultiplyExpression> { '+' <MultiplyExpression> }*
+	// <AddExpression> := <MultiplyExpression> { [ '+' | '-' ] <MultiplyExpression> }*
 	Node *node = parseMultiplyExpression(required);
 	if(!node) {
 		return 0;
@@ -605,12 +592,23 @@ Node *Parser::parseSuffixExpression(bool required)
 	// { ... }*
 	while(true) {
 		if(matchLiteral("(")) {
-			// '(' <ExpressionList> ')'
+			// '(' { <Expression> ',' }* ')'
 			consume();
 
 			Node *callNode = newNode(Node::NodeTypeCall, node->line);
 			callNode->children.push_back(node);
-			callNode->children.push_back(parseExpressionList());
+
+			Node *argumentList = newNode(Node::NodeTypeList, next().line);
+			Node *expression;
+			while(expression = parseExpression()) {
+				argumentList->children.push_back(expression);
+				if(!matchLiteral(",")) {
+					break;
+				}
+				consume();
+			}
+
+			callNode->children.push_back(argumentList);
 			expectLiteral(")");
 			node = callNode;
 
@@ -627,7 +625,7 @@ Node *Parser::parseSuffixExpression(bool required)
 
 			continue;
 		} else if(matchLiteral("++") || matchLiteral("--")) {
-			// '++' | '--'
+			// [ '++' | '--' ]
 			Node::NodeSubtype subtype;
 			if(matchLiteral("++")) subtype = Node::NodeSubtypeIncrement;
 			else if(matchLiteral("--")) subtype = Node::NodeSubtypeDecrement;
@@ -669,6 +667,13 @@ Node *Parser::parseBaseExpression(bool required)
 		consume();
 
 		return node;
+	} else if(match(Tokenizer::Token::TypeIdentifier)) {
+		// <BaseExpression> := IDENTIFIER
+		node = newNode(Node::NodeTypeId, next().line);
+		node->lexVal.s = mTokenizer.next().text;
+		consume();
+
+		return node;
 	} else if(matchLiteral("(")) {
 		// <BaseExpression> := '(' <Expression> ')'
 		consume();
@@ -676,9 +681,6 @@ Node *Parser::parseBaseExpression(bool required)
 		node = parseExpression(true);
 		expectLiteral(")");
 
-		return node;
-	} else if(node = parseIdentifier()) {
-		// <BaseExpression> := <Identifier>
 		return node;
 	} else if(matchLiteral("new")) {
 		// <BaseExpression> := 'new' <Type> { '[' <Expression> ']' }?
@@ -704,38 +706,6 @@ Node *Parser::parseBaseExpression(bool required)
 	// Throw an error if a base expression was required and none was found
 	if(required) {
 		errorExpected("<base-expression>");
-	}
-
-	return 0;
-}
-
-Node *Parser::parseExpressionList()
-{
-	// <ExpressionList> := <Expression> { ',' <Expression> }*
-	Node *node = newNode(Node::NodeTypeList, next().line);
-	Node *expression;
-	while(expression = parseExpression()) {
-		node->children.push_back(expression);
-		if(matchLiteral(",")) {
-			consume();
-		} else {
-			break;
-		}
-	}
-
-	return node;
-}
-
-Node *Parser::parseIdentifier()
-{
-	// <Identifier> := IDENTIFIER
-	if(match(Tokenizer::Token::TypeIdentifier))
-	{
-		Node *node = newNode(Node::NodeTypeId, next().line);
-		node->lexVal.s = mTokenizer.next().text;
-		consume();
-
-		return node;
 	}
 
 	return 0;
