@@ -32,7 +32,7 @@ namespace Middle {
 				// Return an error
 				IR::Symbol *symbol = *symbols.begin();
 				std::stringstream s;
-				s << "Use of undefined variable " << symbol->name;
+				s << "Use of undefined variable " << symbol->symbol->name;
 				mErrorMessage = s.str();
 				mErrorProcedure = procedure;
 				return false;
