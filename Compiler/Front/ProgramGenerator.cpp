@@ -47,53 +47,11 @@ namespace Front {
 
 			// Iterate through the tree's procedure definitions
 			for(unsigned int i=0; i<mTree->children.size(); i++) {
-				// Construct a procedure object
-				Procedure *procedure = new Procedure;
-				Node *procedureNode = mTree->children[i];
+				Node *node = mTree->children[i];
 
-				// Begin populating the procedure object
-				procedure->name = procedureNode->lexVal.s;
-				procedure->locals = new Scope(program->globals);
-
-				// Iterate the tree's argument items
-				Node *argumentList = procedureNode->children[1];
-				std::vector<Type*> argumentTypes;
-				for(unsigned int j=0; j<argumentList->children.size(); j++) {
-					// Construct the argument type, and add it to the list of types
-					Type *argumentType = createType(argumentList->children[j]->children[0]);
-					if(Type::equals(argumentType, TypeVoid)) {
-						throw TypeError(argumentList->children[j], "Cannot declare procedure argument of type void");
-					}
-					argumentTypes.push_back(argumentType);
-
-					// Construct a symbol for the argument, and add it to the procedure's scope and argument list
-					Symbol *argument = new Symbol(argumentType, argumentList->children[j]->lexVal.s);
-					procedure->locals->addSymbol(argument);
-					procedure->arguments.push_back(argument);
+				if(node->nodeType == Node::NodeTypeProcedureDef) {
+					generateProcedure(mTree->children[i], program);
 				}
-
-				// Construct the procedure type
-				Type *returnType = createType(procedureNode->children[0]);
-				TypeProcedure *procedureType = new TypeProcedure(returnType, argumentTypes);
-				procedure->type = procedureType;
-
-				// Construct the procedure symbol
-				Symbol *procedureSymbol = new Symbol(procedure->type, procedure->name);
-				program->globals->addSymbol(procedureSymbol);
-
-				// Create a context for the procedure
-				Context context;
-				context.procedure = procedure;
-				context.scope = procedure->locals;
-				context.inLoop = false;
-
-				// Type check the body of the procedure
-				procedure->body = procedureNode->children[2];
-				checkType(procedure->body, context);
-				procedureNode->type = TypeVoid;
-
-				// Add the procedure to the program's procedure list
-				program->procedures.push_back(procedure);
 			}
 			return program;
 		} catch(TypeError error) {
@@ -102,6 +60,55 @@ namespace Front {
 			mErrorMessage = error.message();
 			return 0;
 		}
+	}
+
+	void ProgramGenerator::generateProcedure(Node *node, Program *program)
+	{
+		// Construct a procedure object
+		Procedure *procedure = new Procedure;
+
+		// Begin populating the procedure object
+		procedure->name = node->lexVal.s;
+		procedure->locals = new Scope(program->globals);
+
+		// Iterate the tree's argument items
+		Node *argumentList = node->children[1];
+		std::vector<Type*> argumentTypes;
+		for(unsigned int j=0; j<argumentList->children.size(); j++) {
+			// Construct the argument type, and add it to the list of types
+			Type *argumentType = createType(argumentList->children[j]->children[0]);
+			if(Type::equals(argumentType, TypeVoid)) {
+				throw TypeError(argumentList->children[j], "Cannot declare procedure argument of type void");
+			}
+			argumentTypes.push_back(argumentType);
+
+			// Construct a symbol for the argument, and add it to the procedure's scope and argument list
+			Symbol *argument = new Symbol(argumentType, argumentList->children[j]->lexVal.s);
+			procedure->locals->addSymbol(argument);
+			procedure->arguments.push_back(argument);
+		}
+
+		// Construct the procedure type
+		Type *returnType = createType(node->children[0]);
+		procedure->type = new TypeProcedure(returnType, argumentTypes);
+
+		// Construct the procedure symbol
+		Symbol *symbol = new Symbol(procedure->type, procedure->name);
+		program->globals->addSymbol(symbol);
+
+		// Create a context for the procedure
+		Context context;
+		context.procedure = procedure;
+		context.scope = procedure->locals;
+		context.inLoop = false;
+
+		// Type check the body of the procedure
+		procedure->body = node->children[2];
+		checkType(procedure->body, context);
+		node->type = TypeVoid;
+
+		// Add the procedure to the program's procedure list
+		program->procedures.push_back(procedure);
 	}
 
 	/*!

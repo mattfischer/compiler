@@ -194,15 +194,21 @@ Node *Parser::parse()
 
 Node *Parser::parseProgram()
 {
-	// <Program> := { <Procedure> }* END
-	Node *node = newNode(Node::NodeTypeList, next().line);
-	Node *procedure;
-	while(procedure = parseProcedure()) {
-		node->children.push_back(procedure);
+	// <Program> := { [ <Procedure> | <Struct> ] }* END
+	Node *list = newNode(Node::NodeTypeList, next().line);
+	while(true) {
+		Node *node;
+		if(node = parseProcedure()) {
+			list->children.push_back(node);
+		} else if(node = parseStruct()) {
+			list->children.push_back(node);
+		} else {
+			break;
+		}
 	}
 	expect(Tokenizer::Token::TypeEnd);
 
-	return node;
+	return list;
 }
 
 Node *Parser::parseProcedure()
@@ -232,6 +238,32 @@ Node *Parser::parseProcedure()
 
 	expectLiteral("{");
 	node->children.push_back(parseStatementList());
+	expectLiteral("}");
+
+	return node;
+}
+
+Node *Parser::parseStruct()
+{
+	// <Struct> := 'struct' IDENTIFIER '{' { <VariableDeclaration> ';' }* '}'
+	if(!matchLiteral("struct")) {
+		return 0;
+	}
+
+	Node *node = newNode(Node::NodeTypeStruct, next().line);
+	consume();
+
+	node->lexVal.s = next().text;
+	expect(Tokenizer::Token::TypeIdentifier);
+
+	expectLiteral("{");
+	Node *membersNode = newNode(Node::NodeTypeList, next().line);
+	Node *member;
+	while(member = parseVariableDeclaration()) {
+		membersNode->children.push_back(member);
+		expectLiteral(";");
+	}
+	node->children.push_back(membersNode);
 	expectLiteral("}");
 
 	return node;

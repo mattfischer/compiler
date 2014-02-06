@@ -4,6 +4,7 @@ const char *typeNames[] = {
 	/* NodeTypeList         */ "list",
 	/* NodeTypeProcedureDef */ "procedure",
 	/* NodeTypeVarDecl      */ "declare",
+	/* NodeTypeStruct       */ "struct",
 	/* NodeTypeReturn       */ "return",
 	/* NodeTypePrint        */ "print",
 	/* NodeTypeAssign       */ "assign",

@@ -33,6 +33,7 @@ namespace Front {
 		void checkType(Node *node, Context &context);
 		void checkChildren(Node *node, Context &context);
 		Type *createType(Node *node);
+		void generateProcedure(Node *node, Program *program);
 	};
 }
 #endif

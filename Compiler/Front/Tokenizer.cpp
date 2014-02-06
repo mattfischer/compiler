@@ -4,7 +4,8 @@
 #include <sstream>
 
 char whitespace[] = { ' ', '\t', '\r', '\n' };
-char *literals[] = { "print", "if", "else", "while", "return", "new", "for", "break", "continue", "true", "false",
+char *literals[] = { "print", "if", "else", "while", "return", "new", "for", "break",
+					 "continue", "true", "false", "struct",
 					 "==", "!=", ">=", "<=", "++", "--", "&&", "||",
 					 ">", "<", "+", "-", "*", "(", ")", "=", ";", "{", "}", ",", "[", "]"
 					};

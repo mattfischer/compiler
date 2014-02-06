@@ -19,6 +19,7 @@ namespace Front {
 			NodeTypeList, //!< Generic list of nodes
 			NodeTypeProcedureDef, //!< Procedure definition
 			NodeTypeVarDecl, //!< Variable declaration
+			NodeTypeStruct, //!< Structure definition
 			NodeTypeReturn, //!< Return statement
 			NodeTypePrint, //!< Print statement
 			NodeTypeAssign, //!< Assignment operator

@@ -43,6 +43,7 @@ private:
 
 	Node *parseProgram();
 	Node *parseProcedure();
+	Node *parseStruct();
 	Node *parseVariableDeclaration();
 	Node *parseType(bool required = false);
 	Node *parseStatementList();
