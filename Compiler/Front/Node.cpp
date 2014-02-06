@@ -4,7 +4,7 @@ const char *typeNames[] = {
 	/* NodeTypeList         */ "list",
 	/* NodeTypeProcedureDef */ "procedure",
 	/* NodeTypeVarDecl      */ "declare",
-	/* NodeTypeStruct       */ "struct",
+	/* NodeTypeStructDef    */ "struct",
 	/* NodeTypeReturn       */ "return",
 	/* NodeTypePrint        */ "print",
 	/* NodeTypeAssign       */ "assign",
@@ -20,6 +20,7 @@ const char *typeNames[] = {
 	/* NodeTypeNew          */ "new",
 	/* NodeTypeBreak        */ "break",
 	/* NodeTypeContinue     */ "continue",
+	/* NodeTypeMember       */ "member"
 };
 
 const char *subtypeNames[] = {
@@ -54,6 +55,7 @@ namespace Front {
 			case Node::NodeTypeProcedureDef:
 			case Node::NodeTypeVarDecl:
 			case Node::NodeTypeId:
+			case Node::NodeTypeMember:
 				o << " : \'" << node->lexVal.s << "\'";
 				break;
 		}

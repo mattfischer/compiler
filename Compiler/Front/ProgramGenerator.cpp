@@ -52,7 +52,7 @@ namespace Front {
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
 					generateProcedure(mTree->children[i], program);
-				} else if(node->nodeType == Node::NodeTypeStruct) {
+				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
 				}
 			}
@@ -248,6 +248,7 @@ namespace Front {
 						case Node::NodeTypeId:
 						case Node::NodeTypeVarDecl:
 						case Node::NodeTypeArray:
+						case Node::NodeTypeMember:
 							// Confirm target type matches source type
 							if(!Type::equals(lhs->type, rhs->type)) {
 								throw TypeError(node, "Type mismatch");
@@ -422,6 +423,31 @@ namespace Front {
 				}
 				node->type = Types::intrinsic(Types::Void);
 				break;
+
+			case Node::NodeTypeMember:
+			{
+				checkType(node->children[0], context);
+				if(node->children[0]->type->type != Type::TypeStruct) {
+					throw TypeError(node, "Attempt to take member of non-structure");
+				}
+
+				TypeStruct *typeStruct = (TypeStruct*)node->children[0]->type;
+				int idx = -1;
+				for(unsigned int i=0; i<typeStruct->members.size(); i++) {
+					if(typeStruct->members[i].name == node->lexVal.s) {
+						idx = i;
+						break;
+					}
+				}
+
+				if(idx == -1) {
+					std::stringstream s;
+					s << "No member named \'" << node->lexVal.s << "\'";
+					throw TypeError(node, s.str());
+				} else {
+					node->type = typeStruct->members[idx].type;
+				}
+			}
 		}
 	}
 

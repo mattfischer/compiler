@@ -19,7 +19,7 @@ namespace Front {
 			NodeTypeList, //!< Generic list of nodes
 			NodeTypeProcedureDef, //!< Procedure definition
 			NodeTypeVarDecl, //!< Variable declaration
-			NodeTypeStruct, //!< Structure definition
+			NodeTypeStructDef, //!< Structure definition
 			NodeTypeReturn, //!< Return statement
 			NodeTypePrint, //!< Print statement
 			NodeTypeAssign, //!< Assignment operator
@@ -34,7 +34,8 @@ namespace Front {
 			NodeTypeArray, //!< Array type
 			NodeTypeNew, //!< Allocate new object
 			NodeTypeBreak, //!< Break statement
-			NodeTypeContinue //!< Continue statement
+			NodeTypeContinue, //!< Continue statement
+			NodeTypeMember //!< Structure member
 		};
 
 		/*!

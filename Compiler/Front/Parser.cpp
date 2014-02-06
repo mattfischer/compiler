@@ -255,7 +255,7 @@ Node *Parser::parseStruct()
 		return 0;
 	}
 
-	Node *node = newNode(Node::NodeTypeStruct, next().line);
+	Node *node = newNode(Node::NodeTypeStructDef, next().line);
 	consume();
 
 	node->lexVal.s = next().text;
@@ -646,8 +646,6 @@ Node *Parser::parseSuffixExpression(bool required)
 			callNode->children.push_back(argumentList);
 			expectLiteral(")");
 			node = callNode;
-
-			continue;
 		} else if(matchLiteral("[")) {
 			// '[' <Expression> ']'
 			consume();
@@ -657,8 +655,6 @@ Node *Parser::parseSuffixExpression(bool required)
 			arrayNode->children.push_back(parseExpression(true));
 			expectLiteral("]");
 			node = arrayNode;
-
-			continue;
 		} else if(matchLiteral("++") || matchLiteral("--")) {
 			// [ '++' | '--' ]
 			Node::NodeSubtype subtype;
@@ -669,11 +665,17 @@ Node *Parser::parseSuffixExpression(bool required)
 			Node *incrementNode = newNode(Node::NodeTypeArith, node->line, subtype);
 			incrementNode->children.push_back(node);
 			node = incrementNode;
+		} else if(matchLiteral(".")) {
+			Node *memberNode = newNode(Node::NodeTypeMember, next().line);
+			consume();
 
-			continue;
+			memberNode->lexVal.s = next().text;
+			expect(Tokenizer::Token::TypeIdentifier);
+			memberNode->children.push_back(node);
+			node = memberNode;
+		} else {
+			break;
 		}
-
-		break;
 	}
 
 	return node;

@@ -128,11 +128,11 @@ namespace VM {
 				break;
 
 			case TwoAddrLoad:
-				printInd(o, "ldr", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
+				printInd(o, "ldr", instr.u.two.regLhs, instr.u.two.regRhs, -1, instr.u.two.imm);
 				break;
 
 			case TwoAddrStore:
-				printInd(o, "str", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
+				printInd(o, "str", instr.u.two.regLhs, instr.u.two.regRhs, -1, instr.u.two.imm);
 				break;
 
 			case TwoAddrNew:

@@ -289,6 +289,21 @@ namespace Front {
 
 					// Emit the store into the calculated memory location
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMemInd, b, a, offset));
+				} else if(node->children[0]->nodeType == Node::NodeTypeMember) {
+					Node *memberNode = node->children[0];
+
+					a = processRValue(memberNode->children[0], context);
+
+					int idx;
+					Front::TypeStruct *typeStruct = (Front::TypeStruct*)memberNode->children[0]->type;
+					for(unsigned int i=0; i<typeStruct->members.size(); i++) {
+						if(typeStruct->members[i].name == memberNode->lexVal.s) {
+							idx = i;
+							break;
+						}
+					}
+
+					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeStoreMem, b, a, typeStruct->members[idx].offset / 4));
 				}
 
 				// Return the resulting node
@@ -446,6 +461,26 @@ namespace Front {
 
 					// Emit the load from the calculated memory location
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMemInd, result, base, offset));
+					break;
+				}
+
+			case Node::NodeTypeMember:
+				{
+					result = procedure->newTemp();
+
+					IR::Symbol *base = processRValue(node->children[0], context);
+
+					int idx;
+					Front::TypeStruct *typeStruct = (Front::TypeStruct*)node->children[0]->type;
+					for(unsigned int i=0; i<typeStruct->members.size(); i++) {
+						if(typeStruct->members[i].name == node->lexVal.s) {
+							idx = i;
+							break;
+						}
+					}
+
+					// Emit the load from the calculated memory location
+					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadMem, result, base, typeStruct->members[idx].offset / 4));
 					break;
 				}
 		}
