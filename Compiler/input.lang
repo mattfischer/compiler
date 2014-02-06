@@ -1,8 +1,15 @@
+struct Foo {
+  int x;
+  int y;
+  bool z;
+}
+
 void main()
 {
   int i = 20;
   int x;
   int y;
+  Foo foo = new Foo;
 
   x = y = 0;
   for(int i=0; i<10; i++) {

@@ -11,6 +11,7 @@ namespace Front {
 
 		switch(a->type) {
 			case TypeIntrinsic:
+			case TypeStruct:
 				return a == b;
 
 			case TypeProcedure:
@@ -53,5 +54,16 @@ namespace Front {
 		}
 		s << ")";
 		return s.str();
+	}
+
+	void TypeStruct::addMember(Type *type, const std::string &name)
+	{
+		Member member;
+		member.name = name;
+		member.type = type;
+		member.offset = size;
+		members.push_back(member);
+
+		size += type->size;
 	}
 }

@@ -10,7 +10,8 @@ namespace Front {
 		enum TypeType {
 			TypeIntrinsic,
 			TypeProcedure,
-			TypeArray
+			TypeArray,
+			TypeStruct
 		};
 
 		Type(TypeType _type, std::string _name, int _size)
@@ -58,6 +59,23 @@ namespace Front {
 		TypeArray(Type *_baseType)
 			: Type(Type::TypeArray, _baseType->name + "[]", 0), baseType(_baseType)
 		{}
+	};
+
+	class TypeStruct : public Type {
+	public:
+		struct Member {
+			Type *type;
+			std::string name;
+			int offset;
+		};
+
+		std::vector<Member> members;
+
+		TypeStruct(const std::string &_name)
+			: Type(Type::TypeStruct, _name, 0)
+		{}
+
+		void addMember(Type *type, const std::string &name);
 	};
 }
 

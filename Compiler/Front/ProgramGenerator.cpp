@@ -52,6 +52,8 @@ namespace Front {
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
 					generateProcedure(mTree->children[i], program);
+				} else if(node->nodeType == Node::NodeTypeStruct) {
+					addStruct(mTree->children[i], program);
 				}
 			}
 			return program;
@@ -63,6 +65,11 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Generate a single procedure
+	 * \param node Tree node for procedure definition
+	 * \param program Program to add procedure to
+	 */
 	void ProgramGenerator::generateProcedure(Node *node, Program *program)
 	{
 		// Construct a procedure object
@@ -111,6 +118,29 @@ namespace Front {
 
 		// Add the procedure to the program's procedure list
 		program->procedures.push_back(procedure);
+	}
+
+	/*!
+	 * \brief Add a structure to the type list
+	 * \param node Node describing structure
+	 * \param program Program to add to
+	 */
+	void ProgramGenerator::addStruct(Node *node, Program *program)
+	{
+		TypeStruct *type = new TypeStruct(node->lexVal.s);
+		Node *members = node->children[0];
+		for(unsigned int i=0; i<members->children.size(); i++) {
+			Node *memberNode = members->children[i];
+			Type *memberType = createType(memberNode->children[0], program->types);
+			type->addMember(memberType, memberNode->lexVal.s);
+		}
+
+		bool success = program->types->registerType(type);
+		if(!success) {
+			std::stringstream s;
+			s << "Redefinition of structure " << type->name;
+			throw TypeError(node, s.str());
+		}
 	}
 
 	/*!

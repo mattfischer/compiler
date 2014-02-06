@@ -206,6 +206,7 @@ Node *Parser::parseProgram()
 			list->children.push_back(node);
 		} else if(node = parseStruct()) {
 			list->children.push_back(node);
+			mTypeNames.push_back(node->lexVal.s);
 		} else {
 			break;
 		}
