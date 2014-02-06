@@ -23,7 +23,7 @@ namespace Front {
 		// Create an IR procedure for each procedure definition node
 		for(unsigned int i=0; i<program->procedures.size(); i++) {
 			Procedure *procedure = program->procedures[i];
-			IR::Procedure *irProcedure = new IR::Procedure(procedure->name, !Type::equals(procedure->type->returnType, TypeVoid));
+			IR::Procedure *irProcedure = new IR::Procedure(procedure->name, !Type::equals(procedure->type->returnType, program->types->intrinsic(Types::Void)));
 
 			// Emit procedure prologue
 			irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypePrologue, 0, 0, 0));
@@ -247,7 +247,7 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
 				// Construct a temporary to contain the new value
-				result = procedure->newTemp(node->type);
+				result = procedure->newTemp();
 				procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, result, 0, node->lexVal.i));
 				break;
 
@@ -281,8 +281,8 @@ namespace Front {
 					IR::Symbol *subscript = processRValue(arrayNode->children[1], context);
 
 					// Compute the offset into array memory based o subscript and type size
-					IR::Symbol *offset = procedure->newTemp(TypeInt);
-					IR::Symbol *size = procedure->newTemp(TypeInt);
+					IR::Symbol *offset = procedure->newTemp();
+					IR::Symbol *size = procedure->newTemp();
 
 					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
@@ -312,7 +312,7 @@ namespace Front {
 					// Emit procedure call
 					procedure->emit(new IR::EntryCall(context.program->findProcedure(node->children[0]->lexVal.s)));
 
-					result = procedure->newTemp(node->type);
+					result = procedure->newTemp();
 					if(procedure->returnsValue()) {
 						// Assign return value to a new temporary
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
@@ -322,7 +322,7 @@ namespace Front {
 
 			case Node::NodeTypeArith:
 				{
-					result = procedure->newTemp(node->type);
+					result = procedure->newTemp();
 
 					// Emit code for operator arguments
 					std::vector<IR::Symbol*> arguments;
@@ -359,7 +359,7 @@ namespace Front {
 
 			case Node::NodeTypeCompare:
 				// Construct a new temporary to hold value
-				result = procedure->newTemp(node->type);
+				result = procedure->newTemp();
 
 				// Emit code for operator arguments
 				a = processRValue(node->children[0], context);
@@ -404,14 +404,14 @@ namespace Front {
 			case Node::NodeTypeNew:
 				{
 					// Construct a new temporary to hold value
-					result = procedure->newTemp(node->type);
+					result = procedure->newTemp();
 
 					Node *arg = node->children[0];
-					IR::Symbol *size = procedure->newTemp(TypeInt);
+					IR::Symbol *size = procedure->newTemp();
 					if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
 						// Array allocation: total size is typeSize * count
 						Type *type = arg->children[0]->type;
-						IR::Symbol *typeSize = procedure->newTemp(TypeInt);
+						IR::Symbol *typeSize = procedure->newTemp();
 						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, typeSize, 0, type->size));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
@@ -429,7 +429,7 @@ namespace Front {
 
 			case Node::NodeTypeArray:
 				{
-					result = procedure->newTemp(node->type);
+					result = procedure->newTemp();
 
 					// Emit code to calculate the array's base address
 					IR::Symbol *base = processRValue(node->children[0], context);
@@ -438,8 +438,8 @@ namespace Front {
 					IR::Symbol *subscript = processRValue(node->children[1], context);
 
 					// Compute the offset into array memory based o subscript and type size
-					IR::Symbol *offset = procedure->newTemp(TypeInt);
-					IR::Symbol *size = procedure->newTemp(TypeInt);
+					IR::Symbol *offset = procedure->newTemp();
+					IR::Symbol *size = procedure->newTemp();
 
 					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));

@@ -44,6 +44,7 @@ namespace Front {
 			// Create the root program object
 			Program *program = new Program;
 			program->globals = new Scope();
+			program->types = new Types();
 
 			// Iterate through the tree's procedure definitions
 			for(unsigned int i=0; i<mTree->children.size(); i++) {
@@ -76,8 +77,8 @@ namespace Front {
 		std::vector<Type*> argumentTypes;
 		for(unsigned int j=0; j<argumentList->children.size(); j++) {
 			// Construct the argument type, and add it to the list of types
-			Type *argumentType = createType(argumentList->children[j]->children[0]);
-			if(Type::equals(argumentType, TypeVoid)) {
+			Type *argumentType = createType(argumentList->children[j]->children[0], program->types);
+			if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
 				throw TypeError(argumentList->children[j], "Cannot declare procedure argument of type void");
 			}
 			argumentTypes.push_back(argumentType);
@@ -89,7 +90,7 @@ namespace Front {
 		}
 
 		// Construct the procedure type
-		Type *returnType = createType(node->children[0]);
+		Type *returnType = createType(node->children[0], program->types);
 		procedure->type = new TypeProcedure(returnType, argumentTypes);
 
 		// Construct the procedure symbol
@@ -99,13 +100,14 @@ namespace Front {
 		// Create a context for the procedure
 		Context context;
 		context.procedure = procedure;
+		context.types = program->types;
 		context.scope = procedure->locals;
 		context.inLoop = false;
 
 		// Type check the body of the procedure
 		procedure->body = node->children[2];
 		checkType(procedure->body, context);
-		node->type = TypeVoid;
+		node->type = Types::intrinsic(Types::Void);
 
 		// Add the procedure to the program's procedure list
 		program->procedures.push_back(procedure);
@@ -116,18 +118,18 @@ namespace Front {
 	 * \param node Node describing type
 	 * \return Type
 	 */
-	Type *ProgramGenerator::createType(Node *node)
+	Type *ProgramGenerator::createType(Node *node, Types *types)
 	{
 		Type *type = 0;
 		if(node->nodeType == Node::NodeTypeArray) {
-			type = createType(node->children[0]);
-			if(Type::equals(type, TypeVoid)) {
+			type = createType(node->children[0], types);
+			if(Type::equals(type, Types::intrinsic(Types::Void))) {
 				throw TypeError(node, "Cannot declare array of voids");
 			}
 			type = new TypeArray(type);
 		} else {
 			std::string name = node->lexVal.s;
-			type = Type::find(name);
+			type = types->findType(name);
 			if(!type) {
 				std::stringstream s;
 				s << "Type '" << name << "' not found.";
@@ -149,12 +151,12 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
 				checkChildren(node, context);
-				node->type = TypeVoid;
+				node->type = Types::intrinsic(Types::Void);
 				break;
 
 			case Node::NodeTypePrint:
 				checkChildren(node, context);
-				node->type = TypeVoid;
+				node->type = Types::intrinsic(Types::Void);
 				break;
 
 			case Node::NodeTypeCall:
@@ -194,8 +196,8 @@ namespace Front {
 			case Node::NodeTypeVarDecl:
 				{
 					// Add the declared variable to the current scope
-					Type *type = createType(node->children[0]);
-					if(Type::equals(type, TypeVoid)) {
+					Type *type = createType(node->children[0], context.types);
+					if(Type::equals(type, Types::intrinsic(Types::Void))) {
 						throw TypeError(node, "Cannot declare variable of void type");
 					}
 
@@ -234,11 +236,11 @@ namespace Front {
 					childContext.scope = new Scope(context.scope);
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[0]->type, TypeBool)) {
+					if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
-					node->type = TypeVoid;
+					node->type = Types::intrinsic(Types::Void);
 					break;
 				}
 
@@ -249,11 +251,11 @@ namespace Front {
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[0]->type, TypeBool)) {
+					if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
-					node->type = TypeVoid;
+					node->type = Types::intrinsic(Types::Void);
 					break;
 				}
 
@@ -264,11 +266,11 @@ namespace Front {
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[1]->type, TypeBool)) {
+					if(!Type::equals(node->children[1]->type, Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
-					node->type = TypeVoid;
+					node->type = Types::intrinsic(Types::Void);
 					break;
 				}
 
@@ -280,21 +282,21 @@ namespace Front {
 					throw TypeError(node, "Type mismatch");
 				}
 
-				if(!Type::equals(node->children[0]->type, TypeInt) &&
-					!Type::equals(node->children[0]->type, TypeBool)) {
+				if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Int)) &&
+					!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
 					throw TypeError(node, "Type mismatch");
 				}
 
 				switch(node->nodeSubtype) {
 					case Node::NodeSubtypeAnd:
 					case Node::NodeSubtypeOr:
-						if(!Type::equals(node->children[0]->type, TypeBool)) {
+						if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
 							throw TypeError(node, "Type mismatch");
 						}
 						break;
 				}
 
-				node->type = TypeBool;
+				node->type = Types::intrinsic(Types::Bool);
 				break;
 
 			case Node::NodeTypeArith:
@@ -302,11 +304,11 @@ namespace Front {
 
 				// Check that types match
 				for(unsigned int i=0; i<node->children.size(); i++) {
-					if(!Type::equals(node->children[i]->type, TypeInt)) {
+					if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
 						throw TypeError(node->children[i], "Type mismatch");
 					}
 				}
-				node->type = TypeInt;
+				node->type = Types::intrinsic(Types::Int);
 				break;
 
 			case Node::NodeTypeId:
@@ -330,7 +332,7 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeReturn:
-				if(Type::equals(context.procedure->type->returnType, TypeVoid)) {
+				if(Type::equals(context.procedure->type->returnType, Types::intrinsic(Types::Void))) {
 					throw TypeError(node, "Return statement in void procedure");
 				}
 
@@ -340,18 +342,18 @@ namespace Front {
 				if(!Type::equals(node->children[0]->type, context.procedure->type->returnType)) {
 					throw TypeError(node, "Type mismatch");
 				}
-				node->type = TypeVoid;
+				node->type = Types::intrinsic(Types::Void);
 				break;
 
 			case Node::NodeTypeNew:
 				{
 					Node *typeNode = node->children[0];
-					typeNode->type = createType(typeNode);
+					typeNode->type = createType(typeNode, context.types);
 					node->type = typeNode->type;
 
 					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], context);
-						if(!Type::equals(typeNode->children[1]->type, TypeInt)) {
+						if(!Type::equals(typeNode->children[1]->type, Types::intrinsic(Types::Int))) {
 							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
 						}
 					}
@@ -368,7 +370,7 @@ namespace Front {
 						throw TypeError(arrayNode, "Attempt to take subscript of non-array");
 					}
 
-					if(!Type::equals(subscriptNode->type, TypeInt)) {
+					if(!Type::equals(subscriptNode->type, Types::intrinsic(Types::Int))) {
 						throw TypeError(subscriptNode, "Non-integral subscript");
 					}
 
@@ -381,14 +383,14 @@ namespace Front {
 				if(!context.inLoop) {
 					throw TypeError(node, "Break statement outside of loop");
 				}
-				node->type = TypeVoid;
+				node->type = Types::intrinsic(Types::Void);
 				break;
 
 			case Node::NodeTypeContinue:
 				if(!context.inLoop) {
 					throw TypeError(node, "Continue statement outside of loop");
 				}
-				node->type = TypeVoid;
+				node->type = Types::intrinsic(Types::Void);
 				break;
 		}
 	}

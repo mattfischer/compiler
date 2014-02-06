@@ -58,7 +58,7 @@ namespace Front {
 				break;
 		}
 
-		if(node->type && !Type::equals(node->type, TypeVoid)) {
+		if(node->type && node->type->name != "void") {
 			o << " (" << node->type->name << ")";
 		}
 

@@ -42,7 +42,7 @@ namespace IR {
 	 * \param type Type to assign to symbol
 	 * \return New symbol
 	 */
-	Symbol *Procedure::newTemp(Front::Type *type)
+	Symbol *Procedure::newTemp()
 	{
 		std::stringstream ss;
 		ss << mNextTemp++;

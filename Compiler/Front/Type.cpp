@@ -3,40 +3,6 @@
 #include <sstream>
 
 namespace Front {
-	TypeIntrinsic _TypeInt(TypeIntrinsic::Int, "int", 4);
-	Type *TypeInt = &_TypeInt;
-
-	TypeIntrinsic _TypeBool(TypeIntrinsic::Int, "bool", 4);
-	Type *TypeBool = &_TypeBool;
-
-	Type _TypeVoid(Type::TypeNone, "void", 0);
-	Type *TypeVoid = &_TypeVoid;
-
-	std::vector<Type*> Type::sTypes;
-
-	void Type::init() {
-		sTypes.push_back(Front::TypeVoid);
-		sTypes.push_back(Front::TypeInt);
-		sTypes.push_back(Front::TypeBool);
-	}
-
-	class TypeInit {
-	public:
-		TypeInit() { Type::init(); }
-	};
-	TypeInit init;
-
-	Type *Type::find(const std::string &name)
-	{
-		for(unsigned int i=0; i<sTypes.size(); i++) {
-			if(sTypes[i]->name == name) {
-				return sTypes[i];
-			}
-		}
-
-		return 0;
-	}
-
 	bool Type::equals(Type *a, Type *b)
 	{
 		if(a->type != b->type) {
@@ -70,9 +36,6 @@ namespace Front {
 
 			case TypeArray:
 				return Type::equals(((Front::TypeArray*)a)->baseType, ((Front::TypeArray*)b)->baseType);
-
-			case TypeNone:
-				return true;
 		}
 
 		return false;

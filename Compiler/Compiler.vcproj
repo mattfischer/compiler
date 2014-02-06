@@ -248,6 +248,10 @@
 				RelativePath=".\Front\Scope.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\Front\Types.cpp"
+				>
+			</File>
 			<Filter
 				Name="Analysis"
 				>
@@ -440,6 +444,10 @@
 			</File>
 			<File
 				RelativePath=".\Util\Timer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Front\Types.h"
 				>
 			</File>
 			<Filter

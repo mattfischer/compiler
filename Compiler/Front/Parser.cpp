@@ -1,6 +1,6 @@
 #include "Front/Parser.h"
 
-#include "Front/Type.h"
+#include "Front/Types.h"
 
 #include <sstream>
 #include <cctype>
@@ -174,6 +174,10 @@ Node *Parser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeS
  */
 Node *Parser::parse()
 {
+	for(int i=0; i<Types::NumIntrinsics; i++) {
+		mTypeNames.push_back(Types::intrinsic((Types::Intrinsic)i)->name);
+	}
+
 	try {
 		// Parse the stream
 		return parseProgram();
@@ -290,18 +294,20 @@ Node *Parser::parseType(bool required)
 	Node *node;
 
 	if(match(Tokenizer::Token::TypeIdentifier)) {
-		if(Type::find(next().text)) {
-			node = newNode(Node::NodeTypeId, next().line);
-			node->lexVal.s = mTokenizer.next().text;
-			consume();
+		for(unsigned int i=0; i<mTypeNames.size(); i++) {
+			if(next().text == mTypeNames[i]) {
+				node = newNode(Node::NodeTypeId, next().line);
+				node->lexVal.s = next().text;
+				consume();
 
-			while(matchLiteral("[") && matchLiteral("]", 1)) {
-				consume(2);
-				Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
-				arrayNode->children.push_back(node);
-				node = arrayNode;
+				while(matchLiteral("[") && matchLiteral("]", 1)) {
+					consume(2);
+					Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
+					arrayNode->children.push_back(node);
+					node = arrayNode;
+				}
+				return node;
 			}
-			return node;
 		}
 	}
 
@@ -680,7 +686,7 @@ Node *Parser::parseBaseExpression(bool required)
 		// <BaseExpression> := NUMBER
 		node = newNode(Node::NodeTypeConstant, next().line);
 		node->lexVal.i = std::atoi(next().text.c_str());
-		node->type = TypeInt;
+		node->type = Types::intrinsic(Types::Int);
 		consume();
 
 		return node;
@@ -691,7 +697,7 @@ Node *Parser::parseBaseExpression(bool required)
 		if(matchLiteral("true")) value = 1;
 		else if(matchLiteral("false")) value = 0;
 		node->lexVal.i = value;
-		node->type = TypeBool;
+		node->type = Types::intrinsic(Types::Bool);
 		consume();
 
 		return node;

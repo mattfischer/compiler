@@ -26,13 +26,14 @@ namespace Front {
 
 		struct Context {
 			Procedure *procedure;
+			Types *types;
 			Scope *scope;
 			bool inLoop;
 		};
 
 		void checkType(Node *node, Context &context);
 		void checkChildren(Node *node, Context &context);
-		Type *createType(Node *node);
+		Type *createType(Node *node, Types *types);
 		void generateProcedure(Node *node, Program *program);
 	};
 }

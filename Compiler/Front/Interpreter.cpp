@@ -2,6 +2,7 @@
 
 #include "Front/Node.h"
 #include "Front/Type.h"
+#include "Front/Types.h"
 
 #include <iostream>
 
@@ -39,16 +40,17 @@ namespace Front {
 					pop(&result, sizeof(result));
 
 					Type *type = node->children[0]->type;
-					if(type == TypeInt)
+					if(type == Types::intrinsic(Types::Int))
 						std::cout << result << std::endl;
-					else if(type == TypeBool)
+					else if(type == Types::intrinsic(Types::Bool))
 						std::cout << ((result == 1) ? "true" : "false") << std::endl;
 
 					break;
 				}
+
 			case Node::NodeTypeVarDecl:
 				{
-					Type *type = Type::find(node->children[0]->lexVal.s);
+					Type *type = 0; // FIXME: Type::find(node->children[0]->lexVal.s);
 					addVariable(node->lexVal.s, type);
 					break;
 				}

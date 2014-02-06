@@ -10,8 +10,7 @@ namespace Front {
 		enum TypeType {
 			TypeIntrinsic,
 			TypeProcedure,
-			TypeArray,
-			TypeNone
+			TypeArray
 		};
 
 		Type(TypeType _type, std::string _name, int _size)
@@ -25,8 +24,6 @@ namespace Front {
 		std::string name;
 		int size;
 
-		static void init();
-		static Type *find(const std::string& name);
 		static bool equals(Type *a, Type *b);
 
 	private:
@@ -35,18 +32,10 @@ namespace Front {
 
 	class TypeIntrinsic : public Type {
 	public:
-		enum IntrinsicType {
-			Int,
-			Bool
-		};
-
-		TypeIntrinsic(IntrinsicType _intrinsicType, std::string _name, int _size)
-			: Type(Type::TypeIntrinsic, _name, _size),
-			  intrinsicType(_intrinsicType)
+		TypeIntrinsic(std::string _name, int _size)
+			: Type(Type::TypeIntrinsic, _name, _size)
 		{
 		}
-
-		IntrinsicType intrinsicType;
 	};
 
 	class TypeProcedure : public Type {
@@ -70,10 +59,6 @@ namespace Front {
 			: Type(Type::TypeArray, _baseType->name + "[]", 0), baseType(_baseType)
 		{}
 	};
-
-	extern Type *TypeVoid;
-	extern Type *TypeInt;
-	extern Type *TypeBool;
 }
 
 #endif

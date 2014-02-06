@@ -38,6 +38,7 @@ private:
 	void consume(int num = 1);
 
 	std::vector<Node*> mNodes; //!< List of all nodes created so far
+	std::vector<std::string> mTypeNames; //!< List of all type names
 
 	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
 

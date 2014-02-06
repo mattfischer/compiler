@@ -3,6 +3,7 @@
 
 #include "Front/Scope.h"
 #include "Front/Procedure.h"
+#include "Front/Types.h"
 
 #include <vector>
 namespace Front {
@@ -11,6 +12,7 @@ namespace Front {
 	 */
 	struct Program {
 		Scope *globals; //!< Global variables
+		Types *types; //!< Type list
 		std::vector<Procedure*> procedures; //!< List of procedures
 
 		void print();
