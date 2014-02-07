@@ -42,6 +42,20 @@ namespace Front {
 		return false;
 	}
 
+	int Type::valueSize(Type *type)
+	{
+		switch(type->type) {
+			case TypeIntrinsic:
+			default:
+				return type->size;
+
+			case TypeProcedure:
+			case TypeArray:
+			case TypeStruct:
+				return 4;
+		}
+	}
+
 	std::string TypeProcedure::getTypeName(Type *returnType, std::vector<Type*> argumentTypes)
 	{
 		std::stringstream s;
@@ -64,6 +78,6 @@ namespace Front {
 		member.offset = size;
 		members.push_back(member);
 
-		size += type->size;
+		size += Type::valueSize(type);
 	}
 }

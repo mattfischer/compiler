@@ -284,7 +284,7 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp();
 					IR::Symbol *size = procedure->newTemp();
 
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
+					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, Type::valueSize(node->type) / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the store into the calculated memory location
@@ -427,7 +427,7 @@ namespace Front {
 						// Array allocation: total size is typeSize * count
 						Type *type = arg->children[0]->type;
 						IR::Symbol *typeSize = procedure->newTemp();
-						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, typeSize, 0, type->size));
+						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, typeSize, 0, Type::valueSize(type)));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
@@ -456,7 +456,7 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp();
 					IR::Symbol *size = procedure->newTemp();
 
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, node->type->size / 4));
+					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, Type::valueSize(node->type) / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location

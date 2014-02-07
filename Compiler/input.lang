@@ -4,6 +4,11 @@ struct Foo {
   bool z;
 }
 
+struct Bar {
+  int x;
+  Foo foo;
+}
+
 void main()
 {
   int i = 20;
@@ -13,7 +18,13 @@ void main()
 
   foo.x = 1;
   print(foo.x);
+
+  Bar bar = new Bar;
+  bar.foo = new Foo;
   
+  bar.foo.x = 5;
+  print(bar.foo.x);
+    
   x = y = 0;
   for(int i=0; i<10; i++) {
     if(i == 2 || i == 4) {

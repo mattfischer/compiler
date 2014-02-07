@@ -26,6 +26,7 @@ namespace Front {
 		int size;
 
 		static bool equals(Type *a, Type *b);
+		static int valueSize(Type *type);
 
 	private:
 		static std::vector<Type*> sTypes;
