@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Analysis\AvailableExpressions.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Analysis\Constants.cpp"
 				>
 			</File>
@@ -412,6 +416,10 @@
 			>
 			<File
 				RelativePath=".\Analysis\Analysis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Analysis\AvailableExpressions.h"
 				>
 			</File>
 			<File

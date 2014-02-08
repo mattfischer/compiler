@@ -1,43 +1,18 @@
 struct Foo {
   int x;
   int y;
-  bool z;
 }
 
 struct Bar {
-  int x;
+  int z;
   Foo foo;
 }
 
-void main()
+void main(int x)
 {
-  int i = 20;
-  int x;
-  int y;
-  Foo foo = new Foo;
-
-  foo.x = 1;
-  print(foo.x);
-
   Bar bar = new Bar;
   bar.foo = new Foo;
   
-  bar.foo.x = 5;
-  print(bar.foo.x);
-    
-  x = y = 0;
-  for(int i=0; i<10; i++) {
-    if(i == 2 || i == 4) {
-	  print i;
-	  continue;
-	}
-	print i + 10;
-	if(i == 6) {
-	  break;
-	}
-  }
-  print i;
-  if(true) {
-    print 123;
-  }
+  bar.foo.x = 10;
+  bar.foo.y = 20;
 }
