@@ -24,6 +24,8 @@ namespace Analysis {
 
 		void print() const;
 
+		static bool isExpression(IR::Entry *entry);
+
 	private:
 		IR::Procedure *mProcedure;
 

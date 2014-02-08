@@ -11,6 +11,7 @@
 #include "Transform/CopyProp.h"
 #include "Transform/ThreadJumps.h"
 #include "Transform/LoopInvariantCodeMotion.h"
+#include "Transform/CommonSubexpressionElimination.h"
 
 #include "IR/Program.h"
 #include "IR/Procedure.h"
@@ -36,6 +37,7 @@ namespace Middle {
 		startingTransforms.push_back(Transform::DeadCodeElimination::instance());
 		startingTransforms.push_back(Transform::ThreadJumps::instance());
 		startingTransforms.push_back(Transform::LoopInvariantCodeMotion::instance());
+		startingTransforms.push_back(Transform::CommonSubexpressionElimination::instance());
 
 		// Transforms to run after CopyProp
 		transformMap[Transform::CopyProp::instance()].push_back(Transform::DeadCodeElimination::instance());
@@ -46,6 +48,9 @@ namespace Middle {
 		// Transforms to run after DeadCodeElimination
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::ConstantProp::instance());
 		transformMap[Transform::DeadCodeElimination::instance()].push_back(Transform::CopyProp::instance());
+
+		// Transforms to run after CommonSubexpressionElimination
+		transformMap[Transform::CommonSubexpressionElimination::instance()].push_back(Transform::CopyProp::instance());
 
 		// Optimize each procedure in turn
 		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
@@ -76,6 +81,9 @@ namespace Middle {
 				std::cout << transform->name() << ": " << timer.stop() << "ms" << std::endl;
 
 				if(changed) {
+					procedure->print();
+					std::cout << std::endl;
+
 					// If the transform changed the IR, add its follow-up transformations to the queue
 					TransformVector &newTransforms = transformMap[transform];
 					for(TransformVector::iterator itTransform = newTransforms.begin(); itTransform != newTransforms.end(); itTransform++) {

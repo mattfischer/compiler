@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Transform\CommonSubexpressionElimination.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Analysis\Constants.cpp"
 				>
 			</File>
@@ -420,6 +424,10 @@
 			</File>
 			<File
 				RelativePath=".\Analysis\AvailableExpressions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Transform\CommonSubexpressionElimination.h"
 				>
 			</File>
 			<File

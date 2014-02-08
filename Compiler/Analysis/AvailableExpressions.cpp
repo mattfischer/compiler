@@ -18,23 +18,7 @@ namespace Analysis {
 		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
 			IR::Entry *entry = *entryIt;
 
-			bool add = false;
-			switch(entry->type) {
-				case IR::Entry::TypeLoadImm:
-				case IR::Entry::TypeAdd: case IR::Entry::TypeAddImm:
-				case IR::Entry::TypeSubtract:
-				case IR::Entry::TypeMult: case IR::Entry::TypeMultImm:
-				case IR::Entry::TypeEqual: case IR::Entry::TypeNequal:
-				case IR::Entry::TypeLessThan: case IR::Entry::TypeLessThanE:
-				case IR::Entry::TypeGreaterThan: case IR::Entry::TypeGreaterThanE:
-				case IR::Entry::TypeAnd: case IR::Entry::TypeOr:
-				case IR::Entry::TypeLoadStack:
-				case IR::Entry::TypeLoadMemInd: case IR::Entry::TypeLoadMem:
-					add = true;
-					break;
-			}
-
-			if(add) {
+			if(isExpression(entry)) {
 				all.insert(entry);
 			}
 		}
@@ -77,6 +61,26 @@ namespace Analysis {
 			return it->second;
 		} else {
 			return emptyEntrySet;
+		}
+	}
+
+	bool AvailableExpressions::isExpression(IR::Entry *entry)
+	{
+		switch(entry->type) {
+			case IR::Entry::TypeLoadImm:
+			case IR::Entry::TypeAdd: case IR::Entry::TypeAddImm:
+			case IR::Entry::TypeSubtract:
+			case IR::Entry::TypeMult: case IR::Entry::TypeMultImm:
+			case IR::Entry::TypeEqual: case IR::Entry::TypeNequal:
+			case IR::Entry::TypeLessThan: case IR::Entry::TypeLessThanE:
+			case IR::Entry::TypeGreaterThan: case IR::Entry::TypeGreaterThanE:
+			case IR::Entry::TypeAnd: case IR::Entry::TypeOr:
+			case IR::Entry::TypeLoadStack:
+			case IR::Entry::TypeLoadMemInd: case IR::Entry::TypeLoadMem:
+				return true;
+
+			default:
+				return false;
 		}
 	}
 
