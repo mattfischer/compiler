@@ -77,6 +77,7 @@ namespace Analysis {
 			case IR::Entry::TypeAnd: case IR::Entry::TypeOr:
 			case IR::Entry::TypeLoadStack:
 			case IR::Entry::TypeLoadMemInd: case IR::Entry::TypeLoadMem:
+			case IR::Entry::TypeStoreMemInd: case IR::Entry::TypeStoreMem:
 				return true;
 
 			default:

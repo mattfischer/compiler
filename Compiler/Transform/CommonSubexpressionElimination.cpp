@@ -6,49 +6,64 @@
 
 namespace Transform {
 	/*!
-	 * \brief Determine whether two expressions compute the same value
-	 * \param entry1 First entry
-	 * \param entry2 Second entry
-	 * \return True if expressions match
+	 * \brief Find a match for an entry in a set of available expressions
+	 * \param entry Entry to match
+	 * \param exps Expressions
+	 * \return Symbol containing entry's value
 	 */
-	bool match(IR::Entry *entry1, IR::Entry *entry2) {
-		if(entry1->type != entry2->type) {
-			return false;
+	IR::Symbol *findMatch(IR::Entry *entry, const IR::EntrySet &exps) {
+		for(IR::EntrySet::const_iterator expIt = exps.begin(); expIt != exps.end(); expIt++) {
+			IR::Entry *exp = *expIt;
+
+			// Reject the expression if it is of a different type than the entry, with the
+			// special exception that a memory store expression can be used to satisfy a
+			// memory load entry
+			if(entry->type != exp->type &&
+			   !(entry->type == IR::Entry::TypeLoadMem && exp->type == IR::Entry::TypeStoreMem) &&
+			   !(entry->type == IR::Entry::TypeLoadMemInd && exp->type == IR::Entry::TypeStoreMemInd)) {
+				continue;
+			}
+
+			// Match the expression based on its type
+			switch(entry->type) {
+				case IR::Entry::TypeLoadImm:
+				case IR::Entry::TypeAddImm:
+				case IR::Entry::TypeMultImm:
+				case IR::Entry::TypeLoadStack:
+				case IR::Entry::TypeLoadMem:
+					{
+						IR::EntryTwoAddrImm *twoAddrImmEn = (IR::EntryTwoAddrImm*)entry;
+						IR::EntryTwoAddrImm *twoAddrImmEx = (IR::EntryTwoAddrImm*)exp;
+						if(twoAddrImmEn->rhs == twoAddrImmEx->rhs && twoAddrImmEn->imm == twoAddrImmEx->imm) {
+							return twoAddrImmEx->lhs;
+						}
+						break;
+					}
+
+				case IR::Entry::TypeAdd:
+				case IR::Entry::TypeSubtract:
+				case IR::Entry::TypeMult:
+				case IR::Entry::TypeEqual:
+				case IR::Entry::TypeNequal:
+				case IR::Entry::TypeLessThan:
+				case IR::Entry::TypeLessThanE:
+				case IR::Entry::TypeGreaterThan:
+				case IR::Entry::TypeGreaterThanE:
+				case IR::Entry::TypeAnd:
+				case IR::Entry::TypeOr:
+				case IR::Entry::TypeLoadMemInd:
+					{
+						IR::EntryThreeAddr *threeAddrEn = (IR::EntryThreeAddr*)entry;
+						IR::EntryThreeAddr *threeAddrEx = (IR::EntryThreeAddr*)exp;
+						if(threeAddrEn->rhs1 == threeAddrEx->rhs1 && threeAddrEn->rhs2 == threeAddrEx->rhs2) {
+							return threeAddrEx->lhs;
+						}
+						break;
+					}
+			}
 		}
 
-		switch(entry1->type) {
-			case IR::Entry::TypeLoadImm:
-			case IR::Entry::TypeAddImm:
-			case IR::Entry::TypeMultImm:
-			case IR::Entry::TypeLoadStack:
-			case IR::Entry::TypeLoadMem:
-				{
-					IR::EntryTwoAddrImm *twoAddrImm1 = (IR::EntryTwoAddrImm*)entry1;
-					IR::EntryTwoAddrImm *twoAddrImm2 = (IR::EntryTwoAddrImm*)entry2;
-					return (twoAddrImm1->rhs == twoAddrImm2->rhs && twoAddrImm1->imm == twoAddrImm2->imm);
-				}
-
-			case IR::Entry::TypeAdd:
-			case IR::Entry::TypeSubtract:
-			case IR::Entry::TypeMult:
-			case IR::Entry::TypeEqual:
-			case IR::Entry::TypeNequal:
-			case IR::Entry::TypeLessThan:
-			case IR::Entry::TypeLessThanE:
-			case IR::Entry::TypeGreaterThan:
-			case IR::Entry::TypeGreaterThanE:
-			case IR::Entry::TypeAnd:
-			case IR::Entry::TypeOr:
-			case IR::Entry::TypeLoadMemInd:
-				{
-					IR::EntryThreeAddr *threeAddr1 = (IR::EntryThreeAddr*)entry1;
-					IR::EntryThreeAddr *threeAddr2 = (IR::EntryThreeAddr*)entry2;
-					return (threeAddr1->rhs1 == threeAddr2->rhs1 && threeAddr1->rhs2 == threeAddr2->rhs2);
-				}
-
-			default:
-				return false;
-		}
+		return 0;
 	}
 
 	bool CommonSubexpressionElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
@@ -70,36 +85,32 @@ namespace Transform {
 			IR::Entry *entry = queue.front();
 			queue.pop();
 
-			if(!Analysis::AvailableExpressions::isExpression(entry)) {
+			if(!Analysis::AvailableExpressions::isExpression(entry) || !entry->assign()) {
 				continue;
 			}
 
 			// Search through all available expressions, looking for a match
 			const IR::EntrySet &exps = availableExpressions.expressions(entry);
-			for(IR::EntrySet::const_iterator expIt = exps.begin(); expIt != exps.end(); expIt++) {
-				IR::Entry *exp = *expIt;
+			IR::Symbol *expTarget = findMatch(entry, exps);
+			if(expTarget) {
+				// Replace the expression with a direct assignment to the available expression's target
+				IR::Entry *newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, entry->assign(), expTarget);
 
-				if(match(exp, entry)) {
-					// Replace the expression with a direct assignment to the available expression's target
-					IR::Entry *newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, entry->assign(), exp->assign());
-
-					// Add all uses of the entry into the queue, it may now be possible
-					// to do further subexpression elimination on them
-					const IR::EntrySet &entries = useDefs->uses(entry);
-					for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-						queue.push(*it);
-					}
-
-					// Update the useDef chains to reflect the new entry
-					analysis.replace(entry, newEntry);
-
-					// Substitute the new entry into the procedure
-					procedure->entries().insert(entry, newEntry);
-					procedure->entries().erase(entry);
-					delete entry;
-					changed = true;
-					break;
+				// Add all uses of the entry into the queue, it may now be possible
+				// to do further subexpression elimination on them
+				const IR::EntrySet &entries = useDefs->uses(entry);
+				for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+					queue.push(*it);
 				}
+
+				// Update the useDef chains to reflect the new entry
+				analysis.replace(entry, newEntry);
+
+				// Substitute the new entry into the procedure
+				procedure->entries().insert(entry, newEntry);
+				procedure->entries().erase(entry);
+				delete entry;
+				changed = true;
 			}
 		}
 
