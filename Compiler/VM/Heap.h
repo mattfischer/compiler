@@ -4,12 +4,12 @@
 namespace VM {
 	class Heap {
 	public:
-		Heap(int *mem, int memSize, int start);
+		Heap(unsigned char *mem, int memSize, int start);
 
 		int allocate(int size);
 
 	private:
-		int *mMem;
+		unsigned char *mMem;
 		int mMemSize;
 		int mStart;
 

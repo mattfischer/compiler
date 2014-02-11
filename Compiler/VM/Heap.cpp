@@ -2,7 +2,7 @@
 
 namespace VM {
 
-	Heap::Heap(int *mem, int memSize, int start)
+	Heap::Heap(unsigned char *mem, int memSize, int start)
 	{
 		mMem = mem;
 		mMemSize = memSize;

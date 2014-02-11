@@ -11,14 +11,14 @@ namespace VM {
 	{
 		int regs[16];
 		int curPC;
-		int mem[1024];
+		unsigned char mem[1024];
 		Heap heap(mem, 1024, 0);
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
 		// Set SP to the top of the stack
-		regs[VM::RegSP] = sizeof(mem) / sizeof(int) - 1;
+		regs[VM::RegSP] = sizeof(mem) - 1;
 
 		// Set LR to beyond the end of the program, so program exit can be detected
 		regs[VM::RegLR] = (int)program.instructions.size();
@@ -127,11 +127,11 @@ namespace VM {
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.u.three.regLhs] = mem[regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)];
+							regs[instr.u.three.regLhs] = *(int*)(mem + regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm));
 							break;
 
 						case VM::ThreeAddrStore:
-							mem[regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)] = regs[instr.u.three.regLhs];
+							*(int*)(mem + regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)) = regs[instr.u.three.regLhs];
 							break;
 					}
 					break;
@@ -141,8 +141,8 @@ namespace VM {
 						case VM::MultRegLoad:
 							for(int i=0; i<16; i++) {
 								if(instr.u.mult.regs & (1 << i)) {
-									regs[i] = mem[regs[VM::RegSP]];
-									regs[VM::RegSP]++;
+									regs[i] = *(int*)(mem + regs[VM::RegSP]);
+									regs[VM::RegSP] += sizeof(int);
 								}
 							}
 							break;
@@ -150,8 +150,8 @@ namespace VM {
 						case VM::MultRegStore:
 							for(int i=15; i>=0; i--) {
 								if(instr.u.mult.regs & (1 << i)) {
-									regs[VM::RegSP]--;
-									mem[regs[VM::RegSP]] = regs[i];
+									regs[VM::RegSP] -= sizeof(int);
+									*(int*)(mem + regs[VM::RegSP]) = regs[i];
 								}
 							}
 							break;

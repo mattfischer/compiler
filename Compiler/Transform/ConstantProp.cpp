@@ -128,7 +128,7 @@ namespace Transform {
 
 							// Create a new immediate load entry with the calculated value
 							newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, 0, 0, value);
-						} else if(rhs1Const || rhs2Const) {
+						} else if(threeAddr->rhs2 && (rhs1Const || rhs2Const)) {
 							// If one argument is constant and the other is not, an entry can
 							// at least be turned into an Immediate entry
 							int constant;
@@ -166,7 +166,7 @@ namespace Transform {
 							}
 						}
 
-						// If a new entry was created, subsitute it into the procedure
+						// If a new entry was created, substitute it into the procedure
 						if(newEntry) {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them

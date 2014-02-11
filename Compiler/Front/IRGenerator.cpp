@@ -282,7 +282,7 @@ namespace Front {
 
 					// Compute the offset into array memory based o subscript and type size
 					IR::Symbol *offset = procedure->newTemp();
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type) / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type)));
 
 					// Emit the store into the calculated memory location
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
@@ -300,7 +300,7 @@ namespace Front {
 						}
 					}
 
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, typeStruct->members[idx].offset / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, typeStruct->members[idx].offset));
 				}
 
 				// Return the resulting node
@@ -453,7 +453,7 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp();
 					IR::Symbol *size = procedure->newTemp();
 
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, size, 0, 0, Type::valueSize(node->type) / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, size, 0, 0, Type::valueSize(node->type)));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
@@ -477,7 +477,7 @@ namespace Front {
 					}
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, typeStruct->members[idx].offset / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, typeStruct->members[idx].offset));
 					break;
 				}
 		}
