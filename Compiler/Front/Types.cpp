@@ -36,7 +36,7 @@ namespace Front {
 		if(intrinsics.size() == 0) {
 			intrinsics.resize(NumIntrinsics);
 			intrinsics[Bool] = new TypeIntrinsic("bool", 4);
-			intrinsics[Int] = new TypeIntrinsic("int", 4);
+			intrinsics[Int] = new TypeIntrinsic("int", 8);
 			intrinsics[Void] = new TypeIntrinsic("void", 0);
 		}
 

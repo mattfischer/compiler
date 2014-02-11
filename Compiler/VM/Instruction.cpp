@@ -85,6 +85,7 @@ namespace VM {
 		if(imm != 0) {
 			o << ", #" << imm;
 		}
+
 		o << "]";
 	}
 
@@ -218,11 +219,11 @@ namespace VM {
 				break;
 
 			case ThreeAddrLoad:
-				printInd(o, "ldr", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printInd(o, "ldr", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
 				break;
 
 			case ThreeAddrStore:
-				printInd(o, "str", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printInd(o, "str", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
 				break;
 		}
 	}

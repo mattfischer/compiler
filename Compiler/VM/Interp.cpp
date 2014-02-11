@@ -127,11 +127,11 @@ namespace VM {
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.u.three.regLhs] = mem[regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2]];
+							regs[instr.u.three.regLhs] = mem[regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)];
 							break;
 
 						case VM::ThreeAddrStore:
-							mem[regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2]] = regs[instr.u.three.regLhs];
+							mem[regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)] = regs[instr.u.three.regLhs];
 							break;
 					}
 					break;

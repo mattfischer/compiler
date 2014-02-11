@@ -1,18 +1,8 @@
-struct Foo {
-  int x;
-  int y;
-}
-
-struct Bar {
-  int z;
-  Foo foo;
-}
-
 void main(int x)
 {
-  Bar bar = new Bar;
-  bar.foo = new Foo;
+  int[] array = new int[10];
   
-  bar.foo.x = 10;
-  bar.foo.y = 20;
+  for(int i=0; i<10; i++) {
+    array[i] = i;
+  }
 }

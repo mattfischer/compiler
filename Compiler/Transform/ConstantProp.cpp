@@ -6,6 +6,22 @@
 #include "Util/UniqueQueue.h"
 
 namespace Transform {
+	int log2(int value)
+	{
+		int ret = 0;
+		while(value > 1) {
+			value >>= 1;
+			ret++;
+		}
+
+		return ret;
+	}
+
+	bool isPowerOfTwo(int value)
+	{
+		return ((1 << log2(value)) == value);
+	}
+
 	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
@@ -187,6 +203,17 @@ namespace Transform {
 							threeAddr->rhs2 = 0;
 							threeAddr->imm = value;
 							changed = true;
+						} else {
+							const IR::EntrySet &defs = useDefs->defines(entry, threeAddr->rhs2);
+							if(defs.size() == 1) {
+								IR::Entry *def = *(defs.begin());
+								IR::EntryThreeAddr *defThreeAddr = (IR::EntryThreeAddr*)def;
+								if(def->type == IR::Entry::TypeMult && !defThreeAddr->rhs2 && isPowerOfTwo(defThreeAddr->imm)) {
+									analysis.replaceUse(threeAddr, threeAddr->rhs2, defThreeAddr->rhs1);
+									threeAddr->rhs2 = defThreeAddr->rhs1;
+									threeAddr->imm = log2(defThreeAddr->imm);
+								}
+							}
 						}
 						break;
 					}
