@@ -30,8 +30,8 @@ namespace Analysis {
 				break;
 			}
 
-			IR::EntryTwoAddrImm *twoAddrImm = (IR::EntryTwoAddrImm*)def;
-			if(isConstant && ret != twoAddrImm->imm) {
+			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
+			if(isConstant && ret != threeAddr->imm) {
 				// If a constant was already found, and this one differs in value, then
 				// the symbol is not constant
 				ret = 0;
@@ -39,7 +39,7 @@ namespace Analysis {
 				break;
 			} else {
 				// Otherwise, this is the first constant, so mark it as such
-				ret = twoAddrImm->imm;
+				ret = threeAddr->imm;
 				isConstant = true;
 			}
 		}

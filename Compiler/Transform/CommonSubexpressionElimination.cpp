@@ -31,15 +31,6 @@ namespace Transform {
 				case IR::Entry::TypeMultImm:
 				case IR::Entry::TypeLoadStack:
 				case IR::Entry::TypeLoadMem:
-					{
-						IR::EntryTwoAddrImm *twoAddrImmEn = (IR::EntryTwoAddrImm*)entry;
-						IR::EntryTwoAddrImm *twoAddrImmEx = (IR::EntryTwoAddrImm*)exp;
-						if(twoAddrImmEn->rhs == twoAddrImmEx->rhs && twoAddrImmEn->imm == twoAddrImmEx->imm) {
-							return twoAddrImmEx->lhs;
-						}
-						break;
-					}
-
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeSubtract:
 				case IR::Entry::TypeMult:
@@ -55,7 +46,7 @@ namespace Transform {
 					{
 						IR::EntryThreeAddr *threeAddrEn = (IR::EntryThreeAddr*)entry;
 						IR::EntryThreeAddr *threeAddrEx = (IR::EntryThreeAddr*)exp;
-						if(threeAddrEn->rhs1 == threeAddrEx->rhs1 && threeAddrEn->rhs2 == threeAddrEx->rhs2) {
+						if(threeAddrEn->rhs1 == threeAddrEx->rhs1 && threeAddrEn->rhs2 == threeAddrEx->rhs2 && threeAddrEn->imm == threeAddrEx->imm) {
 							return threeAddrEx->lhs;
 						}
 						break;

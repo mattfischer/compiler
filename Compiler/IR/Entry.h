@@ -118,6 +118,7 @@ namespace IR {
 		Symbol *lhs; //!< Left-hand side
 		Symbol *rhs1; //!< Right-hand side 1
 		Symbol *rhs2; //!< Right-hand side 2
+		int    imm; //!< Immediate value
 
 		/*!
 		 * \brief Constructor
@@ -126,34 +127,8 @@ namespace IR {
 		 * \param _rhs1 Right-hand side 1, or 0
 		 * \param _rhs2 Right-hand side 2, or 0
 		 */
-		EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1 = 0, Symbol *_rhs2 = 0);
+		EntryThreeAddr(Type _type, Symbol *_lhs = 0, Symbol *_rhs1 = 0, Symbol *_rhs2 = 0, int _imm = 0);
 		virtual ~EntryThreeAddr();
-
-		virtual void print(std::ostream &o) const;
-
-		virtual Symbol *assign();
-		virtual bool uses(Symbol *symbol);
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
-	};
-
-	/*!
-	 * \brief Two-address entry: Left-hand side, right-hand side, and immediate constant
-	 */
-	struct EntryTwoAddrImm : public Entry {
-		Symbol *lhs; //!< Left-hand side
-		Symbol *rhs; //!< Right-hand side
-		int imm; //!< Immediate constant
-
-		/*!
-		 * \brief Constructor
-		 * \param _type Entry type
-		 * \param _lhs Left-hand side
-		 * \param _rhs Right-hand side
-		 * \param _imm Immediate constant
-		 */
-		EntryTwoAddrImm(Type _type, Symbol *_lhs, Symbol *_rhs, int _imm);
-		virtual ~EntryTwoAddrImm();
 
 		virtual void print(std::ostream &o) const;
 

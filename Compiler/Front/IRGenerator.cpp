@@ -26,7 +26,7 @@ namespace Front {
 			IR::Procedure *irProcedure = new IR::Procedure(procedure->name, !Type::equals(procedure->type->returnType, program->types->intrinsic(Types::Void)));
 
 			// Emit procedure prologue
-			irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypePrologue, 0, 0, 0));
+			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
 
 			// Add local variables to the procedure
 			const std::vector<Symbol*> locals = procedure->locals->symbols();
@@ -51,7 +51,7 @@ namespace Front {
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
 					if(procedure->arguments[k] == locals[j]) {
 						// If this symbol is an argument, emit an argument load instruction
-						irProcedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadArg, irSymbol, 0, k));
+						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, irSymbol, 0, 0, k));
 					}
 				}
 			}
@@ -67,7 +67,7 @@ namespace Front {
 			processNode(procedure->body, context);
 
 			// Emit function epilogue
-			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryTwoAddrImm(IR::Entry::TypeEpilogue, 0, 0, 0));
+			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::TypeEpilogue));
 
 			// Add procedure to procedure list
 			irProgram->addProcedure(irProcedure);
@@ -248,7 +248,7 @@ namespace Front {
 			case Node::NodeTypeConstant:
 				// Construct a temporary to contain the new value
 				result = procedure->newTemp();
-				procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, result, 0, node->lexVal.i));
+				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, result, 0, 0, node->lexVal.i));
 				break;
 
 			case Node::NodeTypeId:
@@ -284,7 +284,7 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp();
 					IR::Symbol *size = procedure->newTemp();
 
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, Type::valueSize(node->type) / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, size, 0, 0, Type::valueSize(node->type) / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the store into the calculated memory location
@@ -303,7 +303,7 @@ namespace Front {
 						}
 					}
 
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeStoreMem, b, a, typeStruct->members[idx].offset / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, typeStruct->members[idx].offset / 4));
 				}
 
 				// Return the resulting node
@@ -321,7 +321,7 @@ namespace Front {
 
 					// Emit argument store values for each argument
 					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeStoreArg, 0, args[i], i));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
 					}
 
 					// Emit procedure call
@@ -361,12 +361,12 @@ namespace Front {
 
 						case Node::NodeSubtypeIncrement:
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, arguments[0]));
-							procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, arguments[0], arguments[0], 1));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAddImm, arguments[0], arguments[0], 0, 1));
 							break;
 
 						case Node::NodeSubtypeDecrement:
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, arguments[0]));
-							procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeAddImm, arguments[0], arguments[0], -1));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAddImm, arguments[0], arguments[0], 0, -1));
 							break;
 					}
 					break;
@@ -427,14 +427,14 @@ namespace Front {
 						// Array allocation: total size is typeSize * count
 						Type *type = arg->children[0]->type;
 						IR::Symbol *typeSize = procedure->newTemp();
-						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, typeSize, 0, Type::valueSize(type)));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, typeSize, 0, 0, Type::valueSize(type)));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
 					} else {
 						// Single allocation: total size is typeSize
 						Type *type = arg->type;
-						procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, type->size));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, size, 0, 0, type->size));
 					}
 
 					// Emit new entry
@@ -456,7 +456,7 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp();
 					IR::Symbol *size = procedure->newTemp();
 
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadImm, size, 0, Type::valueSize(node->type) / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, size, 0, 0, Type::valueSize(node->type) / 4));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
@@ -480,7 +480,7 @@ namespace Front {
 					}
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryTwoAddrImm(IR::Entry::TypeLoadMem, result, base, typeStruct->members[idx].offset / 4));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, typeStruct->members[idx].offset / 4));
 					break;
 				}
 		}

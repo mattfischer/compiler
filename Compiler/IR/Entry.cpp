@@ -54,8 +54,8 @@ namespace IR {
 		}
 	}
 
-	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2)
-		: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2)
+	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2, int _imm)
+		: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2), imm(_imm)
 	{
 	}
 
@@ -80,6 +80,11 @@ namespace IR {
 
 		if(rhs2) {
 			o << (needComma ? ", " : "") << rhs2->name;
+			needComma = true;
+		}
+
+		if(imm) {
+			o << (needComma ? ", " : "") << imm;
 		}
 	}
 
@@ -108,61 +113,6 @@ namespace IR {
 
 		if(rhs2 == symbol) {
 			rhs2 = newSymbol;
-		}
-
-		if(!lhsAssign(type) && lhs == symbol) {
-			lhs = newSymbol;
-		}
-	}
-
-	EntryTwoAddrImm::EntryTwoAddrImm(Type _type, IR::Symbol *_lhs, IR::Symbol *_rhs, int _imm)
-		: Entry(_type), lhs(_lhs), rhs(_rhs), imm(_imm)
-	{
-	}
-
-	EntryTwoAddrImm::~EntryTwoAddrImm()
-	{
-	}
-
-	void EntryTwoAddrImm::print(std::ostream &o) const
-	{
-		bool needComma = false;
-		o << "  " << names[type];
-
-		if(lhs) {
-			o << lhs->name;
-			needComma = true;
-		}
-
-		if(rhs) {
-			o << (needComma ? ", " : "") << rhs->name;
-			needComma = true;
-		}
-
-		o << (needComma ? ", " : "") << imm;
-	}
-
-	void EntryTwoAddrImm::replaceAssign(Symbol *symbol, Symbol *newSymbol)
-	{
-		if(lhsAssign(type)) {
-			lhs = newSymbol;
-		}
-	}
-
-	Symbol *EntryTwoAddrImm::assign()
-	{
-		return lhsAssign(type) ? lhs : 0;
-	}
-
-	bool EntryTwoAddrImm::uses(Symbol *symbol)
-	{
-		return (rhs == symbol || (!lhsAssign(type) && lhs == symbol));
-	}
-
-	void EntryTwoAddrImm::replaceUse(Symbol *symbol, Symbol *newSymbol)
-	{
-		if(rhs == symbol) {
-			rhs = newSymbol;
 		}
 
 		if(!lhsAssign(type) && lhs == symbol) {
