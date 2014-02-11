@@ -7,12 +7,9 @@ namespace IR {
 	static char* names[] = {
 		/* TypeNone		  */ "none	   ",
 		/* TypeMove		  */ "move     ",
-		/* TypeLoadImm	  */ "loadi    ",
 		/* TypeAdd		  */ "add      ",
-		/* TypeAddImm     */ "addi     ",
 		/* TypeSubtract	  */ "sub      ",
 		/* TypeMult		  */ "mult     ",
-		/* TypeMultImm	  */ "multi    ",
 		/* TypePrint	  */ "print    ",
 		/* TypeEqual	  */ "equ      ",
 		/* TypeNequal	  */ "neq      ",
@@ -36,8 +33,6 @@ namespace IR {
 		/* TypePrologue   */ "prologue ",
 		/* TypeEpilogue   */ "epilogue ",
 		/* TypeNew        */ "new      ",
-		/* TypeStoreMemInd*/ "stmem    ",
-		/* TypeLoadMemInd */ "ldmem    ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
 	};
@@ -45,7 +40,6 @@ namespace IR {
 	static bool lhsAssign(Entry::Type type)
 	{
 		switch(type) {
-			case Entry::TypeStoreMemInd:
 			case Entry::TypeStoreMem:
 				return false;
 

@@ -67,17 +67,16 @@ namespace Analysis {
 	bool AvailableExpressions::isExpression(IR::Entry *entry)
 	{
 		switch(entry->type) {
-			case IR::Entry::TypeLoadImm:
-			case IR::Entry::TypeAdd: case IR::Entry::TypeAddImm:
+			case IR::Entry::TypeAdd:
 			case IR::Entry::TypeSubtract:
-			case IR::Entry::TypeMult: case IR::Entry::TypeMultImm:
+			case IR::Entry::TypeMult:
 			case IR::Entry::TypeEqual: case IR::Entry::TypeNequal:
 			case IR::Entry::TypeLessThan: case IR::Entry::TypeLessThanE:
 			case IR::Entry::TypeGreaterThan: case IR::Entry::TypeGreaterThanE:
 			case IR::Entry::TypeAnd: case IR::Entry::TypeOr:
 			case IR::Entry::TypeLoadStack:
-			case IR::Entry::TypeLoadMemInd: case IR::Entry::TypeLoadMem:
-			case IR::Entry::TypeStoreMemInd: case IR::Entry::TypeStoreMem:
+			case IR::Entry::TypeLoadMem:
+			case IR::Entry::TypeStoreMem:
 				return true;
 
 			default:

@@ -26,12 +26,9 @@ namespace IR {
 		enum Type {
 			TypeNone, //!< Used for list internals
 			TypeMove, //!< Move one variable to another
-			TypeLoadImm, //!< Load a constant into a symbol
 			TypeAdd, //!< Add two symbols together
-			TypeAddImm, //!< Add a constant to a symbol
 			TypeSubtract, //!< Subtract two symbols
 			TypeMult, //!< Multiply two symbols together
-			TypeMultImm, //!< Multiply a constant with a symbol
 			TypePrint, //!< Print a symbol
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality
@@ -55,8 +52,6 @@ namespace IR {
 			TypePrologue, //!< Function prologue
 			TypeEpilogue, //!< Function epilogue
 			TypeNew, //!< Allocate memory
-			TypeStoreMemInd, //!< Store to memory indexed
-			TypeLoadMemInd, //!< Load from memory indexed
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem //!< Load from memory
 		};

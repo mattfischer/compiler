@@ -89,42 +89,33 @@ namespace Back {
 				case IR::Entry::TypeMove:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
-						break;
-					}
-
-				case IR::Entry::TypeLoadImm:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[threeAddr->lhs], threeAddr->imm));
+						if(threeAddr->rhs1) {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						} else {
+							instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[threeAddr->lhs], threeAddr->imm));
+						}
 						break;
 					}
 
 				case IR::Entry::TypeAdd:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrAdd, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
-						break;
-					}
-
-				case IR::Entry::TypeAddImm:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						if(threeAddr->rhs2) {
+							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrAdd, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						} else {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						}
 						break;
 					}
 
 				case IR::Entry::TypeMult:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrMult, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
-						break;
-					}
-
-				case IR::Entry::TypeMultImm:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrMultImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						if(threeAddr->rhs2) {
+							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrMult, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						} else {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrMultImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						}
 						break;
 					}
 
@@ -317,34 +308,27 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeLoadMemInd:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
-						break;
-					}
-
-				case IR::Entry::TypeStoreMemInd:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
-						break;
-					}
-
 				case IR::Entry::TypeLoadMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						if(threeAddr->rhs2) {
+							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						} else {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						}
 						break;
 					}
 
 				case IR::Entry::TypeStoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						if(threeAddr->rhs2) {
+							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						} else {
+							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+						}
 						break;
 					}
-
 			}
 		}
 

@@ -19,16 +19,12 @@ namespace Transform {
 			// special exception that a memory store expression can be used to satisfy a
 			// memory load entry
 			if(entry->type != exp->type &&
-			   !(entry->type == IR::Entry::TypeLoadMem && exp->type == IR::Entry::TypeStoreMem) &&
-			   !(entry->type == IR::Entry::TypeLoadMemInd && exp->type == IR::Entry::TypeStoreMemInd)) {
+			   !(entry->type == IR::Entry::TypeLoadMem && exp->type == IR::Entry::TypeStoreMem)) {
 				continue;
 			}
 
 			// Match the expression based on its type
 			switch(entry->type) {
-				case IR::Entry::TypeLoadImm:
-				case IR::Entry::TypeAddImm:
-				case IR::Entry::TypeMultImm:
 				case IR::Entry::TypeLoadStack:
 				case IR::Entry::TypeLoadMem:
 				case IR::Entry::TypeAdd:
@@ -42,7 +38,6 @@ namespace Transform {
 				case IR::Entry::TypeGreaterThanE:
 				case IR::Entry::TypeAnd:
 				case IR::Entry::TypeOr:
-				case IR::Entry::TypeLoadMemInd:
 					{
 						IR::EntryThreeAddr *threeAddrEn = (IR::EntryThreeAddr*)entry;
 						IR::EntryThreeAddr *threeAddrEx = (IR::EntryThreeAddr*)exp;

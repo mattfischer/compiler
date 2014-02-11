@@ -32,7 +32,7 @@ namespace Transform {
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
-			if(entry->type == IR::Entry::TypeMove) {
+			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
 				// A move instruction generates that entry
@@ -99,7 +99,7 @@ namespace Transform {
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
-			if(entry->type == IR::Entry::TypeMove) {
+			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
 				// A move entry generates that entry

@@ -233,7 +233,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			IR::Entry *def;
 			if(isConstant) {
 				// If the entry was constant, then just rematerialize the constant
-				def = new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, symbol, 0, 0, value);
+				def = new IR::EntryThreeAddr(IR::Entry::TypeMove, symbol, 0, 0, value);
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryThreeAddr(IR::Entry::TypeLoadStack, symbol, 0, 0, idx);

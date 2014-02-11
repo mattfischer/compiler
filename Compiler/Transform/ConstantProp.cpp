@@ -51,7 +51,7 @@ namespace Transform {
 						if(threeAddr->rhs2) {
 							rhs2 = constants->getValue(threeAddr, threeAddr->rhs2, rhs2Const);
 						} else {
-							rhs2 = 0;
+							rhs2 = threeAddr->imm;
 							rhs2Const = true;
 						}
 
@@ -111,7 +111,7 @@ namespace Transform {
 							}
 
 							// Create a new immediate load entry with the calculated value
-							newEntry = new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, threeAddr->lhs, 0, 0, value);
+							newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, 0, 0, value);
 						} else if(rhs1Const || rhs2Const) {
 							// If one argument is constant and the other is not, an entry can
 							// at least be turned into an Immediate entry
@@ -130,21 +130,21 @@ namespace Transform {
 									if(constant == 0) {
 										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, 0, constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAdd, threeAddr->lhs, symbol, 0, constant);
 									}
 									break;
 								case IR::Entry::TypeSubtract:
 									if(constant == 0) {
 										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAddImm, threeAddr->lhs, symbol, 0, -constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAdd, threeAddr->lhs, symbol, 0, -constant);
 									}
 									break;
 								case IR::Entry::TypeMult:
 									if(constant == 1) {
 										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMultImm, threeAddr->lhs, symbol, 0, constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMult, threeAddr->lhs, symbol, 0, constant);
 									}
 									break;
 							}
@@ -170,64 +170,22 @@ namespace Transform {
 						}
 						break;
 					}
-				case IR::Entry::TypeAddImm:
-				case IR::Entry::TypeMultImm:
+
+				case IR::Entry::TypeLoadMem:
+				case IR::Entry::TypeStoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						int rhs;
-						bool rhsConst;
 
-						// Determine if the symbol on the right hand side is constant
-						rhs = constants->getValue(threeAddr, threeAddr->rhs1, rhsConst);
-						if(rhsConst) {
-							int value;
-							switch(threeAddr->type) {
-								case IR::Entry::TypeAddImm:
-									value = rhs + threeAddr->imm;
-									break;
-
-								case IR::Entry::TypeMultImm:
-									value = rhs * threeAddr->imm;
-									break;
-							}
-
-							// Construct a Load Immediate entry to replace the current entry
-							IR::Entry *newEntry = new IR::EntryThreeAddr(IR::Entry::TypeLoadImm, threeAddr->lhs, 0, 0, value);
-							const IR::EntrySet &entries = useDefs->uses(threeAddr);
-							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-								queue.push(*it);
-							}
-
-							// Replace the entry in the useDef chains and the procedure itself
-							analysis.replace(threeAddr, newEntry);
-							procedure->entries().insert(threeAddr, newEntry);
-							procedure->entries().erase(threeAddr);
-							delete threeAddr;
-							changed = true;
+						if(!threeAddr->rhs2) {
+							break;
 						}
-						break;
-					}
-				case IR::Entry::TypeLoadMemInd:
-				case IR::Entry::TypeStoreMemInd:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+
 						bool isConstant;
 						int value = constants->getValue(threeAddr, threeAddr->rhs2, isConstant);
 						if(isConstant) {
-							IR::Entry::Type type;
-							switch(entry->type) {
-								case IR::Entry::TypeLoadMemInd:
-									type = IR::Entry::TypeLoadMem;
-									break;
-								case IR::Entry::TypeStoreMemInd:
-									type = IR::Entry::TypeStoreMem;
-									break;
-							}
-							IR::Entry *newEntry = new IR::EntryThreeAddr(type, threeAddr->lhs, threeAddr->rhs1, 0, value);
-							analysis.replace(threeAddr, newEntry);
-							procedure->entries().insert(threeAddr, newEntry);
-							procedure->entries().erase(threeAddr);
-							delete threeAddr;
+							analysis.replaceUse(threeAddr, threeAddr->rhs2, 0);
+							threeAddr->rhs2 = 0;
+							threeAddr->imm = value;
 							changed = true;
 						}
 						break;

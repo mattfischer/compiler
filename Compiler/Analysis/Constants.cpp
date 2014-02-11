@@ -23,14 +23,15 @@ namespace Analysis {
 		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
 		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
 			IR::Entry *def = *it;
-			if(def->type != IR::Entry::TypeLoadImm) {
+			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
+
+			if(def->type != IR::Entry::TypeMove || threeAddr->rhs1) {
 				// This definition is not constant, therefore the symbol can't be
 				ret = 0;
 				isConstant = false;
 				break;
 			}
 
-			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
 			if(isConstant && ret != threeAddr->imm) {
 				// If a constant was already found, and this one differs in value, then
 				// the symbol is not constant
