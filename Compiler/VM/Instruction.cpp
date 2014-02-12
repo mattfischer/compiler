@@ -96,48 +96,48 @@ namespace VM {
 	 */
 	static void printTwoAddr(std::ostream &o, const Instruction &instr)
 	{
-		switch(instr.u.two.type) {
+		switch(instr.two.type) {
 			case TwoAddrAddImm:
-				if(instr.u.two.regLhs == RegPC) {
+				if(instr.two.regLhs == RegPC) {
 					// Adds to PC should be printed as a jump
-					if(instr.u.two.imm == 0) {
-						printStd(o, "jmp", instr.u.two.regRhs);
+					if(instr.two.imm == 0) {
+						printStd(o, "jmp", instr.two.regRhs);
 					} else {
-						if(instr.u.two.regRhs == RegPC) {
+						if(instr.two.regRhs == RegPC) {
 							// PC-relative jumps can be printed with their constant only
-							printImm(o, "jmp", -1, -1, instr.u.two.imm);
+							printImm(o, "jmp", -1, -1, instr.two.imm);
 						} else {
-							printImm(o, "jmp", instr.u.two.regRhs, -1, instr.u.two.imm);
+							printImm(o, "jmp", instr.two.regRhs, -1, instr.two.imm);
 						}
 					}
 				} else {
-					if(instr.u.two.imm > 0) {
+					if(instr.two.imm > 0) {
 						// Print add with constant
-						printImm(o, "add", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
-					} else if(instr.u.two.imm == 0){
+						printImm(o, "add", instr.two.regLhs, instr.two.regRhs, instr.two.imm);
+					} else if(instr.two.imm == 0){
 						// With no immediate value, print as a move
-						printStd(o, "mov", instr.u.two.regLhs, instr.u.two.regRhs);
+						printStd(o, "mov", instr.two.regLhs, instr.two.regRhs);
 					} else {
 						// With a negative constant, print as a subtract
-						printImm(o, "sub", instr.u.two.regLhs, instr.u.two.regRhs, -instr.u.two.imm);
+						printImm(o, "sub", instr.two.regLhs, instr.two.regRhs, -instr.two.imm);
 					}
 				}
 				break;
 
 			case TwoAddrMultImm:
-				printImm(o, "mult", instr.u.two.regLhs, instr.u.two.regRhs, instr.u.two.imm);
+				printImm(o, "mult", instr.two.regLhs, instr.two.regRhs, instr.two.imm);
 				break;
 
 			case TwoAddrLoad:
-				printInd(o, "ldr", instr.u.two.regLhs, instr.u.two.regRhs, -1, instr.u.two.imm);
+				printInd(o, "ldr", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
 				break;
 
 			case TwoAddrStore:
-				printInd(o, "str", instr.u.two.regLhs, instr.u.two.regRhs, -1, instr.u.two.imm);
+				printInd(o, "str", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
 				break;
 
 			case TwoAddrNew:
-				printStd(o, "new", instr.u.two.regLhs, instr.u.two.regRhs);
+				printStd(o, "new", instr.two.regLhs, instr.two.regRhs);
 				break;
 		}
 	}
@@ -149,81 +149,81 @@ namespace VM {
 	 */
 	static void printThreeAddr(std::ostream &o, const Instruction &instr)
 	{
-		switch(instr.u.three.type) {
+		switch(instr.three.type) {
 			case ThreeAddrAdd:
-				printStd(o, "add", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "add", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrSub:
-				printStd(o, "sub", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "sub", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrMult:
-				printStd(o, "mult", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "mult", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrAddCond:
-				if(instr.u.three.regLhs == RegPC) {
+				if(instr.three.regLhs == RegPC) {
 					// If target register is PC, print as a conditional jump
-					if(instr.u.three.imm == 0) {
-						printStd(o, "cjmp", instr.u.three.regRhs1, instr.u.three.regRhs2);
+					if(instr.three.imm == 0) {
+						printStd(o, "cjmp", instr.three.regRhs1, instr.three.regRhs2);
 					} else {
-						if(instr.u.three.regRhs2 == RegPC) {
+						if(instr.three.regRhs2 == RegPC) {
 							// PC-relative jumps can be printed with their constant only
-							printImm(o, "cjmp", instr.u.three.regRhs1, -1, instr.u.three.imm);
+							printImm(o, "cjmp", instr.three.regRhs1, -1, instr.three.imm);
 						} else {
-							printImm(o, "cjmp", instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
+							printImm(o, "cjmp", instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
 						}
 					}
 				} else {
-					if(instr.u.three.imm == 0) {
+					if(instr.three.imm == 0) {
 						// With no immediate value, print as a conditional move
-						printStd(o, "cmov", instr.u.three.regRhs1, instr.u.three.regRhs2);
+						printStd(o, "cmov", instr.three.regRhs1, instr.three.regRhs2);
 					} else {
 						// With a positive immediate value, print as a conditional add
-						o << "cadd " << regName(instr.u.three.regRhs1) << ", " << regName(instr.u.three.regLhs) << ", " << regName(instr.u.three.regRhs2) << ", #" << instr.u.three.imm;
+						o << "cadd " << regName(instr.three.regRhs1) << ", " << regName(instr.three.regLhs) << ", " << regName(instr.three.regRhs2) << ", #" << instr.three.imm;
 					}
 				}
 				break;
 
 			case ThreeAddrEqual:
-				printStd(o, "equ", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "equ", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrNEqual:
-				printStd(o, "neq", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "neq", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrLessThan:
-				printStd(o, "lt", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "lt", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrLessThanE:
-				printStd(o, "lte", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "lte", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrGreaterThan:
-				printStd(o, "gt", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "gt", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrGreaterThanE:
-				printStd(o, "gte", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "gte", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrOr:
-				printStd(o, "or", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "or", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrAnd:
-				printStd(o, "and", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2);
+				printStd(o, "and", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrLoad:
-				printInd(o, "ldr", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
+				printInd(o, "ldr", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
 				break;
 
 			case ThreeAddrStore:
-				printInd(o, "str", instr.u.three.regLhs, instr.u.three.regRhs1, instr.u.three.regRhs2, instr.u.three.imm);
+				printInd(o, "str", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
 				break;
 		}
 	}
@@ -235,17 +235,17 @@ namespace VM {
 	 */
 	static void printOneAddr(std::ostream &o, const Instruction &instr)
 	{
-		switch(instr.u.one.type) {
+		switch(instr.one.type) {
 			case OneAddrLoadImm:
-				printImm(o, "mov", instr.u.one.reg, -1, instr.u.one.imm);
+				printImm(o, "mov", instr.one.reg, -1, instr.one.imm);
 				break;
 
 			case OneAddrPrint:
-				printStd(o, "print", instr.u.one.reg);
+				printStd(o, "print", instr.one.reg);
 				break;
 
 			case OneAddrCall:
-				printInd(o, "call", -1, instr.u.one.reg, instr.u.one.imm);
+				printInd(o, "call", -1, instr.one.reg, instr.one.imm);
 				break;
 		}
 	}
@@ -258,7 +258,7 @@ namespace VM {
 	static void printMultReg(std::ostream &o, const Instruction &instr)
 	{
 		// Print the instruction name
-		switch(instr.u.mult.type) {
+		switch(instr.mult.type) {
 			case MultRegLoad:
 				o << "ldm ";
 				break;
@@ -273,7 +273,7 @@ namespace VM {
 		bool needComma = false;
 		int firstReg = -1;
 		for(int i=0; i<16; i++) {
-			if(firstReg != -1 && ((instr.u.mult.regs & (1 << i)) == 0 || i == VM::RegSP)) {
+			if(firstReg != -1 && ((instr.mult.regs & (1 << i)) == 0 || i == VM::RegSP)) {
 				if(needComma) {
 					o << ", ";
 				}
@@ -285,7 +285,7 @@ namespace VM {
 				firstReg = -1;
 			}
 
-			if(instr.u.mult.regs & (1 << i)) {
+			if(instr.mult.regs & (1 << i)) {
 				if(i < VM::RegSP) {
 					if(firstReg == -1) {
 						firstReg = i;
@@ -344,9 +344,9 @@ namespace VM {
 		Instruction instr;
 
 		instr.type = InstrOneAddr;
-		instr.u.one.type = type;
-		instr.u.one.reg = reg;
-		instr.u.one.imm = imm;
+		instr.one.type = type;
+		instr.one.reg = reg;
+		instr.one.imm = imm;
 
 		return instr;
 	}
@@ -364,10 +364,10 @@ namespace VM {
 		Instruction instr;
 
 		instr.type = InstrTwoAddr;
-		instr.u.two.type = type;
-		instr.u.two.regLhs = regLhs;
-		instr.u.two.regRhs = regRhs;
-		instr.u.two.imm = imm;
+		instr.two.type = type;
+		instr.two.regLhs = regLhs;
+		instr.two.regRhs = regRhs;
+		instr.two.imm = imm;
 
 		return instr;
 	}
@@ -386,11 +386,11 @@ namespace VM {
 		Instruction instr;
 
 		instr.type = InstrThreeAddr;
-		instr.u.three.type = type;
-		instr.u.three.regLhs = regLhs;
-		instr.u.three.regRhs1 = regRhs1;
-		instr.u.three.regRhs2 = regRhs2;
-		instr.u.three.imm = imm;
+		instr.three.type = type;
+		instr.three.regLhs = regLhs;
+		instr.three.regRhs1 = regRhs1;
+		instr.three.regRhs2 = regRhs2;
+		instr.three.imm = imm;
 
 		return instr;
 	}
@@ -406,8 +406,8 @@ namespace VM {
 		Instruction instr;
 
 		instr.type = InstrMultReg;
-		instr.u.mult.type = type;
-		instr.u.mult.regs = regs;
+		instr.mult.type = type;
+		instr.mult.regs = regs;
 
 		return instr;
 	}

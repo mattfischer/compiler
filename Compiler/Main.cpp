@@ -13,6 +13,7 @@
 #include "Analysis/InterferenceGraph.h"
 
 #include <iostream>
+#include <iomanip>
 
 int main(int arg, char *argv[])
 {
@@ -61,7 +62,11 @@ int main(int arg, char *argv[])
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	std::cout << "*** Code ***" << std::endl;
 	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
-		std::cout << "  " << vmProgram.instructions[i] << std::endl;
+		unsigned long hex;
+		VM::Instruction instr;
+		std::memcpy(&hex, &vmProgram.instructions[i], 4);
+		std::memcpy(&instr, &vmProgram.instructions[i], 4);
+		std::cout << "  " << std::setw(8) << std::setfill('0') << std::setbase(16) << hex << std::setbase(10) << "  " << instr << std::endl;
 	}
 	std::cout << std::endl;
 

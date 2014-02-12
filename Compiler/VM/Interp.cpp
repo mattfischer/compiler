@@ -12,135 +12,138 @@ namespace VM {
 		int regs[16];
 		int curPC;
 		unsigned char mem[1024];
-		Heap heap(mem, 1024, 0);
+		Heap heap(mem, 1024, (int)program.instructions.size() * sizeof(unsigned long));
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
+
+		memcpy(mem, &program.instructions[0], program.instructions.size() * 4);
 
 		// Set SP to the top of the stack
 		regs[VM::RegSP] = sizeof(mem) - 1;
 
 		// Set LR to beyond the end of the program, so program exit can be detected
-		regs[VM::RegLR] = (int)program.instructions.size();
+		regs[VM::RegLR] = 0xffffffff;
 
 		// Set PC to the program entry point
 		regs[VM::RegPC] = program.start;
 
 		// Loop until PC is set beyond the end of the program
-		while(regs[VM::RegPC] < (int)program.instructions.size()) {
+		while(regs[VM::RegPC] != 0xffffffff) {
 			curPC = regs[VM::RegPC];
-			Instruction instr = program.instructions[regs[VM::RegPC]];
+			Instruction instr;
+			std::memcpy(&instr, &mem[regs[VM::RegPC]], 4);
 
 			// Examine the instruction, and interpret it accordingly
 			switch(instr.type) {
 				case VM::InstrOneAddr:
-					switch(instr.u.one.type) {
+					switch(instr.one.type) {
 						case VM::OneAddrLoadImm:
-							regs[instr.u.one.reg] = instr.u.one.imm;
+							regs[instr.one.reg] = instr.one.imm;
 							break;
 
 						case VM::OneAddrPrint:
-							std::cout << int(regs[instr.u.one.reg]) << std::endl;
+							std::cout << int(regs[instr.one.reg]) << std::endl;
 							break;
 
 						case VM::OneAddrCall:
-							regs[VM::RegLR] = regs[VM::RegPC] + 1;
-							regs[VM::RegPC] = regs[instr.u.one.reg] + instr.u.one.imm;
+							regs[VM::RegLR] = regs[VM::RegPC] + 4;
+							regs[VM::RegPC] = regs[instr.one.reg] + instr.one.imm;
 							break;
 					}
 					break;
 
 				case VM::InstrTwoAddr:
-					switch(instr.u.two.type) {
+					switch(instr.two.type) {
 						case VM::TwoAddrAddImm:
-							regs[instr.u.two.regLhs] = regs[instr.u.two.regRhs] + instr.u.two.imm;
+							regs[instr.two.regLhs] = regs[instr.two.regRhs] + instr.two.imm;
 							break;
 
 						case VM::TwoAddrMultImm:
-							regs[instr.u.two.regLhs] = regs[instr.u.two.regRhs] * instr.u.two.imm;
+							regs[instr.two.regLhs] = regs[instr.two.regRhs] * instr.two.imm;
 							break;
 
 						case VM::TwoAddrLoad:
-							regs[instr.u.two.regLhs] = mem[regs[instr.u.two.regRhs] + instr.u.two.imm];
+							regs[instr.two.regLhs] = mem[regs[instr.two.regRhs] + instr.two.imm];
 							break;
 
 						case VM::TwoAddrStore:
-							mem[regs[instr.u.two.regRhs] + instr.u.two.imm] = regs[instr.u.two.regLhs];
+							mem[regs[instr.two.regRhs] + instr.two.imm] = regs[instr.two.regLhs];
 							break;
 
 						case VM::TwoAddrNew:
-							regs[instr.u.two.regLhs] = heap.allocate(regs[instr.u.two.regRhs]);
+							regs[instr.two.regLhs] = heap.allocate(regs[instr.two.regRhs]);
 							break;
 					}
 					break;
 
 				case VM::InstrThreeAddr:
-					switch(instr.u.three.type) {
+					switch(instr.three.type) {
 						case VM::ThreeAddrAdd:
-							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] + regs[instr.u.three.regRhs2];
+							regs[instr.three.regLhs] = regs[instr.three.regRhs1] + regs[instr.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrSub:
-							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] - regs[instr.u.three.regRhs2];
+							regs[instr.three.regLhs] = regs[instr.three.regRhs1] - regs[instr.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrMult:
-							regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs1] * regs[instr.u.three.regRhs2];
+							regs[instr.three.regLhs] = regs[instr.three.regRhs1] * regs[instr.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrAddCond:
-							if(regs[instr.u.three.regRhs1]) {
-								regs[instr.u.three.regLhs] = regs[instr.u.three.regRhs2] + instr.u.three.imm;
+							if(regs[instr.three.regRhs1]) {
+								regs[instr.three.regLhs] = regs[instr.three.regRhs2] + instr.three.imm;
 							}
 							break;
 
 						case VM::ThreeAddrEqual:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] == regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] == regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrNEqual:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] != regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] != regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrLessThan:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] < regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] < regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrLessThanE:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] <= regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] <= regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrGreaterThan:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] > regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] > regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrGreaterThanE:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] >= regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] >= regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrOr:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] || regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] || regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrAnd:
-							regs[instr.u.three.regLhs] = (regs[instr.u.three.regRhs1] && regs[instr.u.three.regRhs2]);
+							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] && regs[instr.three.regRhs2]);
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.u.three.regLhs] = *(int*)(mem + regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm));
+							regs[instr.three.regLhs] = *(int*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm));
 							break;
 
 						case VM::ThreeAddrStore:
-							*(int*)(mem + regs[instr.u.three.regRhs1] + (regs[instr.u.three.regRhs2] << instr.u.three.imm)) = regs[instr.u.three.regLhs];
+							*(int*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs];
 							break;
 					}
 					break;
 
 				case VM::InstrMultReg:
-					switch(instr.u.mult.type) {
+					switch(instr.mult.type) {
 						case VM::MultRegLoad:
 							for(int i=0; i<16; i++) {
-								if(instr.u.mult.regs & (1 << i)) {
+								if(instr.mult.regs & (1 << i)) {
 									regs[i] = *(int*)(mem + regs[VM::RegSP]);
 									regs[VM::RegSP] += sizeof(int);
 								}
@@ -149,7 +152,7 @@ namespace VM {
 
 						case VM::MultRegStore:
 							for(int i=15; i>=0; i--) {
-								if(instr.u.mult.regs & (1 << i)) {
+								if(instr.mult.regs & (1 << i)) {
 									regs[VM::RegSP] -= sizeof(int);
 									*(int*)(mem + regs[VM::RegSP]) = regs[i];
 								}
@@ -161,7 +164,7 @@ namespace VM {
 
 			// If PC was not explicitly set by the instruction, increment it to the next instruction
 			if(regs[VM::RegPC] == curPC) {
-				regs[VM::RegPC]++;
+				regs[VM::RegPC] += 4;
 			}
 		}
 	}

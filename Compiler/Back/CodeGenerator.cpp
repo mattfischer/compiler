@@ -29,12 +29,12 @@ namespace Back {
 
 			// If this procedure is main(), save its location as the program start point
 			if(irProcedure->name() == "main") {
-				vmProgram.start = (int)vmProgram.instructions.size();
+				vmProgram.start = (int)vmProgram.instructions.size() * 4;
 			}
 
 			// Save the procedure's start location, so that call instructions can be directed
 			// to the correct point
-			procedureMap[irProcedure] = (int)vmProgram.instructions.size();
+			procedureMap[irProcedure] = (int)vmProgram.instructions.size() * 4;
 
 			// Generate code for the procedure
 			generateProcedure(irProcedure, vmProgram.instructions, procedureMap);
@@ -342,7 +342,7 @@ namespace Back {
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						int target = labelMap[jump->target];
-						instructions[idx] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, target - idx);
+						instructions[idx] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, 4 * (target - idx));
 						break;
 					}
 
@@ -350,9 +350,9 @@ namespace Back {
 					{
 						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
 						int target = labelMap[cjump->trueTarget];
-						instructions[idx] = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, VM::RegPC, regMap[cjump->pred], VM::RegPC, target - idx);
+						instructions[idx] = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, VM::RegPC, regMap[cjump->pred], VM::RegPC, 4 * (target - idx));
 						target = labelMap[cjump->falseTarget];
-						instructions[idx+1] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, target - idx - 1);
+						instructions[idx+1] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, 4 * (target - idx - 1));
 						break;
 					}
 			}
