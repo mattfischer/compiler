@@ -42,8 +42,15 @@ namespace VM {
 							regs[instr.one.reg] = instr.one.imm;
 							break;
 
-						case VM::OneAddrPrint:
+						case VM::OneAddrPrintInt:
 							std::cout << int(regs[instr.one.reg]) << std::endl;
+							break;
+
+						case VM::OneAddrPrintString:
+							for(int i = regs[instr.one.reg]; mem[i] != '\0'; i++) {
+								std::cout << (char)mem[i];
+							}
+							std::cout << std::endl;
 							break;
 
 						case VM::OneAddrCall:

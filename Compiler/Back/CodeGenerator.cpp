@@ -54,6 +54,7 @@ namespace Back {
 		std::map<IR::Symbol*, int> regMap;
 		std::map<IR::EntryLabel*, int> labelMap;
 		std::map<IR::Entry*, int> jumpMap;
+		std::map<IR::Entry*, int> stringMap;
 		std::vector<VM::Instruction> instructions;
 		int reg = 1;
 
@@ -120,10 +121,17 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypePrint:
+				case IR::Entry::TypePrintInt:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrint, regMap[threeAddr->rhs1], 0));
+						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrintInt, regMap[threeAddr->rhs1], 0));
+						break;
+					}
+
+				case IR::Entry::TypePrintString:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrintString, regMap[threeAddr->rhs1], 0));
 						break;
 					}
 
@@ -330,6 +338,14 @@ namespace Back {
 						}
 						break;
 					}
+
+				case IR::Entry::TypeLoadString:
+					{
+						VM::Instruction instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, 0, 0, 0);
+						stringMap[entry] = (int)instructions.size();
+						instructions.push_back(instr);
+						break;
+					}
 			}
 		}
 
@@ -359,7 +375,22 @@ namespace Back {
 			}
 		}
 
-		data.resize(instructions.size() * 4);
+		std::vector<unsigned char> stringData;
+		for(std::map<IR::Entry*, int>::iterator it = stringMap.begin(); it != stringMap.end(); it++) {
+			IR::Entry *entry = it->first;
+			int idx = it->second;
+			IR::EntryString *string = (IR::EntryString*)entry;
+
+			instructions[idx] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[string->lhs], VM::RegPC, ((int)instructions.size() - idx) * 4 + (int)stringData.size());
+
+			int start = (int)stringData.size();
+			stringData.resize(stringData.size() + string->string.size() + 1);
+			std::memcpy(&stringData[start], string->string.c_str(), string->string.size());
+			stringData[start + string->string.size()] = '\0';
+		}
+
+		data.resize(instructions.size() * 4 + stringData.size());
 		std::memcpy(&data[0], &instructions[0], instructions.size() * 4);
+		std::memcpy(&data[instructions.size() * 4], &stringData[0], stringData.size());
 	}
 }

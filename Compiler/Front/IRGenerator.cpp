@@ -99,7 +99,11 @@ namespace Front {
 				rhs = processRValue(node->children[0], context);
 
 				// Emit print instruction
-				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
+				if(Type::equals(node->children[0]->type, Types::intrinsic(Types::String))) {
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrintString, 0, rhs));
+				} else {
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrintInt, 0, rhs));
+				}
 				break;
 
 			case Node::NodeTypeVarDecl:
