@@ -23,7 +23,7 @@ namespace Back {
 		static VM::Program generate(IR::Program *irProgram);
 
 	private:
-		static void generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions, const std::map<IR::Procedure*, int> &procedureMap);
+		static void generateProcedure(IR::Procedure *procedure, std::vector<unsigned char> &data, const std::map<IR::Procedure*, int> &procedureMap);
 	};
 }
 #endif

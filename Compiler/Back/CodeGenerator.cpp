@@ -49,11 +49,12 @@ namespace Back {
 	 * \param instructions Instruction stream to write to
 	 * \param procedureMap Map of starting locations for procedures
 	 */
-	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<VM::Instruction> &instructions, const std::map<IR::Procedure*, int> &procedureMap)
+	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<unsigned char> &data, const std::map<IR::Procedure*, int> &procedureMap)
 	{
 		std::map<IR::Symbol*, int> regMap;
 		std::map<IR::EntryLabel*, int> labelMap;
 		std::map<IR::Entry*, int> jumpMap;
+		std::vector<VM::Instruction> instructions;
 		int reg = 1;
 
 		// Allocate registers for the procedure
@@ -357,5 +358,8 @@ namespace Back {
 					}
 			}
 		}
+
+		data.resize(instructions.size() * 4);
+		std::memcpy(&data[0], &instructions[0], instructions.size() * 4);
 	}
 }

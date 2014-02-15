@@ -13,7 +13,7 @@ namespace VM {
 	 * \brief A program to be executed by the VM
 	 */
 	struct Program {
-		std::vector<Instruction> instructions; //!< Instruction list
+		std::vector<unsigned char> instructions; //!< Instruction list
 		int start; //!< Program start point
 	};
 }

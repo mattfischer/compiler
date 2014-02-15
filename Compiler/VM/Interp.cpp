@@ -12,12 +12,12 @@ namespace VM {
 		int regs[16];
 		int curPC;
 		unsigned char mem[1024];
-		Heap heap(mem, 1024, (int)program.instructions.size() * sizeof(unsigned long));
+		Heap heap(mem, 1024, (int)program.instructions.size());
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
-		memcpy(mem, &program.instructions[0], program.instructions.size() * 4);
+		memcpy(mem, &program.instructions[0], program.instructions.size());
 
 		// Set SP to the top of the stack
 		regs[VM::RegSP] = sizeof(mem) - 1;

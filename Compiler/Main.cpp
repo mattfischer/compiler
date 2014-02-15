@@ -61,7 +61,7 @@ int main(int arg, char *argv[])
 
 	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
 	std::cout << "*** Code ***" << std::endl;
-	for(unsigned int i = 0; i < vmProgram.instructions.size(); i++) {
+	for(unsigned int i = 0; i < vmProgram.instructions.size(); i+=4) {
 		unsigned long hex;
 		VM::Instruction instr;
 		std::memcpy(&hex, &vmProgram.instructions[i], 4);
