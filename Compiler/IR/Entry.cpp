@@ -35,6 +35,7 @@ namespace IR {
 		/* TypeNew        */ "new      ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
+		/* TypeLoadString */ "ldstr    "
 	};
 
 	static bool lhsAssign(Entry::Type type)
@@ -232,6 +233,28 @@ namespace IR {
 	void EntryCall::print(std::ostream &o) const
 	{
 		o << "  " << names[type] << target->name();
+	}
+
+	EntryString::EntryString(Type _type, Symbol *_lhs, const std::string &_string)
+		: Entry(_type), lhs(_lhs), string(_string)
+	{
+	}
+
+	void EntryString::print(std::ostream &o) const
+	{
+		o << "  " << names[type] << lhs->name << ", \"" << string << "\"";
+	}
+
+	Symbol *EntryString::assign()
+	{
+		return lhs;
+	}
+
+	void EntryString::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	{
+		if(lhs == symbol) {
+			lhs = newSymbol;
+		}
 	}
 
 	std::ostream &operator<<(std::ostream &o, const Entry &entry)

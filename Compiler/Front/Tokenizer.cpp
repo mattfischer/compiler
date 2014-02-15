@@ -120,6 +120,30 @@ Tokenizer::Token Tokenizer::getNext()
 		return next;
 	}
 
+	if(mBuffer[0] == '\"') {
+		size_t len = 2;
+		while(true) {
+			if(!fillBuffer(len)) {
+				mError = true;
+				mErrorMessage = "Unterminated string literal";
+				return next;
+			}
+
+			if(mBuffer[len - 1] == '\"') {
+				break;
+			}
+			len++;
+		}
+
+		// Construct a token out of the characters found
+		next.type = Token::TypeString;
+		next.text = mBuffer.substr(1, len - 2);
+		next.line = mLine;
+		next.column = mColumn;
+		emptyBuffer(len);
+		return next;
+	}
+
 	// Nothing matched, log an error
 	mError = true;
 	std::stringstream ss;

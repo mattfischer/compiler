@@ -32,6 +32,7 @@ public:
 			TypeLiteral, //!< Literal text such as "+" or "while"
 			TypeIdentifier, //!< An arbitrary text string
 			TypeNumber, //!< A string of digits
+			TypeString, //!< A string literal
 			TypeEnd //!< Special token representing the end of the file
 		};
 

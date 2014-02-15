@@ -1,5 +1,7 @@
 #include "Front/Node.h"
 
+#include "Front/Types.h"
+
 const char *typeNames[] = {
 	/* NodeTypeList         */ "list",
 	/* NodeTypeProcedureDef */ "procedure",
@@ -50,7 +52,11 @@ namespace Front {
 
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
-				o << " : " << node->lexVal.i;
+				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+					o << " : '" << node->lexVal.s << "'";
+				} else {
+					o << " : " << node->lexVal.i;
+				}
 				break;
 			case Node::NodeTypeProcedureDef:
 			case Node::NodeTypeVarDecl:

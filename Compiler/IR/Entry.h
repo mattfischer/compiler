@@ -53,7 +53,8 @@ namespace IR {
 			TypeEpilogue, //!< Function epilogue
 			TypeNew, //!< Allocate memory
 			TypeStoreMem, //!< Store to memory
-			TypeLoadMem //!< Load from memory
+			TypeLoadMem, //!< Load from memory
+			TypeLoadString //!< Load a string constant
 		};
 
 		Type type; //!< Entry type
@@ -238,6 +239,18 @@ namespace IR {
 		EntryCall(Procedure *_target);
 
 		virtual void print(std::ostream &o) const;
+	};
+
+	struct EntryString : public Entry {
+		Symbol *lhs;
+		std::string string;
+
+		EntryString(Type _type, Symbol *_lhs, const std::string &_string);
+
+		virtual void print(std::ostream &o) const;
+
+		virtual Symbol *assign();
+		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 	};
 
 	std::ostream &operator<<(std::ostream &o, const Entry &entry);

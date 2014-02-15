@@ -693,6 +693,14 @@ Node *Parser::parseBaseExpression(bool required)
 		consume();
 
 		return node;
+	} else if(match(Tokenizer::Token::TypeString)) {
+		// <BaseExpression> := STRING
+		node = newNode(Node::NodeTypeConstant, next().line);
+		node->lexVal.s = next().text;
+		node->type = Types::intrinsic(Types::String);
+		consume();
+
+		return node;
 	} else if(matchLiteral("true") || matchLiteral("false")) {
 		// <BaseExpression> := 'true' | 'false'
 		int value;

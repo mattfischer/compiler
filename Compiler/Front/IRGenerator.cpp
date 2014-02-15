@@ -248,7 +248,11 @@ namespace Front {
 			case Node::NodeTypeConstant:
 				// Construct a temporary to contain the new value
 				result = procedure->newTemp();
-				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, 0, 0, node->lexVal.i));
+				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+					procedure->emit(new IR::EntryString(IR::Entry::TypeLoadString, result, node->lexVal.s));
+				} else {
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, 0, 0, node->lexVal.i));
+				}
 				break;
 
 			case Node::NodeTypeId:
