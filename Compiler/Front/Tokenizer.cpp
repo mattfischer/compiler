@@ -166,7 +166,7 @@ BaseTokenizer::Token BaseTokenizer::createToken(int type, const std::string &tex
  * \param literalType Type to assign to token if literal is found
  * \return True if literal was found
  */
-bool BaseTokenizer::scanLiteral(char *literals[], int numLiterals, Token &token, int literalType)
+bool BaseTokenizer::scanLiteral(char *literals[], int numLiterals, Token &token)
 {
 	// Scan through the list of literals and see if any match
 	for(int i=0; i<numLiterals; i++) {
@@ -180,7 +180,7 @@ bool BaseTokenizer::scanLiteral(char *literals[], int numLiterals, Token &token,
 
 		// If the buffer matches, construct a token out of it and remove it from the buffer
 		if(buffer().substr(0, len) == lit) {
-			token = createToken(literalType, buffer().substr(0, len));
+			token = createToken(Token::TypeLiteral, buffer().substr(0, len));
 			emptyBuffer(len);
 			return true;
 		}
@@ -215,7 +215,7 @@ Tokenizer::Token Tokenizer::getNext()
 	}
 
 	// Scan through the list of literals and see if any match
-	if(scanLiteral(literals, sizeof(literals)/sizeof(char*), next, TypeLiteral)) {
+	if(scanLiteral(literals, sizeof(literals)/sizeof(char*), next)) {
 		return next;
 	}
 

@@ -22,7 +22,8 @@ public:
 	 */
 	struct Token {
 		enum Type {
-			TypeEnd
+			TypeEnd,
+			TypeLiteral
 		};
 
 		Type type; //!< Token type
@@ -49,7 +50,7 @@ protected:
 
 	Token createToken(int type, const std::string& text);
 
-	bool scanLiteral(char *literals[], int numLiterals, Token &token, int literalType);
+	bool scanLiteral(char *literals[], int numLiterals, Token &token);
 
 	virtual Token getNext() = 0;
 
@@ -79,7 +80,7 @@ public:
 	 */
 	enum TokenType {
 		TypeEnd = BaseTokenizer::Token::TypeEnd, //!< Special token representing the end of the file
-		TypeLiteral, //!< Literal text such as "+" or "while"
+		TypeLiteral = BaseTokenizer::Token::TypeLiteral, //!< Literal text such as "+" or "while"
 		TypeIdentifier, //!< An arbitrary text string
 		TypeNumber, //!< A string of digits
 		TypeString //!< A string literal
