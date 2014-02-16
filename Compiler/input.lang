@@ -1,4 +1,9 @@
 void main()
 {
-  print("Hello, world!");
+  string s = "Hello, world!";
+  if(1 == 2) {
+    s = "Nope";
+    s = "Nope2";
+  }
+  print(s);
 }

@@ -64,6 +64,7 @@ namespace Transform {
 				case IR::Entry::TypeNequal:
 				case IR::Entry::TypeLoadRet:
 				case IR::Entry::TypeLoadArg:
+				case IR::Entry::TypeLoadString:
 					{
 						// If an assignment has no uses, it is unnecessary
 						const IR::EntrySet &uses = useDefs->uses(entry);
