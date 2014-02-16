@@ -1,21 +1,14 @@
-#ifndef FRONT_TOKENIZER_H
-#define FRONT_TOKENIZER_H
+#ifndef INPUT_TOKENIZER_H
+#define INPUT_TOKENIZER_H
 
 #include <string>
 #include <fstream>
 #include <vector>
 
-/*!
- * \brief Front-end functions for the compiler
- *
- * The Front namespace contains tokenizer, parser, type checker, and IR generator for
- * the compiler.
- */
-namespace Front {
-
-class BaseTokenizer {
+namespace Input {
+class Tokenizer {
 public:
-	BaseTokenizer(const std::string &filename, int lookahead);
+	Tokenizer(const std::string &filename, int lookahead);
 
 	/*!
 	 * \brief Structure that represents a single token
@@ -67,31 +60,6 @@ private:
 	bool mError; //!< True if error
 	std::string mErrorMessage; //!< Error message, if any
 };
-
-/*!
- * \brief Tokenizer for source language
- *
- * A simple hand-written tokenizer that produces a token stream from an input file.
- */
-class Tokenizer : public BaseTokenizer {
-public:
-	Tokenizer(const std::string &filename);
-
-	/*!
-	 * \brief Token type
-	 */
-	enum TokenType {
-		TypeEnd = BaseTokenizer::Token::TypeEnd, //!< Special token representing the end of the file
-		TypeLiteral = BaseTokenizer::Token::TypeLiteral, //!< Literal text such as "+" or "while"
-		TypeIdentifier, //!< An arbitrary text string
-		TypeNumber, //!< A string of digits
-		TypeString //!< A string literal
-	};
-
-	std::string typeName(int type);
-
-private:
-	virtual Token getNext();
-};
 }
+
 #endif

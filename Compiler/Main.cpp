@@ -1,5 +1,5 @@
-#include "Front/Tokenizer.h"
-#include "Front/Parser.h"
+#include "Front/HllTokenizer.h"
+#include "Front/HllParser.h"
 #include "Front/ProgramGenerator.h"
 #include "Front/IRGenerator.h"
 
@@ -17,8 +17,8 @@
 
 int main(int arg, char *argv[])
 {
-	Front::Tokenizer tokenizer("input.lang");
-	Front::Parser parser(tokenizer);
+	Front::HllTokenizer tokenizer("input.lang");
+	Front::HllParser parser(tokenizer);
 
 	Front::Node *node = parser.parse();
 	if(!node) {

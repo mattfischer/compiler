@@ -205,6 +205,28 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Input\Parser.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Front\Procedure.cpp"
 				>
 				<FileConfiguration
@@ -255,6 +277,28 @@
 			<File
 				RelativePath=".\Front\Scope.cpp"
 				>
+			</File>
+			<File
+				RelativePath=".\Input\Tokenizer.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Front\Types.cpp"
@@ -324,19 +368,19 @@
 				Name="Front"
 				>
 				<File
+					RelativePath=".\Front\HllParser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\HllTokenizer.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\Front\Interpreter.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\Front\IRGenerator.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\Parser.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\Tokenizer.cpp"
 					>
 				</File>
 				<File
@@ -439,6 +483,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Input\Parser.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Front\Procedure.h"
 				>
 			</File>
@@ -460,6 +508,10 @@
 			</File>
 			<File
 				RelativePath=".\Util\Timer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Input\Tokenizer.h"
 				>
 			</File>
 			<File
@@ -542,6 +594,14 @@
 				Name="Front"
 				>
 				<File
+					RelativePath=".\Front\HllParser.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Front\HllTokenizer.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Front\Interpreter.h"
 					>
 				</File>
@@ -551,14 +611,6 @@
 				</File>
 				<File
 					RelativePath=".\Front\Node.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\Parser.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Front\Tokenizer.h"
 					>
 				</File>
 				<File
