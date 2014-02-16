@@ -25,6 +25,7 @@ namespace Transform {
 	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
+		bool invalidate = false;
 		Analysis::UseDefs *useDefs = analysis.useDefs();
 		Analysis::Constants *constants = analysis.constants();
 
@@ -228,7 +229,7 @@ namespace Transform {
 						}
 
 						// If the predicate is constant, the conditional jump can be turned into
-						// an uconditional jump.  Determine which jump target should be used, based
+						// an unconditional jump.  Determine which jump target should be used, based
 						// on the value of the predicate, and construct a new jump entry.
 						IR::EntryJump *jump;
 						if(value) {
@@ -243,10 +244,15 @@ namespace Transform {
 						procedure->entries().erase(cJump);
 						delete cJump;
 						changed = true;
+						invalidate = true;
 
 						break;
 					}
 			}
+		}
+
+		if(invalidate) {
+			analysis.invalidate();
 		}
 
 		return changed;
