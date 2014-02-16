@@ -55,7 +55,7 @@ const Tokenizer::Token &Parser::next(int num)
  * \brief Consume the next token if it matches the given type, throw an error if it doesn't
  * \param type Type of token to expect
  */
-void Parser::expect(Tokenizer::Token::Type type)
+void Parser::expect(Tokenizer::TokenType type)
 {
 	// If the tokenizer has an error, propagate it up
 	if(mTokenizer.error()) {
@@ -64,7 +64,7 @@ void Parser::expect(Tokenizer::Token::Type type)
 
 	// If the token type doesn't match throw an error
 	if(next().type != type) {
-		errorExpected(Tokenizer::Token::typeName(type));
+		errorExpected(Tokenizer::typeName(type));
 	}
 
 	// Otherwise, consume it
@@ -83,7 +83,7 @@ void Parser::expectLiteral(const std::string &text)
 	}
 
 	// If the next token is not a literal, or does not have the expected text, throw an error
-	if(next().type != Tokenizer::Token::TypeLiteral || next().text != text) {
+	if(next().type != Tokenizer::TypeLiteral || next().text != text) {
 		errorExpected(text);
 	}
 
@@ -97,7 +97,7 @@ void Parser::expectLiteral(const std::string &text)
  * \param num Lookahead number
  * \return True if next token matches
  */
-bool Parser::match(Tokenizer::Token::Type type, int num)
+bool Parser::match(Tokenizer::TokenType type, int num)
 {
 	// Check if the tokenizer has an error or if the next token is of a different type
 	if(mTokenizer.error() || next(num).type != type) {
@@ -116,7 +116,7 @@ bool Parser::match(Tokenizer::Token::Type type, int num)
 bool Parser::matchLiteral(const std::string &text, int num)
 {
 	// Check if the tokenizer has an error or if the next token is a literal with the given text
-	if(mTokenizer.error() || next(num).type != Tokenizer::Token::TypeLiteral || next(num).text != text) {
+	if(mTokenizer.error() || next(num).type != Tokenizer::TypeLiteral || next(num).text != text) {
 		return false;
 	}
 
@@ -211,7 +211,7 @@ Node *Parser::parseProgram()
 			break;
 		}
 	}
-	expect(Tokenizer::Token::TypeEnd);
+	expect(Tokenizer::TypeEnd);
 
 	return list;
 }
@@ -225,7 +225,7 @@ Node *Parser::parseProcedure()
 	Node *node = newNode(Node::NodeTypeProcedureDef, returnType->line);
 	node->children.push_back(returnType);
 	node->lexVal.s = next().text;
-	expect(Tokenizer::Token::TypeIdentifier);
+	expect(Tokenizer::TypeIdentifier);
 
 	expectLiteral("(");
 	Node *argumentsNode = newNode(Node::NodeTypeList, next().line);
@@ -259,7 +259,7 @@ Node *Parser::parseStruct()
 	consume();
 
 	node->lexVal.s = next().text;
-	expect(Tokenizer::Token::TypeIdentifier);
+	expect(Tokenizer::TypeIdentifier);
 
 	expectLiteral("{");
 	Node *membersNode = newNode(Node::NodeTypeList, next().line);
@@ -282,7 +282,7 @@ Node *Parser::parseVariableDeclaration()
 
 	Node *node = newNode(Node::NodeTypeVarDecl, type->line);
 	node->lexVal.s = next().text;
-	expect(Tokenizer::Token::TypeIdentifier);
+	expect(Tokenizer::TypeIdentifier);
 
 	node->children.push_back(type);
 
@@ -294,7 +294,7 @@ Node *Parser::parseType(bool required)
 	// <Type> := IDENTIFIER { '[' ']' }*
 	Node *node;
 
-	if(match(Tokenizer::Token::TypeIdentifier)) {
+	if(match(Tokenizer::TypeIdentifier)) {
 		for(unsigned int i=0; i<mTypeNames.size(); i++) {
 			if(next().text == mTypeNames[i]) {
 				node = newNode(Node::NodeTypeId, next().line);
@@ -670,7 +670,7 @@ Node *Parser::parseSuffixExpression(bool required)
 			consume();
 
 			memberNode->lexVal.s = next().text;
-			expect(Tokenizer::Token::TypeIdentifier);
+			expect(Tokenizer::TypeIdentifier);
 			memberNode->children.push_back(node);
 			node = memberNode;
 		} else {
@@ -685,7 +685,7 @@ Node *Parser::parseBaseExpression(bool required)
 {
 	Node *node;
 
-	if(match(Tokenizer::Token::TypeNumber)) {
+	if(match(Tokenizer::TypeNumber)) {
 		// <BaseExpression> := NUMBER
 		node = newNode(Node::NodeTypeConstant, next().line);
 		node->lexVal.i = std::atoi(next().text.c_str());
@@ -693,7 +693,7 @@ Node *Parser::parseBaseExpression(bool required)
 		consume();
 
 		return node;
-	} else if(match(Tokenizer::Token::TypeString)) {
+	} else if(match(Tokenizer::TypeString)) {
 		// <BaseExpression> := STRING
 		node = newNode(Node::NodeTypeConstant, next().line);
 		node->lexVal.s = next().text;
@@ -712,7 +712,7 @@ Node *Parser::parseBaseExpression(bool required)
 		consume();
 
 		return node;
-	} else if(match(Tokenizer::Token::TypeIdentifier)) {
+	} else if(match(Tokenizer::TypeIdentifier)) {
 		// <BaseExpression> := IDENTIFIER
 		node = newNode(Node::NodeTypeId, next().line);
 		node->lexVal.s = mTokenizer.next().text;

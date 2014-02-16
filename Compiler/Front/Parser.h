@@ -30,9 +30,9 @@ private:
 	int mErrorColumn; //!< Error column
 
 	const Tokenizer::Token &next(int num = 0);
-	void expect(Tokenizer::Token::Type type);
+	void expect(Tokenizer::TokenType type);
 	void expectLiteral(const std::string &text);
-	bool match(Tokenizer::Token::Type type, int num = 0);
+	bool match(Tokenizer::TokenType type, int num = 0);
 	bool matchLiteral(const std::string &text, int num = 0);
 	void errorExpected(const std::string &expected);
 	void consume(int num = 1);
