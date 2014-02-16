@@ -284,7 +284,7 @@ Tokenizer::Token Tokenizer::getNext()
  * \param Token type
  * \return Printable name for the type of token
  */
-std::string Tokenizer::typeName(TokenType type)
+std::string Tokenizer::typeName(int type)
 {
 	switch(type) {
 		case TypeLiteral:

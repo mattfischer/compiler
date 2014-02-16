@@ -41,6 +41,8 @@ public:
 	const Token &next(int num = 0);
 	void consume();
 
+	virtual std::string typeName(int type) = 0;
+
 protected:
 	const std::string &buffer() { return mBuffer; }
 	bool fillBuffer(size_t length);
@@ -86,7 +88,7 @@ public:
 		TypeString //!< A string literal
 	};
 
-	static std::string typeName(TokenType type);
+	std::string typeName(int type);
 
 private:
 	virtual Token getNext();

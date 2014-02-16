@@ -35,7 +35,7 @@ private:
  * \brief Constructor.
  * \param tokenizer Input token source
  */
-Parser::Parser(Tokenizer &tokenizer)
+BaseParser::BaseParser(BaseTokenizer &tokenizer)
 	: mTokenizer(tokenizer)
 {
 	mError = false;
@@ -46,7 +46,7 @@ Parser::Parser(Tokenizer &tokenizer)
  * \param Token number
  * \return Next token
  */
-const Tokenizer::Token &Parser::next(int num)
+const BaseTokenizer::Token &BaseParser::next(int num)
 {
 	return mTokenizer.next(num);
 }
@@ -55,7 +55,7 @@ const Tokenizer::Token &Parser::next(int num)
  * \brief Consume the next token if it matches the given type, throw an error if it doesn't
  * \param type Type of token to expect
  */
-void Parser::expect(Tokenizer::TokenType type)
+void BaseParser::expect(int type)
 {
 	// If the tokenizer has an error, propagate it up
 	if(mTokenizer.error()) {
@@ -64,7 +64,7 @@ void Parser::expect(Tokenizer::TokenType type)
 
 	// If the token type doesn't match throw an error
 	if(next().type != type) {
-		errorExpected(Tokenizer::typeName(type));
+		errorExpected(mTokenizer.typeName(type));
 	}
 
 	// Otherwise, consume it
@@ -75,7 +75,7 @@ void Parser::expect(Tokenizer::TokenType type)
  * \brief Consume the next token if it is a literal with the given text, throw an error if it is not
  * \param text Text of expected literal
  */
-void Parser::expectLiteral(const std::string &text)
+void BaseParser::expectLiteral(const std::string &text)
 {
 	// If the tokenizer has an error, propagate it up
 	if(mTokenizer.error()) {
@@ -83,7 +83,7 @@ void Parser::expectLiteral(const std::string &text)
 	}
 
 	// If the next token is not a literal, or does not have the expected text, throw an error
-	if(next().type != Tokenizer::TypeLiteral || next().text != text) {
+	if(next().type != BaseTokenizer::Token::TypeLiteral || next().text != text) {
 		errorExpected(text);
 	}
 
@@ -97,7 +97,7 @@ void Parser::expectLiteral(const std::string &text)
  * \param num Lookahead number
  * \return True if next token matches
  */
-bool Parser::match(Tokenizer::TokenType type, int num)
+bool BaseParser::match(int type, int num)
 {
 	// Check if the tokenizer has an error or if the next token is of a different type
 	if(mTokenizer.error() || next(num).type != type) {
@@ -113,7 +113,7 @@ bool Parser::match(Tokenizer::TokenType type, int num)
  * \param num Lookahead number
  * \return True if next token matches
  */
-bool Parser::matchLiteral(const std::string &text, int num)
+bool BaseParser::matchLiteral(const std::string &text, int num)
 {
 	// Check if the tokenizer has an error or if the next token is a literal with the given text
 	if(mTokenizer.error() || next(num).type != Tokenizer::TypeLiteral || next(num).text != text) {
@@ -127,7 +127,7 @@ bool Parser::matchLiteral(const std::string &text, int num)
  * \brief Consume the next tokens
  * \param num Number of tokens to conume
  */
-void Parser::consume(int num)
+void BaseParser::consume(int num)
 {
 	for(int i=0; i<num; i++) {
 		mTokenizer.consume();
@@ -138,11 +138,34 @@ void Parser::consume(int num)
  * \brief Throw an error stating that expected token was not found.  Never returns.
  * \param expected Expected token/node that was not found in input stream
  */
-void Parser::errorExpected(const std::string &expected)
+void BaseParser::errorExpected(const std::string &expected)
 {
 	std::stringstream ss;
 	ss << "expected " << expected << ", '" << next().text << "' found instead";
 	throw ParseException(ss.str(), next().line, next().column);
+}
+
+/*!
+ * \brief Report an error
+ * \param message Error message
+ * \param line Line number
+ * \param column Column
+ */
+void BaseParser::setError(const std::string &message, int line, int column)
+{
+	mError = true;
+	mErrorMessage = message;
+	mErrorLine = line;
+	mErrorColumn = column;
+}
+
+/*!
+ * \brief Constructor
+ * \param tokenizer Tokenizer
+ */
+Parser::Parser(Tokenizer &tokenizer)
+: BaseParser(tokenizer)
+{
 }
 
 /*!
@@ -183,10 +206,7 @@ Node *Parser::parse()
 		return parseProgram();
 	} catch(ParseException parseException) {
 		// Collect the error information from the exception
-		mError = true;
-		mErrorMessage = parseException.message();
-		mErrorLine = parseException.line();
-		mErrorColumn = parseException.column();
+		setError(parseException.message(), parseException.line(), parseException.column());
 
 		// Delete all nodes created along the way
 		for(unsigned int i=0; i<mNodes.size(); i++) {
@@ -715,7 +735,7 @@ Node *Parser::parseBaseExpression(bool required)
 	} else if(match(Tokenizer::TypeIdentifier)) {
 		// <BaseExpression> := IDENTIFIER
 		node = newNode(Node::NodeTypeId, next().line);
-		node->lexVal.s = mTokenizer.next().text;
+		node->lexVal.s = next().text;
 		consume();
 
 		return node;
