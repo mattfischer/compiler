@@ -65,7 +65,11 @@ int main(int arg, char *argv[])
 		VM::Instruction instr;
 		std::cout << "  ";
 		for(int j=0; j<4; j++) {
-			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << (int)vmProgram.instructions[i+j];
+			int d = 0;
+			if(i + j < vmProgram.instructions.size()) {
+				d = vmProgram.instructions[i + j];
+			}
+			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
 		}
 		std::memcpy(&instr, &vmProgram.instructions[i], 4);
 		std::cout << "  " << instr << std::endl;
