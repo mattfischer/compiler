@@ -1,7 +1,5 @@
 #include "Input/Tokenizer.h"
 
-char whitespace[] = { ' ', '\t', '\r', '\n' };
-
 namespace Input {
 /*!
  * \brief Constructor
@@ -94,9 +92,11 @@ void Tokenizer::emptyBuffer(size_t length)
 }
 
 /*!
- * \brief Remove all whitespace from the front of the input buffer
+ * \brief Skip all characters in a given list from the front of the input buffer
+ * \param characters Characters to skip
+ * \param numCharacters Number of characters in list
  */
-void Tokenizer::skipWhitespace()
+void Tokenizer::skipCharacters(const char characters[], int numCharacters)
 {
 	while(true) {
 		// Ensure the buffer has at least one character
@@ -104,17 +104,17 @@ void Tokenizer::skipWhitespace()
 			break;
 		}
 
-		// If the front character matches any of the whitespace characters, remove it
+		// If the front character matches any of the characters in the list, remove it
 		bool found = false;
-		for(int i=0; i<sizeof(whitespace)/sizeof(char); i++) {
-			if(mBuffer[0] == whitespace[i]) {
+		for(int i=0; i<numCharacters; i++) {
+			if(mBuffer[0] == characters[i]) {
 				emptyBuffer(1);
 				found = true;
 				break;
 			}
 		}
 
-		// Break if the buffer now contains a non-whitespace character at the front
+		// Break if the buffer now contains a character not in the list at the front
 		if(!found) {
 			break;
 		}

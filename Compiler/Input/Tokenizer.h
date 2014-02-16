@@ -40,7 +40,7 @@ protected:
 	const std::string &buffer() { return mBuffer; }
 	bool fillBuffer(size_t length);
 	void emptyBuffer(size_t length);
-	void skipWhitespace();
+	void skipCharacters(const char characters[], int numCharacters);
 	void setError(const std::string &message);
 
 	Token createToken(int type, const std::string& text);
