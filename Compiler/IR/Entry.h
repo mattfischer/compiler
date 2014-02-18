@@ -55,7 +55,8 @@ namespace IR {
 			TypeNew, //!< Allocate memory
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem, //!< Load from memory
-			TypeLoadString //!< Load a string constant
+			TypeLoadString, //!< Load a string constant
+			TypeConcat //!< Concatentate strings
 		};
 
 		Type type; //!< Entry type

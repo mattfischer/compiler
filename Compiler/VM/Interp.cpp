@@ -3,6 +3,21 @@
 #include "VM/Heap.h"
 
 namespace VM {
+	static int concatStrings(unsigned char mem[], Heap &heap, int str1, int str2)
+	{
+		char *s1 = (char*)&mem[str1];
+		char *s2 = (char*)&mem[str2];
+		int l1 = strlen(s1);
+		int l2 = strlen(s2);
+		int result = heap.allocate(l1 + l2 + 1);
+		char *r = (char*)&mem[result];
+		strcpy(r, s1);
+		strcpy(r + l1, s2);
+		r[l1 + l2] = '\0';
+
+		return result;
+	}
+
 	/*!
 	 * \brief Run a VM program
 	 * \param program Program to run
@@ -142,6 +157,10 @@ namespace VM {
 
 						case VM::ThreeAddrStore:
 							*(int*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs];
+							break;
+
+						case VM::ThreeAddrConcat:
+							regs[instr.three.regLhs] = concatStrings(mem, heap, regs[instr.three.regRhs1], regs[instr.three.regRhs2]);
 							break;
 					}
 					break;

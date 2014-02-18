@@ -225,6 +225,10 @@ namespace VM {
 			case ThreeAddrStore:
 				printInd(o, "str", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
 				break;
+
+			case ThreeAddrConcat:
+				printStd(o, "concat", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
+				break;
 		}
 	}
 

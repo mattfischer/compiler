@@ -43,15 +43,15 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
+	std::cout << "*** IR (before optimization) ***" << std::endl;
+	irProgram->print();
+	std::cout << std::endl;
+
 	Middle::ErrorCheck errorCheck;
 	if(!errorCheck.check(irProgram)) {
 		std::cout << "Error, procedure " << errorCheck.errorProcedure()->name() << ": " << errorCheck.errorMessage() << std::endl;
 		return 1;
 	}
-
-	std::cout << "*** IR (before optimization) ***" << std::endl;
-	irProgram->print();
-	std::cout << std::endl;
 
 	Middle::Optimizer::optimize(irProgram);
 

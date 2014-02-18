@@ -346,6 +346,13 @@ namespace Back {
 						instructions.push_back(instr);
 						break;
 					}
+
+				case IR::Entry::TypeConcat:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrConcat, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						break;
+					}
 			}
 		}
 

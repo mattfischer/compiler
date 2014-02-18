@@ -331,16 +331,32 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeArith:
-				checkChildren(node, context);
+				{
+					checkChildren(node, context);
 
-				// Check that types match
-				for(unsigned int i=0; i<node->children.size(); i++) {
-					if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
-						throw TypeError(node->children[i], "Type mismatch");
+					bool allInts = true;
+					bool allStrings = true;
+					// Check that types match
+					for(unsigned int i=0; i<node->children.size(); i++) {
+						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
+							allInts = false;
+						}
+
+						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::String))) {
+							allStrings = false;
+						}
 					}
+
+					if(node->nodeSubtype == Node::NodeSubtypeAdd && allStrings) {
+						node->type = Types::intrinsic(Types::String);
+					} else if(allInts) {
+						node->type = Types::intrinsic(Types::Int);
+					} else {
+						throw TypeError(node, "Type mismatch");
+					}
+
+					break;
 				}
-				node->type = Types::intrinsic(Types::Int);
-				break;
 
 			case Node::NodeTypeId:
 				{

@@ -36,7 +36,8 @@ namespace IR {
 		/* TypeNew        */ "new      ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
-		/* TypeLoadString */ "ldstr    "
+		/* TypeLoadString */ "ldstr    ",
+		/* TypeConcat     */ "concat   "
 	};
 
 	static bool lhsAssign(Entry::Type type)

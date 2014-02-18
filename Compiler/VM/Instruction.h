@@ -89,6 +89,7 @@ namespace VM {
 	const int ThreeAddrAnd = 0xb; //!< Boolean AND
 	const int ThreeAddrLoad = 0xc; //!< Load register from memory
 	const int ThreeAddrStore = 0xd; //!< Store register into memory
+	const int ThreeAddrConcat = 0xe; //!< Concatenate strings
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrPrintInt = 0x1; //!< Print register
