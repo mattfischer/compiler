@@ -139,6 +139,14 @@ namespace VM {
 			case TwoAddrNew:
 				printStd(o, "new", instr.two.regLhs, instr.two.regRhs);
 				break;
+
+			case TwoAddrStringBool:
+				printStd(o, "strbool", instr.two.regLhs, instr.two.regRhs);
+				break;
+
+			case TwoAddrStringInt:
+				printStd(o, "strint", instr.two.regLhs, instr.two.regRhs);
+				break;
 		}
 	}
 
@@ -244,12 +252,8 @@ namespace VM {
 				printImm(o, "mov", instr.one.reg, -1, instr.one.imm);
 				break;
 
-			case OneAddrPrintInt:
-				printStd(o, "printi", instr.one.reg);
-				break;
-
-			case OneAddrPrintString:
-				printStd(o, "prints", instr.one.reg);
+			case OneAddrPrint:
+				printStd(o, "print", instr.one.reg);
 				break;
 
 			case OneAddrCall:

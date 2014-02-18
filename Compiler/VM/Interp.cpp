@@ -2,6 +2,8 @@
 
 #include "VM/Heap.h"
 
+#include <sstream>
+
 namespace VM {
 	static int concatStrings(unsigned char mem[], Heap &heap, int str1, int str2)
 	{
@@ -11,10 +13,39 @@ namespace VM {
 		int l2 = strlen(s2);
 		int result = heap.allocate(l1 + l2 + 1);
 		char *r = (char*)&mem[result];
-		strcpy(r, s1);
-		strcpy(r + l1, s2);
+		std::strcpy(r, s1);
+		std::strcpy(r + l1, s2);
 		r[l1 + l2] = '\0';
 
+		return result;
+	}
+
+	static int strBool(unsigned char mem[], Heap &heap, int b)
+	{
+		std::string str;
+		if(b) {
+			str = "true";
+		} else {
+			str = "false";
+		}
+
+		int result = heap.allocate(str.size() + 1);
+		char *r = (char*)&mem[result];
+		std::strcpy(r, str.c_str());
+		r[str.size()] = '\0';
+		return result;
+	}
+
+	static int strInt(unsigned char mem[], Heap &heap, int x)
+	{
+		std::stringstream s;
+		s << x;
+		std::string str = s.str();
+
+		int result = heap.allocate(str.size() + 1);
+		char *r = (char*)&mem[result];
+		std::strcpy(r, str.c_str());
+		r[str.size()] = '\0';
 		return result;
 	}
 
@@ -57,11 +88,7 @@ namespace VM {
 							regs[instr.one.reg] = instr.one.imm;
 							break;
 
-						case VM::OneAddrPrintInt:
-							std::cout << int(regs[instr.one.reg]) << std::endl;
-							break;
-
-						case VM::OneAddrPrintString:
+						case VM::OneAddrPrint:
 							for(int i = regs[instr.one.reg]; mem[i] != '\0'; i++) {
 								std::cout << (char)mem[i];
 							}
@@ -95,6 +122,14 @@ namespace VM {
 
 						case VM::TwoAddrNew:
 							regs[instr.two.regLhs] = heap.allocate(regs[instr.two.regRhs]);
+							break;
+
+						case VM::TwoAddrStringBool:
+							regs[instr.two.regLhs] = strBool(mem, heap, regs[instr.two.regRhs]);
+							break;
+
+						case VM::TwoAddrStringInt:
+							regs[instr.two.regLhs] = strInt(mem, heap, regs[instr.two.regRhs]);
 							break;
 					}
 					break;

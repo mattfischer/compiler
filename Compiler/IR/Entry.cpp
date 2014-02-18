@@ -10,8 +10,7 @@ namespace IR {
 		/* TypeAdd		  */ "add      ",
 		/* TypeSubtract	  */ "sub      ",
 		/* TypeMult		  */ "mult     ",
-		/* TypePrintInt	  */ "printi   ",
-		/* TypePrintString*/ "prints   ",
+		/* TypePrint      */ "print   ",
 		/* TypeEqual	  */ "equ      ",
 		/* TypeNequal	  */ "neq      ",
 		/* TypeLessThan	  */ "lt       ",
@@ -37,7 +36,9 @@ namespace IR {
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
 		/* TypeLoadString */ "ldstr    ",
-		/* TypeConcat     */ "concat   "
+		/* TypeConcat     */ "concat   ",
+		/* TypeStringBool */ "strbool  ",
+		/* TypeStringInt  */ "strint   ",
 	};
 
 	static bool lhsAssign(Entry::Type type)

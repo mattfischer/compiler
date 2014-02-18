@@ -29,8 +29,7 @@ namespace IR {
 			TypeAdd, //!< Add two symbols together
 			TypeSubtract, //!< Subtract two symbols
 			TypeMult, //!< Multiply two symbols together
-			TypePrintInt, //!< Print a symbol
-			TypePrintString, //!< Print a string
+			TypePrint, //!< Print a string
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality
 			TypeLessThan, //!< Test two symbols for less-than
@@ -56,7 +55,9 @@ namespace IR {
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem, //!< Load from memory
 			TypeLoadString, //!< Load a string constant
-			TypeConcat //!< Concatentate strings
+			TypeConcat, //!< Concatentate strings
+			TypeStringBool, //!< Convert bool to string
+			TypeStringInt, //!< Convert int to string
 		};
 
 		Type type; //!< Entry type

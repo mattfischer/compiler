@@ -99,11 +99,7 @@ namespace Front {
 				rhs = processRValue(node->children[0], context);
 
 				// Emit print instruction
-				if(Type::equals(node->children[0]->type, Types::intrinsic(Types::String))) {
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrintString, 0, rhs));
-				} else {
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrintInt, 0, rhs));
-				}
+				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
 				break;
 
 			case Node::NodeTypeVarDecl:
@@ -490,6 +486,20 @@ namespace Front {
 
 					// Emit the load from the calculated memory location
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, typeStruct->members[idx].offset));
+					break;
+				}
+
+			case Node::NodeTypeCoerceString:
+				{
+					result = procedure->newTemp();
+					IR::Symbol *source = processRValue(node->children[0], context);
+
+					if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
+					} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Int))) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
+					}
+
 					break;
 				}
 		}

@@ -65,6 +65,22 @@ namespace Front {
 		}
 	}
 
+	void coerceString(std::vector<Node*> &nodes)
+	{
+		// Check that types match
+		for(unsigned int i=0; i<nodes.size(); i++) {
+			if(!Type::equals(nodes[i]->type, Types::intrinsic(Types::String))) {
+				Node *coerce = new Node();
+				coerce->nodeType = Node::NodeTypeCoerceString;
+				coerce->nodeSubtype = Node::NodeSubtypeNone;
+				coerce->line = nodes[i]->line;
+				coerce->type = Types::intrinsic(Types::String);
+				coerce->children.push_back(nodes[i]);
+				nodes[i] = coerce;
+			}
+		}
+	}
+
 	/*!
 	 * \brief Generate a single procedure
 	 * \param node Tree node for procedure definition
@@ -186,6 +202,9 @@ namespace Front {
 
 			case Node::NodeTypePrint:
 				checkChildren(node, context);
+
+				coerceString(node->children);
+
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
@@ -334,20 +353,22 @@ namespace Front {
 				{
 					checkChildren(node, context);
 
+					bool isString = false;
 					bool allInts = true;
-					bool allStrings = true;
-					// Check that types match
-					for(unsigned int i=0; i<node->children.size(); i++) {
-						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
-							allInts = false;
+					for(int i=0; i<node->children.size(); i++) {
+						if(Type::equals(node->children[i]->type, Types::intrinsic(Types::String))) {
+							isString = true;
+							break;
 						}
 
-						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::String))) {
-							allStrings = false;
+						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
+							allInts = false;
+							break;
 						}
 					}
 
-					if(node->nodeSubtype == Node::NodeSubtypeAdd && allStrings) {
+					if(isString) {
+						coerceString(node->children);
 						node->type = Types::intrinsic(Types::String);
 					} else if(allInts) {
 						node->type = Types::intrinsic(Types::Int);

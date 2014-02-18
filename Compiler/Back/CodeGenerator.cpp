@@ -121,17 +121,10 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypePrintInt:
+				case IR::Entry::TypePrint:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrintInt, regMap[threeAddr->rhs1], 0));
-						break;
-					}
-
-				case IR::Entry::TypePrintString:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrintString, regMap[threeAddr->rhs1], 0));
+						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrint, regMap[threeAddr->rhs1], 0));
 						break;
 					}
 
@@ -353,6 +346,21 @@ namespace Back {
 						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrConcat, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
 						break;
 					}
+
+				case IR::Entry::TypeStringBool:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStringBool, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						break;
+					}
+
+				case IR::Entry::TypeStringInt:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStringInt, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						break;
+					}
+
 			}
 		}
 

@@ -74,6 +74,8 @@ namespace VM {
 	const int TwoAddrLoad = 0x2; //!< Load register from stack
 	const int TwoAddrStore = 0x3; //!< Store register to stack
 	const int TwoAddrNew = 0x4; //!< Allocate new memory
+	const int TwoAddrStringBool = 0x5; //!< Convert a bool to a string
+	const int TwoAddrStringInt = 0x6; //!< Convert an int to a string
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
 	const int ThreeAddrSub = 0x1; //!< Subtract two registers
@@ -92,9 +94,8 @@ namespace VM {
 	const int ThreeAddrConcat = 0xe; //!< Concatenate strings
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
-	const int OneAddrPrintInt = 0x1; //!< Print register
-	const int OneAddrPrintString = 0x2; //!< Print string
-	const int OneAddrCall = 0x3; //!< Call procedure: Save next address into LR and jump to location in register
+	const int OneAddrPrint = 0x1; //!< Print string
+	const int OneAddrCall = 0x2; //!< Call procedure: Save next address into LR and jump to location in register
 
 	const int MultRegStore = 0x0; //!< Store multiple registers to stack
 	const int MultRegLoad = 0x1; //!< Load multiple registers from stack

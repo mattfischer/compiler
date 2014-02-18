@@ -35,7 +35,8 @@ namespace Front {
 			NodeTypeNew, //!< Allocate new object
 			NodeTypeBreak, //!< Break statement
 			NodeTypeContinue, //!< Continue statement
-			NodeTypeMember //!< Structure member
+			NodeTypeMember, //!< Structure member
+			NodeTypeCoerceString //!< Convert argument to string
 		};
 
 		/*!
