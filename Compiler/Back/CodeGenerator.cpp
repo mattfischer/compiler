@@ -29,12 +29,12 @@ namespace Back {
 
 			// If this procedure is main(), save its location as the program start point
 			if(irProcedure->name() == "main") {
-				vmProgram.start = (int)vmProgram.instructions.size() * 4;
+				vmProgram.start = (int)vmProgram.instructions.size();
 			}
 
 			// Save the procedure's start location, so that call instructions can be directed
 			// to the correct point
-			procedureMap[irProcedure] = (int)vmProgram.instructions.size() * 4;
+			procedureMap[irProcedure] = (int)vmProgram.instructions.size();
 
 			// Generate code for the procedure
 			generateProcedure(irProcedure, vmProgram.instructions, procedureMap);
@@ -215,7 +215,7 @@ namespace Back {
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 						int offset = procedureMap.find(call->target)->second;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset - (int)instructions.size()));
+						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset / 4 - (int)data.size() / 4 - (int)instructions.size()));
 						break;
 					}
 
@@ -404,8 +404,11 @@ namespace Back {
 			stringData[start + string->string.size()] = '\0';
 		}
 
-		data.resize(instructions.size() * 4 + stringData.size());
-		std::memcpy(&data[0], &instructions[0], instructions.size() * 4);
-		std::memcpy(&data[instructions.size() * 4], &stringData[0], stringData.size());
+		int start = (int)data.size();
+		data.resize(data.size() + instructions.size() * 4 + stringData.size());
+		std::memcpy(&data[start], &instructions[0], instructions.size() * 4);
+		if(stringData.size() > 0) {
+			std::memcpy(&data[start + instructions.size() * 4], &stringData[0], stringData.size());
+		}
 	}
 }

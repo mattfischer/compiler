@@ -71,6 +71,7 @@ int main(int arg, char *argv[])
 			}
 			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
 		}
+		std::cout << std::setbase(10);
 		std::memcpy(&instr, &vmProgram.instructions[i], 4);
 		std::cout << "  " << instr << std::endl;
 	}

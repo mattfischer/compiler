@@ -66,7 +66,7 @@ namespace VM {
 		memcpy(mem, &program.instructions[0], program.instructions.size());
 
 		// Set SP to the top of the stack
-		regs[VM::RegSP] = sizeof(mem) - 1;
+		regs[VM::RegSP] = sizeof(mem);
 
 		// Set LR to beyond the end of the program, so program exit can be detected
 		regs[VM::RegLR] = 0xffffffff;
@@ -97,7 +97,7 @@ namespace VM {
 
 						case VM::OneAddrCall:
 							regs[VM::RegLR] = regs[VM::RegPC] + 4;
-							regs[VM::RegPC] = regs[instr.one.reg] + instr.one.imm;
+							regs[VM::RegPC] = regs[instr.one.reg] + 4 * instr.one.imm;
 							break;
 					}
 					break;

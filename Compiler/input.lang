@@ -1,6 +1,9 @@
+int foo()
+{
+  return 10;
+}
+
 void main()
 {
-  string s = "Hello, world!" + true + 3;
-  print(s);
-  print(3);
+  print("Value: " + foo());
 }

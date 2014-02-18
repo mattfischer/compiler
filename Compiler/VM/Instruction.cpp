@@ -257,7 +257,7 @@ namespace VM {
 				break;
 
 			case OneAddrCall:
-				printInd(o, "call", -1, instr.one.reg, instr.one.imm);
+				printInd(o, "call", -1, instr.one.reg, -1, instr.one.imm);
 				break;
 		}
 	}
