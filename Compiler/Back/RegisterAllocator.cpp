@@ -228,7 +228,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
 			bool isConstant;
-			int value = constants->getValue(entry, symbol, isConstant);
+			int value = constants->getIntValue(entry, symbol, isConstant);
 
 			IR::Entry *def;
 			if(isConstant) {

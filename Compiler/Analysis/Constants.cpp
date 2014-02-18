@@ -14,7 +14,7 @@ namespace Analysis {
 	 * \param isConstant [out] True if symbol has a constant value, false otherwise
 	 * \return Value of symbol
 	 */
-	int Constants::getValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
+	int Constants::getIntValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
 	{
 		isConstant = false;
 		int ret = 0;
@@ -41,6 +41,40 @@ namespace Analysis {
 			} else {
 				// Otherwise, this is the first constant, so mark it as such
 				ret = threeAddr->imm;
+				isConstant = true;
+			}
+		}
+
+		return ret;
+	}
+
+	std::string Constants::getStringValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
+	{
+		isConstant = false;
+		std::string ret;
+
+		// Check each definition that reaches this entry
+		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
+		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
+			IR::Entry *def = *it;
+			IR::EntryString *string = (IR::EntryString*)def;
+
+			if(def->type != IR::Entry::TypeLoadString) {
+				// This definition is not constant, therefore the symbol can't be
+				ret = "";
+				isConstant = false;
+				break;
+			}
+
+			if(isConstant && ret != string->string) {
+				// If a constant was already found, and this one differs in value, then
+				// the symbol is not constant
+				ret = "";
+				isConstant = false;
+				break;
+			} else {
+				// Otherwise, this is the first constant, so mark it as such
+				ret = string->string;
 				isConstant = true;
 			}
 		}

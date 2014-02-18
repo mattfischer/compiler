@@ -10,7 +10,8 @@ namespace Analysis {
 	public:
 		Constants(IR::Procedure *procedure, UseDefs *useDefs);
 
-		int getValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);
+		int getIntValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);
+		std::string getStringValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);
 
 	private:
 		UseDefs *mUseDefs;

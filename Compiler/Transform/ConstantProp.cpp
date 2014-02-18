@@ -5,6 +5,8 @@
 
 #include "Util/UniqueQueue.h"
 
+#include <sstream>
+
 namespace Transform {
 	int log2(int value)
 	{
@@ -64,9 +66,9 @@ namespace Transform {
 
 						// Examine the right hand side arguments and determine if they are constant
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = constants->getValue(threeAddr, threeAddr->rhs1, rhs1Const);
+						rhs1 = constants->getIntValue(threeAddr, threeAddr->rhs1, rhs1Const);
 						if(threeAddr->rhs2) {
-							rhs2 = constants->getValue(threeAddr, threeAddr->rhs2, rhs2Const);
+							rhs2 = constants->getIntValue(threeAddr, threeAddr->rhs2, rhs2Const);
 						} else {
 							rhs2 = threeAddr->imm;
 							rhs2Const = true;
@@ -188,6 +190,81 @@ namespace Transform {
 						break;
 					}
 
+				case IR::Entry::TypeConcat:
+					{
+						std::string rhs1;
+						std::string rhs2;
+						bool rhs1Const;
+						bool rhs2Const;
+
+						// Examine the right hand side arguments and determine if they are constant
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						rhs1 = constants->getStringValue(threeAddr, threeAddr->rhs1, rhs1Const);
+						rhs2 = constants->getStringValue(threeAddr, threeAddr->rhs2, rhs2Const);
+
+						if(rhs1Const && rhs2Const) {
+							IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, threeAddr->lhs, rhs1 + rhs2);
+
+							// Add all uses of the entry into the queue, it may now be possible
+							// to do further constant propagation on them
+							const IR::EntrySet &entries = useDefs->uses(threeAddr);
+							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+								queue.push(*it);
+							}
+
+							// Update the useDef chains to reflect the new entry
+							analysis.replace(threeAddr, newEntry);
+
+							// Substitute the new entry into the procedure
+							procedure->entries().insert(threeAddr, newEntry);
+							procedure->entries().erase(threeAddr);
+							delete threeAddr;
+							changed = true;
+						}
+						break;
+					}
+
+				case IR::Entry::TypeStringBool:
+				case IR::Entry::TypeStringInt:
+					{
+						int rhs;
+						bool rhsConst;
+
+						// Examine the right hand side arguments and determine if they are constant
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						rhs = constants->getIntValue(threeAddr, threeAddr->rhs1, rhsConst);
+
+						if(rhsConst) {
+							std::string str;
+							if(entry->type == IR::Entry::TypeStringBool) {
+								str = rhs ? "true" : "false";
+							} else if(entry->type == IR::Entry::TypeStringInt) {
+								std::stringstream s;
+								s << rhs;
+								str = s.str();
+							}
+
+							IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, threeAddr->lhs, str);
+
+							// Add all uses of the entry into the queue, it may now be possible
+							// to do further constant propagation on them
+							const IR::EntrySet &entries = useDefs->uses(threeAddr);
+							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+								queue.push(*it);
+							}
+
+							// Update the useDef chains to reflect the new entry
+							analysis.replace(threeAddr, newEntry);
+
+							// Substitute the new entry into the procedure
+							procedure->entries().insert(threeAddr, newEntry);
+							procedure->entries().erase(threeAddr);
+							delete threeAddr;
+							changed = true;
+						}
+						break;
+					}
+
 				case IR::Entry::TypeLoadMem:
 				case IR::Entry::TypeStoreMem:
 					{
@@ -198,7 +275,7 @@ namespace Transform {
 						}
 
 						bool isConstant;
-						int value = constants->getValue(threeAddr, threeAddr->rhs2, isConstant);
+						int value = constants->getIntValue(threeAddr, threeAddr->rhs2, isConstant);
 						if(isConstant) {
 							analysis.replaceUse(threeAddr, threeAddr->rhs2, 0);
 							threeAddr->rhs2 = 0;
@@ -223,7 +300,7 @@ namespace Transform {
 						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = constants->getValue(cJump, cJump->pred, isConstant);
+						int value = constants->getIntValue(cJump, cJump->pred, isConstant);
 						if(!isConstant) {
 							continue;
 						}
