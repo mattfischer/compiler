@@ -65,19 +65,16 @@ namespace Front {
 		}
 	}
 
-	void coerceString(std::vector<Node*> &nodes)
+	void coerceString(Node *&node)
 	{
-		// Check that types match
-		for(unsigned int i=0; i<nodes.size(); i++) {
-			if(!Type::equals(nodes[i]->type, Types::intrinsic(Types::String))) {
-				Node *coerce = new Node();
-				coerce->nodeType = Node::NodeTypeCoerceString;
-				coerce->nodeSubtype = Node::NodeSubtypeNone;
-				coerce->line = nodes[i]->line;
-				coerce->type = Types::intrinsic(Types::String);
-				coerce->children.push_back(nodes[i]);
-				nodes[i] = coerce;
-			}
+		if(!Type::equals(node->type, Types::intrinsic(Types::String))) {
+			Node *coerce = new Node();
+			coerce->nodeType = Node::NodeTypeCoerceString;
+			coerce->nodeSubtype = Node::NodeSubtypeNone;
+			coerce->line = node->line;
+			coerce->type = Types::intrinsic(Types::String);
+			coerce->children.push_back(node);
+			node = coerce;
 		}
 	}
 
@@ -203,7 +200,7 @@ namespace Front {
 			case Node::NodeTypePrint:
 				checkChildren(node, context);
 
-				coerceString(node->children);
+				coerceString(node->children[0]);
 
 				node->type = Types::intrinsic(Types::Void);
 				break;
@@ -230,6 +227,10 @@ namespace Front {
 
 					// Check call target has correct parameter types
 					for(unsigned int i=0; i<argumentsNode->children.size(); i++) {
+						if(Type::equals(procedureType->argumentTypes[i], Types::intrinsic(Types::String))) {
+							coerceString(argumentsNode->children[i]);
+						}
+
 						if(!Type::equals(argumentsNode->children[i]->type, procedureType->argumentTypes[i])) {
 							std::stringstream s;
 							s << "Type mismatch on procedure argument " << i;
@@ -260,6 +261,10 @@ namespace Front {
 			case Node::NodeTypeAssign:
 				{
 					checkChildren(node, context);
+
+					if(Type::equals(node->children[0]->type, Types::intrinsic(Types::String))) {
+						coerceString(node->children[1]);
+					}
 
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
@@ -355,20 +360,20 @@ namespace Front {
 
 					bool isString = false;
 					bool allInts = true;
-					for(int i=0; i<node->children.size(); i++) {
+					for(unsigned int i=0; i<node->children.size(); i++) {
 						if(Type::equals(node->children[i]->type, Types::intrinsic(Types::String))) {
 							isString = true;
-							break;
 						}
 
 						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
 							allInts = false;
-							break;
 						}
 					}
 
-					if(isString) {
-						coerceString(node->children);
+					if(isString && node->nodeSubtype == Node::NodeSubtypeAdd) {
+						for(unsigned int i=0; i<node->children.size(); i++) {
+							coerceString(node->children[i]);
+						}
 						node->type = Types::intrinsic(Types::String);
 					} else if(allInts) {
 						node->type = Types::intrinsic(Types::Int);
@@ -405,6 +410,10 @@ namespace Front {
 				}
 
 				checkType(node->children[0], context);
+
+				if(Type::equals(context.procedure->type->returnType, Types::intrinsic(Types::String))) {
+					coerceString(node->children[0]);
+				}
 
 				// Check that return argument matches the procedure's return type
 				if(!Type::equals(node->children[0]->type, context.procedure->type->returnType)) {

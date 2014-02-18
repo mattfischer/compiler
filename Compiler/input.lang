@@ -1,9 +1,9 @@
-int foo()
+void prString(string s)
 {
-  return 10;
+  print(s);
 }
 
 void main()
 {
-  print("Value: " + foo());
+  prString(3);
 }
