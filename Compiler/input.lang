@@ -1,9 +1,9 @@
-void prString(string s)
+void printString(string s)
 {
   print(s);
 }
 
 void main()
 {
-  prString(3);
+  printString(3);
 }
