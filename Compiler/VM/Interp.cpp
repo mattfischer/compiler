@@ -205,8 +205,8 @@ namespace VM {
 						case VM::MultRegLoad:
 							for(int i=0; i<16; i++) {
 								if(instr.mult.regs & (1 << i)) {
-									regs[i] = *(int*)(mem + regs[VM::RegSP]);
-									regs[VM::RegSP] += sizeof(int);
+									regs[i] = *(int*)(mem + regs[instr.mult.lhs]);
+									regs[instr.mult.lhs] += sizeof(int);
 								}
 							}
 							break;
@@ -214,8 +214,8 @@ namespace VM {
 						case VM::MultRegStore:
 							for(int i=15; i>=0; i--) {
 								if(instr.mult.regs & (1 << i)) {
-									regs[VM::RegSP] -= sizeof(int);
-									*(int*)(mem + regs[VM::RegSP]) = regs[i];
+									regs[instr.mult.lhs] -= sizeof(int);
+									*(int*)(mem + regs[instr.mult.lhs]) = regs[i];
 								}
 							}
 							break;

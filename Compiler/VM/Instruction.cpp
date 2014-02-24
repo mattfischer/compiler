@@ -281,7 +281,8 @@ namespace VM {
 		}
 
 		// Print the register list
-		o << "{";
+		o << regName(instr.mult.lhs) << ", {";
+
 		bool needComma = false;
 		int firstReg = -1;
 		for(int i=0; i<16; i++) {
@@ -413,12 +414,13 @@ namespace VM {
 	 * \param regs Bitmask of registers
 	 * \return Instruction
 	 */
-	Instruction Instruction::makeMultReg(unsigned char type, unsigned long regs)
+	Instruction Instruction::makeMultReg(unsigned char type, unsigned char regLhs, unsigned long regs)
 	{
 		Instruction instr;
 
 		instr.type = InstrMultReg;
 		instr.mult.type = type;
+		instr.mult.lhs = regLhs;
 		instr.mult.regs = regs;
 
 		return instr;

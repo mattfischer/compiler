@@ -50,15 +50,16 @@ namespace VM {
 		struct {
 			unsigned :4;
 			unsigned type : 4; //!< Type of multiple-address instruction
+			unsigned lhs : 4; //!< Target register
 			unsigned regs : 16; //!< Bitmask of registers
-			unsigned : 8;
+			unsigned : 4;
 		} mult;
 
 
 		static Instruction makeOneAddr(unsigned char type, unsigned char reg, long imm);
 		static Instruction makeTwoAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs, long imm);
 		static Instruction makeThreeAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs1, unsigned char regRhs2, short imm);
-		static Instruction makeMultReg(unsigned char type, unsigned long regs);
+		static Instruction makeMultReg(unsigned char type, unsigned char regLhs, unsigned long regs);
 	};
 #pragma pack(pop)
 

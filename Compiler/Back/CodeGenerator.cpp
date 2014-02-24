@@ -274,7 +274,7 @@ namespace Back {
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						// Save all required registers for this function
 						if(savedRegs != 0) {
-							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, savedRegs));
+							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, VM::RegSP, savedRegs));
 						}
 
 						// Make space on the stack frame for any necessary spilled values
@@ -295,7 +295,7 @@ namespace Back {
 
 						// Reload all required registers
 						if(savedRegs != 0) {
-							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, savedRegs));
+							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, VM::RegSP, savedRegs));
 						}
 
 						// Jump back to the return location

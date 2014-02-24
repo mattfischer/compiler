@@ -1,24 +1,24 @@
-#include "Front/HllTokenizer.h"
+#include "Back/AsmTokenizer.h"
 
 #include <cctype>
 #include <sstream>
 
 static char whitespace[] = { ' ', '\t', '\r', '\n' };
 
-static char *literals[] = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
-					 ">", "<", "+", "-", "*", "(", ")", "=", ";", "{", "}", ",", "[", "]", "."
-					};
+static char *literals[] = { "[", "]", ",", ":", "#", "{", "}", "-" };
 
-static char *keywords[] = { "print", "if", "else", "while", "return", "new", "for", "break",
-					 "continue", "true", "false", "struct"
-					};
+static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "ldr", "str", "new",
+							"strbool", "strint", "cmov", "cadd", "equ", "neq",
+							"lt", "lte", "gt", "gte", "or", "and", "concat", "print",
+							"call", "ldm", "stm", "defproc", "string", "lea"
+							};
 
-namespace Front {
+namespace Back {
 /*!
  * \brief Constructor
  * \param filename Filename to tokenize
  */
-HllTokenizer::HllTokenizer(const std::string &filename)
+AsmTokenizer::AsmTokenizer(const std::string &filename)
 : Input::Tokenizer(filename, 2)
 {
 }
@@ -26,7 +26,7 @@ HllTokenizer::HllTokenizer(const std::string &filename)
 /*!
  * \brief Get the next token in the stream
  */
-HllTokenizer::Token HllTokenizer::getNext()
+AsmTokenizer::Token AsmTokenizer::getNext()
 {
 	Token next;
 
@@ -47,7 +47,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 	// If no literals matched, see if an identifier can be constructed
 	if(std::isalpha(buffer()[0])) {
 		size_t len = 0;
-		while(std::isalpha(buffer()[len])) {
+		while(std::isalnum(buffer()[len])) {
 			len++;
 			if(!fillBuffer(len + 1)) {
 				break;
@@ -120,7 +120,7 @@ HllTokenizer::Token HllTokenizer::getNext()
  * \param Token type
  * \return Printable name for the type of token
  */
-std::string HllTokenizer::typeName(int type)
+std::string AsmTokenizer::typeName(int type)
 {
 	switch(type) {
 		case TypeLiteral:

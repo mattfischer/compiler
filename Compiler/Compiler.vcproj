@@ -181,6 +181,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Back\AsmParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Back\AsmTokenizer.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Analysis\AvailableExpressions.cpp"
 				>
 			</File>
@@ -194,6 +202,10 @@
 			</File>
 			<File
 				RelativePath=".\VM\Heap.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\input.asm"
 				>
 			</File>
 			<File
@@ -464,6 +476,14 @@
 			>
 			<File
 				RelativePath=".\Analysis\Analysis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Back\AsmParser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Back\AsmTokenizer.h"
 				>
 			</File>
 			<File
