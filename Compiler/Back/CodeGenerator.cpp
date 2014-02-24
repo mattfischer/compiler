@@ -5,11 +5,14 @@
 #include "IR/Entry.h"
 #include "IR/Symbol.h"
 
+#include "VM/Instruction.h"
+
 #include "Back/RegisterAllocator.h"
 
 #include "Util/Timer.h"
 
 #include <map>
+#include <sstream>
 
 namespace Back {
 	/*!
@@ -17,30 +20,16 @@ namespace Back {
 	 * \param irProgram IR program input
 	 * \return Final code for the program
 	 */
-	VM::Program CodeGenerator::generate(IR::Program *irProgram)
+	void CodeGenerator::generate(IR::Program *irProgram, std::ostream &stream)
 	{
-		VM::Program vmProgram;
-
-		std::map<IR::Procedure*, int> procedureMap;
-
 		// Iterate through the procedures, generating each in turn
 		for(IR::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
 			IR::Procedure *irProcedure = *itProc;
 
-			// If this procedure is main(), save its location as the program start point
-			if(irProcedure->name() == "main") {
-				vmProgram.start = (int)vmProgram.instructions.size();
-			}
-
-			// Save the procedure's start location, so that call instructions can be directed
-			// to the correct point
-			procedureMap[irProcedure] = (int)vmProgram.instructions.size();
-
 			// Generate code for the procedure
-			generateProcedure(irProcedure, vmProgram.instructions, procedureMap);
+			generateProcedure(irProcedure, stream);
+			stream << std::endl;
 		}
-
-		return vmProgram;
 	}
 
 	/*!
@@ -49,14 +38,11 @@ namespace Back {
 	 * \param instructions Instruction stream to write to
 	 * \param procedureMap Map of starting locations for procedures
 	 */
-	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::vector<unsigned char> &data, const std::map<IR::Procedure*, int> &procedureMap)
+	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::ostream &stream)
 	{
 		std::map<IR::Symbol*, int> regMap;
-		std::map<IR::EntryLabel*, int> labelMap;
-		std::map<IR::Entry*, int> jumpMap;
-		std::map<IR::Entry*, int> stringMap;
-		std::vector<VM::Instruction> instructions;
-		int reg = 1;
+		std::map<std::string, std::string> strings;
+		std::string savedRegs;
 
 		// Allocate registers for the procedure
 		Util::Timer timer;
@@ -67,10 +53,16 @@ namespace Back {
 		std::cout << "Register allocation (" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 
 		// Determine the set of registers that need to be saved/restored in the prologue/epilogue
-		unsigned long savedRegs = 0;
+		std::stringstream s;
+		bool needComma = false;
+		s << "{";
 		for(std::map<IR::Symbol*, int>::iterator regIt = regMap.begin(); regIt != regMap.end(); regIt++) {
 			if(regIt->second > 3) {
-				savedRegs |= (1 << regIt->second);
+				if(needComma) {
+					s << ", ";
+				}
+				s << "r" << regIt->second;
+				needComma = true;
 			}
 		}
 
@@ -79,9 +71,16 @@ namespace Back {
 			IR::Entry *entry = *itEntry;
 
 			if(entry->type == IR::Entry::TypeCall) {
-				savedRegs |= (1 << VM::RegLR);
+				if(needComma) {
+					s << ", ";
+				}
+				s << "lr";
 			}
 		}
+		s << "}";
+		savedRegs = s.str();
+
+		stream << "defproc " << procedure->name() << std::endl;
 
 		// Iterate through each entry, and emit the appropriate code depending on its type
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
@@ -91,131 +90,131 @@ namespace Back {
 				case IR::Entry::TypeMove:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    mov r" << regMap[threeAddr->lhs] << ", ";
 						if(threeAddr->rhs1) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+							stream << "r" << regMap[threeAddr->rhs1];
 						} else {
-							instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrLoadImm, regMap[threeAddr->lhs], threeAddr->imm));
+							stream << "#" << threeAddr->imm;
 						}
+						stream << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeAdd:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    add r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
 						if(threeAddr->rhs2) {
-							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrAdd, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+							stream << "r" << regMap[threeAddr->rhs2];
 						} else {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+							stream << "#" << threeAddr->imm;
 						}
+						stream << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeMult:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    mult r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
 						if(threeAddr->rhs2) {
-							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrMult, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+							stream << "r" << regMap[threeAddr->rhs2];
 						} else {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrMultImm, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+							stream << "#" << threeAddr->imm;
 						}
+						stream << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypePrint:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrPrint, regMap[threeAddr->rhs1], 0));
+						stream << "    print r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeEqual:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrEqual, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    equ r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeNequal:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrNEqual, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    neq r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeLessThan:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLessThan, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    lt r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeLessThanE:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLessThanE, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    lte r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeGreaterThan:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrGreaterThan, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    gt r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeGreaterThanE:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrGreaterThanE, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    gte r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeOr:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrOr, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    or r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeAnd:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrAnd, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    and r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeLabel:
 					{
 						IR::EntryLabel *label = (IR::EntryLabel*)entry;
-						labelMap[label] = (int)instructions.size();
+						stream << "  " << label->name << ":" << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeJump:
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
-						VM::Instruction instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, 0, 0, 0);
-						jumpMap[entry] = (int)instructions.size();
-						instructions.push_back(instr);
+						stream << "    jmp " << jump->target->name << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeCJump:
 					{
 						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
-						VM::Instruction instr = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, 0, 0, 0, 0);
-						jumpMap[entry] = (int)instructions.size();
-						instructions.push_back(instr);
-						instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, 0, 0, 0);
-						instructions.push_back(instr);
+						stream << "    cjmp " << cjump->trueTarget->name << std::endl;
+						stream << "    jmp " << cjump->falseTarget->name << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeCall:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
-						int offset = procedureMap.find(call->target)->second;
-						instructions.push_back(VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, offset / 4 - (int)data.size() / 4 - (int)instructions.size()));
+						stream << "    call " << call->target->name() << std::endl;
 						break;
 					}
 
@@ -223,7 +222,7 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->lhs] != 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], 0, 0));
+							stream << "    mov r" << regMap[threeAddr->lhs] << ", r0" << std::endl;
 						}
 						break;
 					}
@@ -232,7 +231,7 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->rhs1] != 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, 0, regMap[threeAddr->rhs1], 0));
+							stream << "    mov r0, r" << regMap[threeAddr->rhs1] << std::endl;
 						}
 						break;
 					}
@@ -241,7 +240,7 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->lhs] != threeAddr->imm) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[threeAddr->lhs], threeAddr->imm, 0));
+							stream << "    mov r" << regMap[threeAddr->lhs] << ", r" << threeAddr->imm << std::endl;
 						}
 						break;
 					}
@@ -250,7 +249,7 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->rhs1] != threeAddr->imm) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, threeAddr->imm, regMap[threeAddr->rhs1], 0));
+							stream << "    mov r" << threeAddr->imm << ", r" << regMap[threeAddr->lhs] << std::endl;
 						}
 						break;
 					}
@@ -258,14 +257,14 @@ namespace Back {
 				case IR::Entry::TypeLoadStack:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, regMap[threeAddr->lhs], VM::RegSP, threeAddr->imm));
+						stream << "    ldr r" << regMap[threeAddr->lhs] << ", [sp, #" << threeAddr->imm << "]" << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeStoreStack:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, VM::RegSP, regMap[threeAddr->rhs1], threeAddr->imm));
+						stream << "    str r" << regMap[threeAddr->rhs1] << ", [sp, #" << threeAddr->imm << "]" << std::endl;
 						break;
 					}
 
@@ -273,13 +272,13 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						// Save all required registers for this function
-						if(savedRegs != 0) {
-							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegStore, VM::RegSP, savedRegs));
+						if(savedRegs != "{}") {
+							stream << "    stm sp, " << savedRegs << std::endl;
 						}
 
 						// Make space on the stack frame for any necessary spilled values
 						if(threeAddr->imm > 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, -threeAddr->imm));
+							stream << "    sub sp, sp, #" << threeAddr->imm << std::endl;
 						}
 						break;
 					}
@@ -290,125 +289,96 @@ namespace Back {
 
 						// Advance the stack pointer past the spilled value range
 						if(threeAddr->imm > 0) {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegSP, VM::RegSP, threeAddr->imm));
+							stream << "    add sp, sp, #" << threeAddr->imm << std::endl;
 						}
 
 						// Reload all required registers
-						if(savedRegs != 0) {
-							instructions.push_back(VM::Instruction::makeMultReg(VM::MultRegLoad, VM::RegSP, savedRegs));
+						if(savedRegs != "{}") {
+							stream << "    ldm sp, " << savedRegs << std::endl;
 						}
 
 						// Jump back to the return location
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0));
+						stream << "    mov pc, lr" << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeNew:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrNew, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						stream << "    new r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeLoadMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    ldr r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1] << ", ";
 						if(threeAddr->rhs2) {
-							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], threeAddr->imm));
-						} else {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrLoad, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+							stream << "r" << regMap[threeAddr->rhs2] << ", ";
 						}
+
+						if(threeAddr->imm != 0) {
+							stream << "#" << threeAddr->imm;
+						}
+
+						stream << "]" << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeStoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    str r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1] << ", ";
 						if(threeAddr->rhs2) {
-							instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], threeAddr->imm));
-						} else {
-							instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStore, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], threeAddr->imm));
+							stream << "r" << regMap[threeAddr->rhs2] << ", ";
 						}
+
+						if(threeAddr->imm != 0) {
+							stream << "#" << threeAddr->imm;
+						}
+
+						stream << "]" << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeLoadString:
 					{
-						VM::Instruction instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, 0, 0, 0);
-						stringMap[entry] = (int)instructions.size();
-						instructions.push_back(instr);
+						IR::EntryString *string = (IR::EntryString*)entry;
+						std::stringstream s;
+						s << "str" << strings.size();
+						strings[s.str()] = string->string;
+						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeConcat:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeThreeAddr(VM::ThreeAddrConcat, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], regMap[threeAddr->rhs2], 0));
+						stream << "    concat r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeStringBool:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStringBool, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						stream << "    strbool r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeStringInt:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						instructions.push_back(VM::Instruction::makeTwoAddr(VM::TwoAddrStringInt, regMap[threeAddr->lhs], regMap[threeAddr->rhs1], 0));
+						stream << "    strint r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
 			}
 		}
 
-		// Now that all locations have been placed, loop back through the entries and fill in jump target locations
-		for(std::map<IR::Entry*, int>::iterator it = jumpMap.begin(); it != jumpMap.end(); it++) {
-			IR::Entry *entry = it->first;
-			int idx = it->second;
-
-			switch(entry->type) {
-				case IR::Entry::TypeJump:
-					{
-						IR::EntryJump *jump = (IR::EntryJump*)entry;
-						int target = labelMap[jump->target];
-						instructions[idx] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, 4 * (target - idx));
-						break;
-					}
-
-				case IR::Entry::TypeCJump:
-					{
-						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
-						int target = labelMap[cjump->trueTarget];
-						instructions[idx] = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, VM::RegPC, regMap[cjump->pred], VM::RegPC, 4 * (target - idx));
-						target = labelMap[cjump->falseTarget];
-						instructions[idx+1] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, 4 * (target - idx - 1));
-						break;
-					}
-			}
-		}
-
-		std::vector<unsigned char> stringData;
-		for(std::map<IR::Entry*, int>::iterator it = stringMap.begin(); it != stringMap.end(); it++) {
-			IR::Entry *entry = it->first;
-			int idx = it->second;
-			IR::EntryString *string = (IR::EntryString*)entry;
-
-			instructions[idx] = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, regMap[string->lhs], VM::RegPC, ((int)instructions.size() - idx) * 4 + (int)stringData.size());
-
-			int start = (int)stringData.size();
-			stringData.resize(stringData.size() + string->string.size() + 1);
-			std::memcpy(&stringData[start], string->string.c_str(), string->string.size());
-			stringData[start + string->string.size()] = '\0';
-		}
-
-		int start = (int)data.size();
-		data.resize(data.size() + instructions.size() * 4 + stringData.size());
-		std::memcpy(&data[start], &instructions[0], instructions.size() * 4);
-		if(stringData.size() > 0) {
-			std::memcpy(&data[start + instructions.size() * 4], &stringData[0], stringData.size());
+		for(std::map<std::string, std::string>::iterator it = strings.begin(); it != strings.end(); it++) {
+			const std::string &name = it->first;
+			const std::string &value = it->second;
+			stream << "  string " << name << ", \"" << value << "\"" << std::endl;
 		}
 	}
 }

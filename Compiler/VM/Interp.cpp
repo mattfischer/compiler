@@ -53,17 +53,17 @@ namespace VM {
 	 * \brief Run a VM program
 	 * \param program Program to run
 	 */
-	void Interp::run(const Program &program)
+	void Interp::run(const Program *program)
 	{
 		int regs[16];
 		int curPC;
 		unsigned char mem[1024];
-		Heap heap(mem, 1024, (int)program.instructions.size());
+		Heap heap(mem, 1024, (int)program->instructions.size());
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
-		memcpy(mem, &program.instructions[0], program.instructions.size());
+		memcpy(mem, &program->instructions[0], program->instructions.size());
 
 		// Set SP to the top of the stack
 		regs[VM::RegSP] = sizeof(mem);
@@ -72,7 +72,7 @@ namespace VM {
 		regs[VM::RegLR] = 0xffffffff;
 
 		// Set PC to the program entry point
-		regs[VM::RegPC] = program.start;
+		regs[VM::RegPC] = program->start;
 
 		// Loop until PC is set beyond the end of the program
 		while(regs[VM::RegPC] != 0xffffffff) {

@@ -5,7 +5,10 @@
 
 #include "Middle/Optimizer.h"
 #include "Middle/ErrorCheck.h"
+
 #include "Back/CodeGenerator.h"
+#include "Back/AsmTokenizer.h"
+#include "Back/AsmParser.h"
 
 #include "VM/Instruction.h"
 #include "VM/Interp.h"
@@ -15,6 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 int main(int arg, char *argv[])
 {
@@ -61,23 +65,19 @@ int main(int arg, char *argv[])
 	irProgram->print();
 	std::cout << std::endl;
 
-	VM::Program vmProgram = Back::CodeGenerator::generate(irProgram);
+	std::stringstream s;
+	Back::CodeGenerator::generate(irProgram, s);
 	std::cout << "*** Code ***" << std::endl;
-	for(unsigned int i = 0; i < vmProgram.instructions.size(); i+=4) {
-		VM::Instruction instr;
-		std::cout << "  ";
-		for(int j=0; j<4; j++) {
-			int d = 0;
-			if(i + j < vmProgram.instructions.size()) {
-				d = vmProgram.instructions[i + j];
-			}
-			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
-		}
-		std::cout << std::setbase(10);
-		std::memcpy(&instr, &vmProgram.instructions[i], 4);
-		std::cout << "  " << instr << std::endl;
+	std::cout << s.str();
+
+	Back::AsmTokenizer asmTokenizer(s);
+	Back::AsmParser asmParser(asmTokenizer);
+
+	VM::Program *vmProgram = asmParser.parse();
+	if(!vmProgram) {
+		std::cout << "Error, line " << asmParser.errorLine() << " column " << asmParser.errorColumn() << ": " << asmParser.errorMessage() << std::endl;
+		return 1;
 	}
-	std::cout << std::endl;
 
 	std::cout << "*** Output ***" << std::endl;
 	VM::Interp::run(vmProgram);

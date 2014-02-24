@@ -20,7 +20,7 @@ AsmParser::AsmParser(AsmTokenizer &tokenizer)
 {
 }
 
-VM::Program *AsmParser::assemble()
+VM::Program *AsmParser::parse()
 {
 	try {
 		// Parse the stream
@@ -44,6 +44,10 @@ VM::Program *AsmParser::parseProgram()
 		expect(AsmTokenizer::TypeIdentifier);
 
 		procedureMap[name] = (int)program->instructions.size();
+		if(name == "main" ) {
+			program->start = (int)program->instructions.size();
+		}
+
 		parseProcedure(program, procedureMap);
 	}
 
@@ -104,7 +108,7 @@ void AsmParser::parseProcedure(VM::Program *program, std::map<std::string, int> 
 			instr.three.imm = targetOffset - offset;
 		} else if(instr.type == VM::InstrOneAddr && instr.one.type == VM::OneAddrCall) {
 			int targetOffset = procedureMap[target];
-			instr.one.imm = targetOffset - offset;
+			instr.one.imm = (targetOffset - offset) / 4;
 		}
 
 		std::memcpy(&program->instructions[offset], &instr, 4);

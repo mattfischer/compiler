@@ -1,13 +1,12 @@
 #ifndef BACK_CODE_GENERATOR_H
 #define BACK_CODE_GENERATOR_H
 
-#include "VM/Program.h"
-
 #include "IR/Procedure.h"
 #include "IR/Program.h"
 
 #include <vector>
 #include <map>
+#include <iostream>
 
 /*!
  * \brief Back-end functions for the compiler
@@ -20,10 +19,10 @@ namespace Back {
 	 */
 	class CodeGenerator {
 	public:
-		static VM::Program generate(IR::Program *irProgram);
+		static void generate(IR::Program *irProgram, std::ostream &stream);
 
 	private:
-		static void generateProcedure(IR::Procedure *procedure, std::vector<unsigned char> &data, const std::map<IR::Procedure*, int> &procedureMap);
+		static void generateProcedure(IR::Procedure *procedure, std::ostream &stream);
 	};
 }
 #endif

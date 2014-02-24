@@ -11,7 +11,7 @@ namespace VM {
 	 */
 	class Interp {
 	public:
-		static void run(const VM::Program &program);
+		static void run(const VM::Program *program);
 	};
 }
 #endif

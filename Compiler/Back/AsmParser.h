@@ -15,7 +15,7 @@ class AsmParser : public Input::Parser {
 public:
 	AsmParser(AsmTokenizer &tokenizer);
 
-	VM::Program *assemble();
+	VM::Program *parse();
 
 private:
 	VM::Program *parseProgram();
