@@ -18,8 +18,8 @@ namespace Front {
  * \brief Constructor
  * \param filename Filename to tokenize
  */
-HllTokenizer::HllTokenizer(const std::string &filename)
-: Input::Tokenizer(filename, 2)
+HllTokenizer::HllTokenizer(std::istream &stream)
+: Input::Tokenizer(stream, 2)
 {
 }
 

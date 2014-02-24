@@ -6,8 +6,8 @@ namespace Input {
  * \param filename Filename to read
  * \param lookahead Number of lookahead tokens
  */
-Tokenizer::Tokenizer(const std::string &filename, int lookahead)
-	: mStream(filename.c_str())
+Tokenizer::Tokenizer(std::istream &stream, int lookahead)
+	: mStream(stream)
 {
 	mLine = 1;
 	mColumn = 1;

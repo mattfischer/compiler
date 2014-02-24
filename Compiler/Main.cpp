@@ -13,11 +13,13 @@
 #include "Analysis/InterferenceGraph.h"
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 
 int main(int arg, char *argv[])
 {
-	Front::HllTokenizer tokenizer("input.lang");
+	std::ifstream stream("input.lang");
+	Front::HllTokenizer tokenizer(stream);
 	Front::HllParser parser(tokenizer);
 
 	Front::Node *node = parser.parse();

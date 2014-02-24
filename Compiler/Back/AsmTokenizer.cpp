@@ -18,8 +18,8 @@ namespace Back {
  * \brief Constructor
  * \param filename Filename to tokenize
  */
-AsmTokenizer::AsmTokenizer(const std::string &filename)
-: Input::Tokenizer(filename, 2)
+AsmTokenizer::AsmTokenizer(std::istream &stream)
+: Input::Tokenizer(stream, 2)
 {
 }
 

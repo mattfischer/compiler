@@ -2,13 +2,13 @@
 #define INPUT_TOKENIZER_H
 
 #include <string>
-#include <fstream>
+#include <istream>
 #include <vector>
 
 namespace Input {
 class Tokenizer {
 public:
-	Tokenizer(const std::string &filename, int lookahead);
+	Tokenizer(std::istream &stream, int lookahead);
 
 	/*!
 	 * \brief Structure that represents a single token
@@ -50,7 +50,7 @@ protected:
 	virtual Token getNext() = 0;
 
 private:
-	std::ifstream mStream; //!< Underlying file stream
+	std::istream &mStream; //!< Underlying file stream
 	std::string mBuffer; //!< Buffer containing upcoming characters
 	int mLine; //!< Current line
 	int mColumn; //!< Current column

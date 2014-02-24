@@ -4,7 +4,6 @@
 #include "Input/Tokenizer.h"
 
 #include <string>
-#include <fstream>
 #include <vector>
 
 /*!
@@ -21,7 +20,7 @@ namespace Front {
  */
 class HllTokenizer : public Input::Tokenizer {
 public:
-	HllTokenizer(const std::string &filename);
+	HllTokenizer(std::istream &stream);
 
 	/*!
 	 * \brief Token type

@@ -4,7 +4,6 @@
 #include "Input/Tokenizer.h"
 
 #include <string>
-#include <fstream>
 #include <vector>
 
 namespace Back {
@@ -15,7 +14,7 @@ namespace Back {
  */
 class AsmTokenizer : public Input::Tokenizer {
 public:
-	AsmTokenizer(const std::string &filename);
+	AsmTokenizer(std::istream &stream);
 
 	/*!
 	 * \brief Token type
