@@ -4,6 +4,8 @@
 #include "VM/Instruction.h"
 
 #include <vector>
+#include <map>
+#include <string>
 
 /*!
  * \brief A virtual machine that is targeted by the compiler
@@ -14,7 +16,8 @@ namespace VM {
 	 */
 	struct Program {
 		std::vector<unsigned char> instructions; //!< Instruction list
-		int start; //!< Program start point
+		std::map<std::string, int> symbols;
+		std::map<int, std::string> imports;
 	};
 }
 

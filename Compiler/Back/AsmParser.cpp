@@ -35,7 +35,6 @@ VM::Program *AsmParser::parse()
 VM::Program *AsmParser::parseProgram()
 {
 	VM::Program *program = new VM::Program;
-	std::map<std::string, int> procedureMap;
 
 	while(matchLiteral("defproc")) {
 		consume();
@@ -43,12 +42,8 @@ VM::Program *AsmParser::parseProgram()
 		std::string name = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 
-		procedureMap[name] = (int)program->instructions.size();
-		if(name == "main" ) {
-			program->start = (int)program->instructions.size();
-		}
-
-		parseProcedure(program, procedureMap);
+		program->symbols[name] = (int)program->instructions.size();
+		parseProcedure(program);
 	}
 
 	expect(AsmTokenizer::TypeEnd);
@@ -56,7 +51,7 @@ VM::Program *AsmParser::parseProgram()
 	return program;
 }
 
-void AsmParser::parseProcedure(VM::Program *program, std::map<std::string, int> &procedureMap)
+void AsmParser::parseProcedure(VM::Program *program)
 {
 	VM::Instruction instr;
 	std::map<int, std::string> jumps;
@@ -82,7 +77,11 @@ void AsmParser::parseProcedure(VM::Program *program, std::map<std::string, int> 
 			expectLiteral(",");
 			std::string value = next().text;
 			expect(AsmTokenizer::TypeString);
-			program->instructions.resize(offset + value.size() + 1);
+			int newSize = offset + value.size() + 1;
+			if(newSize % 4 > 0) {
+				newSize += 4 - (newSize % 4);
+			}
+			program->instructions.resize(newSize);
 			std::memcpy(&program->instructions[offset], value.c_str(), value.size());
 			program->instructions[offset + value.size()] = '\0';
 			strings[name] = offset;
@@ -107,8 +106,7 @@ void AsmParser::parseProcedure(VM::Program *program, std::map<std::string, int> 
 			int targetOffset = labels[target];
 			instr.three.imm = targetOffset - offset;
 		} else if(instr.type == VM::InstrOneAddr && instr.one.type == VM::OneAddrCall) {
-			int targetOffset = procedureMap[target];
-			instr.one.imm = (targetOffset - offset) / 4;
+			program->imports[offset] = target;
 		}
 
 		std::memcpy(&program->instructions[offset], &instr, 4);

@@ -19,7 +19,7 @@ public:
 
 private:
 	VM::Program *parseProgram();
-	void parseProcedure(VM::Program *program, std::map<std::string, int> &procedureMap);
+	void parseProcedure(VM::Program *program);
 
 	bool parseStdInstr(VM::Instruction &instr);
 	bool parseIndInstr(VM::Instruction &instr);

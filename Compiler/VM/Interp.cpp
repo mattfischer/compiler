@@ -60,6 +60,16 @@ namespace VM {
 		unsigned char mem[1024];
 		Heap heap(mem, 1024, (int)program->instructions.size());
 
+		if(program->symbols.find("main") == program->symbols.end()) {
+			std::cout << "Error: Undefined reference to main" << std::endl;
+			return;
+		}
+
+		if(program->imports.size() > 0) {
+			std::cout << "Error: Program has unresolved imports" << std::endl;
+			return;
+		}
+
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
@@ -72,7 +82,7 @@ namespace VM {
 		regs[VM::RegLR] = 0xffffffff;
 
 		// Set PC to the program entry point
-		regs[VM::RegPC] = program->start;
+		regs[VM::RegPC] = program->symbols.find("main")->second;
 
 		// Loop until PC is set beyond the end of the program
 		while(regs[VM::RegPC] != 0xffffffff) {
