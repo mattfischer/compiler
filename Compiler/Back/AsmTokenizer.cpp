@@ -10,7 +10,7 @@ static char *literals[] = { "[", "]", ",", ":", "#", "{", "}", "-" };
 static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "ldr", "str", "new",
 							"strbool", "strint", "cmov", "cadd", "equ", "neq",
 							"lt", "lte", "gt", "gte", "or", "and", "concat", "print",
-							"call", "ldm", "stm", "defproc", "string", "lea"
+							"call", "ldm", "stm", "defproc", "string", "lea", "ldb", "stb"
 							};
 
 namespace Back {

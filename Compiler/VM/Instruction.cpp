@@ -147,6 +147,14 @@ namespace VM {
 			case TwoAddrStringInt:
 				printStd(o, "strint", instr.two.regLhs, instr.two.regRhs);
 				break;
+
+			case TwoAddrLoadByte:
+				printInd(o, "ldb", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
+				break;
+
+			case TwoAddrStoreByte:
+				printInd(o, "stb", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
+				break;
 		}
 	}
 
@@ -236,6 +244,14 @@ namespace VM {
 
 			case ThreeAddrConcat:
 				printStd(o, "concat", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
+				break;
+
+			case ThreeAddrLoadByte:
+				printInd(o, "ldb", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
+				break;
+
+			case ThreeAddrStoreByte:
+				printInd(o, "stb", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
 				break;
 		}
 	}

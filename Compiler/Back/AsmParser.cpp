@@ -186,6 +186,8 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 	static const NameTwoInt indOps[] = {
 		{ "ldr", VM::TwoAddrLoad, VM::ThreeAddrLoad },
 		{ "str", VM::TwoAddrStore, VM::ThreeAddrStore },
+		{ "ldb", VM::TwoAddrLoadByte, VM::ThreeAddrLoadByte },
+		{ "stb", VM::TwoAddrStoreByte, VM::ThreeAddrStoreByte },
 	};
 
 	for(int i=0; i<N_ENTRIES(indOps); i++) {

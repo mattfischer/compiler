@@ -27,11 +27,11 @@ namespace VM {
 		 */
 		struct {
 			unsigned :4;
-			unsigned type : 4; //!< Type of three-address instruction
+			unsigned type : 6; //!< Type of three-address instruction
 			unsigned regLhs : 4; //!< Destination register
 			unsigned regRhs1 : 4; //!< First source register
 			unsigned regRhs2 : 4; //!< Second source register
-			signed imm : 12; //!< Immediate constant
+			signed imm : 10; //!< Immediate constant
 		} three;
 
 		/*!
@@ -77,6 +77,8 @@ namespace VM {
 	const int TwoAddrNew = 0x4; //!< Allocate new memory
 	const int TwoAddrStringBool = 0x5; //!< Convert a bool to a string
 	const int TwoAddrStringInt = 0x6; //!< Convert an int to a string
+	const int TwoAddrLoadByte = 0x7;
+	const int TwoAddrStoreByte = 0x8;
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
 	const int ThreeAddrSub = 0x1; //!< Subtract two registers
@@ -93,6 +95,8 @@ namespace VM {
 	const int ThreeAddrLoad = 0xc; //!< Load register from memory
 	const int ThreeAddrStore = 0xd; //!< Store register into memory
 	const int ThreeAddrConcat = 0xe; //!< Concatenate strings
+	const int ThreeAddrLoadByte = 0xf;
+	const int ThreeAddrStoreByte = 0x10;
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrPrint = 0x1; //!< Print string

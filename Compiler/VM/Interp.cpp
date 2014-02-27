@@ -123,11 +123,11 @@ namespace VM {
 							break;
 
 						case VM::TwoAddrLoad:
-							regs[instr.two.regLhs] = mem[regs[instr.two.regRhs] + instr.two.imm];
+							regs[instr.two.regLhs] = *((unsigned long*)(&mem[regs[instr.two.regRhs] + instr.two.imm]));
 							break;
 
 						case VM::TwoAddrStore:
-							mem[regs[instr.two.regRhs] + instr.two.imm] = regs[instr.two.regLhs];
+							*((unsigned long*)(&mem[regs[instr.two.regRhs] + instr.two.imm])) = regs[instr.two.regLhs];
 							break;
 
 						case VM::TwoAddrNew:
@@ -140,6 +140,14 @@ namespace VM {
 
 						case VM::TwoAddrStringInt:
 							regs[instr.two.regLhs] = strInt(mem, heap, regs[instr.two.regRhs]);
+							break;
+
+						case VM::TwoAddrLoadByte:
+							regs[instr.two.regLhs] = mem[regs[instr.two.regRhs] + instr.two.imm];
+							break;
+
+						case VM::TwoAddrStoreByte:
+							mem[regs[instr.two.regRhs] + instr.two.imm] = regs[instr.two.regLhs] & 0xff;
 							break;
 					}
 					break;
@@ -197,15 +205,23 @@ namespace VM {
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.three.regLhs] = *(int*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm));
+							regs[instr.three.regLhs] = *(unsigned long*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm));
 							break;
 
 						case VM::ThreeAddrStore:
-							*(int*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs];
+							*(unsigned long*)(mem + regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs];
 							break;
 
 						case VM::ThreeAddrConcat:
 							regs[instr.three.regLhs] = concatStrings(mem, heap, regs[instr.three.regRhs1], regs[instr.three.regRhs2]);
+							break;
+
+						case VM::ThreeAddrLoadByte:
+							regs[instr.three.regLhs] = mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)] & 0xff;
+							break;
+
+						case VM::ThreeAddrStoreByte:
+							mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)] = regs[instr.three.regLhs];
 							break;
 					}
 					break;
