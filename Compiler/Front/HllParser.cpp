@@ -494,24 +494,14 @@ Node *HllParser::parseSuffixExpression(bool required)
 	// { ... }*
 	while(true) {
 		if(matchLiteral("(")) {
-			// '(' { <Expression> ',' }* ')'
+			// '(' <ExpressionList> ')'
 			consume();
 
 			Node *callNode = newNode(Node::NodeTypeCall, node->line);
 			callNode->children.push_back(node);
-
-			Node *argumentList = newNode(Node::NodeTypeList, next().line);
-			Node *expression;
-			while(expression = parseExpression()) {
-				argumentList->children.push_back(expression);
-				if(!matchLiteral(",")) {
-					break;
-				}
-				consume();
-			}
-
-			callNode->children.push_back(argumentList);
+			callNode->children.push_back(parseExpressionList());
 			expectLiteral(")");
+
 			node = callNode;
 		} else if(matchLiteral("[")) {
 			// '[' <Expression> ']'
@@ -546,6 +536,22 @@ Node *HllParser::parseSuffixExpression(bool required)
 	}
 
 	return node;
+}
+
+Node *HllParser::parseExpressionList()
+{
+	// <ExpressionList> := { <Expression> ',' }*
+	Node *list = newNode(Node::NodeTypeList, next().line);
+	Node *expression;
+	while(expression = parseExpression()) {
+		list->children.push_back(expression);
+		if(!matchLiteral(",")) {
+			break;
+		}
+		consume();
+	}
+
+	return list;
 }
 
 Node *HllParser::parseBaseExpression(bool required)
@@ -603,11 +609,12 @@ Node *HllParser::parseBaseExpression(bool required)
 
 		return node;
 	} else if(matchLiteral("new")) {
-		// <BaseExpression> := 'new' <Type> { '[' <Expression> ']' }?
+		// <BaseExpression> := 'new' <Type> { '[' <Expression> ']' | '(' <ExpressionList> ')' }?
 		node = newNode(Node::NodeTypeNew, next().line);
 		consume();
 
 		Node *type = parseType(true);
+		Node *args = 0;
 		if(matchLiteral("[")) {
 			consume();
 
@@ -617,9 +624,18 @@ Node *HllParser::parseBaseExpression(bool required)
 			arrayType->children.push_back(type);
 			arrayType->children.push_back(count);
 			type = arrayType;
+		} else if(matchLiteral("(")) {
+			consume();
+
+			args = parseExpressionList();
+			expectLiteral(")");
 		}
 
 		node->children.push_back(type);
+		if(args) {
+			node->children.push_back(args);
+		}
+
 		return node;
 	}
 

@@ -434,6 +434,25 @@ namespace Front {
 							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
 						}
 					}
+
+					if(node->children.size() > 1) {
+						Node *argsNode = node->children[1];
+
+						if(!Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
+							throw TypeError(node, "Constructor argument passed to non-string");
+						}
+
+						if(argsNode->children.size() != 1) {
+							throw TypeError(node->children[1], "Improper number of arguments to constructor");
+						}
+
+						if(!Type::equals(argsNode->children[0]->type, Types::intrinsic(Types::Int))) {
+							throw TypeError(argsNode, "Constructor argument passed to non-string");
+						}
+					} else if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
+						throw TypeError(typeNode, "No arguments passed to string allocation");
+					}
+
 					break;
 				}
 

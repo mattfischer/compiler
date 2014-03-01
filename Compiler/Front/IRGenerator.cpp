@@ -441,6 +441,9 @@ namespace Front {
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
+					} else if(Type::equals(arg->type, Types::intrinsic(Types::String))) {
+						// String allocation: total size is constructor argument value
+						size = processRValue(node->children[1]->children[0], context);
 					} else {
 						// Single allocation: total size is typeSize
 						Type *type = arg->type;

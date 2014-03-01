@@ -41,6 +41,7 @@ private:
 	Node *parseMultiplyExpression(bool required = false);
 	Node *parseSuffixExpression(bool required = false);
 	Node *parseBaseExpression(bool required = false);
+	Node *parseExpressionList();
 };
 }
 #endif

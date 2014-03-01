@@ -1,6 +1,4 @@
 void main()
 {
-	string s = "AB";
-	s[0] = 'B';
-	print s;
+	string s = new string(10);
 }
