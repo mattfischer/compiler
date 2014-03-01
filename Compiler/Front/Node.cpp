@@ -23,7 +23,7 @@ const char *typeNames[] = {
 	/* NodeTypeBreak        */ "break",
 	/* NodeTypeContinue     */ "continue",
 	/* NodeTypeMember       */ "member",
-	/* NodeTypeCoerceString */ "coerce-string"
+	/* NodeTypeCoerceString */ "coerce"
 };
 
 const char *subtypeNames[] = {

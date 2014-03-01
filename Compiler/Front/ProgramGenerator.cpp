@@ -65,17 +65,34 @@ namespace Front {
 		}
 	}
 
-	void coerceString(Node *&node)
+	Node *coerce(Node *node, Type *type)
 	{
-		if(!Type::equals(node->type, Types::intrinsic(Types::String))) {
+		if(!Type::equals(node->type, type)) {
+			bool valid = false;
+
+			if(Type::equals(type, Types::intrinsic(Types::String))) {
+				if(Type::equals(node->type, Types::intrinsic(Types::Bool)) ||
+				   Type::equals(node->type, Types::intrinsic(Types::Int))) {
+					   valid = true;
+				}
+			}
+
+			if(!valid) {
+				std::stringstream s;
+				s << "Cannot convert type " << node->type->name << " to " << type->name;
+				throw TypeError(node, s.str());
+			}
+
 			Node *coerce = new Node();
-			coerce->nodeType = Node::NodeTypeCoerceString;
+			coerce->nodeType = Node::NodeTypeCoerce;
 			coerce->nodeSubtype = Node::NodeSubtypeNone;
 			coerce->line = node->line;
-			coerce->type = Types::intrinsic(Types::String);
+			coerce->type = type;
 			coerce->children.push_back(node);
 			node = coerce;
 		}
+
+		return node;
 	}
 
 	/*!
@@ -200,8 +217,7 @@ namespace Front {
 			case Node::NodeTypePrint:
 				checkChildren(node, context);
 
-				coerceString(node->children[0]);
-
+				node->children[0] = coerce(node->children[0], Types::intrinsic(Types::String));
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
@@ -225,17 +241,9 @@ namespace Front {
 						throw TypeError(node, s.str());
 					}
 
-					// Check call target has correct parameter types
+					// Coerce call arguments to proper types
 					for(unsigned int i=0; i<argumentsNode->children.size(); i++) {
-						if(Type::equals(procedureType->argumentTypes[i], Types::intrinsic(Types::String))) {
-							coerceString(argumentsNode->children[i]);
-						}
-
-						if(!Type::equals(argumentsNode->children[i]->type, procedureType->argumentTypes[i])) {
-							std::stringstream s;
-							s << "Type mismatch on procedure argument " << i;
-							throw TypeError(node, s.str());
-						}
+						argumentsNode->children[i] = coerce(argumentsNode->children[i], procedureType->argumentTypes[i]);
 					}
 
 					// Checks succeeded, assign return type to the call node
@@ -262,9 +270,7 @@ namespace Front {
 				{
 					checkChildren(node, context);
 
-					if(Type::equals(node->children[0]->type, Types::intrinsic(Types::String))) {
-						coerceString(node->children[1]);
-					}
+					node->children[1] = coerce(node->children[1], node->children[0]->type);
 
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
@@ -273,10 +279,6 @@ namespace Front {
 						case Node::NodeTypeVarDecl:
 						case Node::NodeTypeArray:
 						case Node::NodeTypeMember:
-							// Confirm target type matches source type
-							if(!Type::equals(lhs->type, rhs->type)) {
-								throw TypeError(node, "Type mismatch");
-							}
 							break;
 						default:
 							throw TypeError(node, "Lvalue required");
@@ -372,7 +374,7 @@ namespace Front {
 
 					if(isString && node->nodeSubtype == Node::NodeSubtypeAdd) {
 						for(unsigned int i=0; i<node->children.size(); i++) {
-							coerceString(node->children[i]);
+							node->children[i] = coerce(node->children[i], Types::intrinsic(Types::String));
 						}
 						node->type = Types::intrinsic(Types::String);
 					} else if(allInts) {
@@ -411,14 +413,8 @@ namespace Front {
 
 				checkType(node->children[0], context);
 
-				if(Type::equals(context.procedure->type->returnType, Types::intrinsic(Types::String))) {
-					coerceString(node->children[0]);
-				}
-
-				// Check that return argument matches the procedure's return type
-				if(!Type::equals(node->children[0]->type, context.procedure->type->returnType)) {
-					throw TypeError(node, "Type mismatch");
-				}
+				// Coerce the return argument to the procedure's return type
+				node->children[0] = coerce(node->children[0], context.procedure->type->returnType);
 				node->type = Types::intrinsic(Types::Void);
 				break;
 

@@ -36,7 +36,7 @@ namespace Front {
 			NodeTypeBreak, //!< Break statement
 			NodeTypeContinue, //!< Continue statement
 			NodeTypeMember, //!< Structure member
-			NodeTypeCoerceString //!< Convert argument to string
+			NodeTypeCoerce //!< Convert argument to different type
 		};
 
 		/*!

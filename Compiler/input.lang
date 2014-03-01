@@ -1,4 +1,6 @@
 void main()
 {
-	string s = new string(10);
+	string s = 5;
+
+	print(s);
 }

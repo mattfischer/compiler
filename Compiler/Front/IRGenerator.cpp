@@ -501,15 +501,17 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeCoerceString:
+			case Node::NodeTypeCoerce:
 				{
 					result = procedure->newTemp();
 					IR::Symbol *source = processRValue(node->children[0], context);
 
-					if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
-					} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Int))) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
+					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+						if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
+						} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Int))) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
+						}
 					}
 
 					break;
