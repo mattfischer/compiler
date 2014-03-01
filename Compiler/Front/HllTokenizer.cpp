@@ -107,6 +107,17 @@ HllTokenizer::Token HllTokenizer::getNext()
 		return next;
 	}
 
+	if(buffer()[0] == '\'') {
+		if(!fillBuffer(3) || buffer()[2] != '\'') {
+			setError("Unterminated character constant");
+			return next;
+		}
+
+		next = createToken(TypeChar, buffer().substr(1, 1));
+		emptyBuffer(3);
+		return next;
+	}
+
 	// Nothing matched, log an error
 	std::stringstream ss;
 	ss << "Illegal symbol '" << buffer()[0] << "'";

@@ -30,7 +30,8 @@ public:
 		TypeLiteral = Input::Tokenizer::Token::TypeLiteral, //!< Literal text such as "+" or "while"
 		TypeIdentifier, //!< An arbitrary text string
 		TypeNumber, //!< A string of digits
-		TypeString //!< A string literal
+		TypeString, //!< A string literal
+		TypeChar //!< A character literal
 	};
 
 	std::string typeName(int type);

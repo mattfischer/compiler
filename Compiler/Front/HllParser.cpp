@@ -568,6 +568,14 @@ Node *HllParser::parseBaseExpression(bool required)
 		consume();
 
 		return node;
+	} else if(match(HllTokenizer::TypeChar)) {
+		// <BaseExpression> := CHAR
+		node = newNode(Node::NodeTypeConstant, next().line);
+		node->lexVal.i = (int)next().text[0];
+		node->type = Types::intrinsic(Types::Char);
+		consume();
+
+		return node;
 	} else if(matchLiteral("true") || matchLiteral("false")) {
 		// <BaseExpression> := 'true' | 'false'
 		int value;

@@ -1,9 +1,6 @@
 void main()
 {
 	string s = "AB";
-	print s;
-
-	char c = s[0];
-	s[1] = c;
+	s[0] = 'B';
 	print s;
 }
