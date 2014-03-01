@@ -1,9 +1,9 @@
-void printString(string s)
-{
-  print(s);
-}
-
 void main()
 {
-  printString(3);
+	string s = "AB";
+	print s;
+
+	char c = s[0];
+	s[1] = c;
+	print s;
 }

@@ -38,6 +38,7 @@ namespace Front {
 			intrinsics[Bool] = new TypeIntrinsic("bool", 4);
 			intrinsics[Int] = new TypeIntrinsic("int", 4);
 			intrinsics[Void] = new TypeIntrinsic("void", 0);
+			intrinsics[Char] = new TypeIntrinsic("char", 1);
 			intrinsics[String] = new TypeIntrinsic("string", 4);
 		}
 

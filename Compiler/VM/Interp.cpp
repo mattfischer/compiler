@@ -217,11 +217,11 @@ namespace VM {
 							break;
 
 						case VM::ThreeAddrLoadByte:
-							regs[instr.three.regLhs] = mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)] & 0xff;
+							regs[instr.three.regLhs] = mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)];
 							break;
 
 						case VM::ThreeAddrStoreByte:
-							mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)] = regs[instr.three.regLhs];
+							mem[regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)] = regs[instr.three.regLhs] & 0xff;
 							break;
 					}
 					break;

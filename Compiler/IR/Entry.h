@@ -54,6 +54,8 @@ namespace IR {
 			TypeNew, //!< Allocate memory
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem, //!< Load from memory
+			TypeStoreMemByte, //!< Store byte to memory
+			TypeLoadMemByte, //!< Load byte from memory
 			TypeLoadString, //!< Load a string constant
 			TypeConcat, //!< Concatentate strings
 			TypeStringBool, //!< Convert bool to string

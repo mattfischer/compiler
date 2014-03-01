@@ -289,7 +289,11 @@ namespace Front {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type)));
 
 					// Emit the store into the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
+					if(node->type->size == 1) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMemByte, b, a, offset));
+					} else {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
+					}
 				} else if(node->children[0]->nodeType == Node::NodeTypeMember) {
 					Node *memberNode = node->children[0];
 
@@ -466,7 +470,11 @@ namespace Front {
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
+					if(node->type->size == 1) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMemByte, result, base, offset));
+					} else {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
+					}
 					break;
 				}
 

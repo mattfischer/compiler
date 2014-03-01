@@ -19,6 +19,7 @@ namespace Front {
 			Int,
 			Void,
 			String,
+			Char,
 			NumIntrinsics
 		};
 		static Type *intrinsic(Intrinsic intrinsic);

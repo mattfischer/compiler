@@ -440,19 +440,22 @@ namespace Front {
 			case Node::NodeTypeArray:
 				{
 					checkChildren(node, context);
-					Node *arrayNode = node->children[0];
+					Node *baseNode = node->children[0];
 					Node *subscriptNode = node->children[1];
-
-					if(arrayNode->type->type != Type::TypeArray) {
-						throw TypeError(arrayNode, "Attempt to take subscript of non-array");
-					}
 
 					if(!Type::equals(subscriptNode->type, Types::intrinsic(Types::Int))) {
 						throw TypeError(subscriptNode, "Non-integral subscript");
 					}
 
-					TypeArray *typeArray = (TypeArray*)arrayNode->type;
-					node->type = typeArray->baseType;
+					if(Type::equals(baseNode->type, Types::intrinsic(Types::String))) {
+						node->type = Types::intrinsic(Types::Char);
+					} else if(baseNode->type->type == Type::TypeArray) {
+						TypeArray *typeArray = (TypeArray*)baseNode->type;
+						node->type = typeArray->baseType;
+					} else {
+						throw TypeError(baseNode, "Attempt to take subscript of illegal object");
+					}
+
 					break;
 				}
 
