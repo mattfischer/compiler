@@ -1,6 +1,4 @@
-void main()
+void main(int x)
 {
-	string s = 5;
-
-	print(s);
+	print("Value: " + x);
 }

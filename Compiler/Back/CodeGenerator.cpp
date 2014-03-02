@@ -206,7 +206,7 @@ namespace Back {
 				case IR::Entry::TypeCJump:
 					{
 						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
-						stream << "    cjmp " << cjump->trueTarget->name << std::endl;
+						stream << "    cjmp r" << regMap[cjump->pred] << ", " << cjump->trueTarget->name << std::endl;
 						stream << "    jmp " << cjump->falseTarget->name << std::endl;
 						break;
 					}
@@ -393,14 +393,14 @@ namespace Back {
 				case IR::Entry::TypeStringBool:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    strbool r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
+						stream << "    strbool r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
 				case IR::Entry::TypeStringInt:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    strint r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
+						stream << "    strint r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 

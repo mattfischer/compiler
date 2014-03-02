@@ -95,6 +95,24 @@ namespace Front {
 		return node;
 	}
 
+	void coerceChildren(Node *node, Type *type)
+	{
+		for(unsigned int i=0; i<node->children.size(); i++) {
+			node->children[i] = coerce(node->children[i], type);
+		}
+	}
+
+	bool isChildOfType(Node *node, Type *type)
+	{
+		for(unsigned int i=0; i<node->children.size(); i++) {
+			if(Type::equals(node->children[i]->type, type)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/*!
 	 * \brief Generate a single procedure
 	 * \param node Tree node for procedure definition
@@ -334,20 +352,18 @@ namespace Front {
 			case Node::NodeTypeCompare:
 				checkChildren(node, context);
 
-				// Check that types match
-				if(!Type::equals(node->children[0]->type, node->children[1]->type)) {
-					throw TypeError(node, "Type mismatch");
-				}
-
-				if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Int)) &&
-					!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
-					throw TypeError(node, "Type mismatch");
-				}
-
 				switch(node->nodeSubtype) {
 					case Node::NodeSubtypeAnd:
 					case Node::NodeSubtypeOr:
-						if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+						coerceChildren(node, Types::intrinsic(Types::Bool));
+						break;
+
+					default:
+						if(isChildOfType(node, Types::intrinsic(Types::Int))) {
+							coerceChildren(node, Types::intrinsic(Types::Int));
+						} else if(isChildOfType(node, Types::intrinsic(Types::Bool))) {
+							coerceChildren(node, Types::intrinsic(Types::Bool));
+						} else {
 							throw TypeError(node, "Type mismatch");
 						}
 						break;
@@ -360,29 +376,13 @@ namespace Front {
 				{
 					checkChildren(node, context);
 
-					bool isString = false;
-					bool allInts = true;
-					for(unsigned int i=0; i<node->children.size(); i++) {
-						if(Type::equals(node->children[i]->type, Types::intrinsic(Types::String))) {
-							isString = true;
-						}
-
-						if(!Type::equals(node->children[i]->type, Types::intrinsic(Types::Int))) {
-							allInts = false;
-						}
-					}
-
-					if(isString && node->nodeSubtype == Node::NodeSubtypeAdd) {
-						for(unsigned int i=0; i<node->children.size(); i++) {
-							node->children[i] = coerce(node->children[i], Types::intrinsic(Types::String));
-						}
+					if(node->nodeSubtype == Node::NodeSubtypeAdd && isChildOfType(node, Types::intrinsic(Types::String))) {
+						coerceChildren(node, Types::intrinsic(Types::String));
 						node->type = Types::intrinsic(Types::String);
-					} else if(allInts) {
-						node->type = Types::intrinsic(Types::Int);
 					} else {
-						throw TypeError(node, "Type mismatch");
+						coerceChildren(node, Types::intrinsic(Types::Int));
+						node->type = Types::intrinsic(Types::Int);
 					}
-
 					break;
 				}
 
