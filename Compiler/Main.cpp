@@ -68,8 +68,8 @@ int main(int arg, char *argv[])
 
 	std::stringstream s;
 	Back::CodeGenerator::generate(irProgram, s);
-	std::cout << "*** Code ***" << std::endl;
-	std::cout << s.str();
+	std::cout << "*** Assembly ***" << std::endl;
+	std::cout << s.str() << std::endl;
 
 	Back::AsmTokenizer asmTokenizer(s);
 	Back::AsmParser asmParser(asmTokenizer);
@@ -90,6 +90,7 @@ int main(int arg, char *argv[])
 		return 1;
 	}
 
+	std::cout << "*** Code ***" << std::endl;
 	for(unsigned int i = 0; i < linked->instructions.size(); i+=4) {
 		VM::Instruction instr;
 		for(std::map<std::string, int>::iterator it=linked->symbols.begin(); it != linked->symbols.end(); it++) {

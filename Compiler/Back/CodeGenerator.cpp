@@ -249,7 +249,7 @@ namespace Back {
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->rhs1] != threeAddr->imm) {
-							stream << "    mov r" << threeAddr->imm << ", r" << regMap[threeAddr->lhs] << std::endl;
+							stream << "    mov r" << threeAddr->imm << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						}
 						break;
 					}

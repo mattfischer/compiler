@@ -442,6 +442,7 @@ namespace Front {
 
 					if(node->children.size() > 1) {
 						Node *argsNode = node->children[1];
+						checkType(argsNode, context);
 
 						if(!Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
 							throw TypeError(node, "Constructor argument passed to non-string");

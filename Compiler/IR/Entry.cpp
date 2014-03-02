@@ -84,7 +84,7 @@ namespace IR {
 			needComma = true;
 		}
 
-		if(imm) {
+		if(imm || !rhs1) {
 			o << (needComma ? ", " : "") << imm;
 		}
 	}

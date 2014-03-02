@@ -10,7 +10,7 @@ namespace Transform {
 	bool CopyProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
-		changed |= backward(procedure, analysis);
+		//changed |= backward(procedure, analysis);
 		changed |= forward(procedure, analysis);
 
 		return changed;
