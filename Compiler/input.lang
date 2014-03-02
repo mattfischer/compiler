@@ -1,4 +1,4 @@
 void main(int x)
 {
-	print("Value: " + x);
+	print("Hello\nWorld");
 }

@@ -38,6 +38,7 @@ public:
 
 private:
 	virtual Token getNext();
+	bool evaluateEscapes(std::string &text);
 };
 }
 #endif

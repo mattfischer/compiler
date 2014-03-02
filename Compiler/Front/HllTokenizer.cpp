@@ -23,6 +23,42 @@ HllTokenizer::HllTokenizer(std::istream &stream)
 {
 }
 
+struct {
+	char escape;
+	char value;
+} escapes[] = {
+	{ '0', '\0' },
+	{ 'n', '\n' },
+	{ '\\', '\\' },
+	{ '\"', '\"' }
+};
+
+bool HllTokenizer::evaluateEscapes(std::string &text)
+{
+	for(unsigned int i=0; i<text.size(); i++) {
+		if(text[i] == '\\') {
+			bool valid = false;
+			if(i < text.size() - 1) {
+				for(unsigned int j=0; j < sizeof(escapes) / sizeof(escapes[0]); j++) {
+					if(text[i+1] == escapes[j].escape) {
+						text[i] = escapes[j].value;
+						text.erase(i+1, 1);
+						valid = true;
+						break;
+					}
+				}
+			}
+
+			if(!valid) {
+				setError("Invalid escape sequence");
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 /*!
  * \brief Get the next token in the stream
  */
@@ -102,19 +138,40 @@ HllTokenizer::Token HllTokenizer::getNext()
 		}
 
 		// Construct a token out of the characters found
-		next = createToken(TypeString, buffer().substr(1, len - 1));
+		std::string text = buffer().substr(1, len - 1);
 		emptyBuffer(len + 1);
+
+		if(evaluateEscapes(text)) {
+			next = createToken(TypeString, text);
+		}
 		return next;
 	}
 
 	if(buffer()[0] == '\'') {
-		if(!fillBuffer(3) || buffer()[2] != '\'') {
-			setError("Unterminated character constant");
-			return next;
+		size_t len = 1;
+		while(true) {
+			if(!fillBuffer(len + 1)) {
+				setError("Unterminated character literal");
+				return next;
+			}
+
+			if(buffer()[len] == '\'') {
+				break;
+			}
+			len++;
 		}
 
-		next = createToken(TypeChar, buffer().substr(1, 1));
-		emptyBuffer(3);
+		// Construct a token out of the characters found
+		std::string text = buffer().substr(1, len - 1);
+		emptyBuffer(len + 1);
+
+		if(evaluateEscapes(text)) {
+			if(text.size() == 1) {
+				next = createToken(TypeChar, text);
+			} else {
+				setError("Invalid character literal");
+			}
+		}
 		return next;
 	}
 

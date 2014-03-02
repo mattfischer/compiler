@@ -20,6 +20,11 @@ Parser::Parser(Tokenizer &tokenizer)
  */
 const Tokenizer::Token &Parser::next(int num)
 {
+	// If the tokenizer has an error, propagate it up
+	if(mTokenizer.error()) {
+		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
+	}
+
 	return mTokenizer.next(num);
 }
 
@@ -29,11 +34,6 @@ const Tokenizer::Token &Parser::next(int num)
  */
 void Parser::expect(int type)
 {
-	// If the tokenizer has an error, propagate it up
-	if(mTokenizer.error()) {
-		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
-	}
-
 	// If the token type doesn't match throw an error
 	if(next().type != type) {
 		errorExpected(mTokenizer.typeName(type));
@@ -49,11 +49,6 @@ void Parser::expect(int type)
  */
 void Parser::expectLiteral(const std::string &text)
 {
-	// If the tokenizer has an error, propagate it up
-	if(mTokenizer.error()) {
-		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
-	}
-
 	// If the next token is not a literal, or does not have the expected text, throw an error
 	if(next().type != Input::Tokenizer::Token::TypeLiteral || next().text != text) {
 		errorExpected(text);
@@ -72,7 +67,7 @@ void Parser::expectLiteral(const std::string &text)
 bool Parser::match(int type, int num)
 {
 	// Check if the tokenizer has an error or if the next token is of a different type
-	if(mTokenizer.error() || next(num).type != type) {
+	if(next(num).type != type) {
 		return false;
 	}
 
@@ -88,7 +83,7 @@ bool Parser::match(int type, int num)
 bool Parser::matchLiteral(const std::string &text, int num)
 {
 	// Check if the tokenizer has an error or if the next token is a literal with the given text
-	if(mTokenizer.error() || next(num).type != Input::Tokenizer::Token::TypeLiteral || next(num).text != text) {
+	if(next(num).type != Input::Tokenizer::Token::TypeLiteral || next(num).text != text) {
 		return false;
 	}
 
