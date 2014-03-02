@@ -359,14 +359,23 @@ namespace Front {
 						break;
 
 					default:
-						if(isChildOfType(node, Types::intrinsic(Types::Int))) {
-							coerceChildren(node, Types::intrinsic(Types::Int));
-						} else if(isChildOfType(node, Types::intrinsic(Types::Bool))) {
-							coerceChildren(node, Types::intrinsic(Types::Bool));
-						} else {
-							throw TypeError(node, "Type mismatch");
+						{
+							Types::Intrinsic intrinsics[] = { Types::Int, Types::Bool, Types::Char };
+							bool found = false;
+							for(int i=0; i<sizeof(intrinsics) / sizeof(intrinsics[0]); i++) {
+								Type *type = Types::intrinsic(intrinsics[i]);
+								if(isChildOfType(node, type)) {
+									coerceChildren(node, type);
+									found = true;
+									break;
+								}
+							}
+
+							if(!found) {
+								throw TypeError(node, "Type mismatch");
+							}
+							break;
 						}
-						break;
 				}
 
 				node->type = Types::intrinsic(Types::Bool);

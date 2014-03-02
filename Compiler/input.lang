@@ -1,4 +1,7 @@
 void main(int x)
 {
-	print("Hello\nWorld");
+	string s = "ABC";
+	if(s[0] == 'A') {
+		print("Yes");
+	}
 }
