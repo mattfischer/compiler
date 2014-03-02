@@ -172,6 +172,12 @@ namespace VM {
 							}
 							break;
 
+						case VM::ThreeAddrAddNCond:
+							if(!regs[instr.three.regRhs1]) {
+								regs[instr.three.regLhs] = regs[instr.three.regRhs2] + instr.three.imm;
+							}
+							break;
+
 						case VM::ThreeAddrEqual:
 							regs[instr.three.regLhs] = (regs[instr.three.regRhs1] == regs[instr.three.regRhs2]);
 							break;

@@ -202,6 +202,30 @@ namespace VM {
 				}
 				break;
 
+			case ThreeAddrAddNCond:
+				if(instr.three.regLhs == RegPC) {
+					// If target register is PC, print as a conditional jump
+					if(instr.three.imm == 0) {
+						printStd(o, "ncjmp", instr.three.regRhs1, instr.three.regRhs2);
+					} else {
+						if(instr.three.regRhs2 == RegPC) {
+							// PC-relative jumps can be printed with their constant only
+							printImm(o, "ncjmp", instr.three.regRhs1, -1, instr.three.imm);
+						} else {
+							printImm(o, "ncjmp", instr.three.regRhs1, instr.three.regRhs2, instr.three.imm);
+						}
+					}
+				} else {
+					if(instr.three.imm == 0) {
+						// With no immediate value, print as a conditional move
+						printStd(o, "ncmov", instr.three.regRhs1, instr.three.regRhs2);
+					} else {
+						// With a positive immediate value, print as a conditional add
+						o << "ncadd " << regName(instr.three.regRhs1) << ", " << regName(instr.three.regLhs) << ", " << regName(instr.three.regRhs2) << ", #" << instr.three.imm;
+					}
+				}
+				break;
+
 			case ThreeAddrEqual:
 				printStd(o, "equ", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;

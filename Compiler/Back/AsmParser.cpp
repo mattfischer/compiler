@@ -102,7 +102,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		if(instr.type == VM::InstrTwoAddr && instr.two.type == VM::TwoAddrAddImm) {
 			int targetOffset = labels[target];
 			instr.two.imm = targetOffset - offset;
-		} else if(instr.type == VM::InstrThreeAddr && instr.three.type == VM::ThreeAddrAddCond) {
+		} else if(instr.type == VM::InstrThreeAddr && (instr.three.type == VM::ThreeAddrAddCond || instr.three.type == VM::ThreeAddrAddNCond)) {
 			int targetOffset = labels[target];
 			instr.three.imm = targetOffset - offset;
 		} else if(instr.type == VM::InstrOneAddr && instr.one.type == VM::OneAddrCall) {
@@ -345,6 +345,17 @@ bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, 
 		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 		instr = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, VM::RegPC, pred, VM::RegPC, 0);
+		jumps[offset] = target;
+		return true;
+	}
+
+	if(next().text == "ncjmp") {
+		consume();
+		int pred = parseReg();
+		expectLiteral(",");
+		std::string target = next().text;
+		expect(AsmTokenizer::TypeIdentifier);
+		instr = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddNCond, VM::RegPC, pred, VM::RegPC, 0);
 		jumps[offset] = target;
 		return true;
 	}

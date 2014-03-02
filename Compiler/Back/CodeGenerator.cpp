@@ -206,8 +206,14 @@ namespace Back {
 				case IR::Entry::TypeCJump:
 					{
 						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
-						stream << "    cjmp r" << regMap[cjump->pred] << ", " << cjump->trueTarget->name << std::endl;
-						stream << "    jmp " << cjump->falseTarget->name << std::endl;
+						if(cjump->next == cjump->trueTarget) {
+							stream << "    ncjmp r" << regMap[cjump->pred] << ", " << cjump->falseTarget->name << std::endl;
+						} else if(cjump->next == cjump->falseTarget) {
+							stream << "    cjmp r" << regMap[cjump->pred] << ", " << cjump->trueTarget->name << std::endl;
+						} else {
+							stream << "    cjmp r" << regMap[cjump->pred] << ", " << cjump->trueTarget->name << std::endl;
+							stream << "    jmp " << cjump->falseTarget->name << std::endl;
+						}
 						break;
 					}
 
