@@ -235,13 +235,13 @@ namespace IR {
 	 * \brief Procedure call entry
 	 */
 	struct EntryCall : public Entry {
-		Procedure *target; //!< Procedure to call
+		std::string target; //!< Procedure to call
 
 		/*!
 		 * \brief Constructor
 		 * \param _target Procedure to call
 		 */
-		EntryCall(Procedure *_target);
+		EntryCall(const std::string &_target);
 
 		virtual void print(std::ostream &o) const;
 	};

@@ -331,7 +331,7 @@ namespace Front {
 
 					// Emit procedure call
 					IR::Procedure *target = context.program->findProcedure(node->children[0]->lexVal.s);
-					procedure->emit(new IR::EntryCall(target));
+					procedure->emit(new IR::EntryCall(target->name()));
 
 					result = procedure->newTemp();
 					if(target->returnsValue()) {

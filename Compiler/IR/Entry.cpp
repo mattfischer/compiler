@@ -231,14 +231,14 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryCall::EntryCall(Procedure *_target)
+	EntryCall::EntryCall(const std::string &_target)
 		: Entry(TypeCall), target(_target)
 	{
 	}
 
 	void EntryCall::print(std::ostream &o) const
 	{
-		o << "  " << names[type] << target->name();
+		o << "  " << names[type] << target;
 	}
 
 	EntryString::EntryString(Type _type, Symbol *_lhs, const std::string &_string)

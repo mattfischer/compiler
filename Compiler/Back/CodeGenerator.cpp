@@ -220,7 +220,7 @@ namespace Back {
 				case IR::Entry::TypeCall:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
-						stream << "    call " << call->target->name() << std::endl;
+						stream << "    call " << call->target << std::endl;
 						break;
 					}
 
