@@ -32,6 +32,24 @@ namespace Back {
 		}
 	}
 
+	static void substituteLibraryCalls(IR::Procedure *procedure)
+	{
+		for(IR::EntryList::iterator it = procedure->entries().begin(); it != procedure->entries().end(); it++) {
+			IR::Entry *entry = *it;
+			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+
+			if(entry->type == IR::Entry::TypeConcat) {
+				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
+				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs2, 0, 1));
+				procedure->entries().insert(entry, new IR::EntryCall("__string_concat"));
+				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
+				procedure->entries().erase(it);
+				it--;
+				delete entry;
+			}
+		}
+	}
+
 	/*!
 	 * \brief Generate code for an IR procedure
 	 * \param procedure Procedure to generate code for
@@ -43,6 +61,8 @@ namespace Back {
 		std::map<IR::Symbol*, int> regMap;
 		std::map<std::string, std::string> strings;
 		std::string savedRegs;
+
+		substituteLibraryCalls(procedure);
 
 		// Allocate registers for the procedure
 		Util::Timer timer;

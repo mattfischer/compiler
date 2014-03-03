@@ -22,7 +22,7 @@ const Tokenizer::Token &Parser::next(int num)
 {
 	// If the tokenizer has an error, propagate it up
 	if(mTokenizer.error()) {
-		throw ParseException(mTokenizer.errorMessage(), next().line, next().column);
+		throw ParseException(mTokenizer.errorMessage(), mTokenizer.line(), mTokenizer.column());
 	}
 
 	return mTokenizer.next(num);

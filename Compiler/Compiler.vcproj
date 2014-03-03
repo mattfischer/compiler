@@ -205,10 +205,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\input.asm"
-				>
-			</File>
-			<File
 				RelativePath=".\Back\Linker.cpp"
 				>
 			</File>

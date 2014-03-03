@@ -81,9 +81,9 @@ HllTokenizer::Token HllTokenizer::getNext()
 	}
 
 	// If no literals matched, see if an identifier can be constructed
-	if(std::isalpha(buffer()[0])) {
+	if(std::isalpha(buffer()[0]) || buffer()[0] == '_') {
 		size_t len = 0;
-		while(std::isalpha(buffer()[len])) {
+		while(std::isalpha(buffer()[len]) || buffer()[len] == '_') {
 			len++;
 			if(!fillBuffer(len + 1)) {
 				break;
