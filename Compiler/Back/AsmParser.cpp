@@ -97,7 +97,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 			expectLiteral(",");
 			std::string value = next().text;
 			expect(AsmTokenizer::TypeString);
-			int newSize = offset + value.size() + 1;
+			int newSize = offset + (int)value.size() + 1;
 			if(newSize % 4 > 0) {
 				newSize += 4 - (newSize % 4);
 			}
