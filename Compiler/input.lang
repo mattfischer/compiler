@@ -32,14 +32,15 @@ string __string_bool(bool x)
   }
 }
 
-void fixString(string s)
+string __string_char(char c)
 {
-  s[0] = s[0] + 3;
+  string result = new string(2);
+  result[0] = c;
+  result[1] = '\0';
+  return result;
 }
 
 void main(int x)
 {
-	string s = "ABC";
-	fixString(s);
-	print(s);
+	print('c');
 }

@@ -72,7 +72,8 @@ namespace Front {
 
 			if(Type::equals(type, Types::intrinsic(Types::String))) {
 				if(Type::equals(node->type, Types::intrinsic(Types::Bool)) ||
-				   Type::equals(node->type, Types::intrinsic(Types::Int))) {
+				   Type::equals(node->type, Types::intrinsic(Types::Int)) ||
+				   Type::equals(node->type, Types::intrinsic(Types::Char))) {
 					   valid = true;
 				}
 			}

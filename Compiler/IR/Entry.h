@@ -60,6 +60,7 @@ namespace IR {
 			TypeStringConcat, //!< Concatentate strings
 			TypeStringBool, //!< Convert bool to string
 			TypeStringInt, //!< Convert int to string
+			TypeStringChar, //!< Convert char to string
 		};
 
 		Type type; //!< Entry type

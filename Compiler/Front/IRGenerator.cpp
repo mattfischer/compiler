@@ -511,6 +511,8 @@ namespace Front {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
 						} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Int))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
+						} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Char))) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringChar, result, source));
 						}
 					}
 

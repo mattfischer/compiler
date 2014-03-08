@@ -41,6 +41,7 @@ namespace IR {
 		/* TypeConcat     */ "concat   ",
 		/* TypeStringBool */ "strbool  ",
 		/* TypeStringInt  */ "strint   ",
+		/* TypeStringChar */ "strchr   ",
 	};
 
 	static bool lhsAssign(Entry::Type type)
