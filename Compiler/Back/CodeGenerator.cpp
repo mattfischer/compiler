@@ -349,7 +349,14 @@ namespace Back {
 				case IR::Entry::TypeLoadMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    ldr r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
+						std::string opcode;
+						if(threeAddr->lhs->size == 1) {
+							opcode = "ldb";
+						} else {
+							opcode = "ldr";
+						}
+
+						stream << "    " << opcode << " r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
 						if(threeAddr->rhs2) {
 							stream << ", r" << regMap[threeAddr->rhs2];
 						}
@@ -365,39 +372,13 @@ namespace Back {
 				case IR::Entry::TypeStoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    str r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
-						if(threeAddr->rhs2) {
-							stream << ", r" << regMap[threeAddr->rhs2];
+						std::string opcode;
+						if(threeAddr->lhs->size == 1) {
+							opcode = "stb";
+						} else {
+							opcode = "str";
 						}
-
-						if(threeAddr->imm != 0) {
-							stream << ", #" << threeAddr->imm;
-						}
-
-						stream << "]" << std::endl;
-						break;
-					}
-
-				case IR::Entry::TypeLoadMemByte:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    ldb r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
-						if(threeAddr->rhs2) {
-							stream << ", r" << regMap[threeAddr->rhs2];
-						}
-
-						if(threeAddr->imm != 0) {
-							stream << ", #" << threeAddr->imm;
-						}
-
-						stream << "]" << std::endl;
-						break;
-					}
-
-				case IR::Entry::TypeStoreMemByte:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    stb r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
+						stream << "    " << opcode << " r" << regMap[threeAddr->lhs] << ", [r" << regMap[threeAddr->rhs1];
 						if(threeAddr->rhs2) {
 							stream << ", r" << regMap[threeAddr->rhs2];
 						}

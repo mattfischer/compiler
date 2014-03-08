@@ -74,7 +74,7 @@ namespace Transform {
 			// Rename variables
 			int nextVersion = 0;
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
-			activeList[flowGraph->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->symbol);
+			activeList[flowGraph->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
 			newSymbols.push_back(activeList[flowGraph->start()]);
 			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph->blocks().begin(); blockIt != flowGraph->blocks().end(); blockIt++) {
 				Analysis::FlowGraph::Block *block = *blockIt;
@@ -90,7 +90,7 @@ namespace Transform {
 
 					// Create a new version of the variable for each assignment
 					if(entry->assign() == symbol) {
-						IR::Symbol *newSymbol = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->symbol);
+						IR::Symbol *newSymbol = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
 						newSymbols.push_back(newSymbol);
 						entry->replaceAssign(active, newSymbol);
 						active = newSymbol;

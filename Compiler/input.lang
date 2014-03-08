@@ -35,6 +35,6 @@ string __string_bool(bool x)
 void main(bool x)
 {
 	string s = "ABC" + x;
-	
+	s[0] = 'C';
 	print(s);
 }

@@ -45,7 +45,7 @@ namespace Front {
 						break;
 					}
 				}
-				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]);
+				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]->type->size, locals[j]);
 				irProcedure->addSymbol(irSymbol);
 
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
@@ -247,7 +247,7 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeConstant:
 				// Construct a temporary to contain the new value
-				result = procedure->newTemp();
+				result = procedure->newTemp(node->type->size);
 				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
 					procedure->emit(new IR::EntryString(IR::Entry::TypeLoadString, result, node->lexVal.s));
 				} else {
@@ -285,15 +285,11 @@ namespace Front {
 					IR::Symbol *subscript = processRValue(arrayNode->children[1], context);
 
 					// Compute the offset into array memory based o subscript and type size
-					IR::Symbol *offset = procedure->newTemp();
+					IR::Symbol *offset = procedure->newTemp(4);
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type)));
 
 					// Emit the store into the calculated memory location
-					if(node->type->size == 1) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMemByte, b, a, offset));
-					} else {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
-					}
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
 				} else if(node->children[0]->nodeType == Node::NodeTypeMember) {
 					Node *memberNode = node->children[0];
 
@@ -333,7 +329,7 @@ namespace Front {
 					IR::Procedure *target = context.program->findProcedure(node->children[0]->lexVal.s);
 					procedure->emit(new IR::EntryCall(target->name()));
 
-					result = procedure->newTemp();
+					result = procedure->newTemp(node->type->size);
 					if(target->returnsValue()) {
 						// Assign return value to a new temporary
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
@@ -343,7 +339,7 @@ namespace Front {
 
 			case Node::NodeTypeArith:
 				{
-					result = procedure->newTemp();
+					result = procedure->newTemp(node->type->size);
 
 					// Emit code for operator arguments
 					std::vector<IR::Symbol*> arguments;
@@ -384,7 +380,7 @@ namespace Front {
 
 			case Node::NodeTypeCompare:
 				// Construct a new temporary to hold value
-				result = procedure->newTemp();
+				result = procedure->newTemp(node->type->size);
 
 				// Emit code for operator arguments
 				a = processRValue(node->children[0], context);
@@ -429,14 +425,14 @@ namespace Front {
 			case Node::NodeTypeNew:
 				{
 					// Construct a new temporary to hold value
-					result = procedure->newTemp();
+					result = procedure->newTemp(4);
 
 					Node *arg = node->children[0];
-					IR::Symbol *size = procedure->newTemp();
+					IR::Symbol *size = procedure->newTemp(4);
 					if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
 						// Array allocation: total size is typeSize * count
 						Type *type = arg->children[0]->type;
-						IR::Symbol *typeSize = procedure->newTemp();
+						IR::Symbol *typeSize = procedure->newTemp(4);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, typeSize, 0, 0, Type::valueSize(type)));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
@@ -457,7 +453,7 @@ namespace Front {
 
 			case Node::NodeTypeArray:
 				{
-					result = procedure->newTemp();
+					result = procedure->newTemp(node->type->size);
 
 					// Emit code to calculate the array's base address
 					IR::Symbol *base = processRValue(node->children[0], context);
@@ -465,25 +461,21 @@ namespace Front {
 					// Emit code to calculate the array subscript
 					IR::Symbol *subscript = processRValue(node->children[1], context);
 
-					// Compute the offset into array memory based o subscript and type size
-					IR::Symbol *offset = procedure->newTemp();
-					IR::Symbol *size = procedure->newTemp();
+					// Compute the offset into array memory based on subscript and type size
+					IR::Symbol *offset = procedure->newTemp(4);
+					IR::Symbol *size = procedure->newTemp(4);
 
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, size, 0, 0, Type::valueSize(node->type)));
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
-					if(node->type->size == 1) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMemByte, result, base, offset));
-					} else {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
-					}
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
 					break;
 				}
 
 			case Node::NodeTypeMember:
 				{
-					result = procedure->newTemp();
+					result = procedure->newTemp(node->type->size);
 
 					IR::Symbol *base = processRValue(node->children[0], context);
 
@@ -503,7 +495,7 @@ namespace Front {
 
 			case Node::NodeTypeCoerce:
 				{
-					result = procedure->newTemp();
+					result = procedure->newTemp(node->type->size);
 					IR::Symbol *source = processRValue(node->children[0], context);
 
 					if(Type::equals(node->type, Types::intrinsic(Types::String))) {

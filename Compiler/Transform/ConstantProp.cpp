@@ -267,8 +267,6 @@ namespace Transform {
 
 				case IR::Entry::TypeLoadMem:
 				case IR::Entry::TypeStoreMem:
-				case IR::Entry::TypeLoadMemByte:
-				case IR::Entry::TypeStoreMemByte:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 

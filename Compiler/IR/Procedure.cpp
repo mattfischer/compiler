@@ -42,13 +42,13 @@ namespace IR {
 	 * \param type Type to assign to symbol
 	 * \return New symbol
 	 */
-	Symbol *Procedure::newTemp()
+	Symbol *Procedure::newTemp(int size)
 	{
 		std::stringstream ss;
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		IR::Symbol *symbol = new Symbol(name, 0);
+		IR::Symbol *symbol = new Symbol(name, size, 0);
 		addSymbol(symbol);
 
 		return symbol;

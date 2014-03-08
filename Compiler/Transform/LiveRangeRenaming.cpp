@@ -86,7 +86,7 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &
 				idx++;
 
 				// Rename the symbol
-				IR::Symbol *newSymbol = new IR::Symbol(newName, symbol->symbol);
+				IR::Symbol *newSymbol = new IR::Symbol(newName, symbol->size, symbol->symbol);
 				newSymbols.push_back(newSymbol);
 				renameSymbol(entry, symbol, newSymbol, useDefs);
 			}

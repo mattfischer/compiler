@@ -15,6 +15,7 @@ namespace IR {
 	class Symbol {
 	public:
 		std::string name; //!< Symbol name
+		int size; //!< Symbol data size
 		Front::Symbol *symbol; //!< Front-end symbol that this one corresponds to
 
 		/*!
@@ -22,7 +23,7 @@ namespace IR {
 		 * \param _name Symbol name
 		 * \param _symbol Front-end symbol
 		 */
-		Symbol(const std::string &_name, Front::Symbol *_symbol) : name(_name), symbol(_symbol) {}
+		Symbol(const std::string &_name, int _size, Front::Symbol *_symbol) : name(_name), size(_size), symbol(_symbol) {}
 	};
 
 	typedef std::set<Symbol*> SymbolSet; //!< Convenience typedef

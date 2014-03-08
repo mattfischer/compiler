@@ -35,8 +35,6 @@ namespace IR {
 		/* TypeNew        */ "new      ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
-		/* TypeStoreMemByte*/ "stmemb   ",
-		/* TypeLoadMemByte*/ "ldmemb   ",
 		/* TypeLoadString */ "ldstr    ",
 		/* TypeConcat     */ "concat   ",
 		/* TypeStringBool */ "strbool  ",
@@ -47,7 +45,6 @@ namespace IR {
 	{
 		switch(type) {
 			case Entry::TypeStoreMem:
-			case Entry::TypeStoreMemByte:
 				return false;
 
 			default:

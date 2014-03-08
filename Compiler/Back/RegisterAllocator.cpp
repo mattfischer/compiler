@@ -359,7 +359,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 	for(int i=0; i<CallerSavedRegisters; i++) {
 		std::stringstream s;
 		s << "arg" << i;
-		IR::Symbol *symbol = new IR::Symbol(s.str(), 0);
+		IR::Symbol *symbol = new IR::Symbol(s.str(), 4, 0);
 		registers[symbol] = i;
 		callerSavedRegisters.push_back(symbol);
 	}

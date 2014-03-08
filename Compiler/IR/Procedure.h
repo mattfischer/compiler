@@ -28,7 +28,7 @@ namespace IR {
 		EntryList &entries() { return mEntries; } //!< Body of procedure
 		bool returnsValue() { return mReturnsValue; } //!< Whether the procedure returns a value
 		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
-		Symbol *newTemp();
+		Symbol *newTemp(int size);
 		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(Front::Symbol *symbol);
 		EntryLabel *newLabel();
