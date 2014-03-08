@@ -7,8 +7,8 @@ static char whitespace[] = { ' ', '\t', '\r', '\n' };
 
 static char *literals[] = { "[", "]", ",", ":", "#", "{", "}", "-" };
 
-static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "div", "mod", "ldr", "str", "new",
-							"strbool", "strint", "cmov", "cadd", "ncmov", "ncadd", "equ",
+static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "div", "mod", "ldr", "str",
+							"new", "cmov", "cadd", "ncmov", "ncadd", "equ",
 							"neq", "lt", "lte", "gt", "gte", "or", "and", "print", "call",
 							"ldm", "stm", "defproc", "string", "lea", "ldb", "stb"
 						  };

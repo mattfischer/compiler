@@ -40,7 +40,17 @@ string __string_char(char c)
   return result;
 }
 
+string __string_int(int x)
+{
+  string result = "";
+  while(x > 0) {
+    result = ('0' + x % 10) + result;
+    x = x / 10;
+  }
+  return result;
+}
+
 void main(int x)
 {
-	print('c');
+	print(x + 12345);
 }

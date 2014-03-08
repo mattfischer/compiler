@@ -5,19 +5,6 @@
 #include <sstream>
 
 namespace VM {
-	static int strInt(unsigned char mem[], Heap &heap, int x)
-	{
-		std::stringstream s;
-		s << x;
-		std::string str = s.str();
-
-		int result = heap.allocate(str.size() + 1);
-		char *r = (char*)&mem[result];
-		std::strcpy(r, str.c_str());
-		r[str.size()] = '\0';
-		return result;
-	}
-
 	/*!
 	 * \brief Run a VM program
 	 * \param program Program to run
@@ -109,10 +96,6 @@ namespace VM {
 
 						case VM::TwoAddrNew:
 							regs[instr.two.regLhs] = heap.allocate(regs[instr.two.regRhs]);
-							break;
-
-						case VM::TwoAddrStringInt:
-							regs[instr.two.regLhs] = strInt(mem, heap, regs[instr.two.regRhs]);
 							break;
 
 						case VM::TwoAddrLoadByte:

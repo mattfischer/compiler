@@ -65,6 +65,15 @@ namespace Back {
 					procedure->entries().erase(it);
 					it--;
 					delete entry;
+					break;
+
+				case IR::Entry::TypeStringInt:
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
+					procedure->entries().insert(entry, new IR::EntryCall("__string_int"));
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
+					procedure->entries().erase(it);
+					it--;
+					delete entry;
 					break;			
 			}
 		}

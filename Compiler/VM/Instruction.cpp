@@ -148,10 +148,6 @@ namespace VM {
 				printStd(o, "new", instr.two.regLhs, instr.two.regRhs);
 				break;
 
-			case TwoAddrStringInt:
-				printStd(o, "strint", instr.two.regLhs, instr.two.regRhs);
-				break;
-
 			case TwoAddrLoadByte:
 				printInd(o, "ldb", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
 				break;
