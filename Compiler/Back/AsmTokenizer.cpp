@@ -45,9 +45,9 @@ AsmTokenizer::Token AsmTokenizer::getNext()
 	}
 
 	// If no literals matched, see if an identifier can be constructed
-	if(std::isalpha(buffer()[0]) || buffer()[0] == '_') {
+	if(std::isalpha(buffer()[0]) || buffer()[0] == '_' || buffer()[0] == '.') {
 		size_t len = 0;
-		while(std::isalnum(buffer()[len]) || buffer()[len] == '_') {
+		while(std::isalnum(buffer()[len]) || buffer()[len] == '_' || buffer()[len] == '.') {
 			len++;
 			if(!fillBuffer(len + 1)) {
 				break;

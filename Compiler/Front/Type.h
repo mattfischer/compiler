@@ -14,7 +14,8 @@ namespace Front {
 			TypeIntrinsic,
 			TypeProcedure,
 			TypeArray,
-			TypeStruct
+			TypeStruct,
+			TypeClass
 		};
 
 		Type(TypeType _type, std::string _name, int _size)
@@ -87,11 +88,12 @@ namespace Front {
 
 		std::vector<Member> members;
 
-		TypeStruct(const std::string &_name)
-			: Type(Type::TypeStruct, _name, 0)
+		TypeStruct(TypeType _type, const std::string &_name)
+			: Type(_type, _name, 0)
 		{}
 
 		void addMember(Type *type, const std::string &name);
+		Member *findMember(const std::string &name);
 	};
 }
 

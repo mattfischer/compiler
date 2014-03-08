@@ -1,9 +1,13 @@
-void doStuff()
-{
-    print("Hello");
+class Foo {
+  void doStuff()
+  {
+    print "Hello";
+  }
 }
 
 void main(int x)
 {
-	doStuff();
+	Foo foo = new Foo;
+
+	foo.doStuff();
 }

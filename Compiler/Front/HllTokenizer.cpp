@@ -10,7 +10,7 @@ static char *literals[] = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
 					};
 
 static char *keywords[] = { "print", "if", "else", "while", "return", "new", "for", "break",
-					 "continue", "true", "false", "struct"
+					 "continue", "true", "false", "struct", "class"
 					};
 
 namespace Front {

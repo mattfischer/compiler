@@ -28,7 +28,9 @@ private:
 	Node *parseProgram();
 	Node *parseProcedure();
 	Node *parseStruct();
+	Node *parseClass();
 	Node *parseVariableDeclaration();
+	Node *parseArgumentList();
 	Node *parseType(bool required = false);
 	Node *parseStatementList();
 	Node *parseStatement(bool required = false);

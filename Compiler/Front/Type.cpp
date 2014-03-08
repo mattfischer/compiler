@@ -18,6 +18,7 @@ namespace Front {
 		switch(a->type) {
 			case TypeIntrinsic:
 			case TypeStruct:
+			case TypeClass:
 				return a == b;
 
 			case TypeProcedure:
@@ -101,5 +102,16 @@ namespace Front {
 		members.push_back(member);
 
 		size += Type::valueSize(type);
+	}
+
+	TypeStruct::Member *TypeStruct::findMember(const std::string &name)
+	{
+		for(unsigned int i=0; i<members.size(); i++) {
+			if(members[i].name == name) {
+				return &members[i];
+			}
+		}
+
+		return 0;
 	}
 }

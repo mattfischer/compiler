@@ -51,9 +51,11 @@ namespace Front {
 				Node *node = mTree->children[i];
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
-					generateProcedure(mTree->children[i], program);
+					generateProcedure(mTree->children[i], program, mTree->children[i]->lexVal.s);
 				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
+				} else if(node->nodeType == Node::NodeTypeClassDef) {
+					addClass(mTree->children[i], program);
 				}
 			}
 			return program;
@@ -137,13 +139,13 @@ namespace Front {
 	 * \param node Tree node for procedure definition
 	 * \param program Program to add procedure to
 	 */
-	void ProgramGenerator::generateProcedure(Node *node, Program *program)
+	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, const std::string &name)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
 
 		// Begin populating the procedure object
-		procedure->name = node->lexVal.s;
+		procedure->name = name;
 		procedure->locals = new Scope(program->globals);
 
 		// Iterate the tree's argument items
@@ -185,6 +187,8 @@ namespace Front {
 
 		// Add the procedure to the program's procedure list
 		program->procedures.push_back(procedure);
+
+		return procedure;
 	}
 
 	/*!
@@ -194,7 +198,7 @@ namespace Front {
 	 */
 	void ProgramGenerator::addStruct(Node *node, Program *program)
 	{
-		TypeStruct *type = new TypeStruct(node->lexVal.s);
+		TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
 		Node *members = node->children[0];
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
@@ -206,6 +210,44 @@ namespace Front {
 		if(!success) {
 			std::stringstream s;
 			s << "Redefinition of structure " << type->name;
+			throw TypeError(node, s.str());
+		}
+	}
+
+	/*!
+	 * \brief Add a class to the type list
+	 * \param node Node describing structure
+	 * \param program Program to add to
+	 */
+	void ProgramGenerator::addClass(Node *node, Program *program)
+	{
+		TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+		Node *members = node->children[0];
+		for(unsigned int i=0; i<members->children.size(); i++) {
+			Node *memberNode = members->children[i];
+			switch(memberNode->nodeType) {
+				case Node::NodeTypeVarDecl:
+				{
+					Type *memberType = createType(memberNode->children[0], program->types);
+					type->addMember(memberType, memberNode->lexVal.s);
+					break;
+				}
+
+				case Node::NodeTypeProcedureDef:
+				{
+					std::stringstream s;
+					s << type->name << "." << memberNode->lexVal.s;
+					Procedure *procedure = generateProcedure(memberNode, program, s.str());
+					type->addMember(procedure->type, memberNode->lexVal.s);
+					break;
+				}
+			}
+		}
+
+		bool success = program->types->registerType(type);
+		if(!success) {
+			std::stringstream s;
+			s << "Redefinition of class " << type->name;
 			throw TypeError(node, s.str());
 		}
 	}
@@ -526,26 +568,21 @@ namespace Front {
 			case Node::NodeTypeMember:
 			{
 				checkType(node->children[0], context);
-				if(node->children[0]->type->type != Type::TypeStruct) {
-					throw TypeError(node, "Attempt to take member of non-structure");
-				}
+				Node *base = node->children[0];
 
-				// Check structure field
-				TypeStruct *typeStruct = (TypeStruct*)node->children[0]->type;
-				int idx = -1;
-				for(unsigned int i=0; i<typeStruct->members.size(); i++) {
-					if(typeStruct->members[i].name == node->lexVal.s) {
-						idx = i;
-						break;
+				if(base->type->type == Type::TypeStruct || base->type->type == Type::TypeClass) {
+					// Check structure field
+					TypeStruct *typeStruct = (TypeStruct*)base->type;
+					TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
+					if(member) {
+						node->type = member->type;
+					} else {
+						std::stringstream s;
+						s << "No member named \'" << node->lexVal.s << "\'";
+						throw TypeError(node, s.str());
 					}
-				}
-
-				if(idx == -1) {
-					std::stringstream s;
-					s << "No member named \'" << node->lexVal.s << "\'";
-					throw TypeError(node, s.str());
 				} else {
-					node->type = typeStruct->members[idx].type;
+					throw TypeError(node, "Attempt to take member of non-structure");
 				}
 			}
 		}

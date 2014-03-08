@@ -330,7 +330,21 @@ namespace Front {
 					}
 
 					// Emit procedure call
-					procedure->emit(new IR::EntryCall(node->children[0]->lexVal.s));
+					Node *target = node->children[0];
+					switch(target->nodeType) {
+						case Node::NodeTypeId:
+							procedure->emit(new IR::EntryCall(target->lexVal.s));
+							break;
+
+						case Node::NodeTypeMember:
+							{
+								Node *base = target->children[0];
+								std::stringstream s;
+								s << base->type->name << "." << target->lexVal.s;
+								procedure->emit(new IR::EntryCall(s.str()));
+								break;
+							}
+					}
 
 					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary

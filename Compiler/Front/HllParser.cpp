@@ -71,7 +71,7 @@ Node *HllParser::parseProgram()
 		Node *node;
 		if(node = parseProcedure()) {
 			list->children.push_back(node);
-		} else if(node = parseStruct()) {
+		} else if((node = parseStruct()) || (node = parseClass())) {
 			list->children.push_back(node);
 			mTypeNames.push_back(node->lexVal.s);
 		} else {
@@ -95,17 +95,7 @@ Node *HllParser::parseProcedure()
 	expect(HllTokenizer::TypeIdentifier);
 
 	expectLiteral("(");
-	Node *argumentsNode = newNode(Node::NodeTypeList, next().line);
-	Node *argument;
-	while(argument = parseVariableDeclaration()) {
-		argumentsNode->children.push_back(argument);
-		if(!matchLiteral(",")) {
-			break;
-		}
-		consume();
-	}
-
-	node->children.push_back(argumentsNode);
+	node->children.push_back(parseArgumentList());
 	expectLiteral(")");
 
 	expectLiteral("{");
@@ -141,6 +131,56 @@ Node *HllParser::parseStruct()
 	return node;
 }
 
+Node *HllParser::parseClass()
+{
+	// <Struct> := 'class' IDENTIFIER '{' { <Type> IDENTIFIER { '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | ';' } }* '}'
+	if(!matchLiteral("class")) {
+		return 0;
+	}
+
+	Node *node = newNode(Node::NodeTypeClassDef, next().line);
+	consume();
+
+	node->lexVal.s = next().text;
+	expect(HllTokenizer::TypeIdentifier);
+
+	expectLiteral("{");
+	Node *membersNode = newNode(Node::NodeTypeList, next().line);
+
+	Node *type;
+	while(type = parseType()) {
+		std::string name = next().text;
+		expect(HllTokenizer::TypeIdentifier);
+
+		Node *member;
+		if(matchLiteral("(")) {
+			consume();
+			member = newNode(Node::NodeTypeProcedureDef, type->line);
+			member->children.push_back(type);
+			member->lexVal.s = name;
+
+			member->children.push_back(parseArgumentList());
+			expectLiteral(")");
+
+			expectLiteral("{");
+			member->children.push_back(parseStatementList());
+			expectLiteral("}");
+		} else {
+			member = newNode(Node::NodeTypeVarDecl, type->line);
+			member->lexVal.s = name;
+			member->children.push_back(type);
+			expectLiteral(";");
+		}
+
+		membersNode->children.push_back(member);
+	}
+
+	node->children.push_back(membersNode);
+	expectLiteral("}");
+
+	return node;
+}
+
 Node *HllParser::parseVariableDeclaration()
 {
 	// <VariableDeclaration> := <Type> IDENTIFIER
@@ -152,6 +192,22 @@ Node *HllParser::parseVariableDeclaration()
 	expect(HllTokenizer::TypeIdentifier);
 
 	node->children.push_back(type);
+
+	return node;
+}
+
+Node *HllParser::parseArgumentList()
+{
+	// <ArgumentList> := { <VariableDeclaration> ',' }*
+	Node *node = newNode(Node::NodeTypeList, next().line);
+	Node *argument;
+	while(argument = parseVariableDeclaration()) {
+		node->children.push_back(argument);
+		if(!matchLiteral(",")) {
+			break;
+		}
+		consume();
+	}
 
 	return node;
 }

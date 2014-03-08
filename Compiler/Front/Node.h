@@ -20,6 +20,7 @@ namespace Front {
 			NodeTypeProcedureDef, //!< Procedure definition
 			NodeTypeVarDecl, //!< Variable declaration
 			NodeTypeStructDef, //!< Structure definition
+			NodeTypeClassDef, //!< Class definition
 			NodeTypeReturn, //!< Return statement
 			NodeTypePrint, //!< Print statement
 			NodeTypeAssign, //!< Assignment operator
