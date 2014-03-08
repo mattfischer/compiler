@@ -75,10 +75,9 @@ namespace VM {
 	const int TwoAddrLoad = 0x2; //!< Load register from stack
 	const int TwoAddrStore = 0x3; //!< Store register to stack
 	const int TwoAddrNew = 0x4; //!< Allocate new memory
-	const int TwoAddrStringBool = 0x5; //!< Convert a bool to a string
-	const int TwoAddrStringInt = 0x6; //!< Convert an int to a string
-	const int TwoAddrLoadByte = 0x7;
-	const int TwoAddrStoreByte = 0x8;
+	const int TwoAddrStringInt = 0x5; //!< Convert an int to a string
+	const int TwoAddrLoadByte = 0x6;
+	const int TwoAddrStoreByte = 0x7;
 
 	const int ThreeAddrAdd = 0x0; //!< Add two registers
 	const int ThreeAddrSub = 0x1; //!< Subtract two registers

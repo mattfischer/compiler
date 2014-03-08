@@ -137,7 +137,6 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 		{ "and", VM::InstrThreeAddr, VM::ThreeAddrAnd },
 		{ "new", VM::InstrTwoAddr, VM::TwoAddrNew },
 		{ "strint", VM::InstrTwoAddr, VM::TwoAddrStringInt },
-		{ "strbool", VM::InstrTwoAddr, VM::TwoAddrStringBool },
 		{ "print", VM::InstrOneAddr, VM::OneAddrPrint }
 	};
 

@@ -23,11 +23,18 @@ string __string_concat(string x, string y)
   return result;
 }
 
-void main(int x)
+string __string_bool(bool x)
 {
-	string s = "ABC";
-	if(x == 0) {
-		s = s + x;
-	}
+  if(x) {
+    return "true";
+  } else {
+    return "false";
+  }
+}
+
+void main(bool x)
+{
+	string s = "ABC" + x;
+	
 	print(s);
 }

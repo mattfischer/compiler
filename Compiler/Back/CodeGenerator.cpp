@@ -38,14 +38,25 @@ namespace Back {
 			IR::Entry *entry = *it;
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
-			if(entry->type == IR::Entry::TypeConcat) {
-				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
-				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs2, 0, 1));
-				procedure->entries().insert(entry, new IR::EntryCall("__string_concat"));
-				procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
-				procedure->entries().erase(it);
-				it--;
-				delete entry;
+			switch(entry->type) {
+				case IR::Entry::TypeConcat:
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs2, 0, 1));
+					procedure->entries().insert(entry, new IR::EntryCall("__string_concat"));
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
+					procedure->entries().erase(it);
+					it--;
+					delete entry;
+					break;
+
+				case IR::Entry::TypeStringBool:
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
+					procedure->entries().insert(entry, new IR::EntryCall("__string_bool"));
+					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
+					procedure->entries().erase(it);
+					it--;
+					delete entry;
+					break;			
 			}
 		}
 	}

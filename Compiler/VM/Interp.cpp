@@ -5,22 +5,6 @@
 #include <sstream>
 
 namespace VM {
-	static int strBool(unsigned char mem[], Heap &heap, int b)
-	{
-		std::string str;
-		if(b) {
-			str = "true";
-		} else {
-			str = "false";
-		}
-
-		int result = heap.allocate(str.size() + 1);
-		char *r = (char*)&mem[result];
-		std::strcpy(r, str.c_str());
-		r[str.size()] = '\0';
-		return result;
-	}
-
 	static int strInt(unsigned char mem[], Heap &heap, int x)
 	{
 		std::stringstream s;
@@ -117,10 +101,6 @@ namespace VM {
 
 						case VM::TwoAddrNew:
 							regs[instr.two.regLhs] = heap.allocate(regs[instr.two.regRhs]);
-							break;
-
-						case VM::TwoAddrStringBool:
-							regs[instr.two.regLhs] = strBool(mem, heap, regs[instr.two.regRhs]);
 							break;
 
 						case VM::TwoAddrStringInt:

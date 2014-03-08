@@ -140,10 +140,6 @@ namespace VM {
 				printStd(o, "new", instr.two.regLhs, instr.two.regRhs);
 				break;
 
-			case TwoAddrStringBool:
-				printStd(o, "strbool", instr.two.regLhs, instr.two.regRhs);
-				break;
-
 			case TwoAddrStringInt:
 				printStd(o, "strint", instr.two.regLhs, instr.two.regRhs);
 				break;
