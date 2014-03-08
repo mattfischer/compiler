@@ -190,7 +190,7 @@ namespace Transform {
 						break;
 					}
 
-				case IR::Entry::TypeConcat:
+				case IR::Entry::TypeStringConcat:
 					{
 						std::string rhs1;
 						std::string rhs2;

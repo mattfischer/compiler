@@ -357,7 +357,7 @@ namespace Front {
 							if(Type::equals(node->type, Types::intrinsic(Types::Int))) {
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, arguments[0], arguments[1]));
 							} else if(Type::equals(node->type, Types::intrinsic(Types::String))) {
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeConcat, result, arguments[0], arguments[1]));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringConcat, result, arguments[0], arguments[1]));
 							}
 							break;
 

@@ -39,7 +39,7 @@ namespace Back {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 			switch(entry->type) {
-				case IR::Entry::TypeConcat:
+				case IR::Entry::TypeStringConcat:
 					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
 					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs2, 0, 1));
 					procedure->entries().insert(entry, new IR::EntryCall("__string_concat"));
@@ -417,20 +417,6 @@ namespace Back {
 						s << "str" << strings.size();
 						strings[s.str()] = string->string;
 						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
-						break;
-					}
-
-				case IR::Entry::TypeConcat:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    concat r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
-						break;
-					}
-
-				case IR::Entry::TypeStringBool:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    strbool r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
