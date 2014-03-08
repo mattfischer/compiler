@@ -18,6 +18,8 @@ namespace VM {
 		std::vector<unsigned char> instructions; //!< Instruction list
 		std::map<std::string, int> symbols;
 		std::map<int, std::string> imports;
+
+		void print();
 	};
 }
 

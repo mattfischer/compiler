@@ -5,7 +5,6 @@
 #include "VM/Interp.h"
 
 #include <iostream>
-#include <iomanip>
 #include <string>
 #include <fstream>
 
@@ -61,27 +60,7 @@ int main(int arg, char *argv[])
 	}
 
 	std::cout << "*** Code ***" << std::endl;
-	for(unsigned int i = 0; i < linked->instructions.size(); i+=4) {
-		VM::Instruction instr;
-		for(std::map<std::string, int>::iterator it=linked->symbols.begin(); it != linked->symbols.end(); it++) {
-			if(i == it->second) {
-				std::cout << it->first << ":" << std::endl;
-				break;
-			}
-		}
-
-		std::cout << "  ";
-		for(int j=0; j<4; j++) {
-			int d = 0;
-			if(i + j < linked->instructions.size()) {
-				d = linked->instructions[i + j];
-			}
-			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
-		}
-		std::cout << std::setbase(10);
-		std::memcpy(&instr, &linked->instructions[i], 4);
-		std::cout << "  " << instr << std::endl;
-	}
+	linked->print();
 	std::cout << std::endl;
 
 	std::cout << "*** Output ***" << std::endl;
