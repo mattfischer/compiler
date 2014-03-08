@@ -15,11 +15,19 @@ struct NameTwoInt {
 
 #define N_ENTRIES(arr) (sizeof(arr) / sizeof(arr[0]))
 
+/*!
+ * \brief Constructor
+ * \param tokenizer Tokenizer
+ */
 AsmParser::AsmParser(AsmTokenizer &tokenizer)
 	: Parser(tokenizer)
 {
 }
 
+/*!
+ * \brief Parse a program
+ * \return Assembled program, or 0 if error
+ */
 VM::Program *AsmParser::parse()
 {
 	try {
@@ -32,10 +40,15 @@ VM::Program *AsmParser::parse()
 	}
 }
 
+/*!
+ * \brief Parse a program
+ * \return Assembled program
+ */
 VM::Program *AsmParser::parseProgram()
 {
 	VM::Program *program = new VM::Program;
 
+	// Scan each procedure in turn
 	while(matchLiteral("defproc")) {
 		consume();
 
@@ -51,6 +64,10 @@ VM::Program *AsmParser::parseProgram()
 	return program;
 }
 
+/*!
+ * \brief Parse a procedure
+ * \param program Program to write to
+ */
 void AsmParser::parseProcedure(VM::Program *program)
 {
 	VM::Instruction instr;
@@ -60,6 +77,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 	std::map<int, std::string> stringLoads;
 
 	while(true) {
+		// Break out when the procedure ends
 		if(match(AsmTokenizer::TypeEnd) || matchLiteral("defproc")) {
 			break;
 		}
@@ -68,9 +86,11 @@ void AsmParser::parseProcedure(VM::Program *program)
 		if(parseStdInstr(instr) || parseIndInstr(instr) || parseImmInstr(instr)
 			|| parseMultInstr(instr) || parseStringLoad(instr, offset, stringLoads)
 			|| parseJumpCall(instr, offset, jumps)) {
+			// Parse a regular instruction
 			program->instructions.resize(offset + 4);
 			std::memcpy(&program->instructions[offset], &instr, 4);
 		} else if(matchLiteral("string")) {
+			// Parse a string constant
 			consume();
 			std::string name = next().text;
 			expect(AsmTokenizer::TypeIdentifier);
@@ -86,6 +106,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 			program->instructions[offset + value.size()] = '\0';
 			strings[name] = offset;
 		} else {
+			// Parse a literal
 			std::string text = next().text;
 			consume();
 			expectLiteral(":");
@@ -93,6 +114,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		}
 	}
 
+	// Patch up jump references
 	for(std::map<int, std::string>::iterator it = jumps.begin(); it != jumps.end(); it++) {
 		int offset = it->first;
 		const std::string &target = it->second;
@@ -112,6 +134,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		std::memcpy(&program->instructions[offset], &instr, 4);
 	}
 
+	// Patch up string loads
 	for(std::map<int, std::string>::iterator it = stringLoads.begin(); it != stringLoads.end(); it++) {
 		int offset = it->first;
 		const std::string &name = it->second;
@@ -123,6 +146,10 @@ void AsmParser::parseProcedure(VM::Program *program)
 	}
 }
 
+/*!
+ * \brief Parse a standard-format instruction
+ * \param instr Instruction to write to
+ */
 bool AsmParser::parseStdInstr(VM::Instruction &instr)
 {
 	static const NameTwoInt stdOps[] = {
@@ -178,6 +205,10 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 	return false;
 }
 
+/*!
+ * \brief Parse an indexed instruction
+ * \param instr Instruction to write to
+ */
 bool AsmParser::parseIndInstr(VM::Instruction &instr)
 {
 	static const NameTwoInt indOps[] = {
@@ -226,6 +257,10 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 	return false;
 }
 
+/*!
+ * \brief Parse an immediate-format instruction
+ * \param instr Instruction to write to
+ */
 bool AsmParser::parseImmInstr(VM::Instruction &instr)
 {
 	static const NameTwoInt imm23Ops[] = {
@@ -282,6 +317,10 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 	return false;
 }
 
+/*!
+ * \brief Parse a multi-register instruction
+ * \param instr Instruction to write to
+ */
 bool AsmParser::parseMultInstr(VM::Instruction &instr)
 {
 	static const NameTwoInt multOps[] = {
@@ -326,6 +365,12 @@ bool AsmParser::parseMultInstr(VM::Instruction &instr)
 	return false;
 }
 
+/*!
+ * \brief Parse a jump or call instruction
+ * \param instr Instruction to write to
+ * \param offset Offset of current instruction in procedure
+ * \param jumps Jump map
+ */
 bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, std::string> &jumps)
 {
 	if(next().text == "jmp") {
@@ -371,6 +416,12 @@ bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, 
 	return false;
 }
 
+/*!
+ * \brief Parse a string load instruction
+ * \param instr Instruction to write to
+ * \param offset Offset of current instruction in procedure
+ * \param strings String map
+ */
 bool AsmParser::parseStringLoad(VM::Instruction &instr, int offset, std::map<int, std::string> &stringLoads)
 {
 	if(matchLiteral("lea")) {
@@ -387,6 +438,10 @@ bool AsmParser::parseStringLoad(VM::Instruction &instr, int offset, std::map<int
 	return false;
 }
 
+/*!
+ * \brief Parse a register name
+ * \return Register number
+ */
 int AsmParser::parseReg()
 {
 	NameInt regs[] = { { "sp", 13 }, { "lr", 14 }, { "pc", 15 } };

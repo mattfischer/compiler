@@ -11,6 +11,11 @@
 
 namespace Back {
 
+/*!
+ * \brief Parser for the assembler
+ *
+ * Consumes a token list from the tokenizer and converts it to a compiled program
+ */
 class AsmParser : public Input::Parser {
 public:
 	AsmParser(AsmTokenizer &tokenizer);

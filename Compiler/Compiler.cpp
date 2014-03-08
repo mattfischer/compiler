@@ -15,17 +15,30 @@
 #include <fstream>
 #include <sstream>
 
+/*!
+ * \brief Constructor
+ */
 Compiler::Compiler()
 {
 	mError = false;
 }
 
-void Compiler::setError(const std::string &filename)
+/*!
+ * \brief Report an error
+ * \param message Error message
+ */
+void Compiler::setError(const std::string &message)
 {
 	mError = true;
-	mErrorMessage = filename;
+	mErrorMessage = message;
 }
 
+/*!
+ * \brief Compile a file to assembly code
+ * \param filename Input filename
+ * \param output Stream to output to
+ * \return True if success
+ */
 bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 {
 	std::ifstream hllIn(filename.c_str());
@@ -81,6 +94,11 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 	return true;
 }
 
+/*!
+ * \brief Compile a program
+ * \param filename Input filename
+ * \return Compiled program
+ */
 VM::Program *Compiler::compile(const std::string &filename)
 {
 	std::stringstream buffer;

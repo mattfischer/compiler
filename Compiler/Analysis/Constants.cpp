@@ -10,7 +10,6 @@ namespace Analysis {
 	 * \brief Get the value of a symbol at an entry, if it can be determined to be a constant
 	 * \param entry Entry to examine
 	 * \param symbol Symbol to evaluate
-	 * \param useDefs Use-def chains for procedure
 	 * \param isConstant [out] True if symbol has a constant value, false otherwise
 	 * \return Value of symbol
 	 */
@@ -48,6 +47,13 @@ namespace Analysis {
 		return ret;
 	}
 
+	/*!
+	 * \brief Get the value of a symbol at an entry, if it can be determined to be a constant
+	 * \param entry Entry to examine
+	 * \param symbol Symbol to evaluate
+	 * \param isConstant [out] True if symbol has a constant value, false otherwise
+	 * \return Value of symbol
+	 */
 	std::string Constants::getStringValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
 	{
 		isConstant = false;

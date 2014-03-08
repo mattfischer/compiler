@@ -6,6 +6,9 @@
 #include <vector>
 
 namespace Front {
+	/*!
+	 * \brief Represents a collection of types
+	 */
 	class Types {
 	public:
 		Types();

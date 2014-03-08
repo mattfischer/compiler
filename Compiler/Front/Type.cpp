@@ -3,6 +3,12 @@
 #include <sstream>
 
 namespace Front {
+	/*!
+	 * \brief Check two types for equality
+	 * \param a First type
+	 * \param b Second type
+	 * \return True if types are equal
+	 */
 	bool Type::equals(Type *a, Type *b)
 	{
 		if(a->type != b->type) {
@@ -42,6 +48,11 @@ namespace Front {
 		return false;
 	}
 
+	/*!
+	 * \brief Size of a value of the given type
+	 * \param type Type to check
+	 * \return Size
+	 */
 	int Type::valueSize(Type *type)
 	{
 		switch(type->type) {
@@ -56,6 +67,12 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Get type name for a procedure type
+	 * \param returnType Return type
+	 * \param argumentTypes Argument types
+	 * \return Type name
+	 */
 	std::string TypeProcedure::getTypeName(Type *returnType, std::vector<Type*> argumentTypes)
 	{
 		std::stringstream s;
@@ -70,6 +87,11 @@ namespace Front {
 		return s.str();
 	}
 
+	/*!
+	 * \brief Add a member to a struct type
+	 * \param type Type of member
+	 * \param name Member name
+	 */
 	void TypeStruct::addMember(Type *type, const std::string &name)
 	{
 		Member member;

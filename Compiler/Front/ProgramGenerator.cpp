@@ -65,8 +65,15 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Coerce a node to a specified type
+	 * \param node Node to coerce
+	 * \param type Desired type
+	 * \return New node
+	 */
 	Node *coerce(Node *node, Type *type)
 	{
+		// If node is already of the given type, do nothing
 		if(!Type::equals(node->type, type)) {
 			bool valid = false;
 
@@ -96,6 +103,11 @@ namespace Front {
 		return node;
 	}
 
+	/*!
+	 * \brief Coerce all children of a node to a given type
+	 * \param node Node to process
+	 * \param type Type to coerce to
+	 */
 	void coerceChildren(Node *node, Type *type)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
@@ -103,6 +115,12 @@ namespace Front {
 		}
 	}
 
+	/*!
+	 * \brief Determine if any child of node is of the given type
+	 * \param node Node to examine
+	 * \param type Type to test for
+	 * \return True if there is a child of the given type
+	 */
 	bool isChildOfType(Node *node, Type *type)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
@@ -436,6 +454,7 @@ namespace Front {
 					typeNode->type = createType(typeNode, context.types);
 					node->type = typeNode->type;
 
+					// Check array size argument
 					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], context);
 						if(!Type::equals(typeNode->children[1]->type, Types::intrinsic(Types::Int))) {
@@ -443,10 +462,12 @@ namespace Front {
 						}
 					}
 
+					// Check constructor arguments if present
 					if(node->children.size() > 1) {
 						Node *argsNode = node->children[1];
 						checkType(argsNode, context);
 
+						// Only strings can have a constructor argument
 						if(!Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
 							throw TypeError(node, "Constructor argument passed to non-string");
 						}
@@ -455,9 +476,7 @@ namespace Front {
 							throw TypeError(node->children[1], "Improper number of arguments to constructor");
 						}
 
-						if(!Type::equals(argsNode->children[0]->type, Types::intrinsic(Types::Int))) {
-							throw TypeError(argsNode, "Constructor argument passed to non-string");
-						}
+						argsNode->children[0] = coerce(argsNode->children[0], Types::intrinsic(Types::Int));
 					} else if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
 						throw TypeError(typeNode, "No arguments passed to string allocation");
 					}
@@ -471,13 +490,16 @@ namespace Front {
 					Node *baseNode = node->children[0];
 					Node *subscriptNode = node->children[1];
 
+					// Check array subscript
 					if(!Type::equals(subscriptNode->type, Types::intrinsic(Types::Int))) {
 						throw TypeError(subscriptNode, "Non-integral subscript");
 					}
 
 					if(Type::equals(baseNode->type, Types::intrinsic(Types::String))) {
+						// Indexing a string produces a character
 						node->type = Types::intrinsic(Types::Char);
 					} else if(baseNode->type->type == Type::TypeArray) {
+						// Indexing an array produces its base type
 						TypeArray *typeArray = (TypeArray*)baseNode->type;
 						node->type = typeArray->baseType;
 					} else {
@@ -508,6 +530,7 @@ namespace Front {
 					throw TypeError(node, "Attempt to take member of non-structure");
 				}
 
+				// Check structure field
 				TypeStruct *typeStruct = (TypeStruct*)node->children[0]->type;
 				int idx = -1;
 				for(unsigned int i=0; i<typeStruct->members.size(); i++) {

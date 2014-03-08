@@ -6,6 +6,9 @@
 
 #include "VM/Program.h"
 
+/*!
+ * \brief Top-level assembler class
+ */
 class Assembler {
 public:
 	Assembler();

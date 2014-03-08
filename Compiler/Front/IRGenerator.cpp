@@ -506,6 +506,7 @@ namespace Front {
 					result = procedure->newTemp(node->type->size);
 					IR::Symbol *source = processRValue(node->children[0], context);
 
+					// Emit the appropriate entry for the type of conversion taking place
 					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
 						if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));

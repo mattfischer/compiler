@@ -5,6 +5,9 @@
 
 #include <string>
 
+/*!
+ * \brief Top-level compiler class
+ */
 class Compiler {
 public:
 	Compiler();

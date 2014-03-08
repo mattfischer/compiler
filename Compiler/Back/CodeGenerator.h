@@ -4,8 +4,6 @@
 #include "IR/Procedure.h"
 #include "IR/Program.h"
 
-#include <vector>
-#include <map>
 #include <iostream>
 
 /*!

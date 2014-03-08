@@ -1,13 +1,22 @@
 #include "Front/Types.h"
 
 namespace Front {
+	/*!
+	 * \brief Constructor
+	 */
 	Types::Types()
 	{
+		// Add all intrinsic types into the type list
 		for(int i=0; i<NumIntrinsics; i++) {
 			mTypes.push_back(intrinsic((Intrinsic)i));
 		}
 	}
 
+	/*!
+	 * \brief Register a new type with the type system
+	 * \param type Type to register
+	 * \return True if success
+	 */
 	bool Types::registerType(Type *type)
 	{
 		if(findType(type->name)) {
@@ -18,6 +27,11 @@ namespace Front {
 		return true;
 	}
 
+	/*!
+	 * \brief Find the type with a given name
+	 * \param name Type name
+	 * \return Type if found, or 0
+	 */
 	Type *Types::findType(const std::string &name)
 	{
 		for(unsigned int i=0; i<mTypes.size(); i++) {
@@ -29,11 +43,17 @@ namespace Front {
 		return 0;
 	}
 
+	/*!
+	 * \brief Retrieve an intrinsic type
+	 * \param intrinsic Intrinsic type number
+	 * \return Intrinsic type
+	 */
 	Type *Types::intrinsic(Intrinsic intrinsic)
 	{
 		static std::vector<Type*> intrinsics;
 
 		if(intrinsics.size() == 0) {
+			// Register all the intrinsics on first access
 			intrinsics.resize(NumIntrinsics);
 			intrinsics[Bool] = new TypeIntrinsic("bool", 4);
 			intrinsics[Int] = new TypeIntrinsic("int", 4);

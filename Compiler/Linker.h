@@ -5,6 +5,9 @@
 
 #include <vector>
 
+/*!
+ * \brief Top-level linker class
+ */
 class Linker {
 public:
 	Linker();

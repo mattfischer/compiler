@@ -5,6 +5,9 @@
 #include <vector>
 
 namespace Front {
+	/*!
+	 * \brief Represents a type in the type system
+	 */
 	class Type {
 	public:
 		enum TypeType {
@@ -32,6 +35,9 @@ namespace Front {
 		static std::vector<Type*> sTypes;
 	};
 
+	/*!
+	 * \brief An intrinsic type
+	 */
 	class TypeIntrinsic : public Type {
 	public:
 		TypeIntrinsic(std::string _name, int _size)
@@ -40,6 +46,9 @@ namespace Front {
 		}
 	};
 
+	/*!
+	 * \brief A procedure type
+	 */
 	class TypeProcedure : public Type {
 	public:
 		Type *returnType;
@@ -53,6 +62,9 @@ namespace Front {
 		std::string getTypeName(Type *returnType, std::vector<Type*> argumentTypes);
 	};
 
+	/*!
+	 * \brief An array type
+	 */
 	class TypeArray : public Type {
 	public:
 		Type *baseType;
@@ -62,6 +74,9 @@ namespace Front {
 		{}
 	};
 
+	/*!
+	 * \brief A struct type
+	 */
 	class TypeStruct : public Type {
 	public:
 		struct Member {

@@ -32,6 +32,10 @@ namespace Back {
 		}
 	}
 
+	/*!
+	 * \brief Substitute IR entries which are implemented by library calls
+	 * \param procedure Procedure to modify
+	 */
 	static void substituteLibraryCalls(IR::Procedure *procedure)
 	{
 		for(IR::EntryList::iterator it = procedure->entries().begin(); it != procedure->entries().end(); it++) {
@@ -82,8 +86,7 @@ namespace Back {
 	/*!
 	 * \brief Generate code for an IR procedure
 	 * \param procedure Procedure to generate code for
-	 * \param instructions Instruction stream to write to
-	 * \param procedureMap Map of starting locations for procedures
+	 * \param stream Stream to output assembly to
 	 */
 	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::ostream &stream)
 	{
@@ -91,6 +94,7 @@ namespace Back {
 		std::map<std::string, std::string> strings;
 		std::string savedRegs;
 
+		// Insert library calls
 		substituteLibraryCalls(procedure);
 
 		// Allocate registers for the procedure
@@ -455,6 +459,7 @@ namespace Back {
 			}
 		}
 
+		// Write out string constants
 		for(std::map<std::string, std::string>::iterator it = strings.begin(); it != strings.end(); it++) {
 			const std::string &name = it->first;
 			const std::string &value = it->second;

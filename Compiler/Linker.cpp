@@ -2,21 +2,32 @@
 
 #include <sstream>
 
+/*!
+ * \brief Constructor
+ */
 Linker::Linker()
 {
 	mError = false;
 }
 
+/*!
+ * \brief Link programs together
+ * \param programs List of programs
+ * \return Linked program
+ */
 VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 {
 	VM::Program *linked = new VM::Program;
+	std::map<int, std::string> imports;
 
+	// Calculate total program size
 	int size = 0;
 	for(unsigned int i=0; i<programs.size(); i++) {
 		size += (int)programs[i]->instructions.size();
 	}
 	linked->instructions.resize(size);
 
+	// Concatenate programs together into linked program
 	int offset = 0;
 	for(unsigned int i=0; i<programs.size(); i++) {
 		VM::Program *program = programs[i];
@@ -27,13 +38,14 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		}
 
 		for(std::map<int, std::string>::iterator it = program->imports.begin(); it != program->imports.end(); it++) {
-			linked->imports[it->first + offset] = it->second;
+			imports[it->first + offset] = it->second;
 		}
 
 		offset += (int)program->instructions.size();
 	}
 
-	for(std::map<int, std::string>::iterator it = linked->imports.begin(); it != linked->imports.end(); it++) {
+	// Resolve symbol references in program
+	for(std::map<int, std::string>::iterator it = imports.begin(); it != imports.end(); it++) {
 		int offset = it->first;
 		const std::string &symbol = it->second;
 		VM::Instruction instr;
@@ -53,6 +65,5 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		}
 	}
 
-	linked->imports.clear();
 	return linked;
 }
