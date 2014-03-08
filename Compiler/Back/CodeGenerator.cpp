@@ -315,7 +315,7 @@ namespace Back {
 				case IR::Entry::TypeStoreRet:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						if(regMap[threeAddr->rhs1] != 0) {
+						if(threeAddr->rhs1 && regMap[threeAddr->rhs1] != 0) {
 							stream << "    mov r0, r" << regMap[threeAddr->rhs1] << std::endl;
 						}
 						break;

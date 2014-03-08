@@ -40,53 +40,51 @@ namespace Middle {
 
 			// *** Check for control paths which do not return a value ***
 
-			if(procedure->returnsValue()) {
-				Analysis::FlowGraph flowGraph(procedure);
-				Analysis::FlowGraph::BlockList blockList;
-				Analysis::FlowGraph::BlockSet seenBlocks;
-				Analysis::FlowGraph::Block *end = flowGraph.end();
+			Analysis::FlowGraph flowGraph(procedure);
+			Analysis::FlowGraph::BlockList blockList;
+			Analysis::FlowGraph::BlockSet seenBlocks;
+			Analysis::FlowGraph::Block *end = flowGraph.end();
 
-				// Iterate backwards through the procedure, looking for any path which reaches the start label
-				blockList.insert(blockList.begin(), end->pred.begin(), end->pred.end());
-				for(Analysis::FlowGraph::BlockList::iterator blockIt = blockList.begin(); blockIt != blockList.end(); blockIt++) {
-					Analysis::FlowGraph::Block *block = *blockIt;
+			// Iterate backwards through the procedure, looking for any path which reaches the start label
+			blockList.insert(blockList.begin(), end);
+			for(Analysis::FlowGraph::BlockList::iterator blockIt = blockList.begin(); blockIt != blockList.end(); blockIt++) {
+				Analysis::FlowGraph::Block *block = *blockIt;
 
-					// Breadth-first search of the control flow graph
-					if(seenBlocks.find(block) != seenBlocks.end()) {
-						continue;
-					}
-
-					// Iterate backwards through the block.
-					bool foundRet = false;
-					for(IR::EntrySubList::reverse_iterator entryIt = block->entries.rbegin(); entryIt != block->entries.rend(); entryIt++) {
-						IR::Entry *entry = *entryIt;
-						if(entry->type == IR::Entry::TypeStoreRet) {
-							// Found a StoreRet.  This block generates a return value
-							foundRet = true;
-							break;
-						}
-					}
-
-					if(foundRet) {
-						// Return value found.  No further walking necessary on this path
-						continue;
-					} else {
-						// Continue scanning into the block's predecessors
-						blockList.insert(blockList.end(), block->pred.begin(), block->pred.end());
-					}
-
-					if(block == flowGraph.start()) {
-						// Made it to the beginning of the start block.  This means a path was found
-						// which did not return a value.
-						std::stringstream s;
-						s << "Control reaches end of procedure without return";
-						mErrorMessage = s.str();
-						mErrorProcedure = procedure;
-						return false;
-					}
-
-					seenBlocks.insert(block);
+				// Breadth-first search of the control flow graph
+				if(seenBlocks.find(block) != seenBlocks.end()) {
+					continue;
 				}
+
+				// Iterate backwards through the block.
+				bool foundRet = false;
+				for(IR::EntrySubList::reverse_iterator entryIt = block->entries.rbegin(); entryIt != block->entries.rend(); entryIt++) {
+					IR::Entry *entry = *entryIt;
+					if(entry->type == IR::Entry::TypeStoreRet) {
+						// Found a StoreRet.  This block generates a return value
+						foundRet = true;
+						break;
+					}
+				}
+
+				if(foundRet) {
+					// Return value found.  No further walking necessary on this path
+					continue;
+				} else {
+					// Continue scanning into the block's predecessors
+					blockList.insert(blockList.end(), block->pred.begin(), block->pred.end());
+				}
+
+				if(block == flowGraph.start()) {
+					// Made it to the beginning of the start block.  This means a path was found
+					// which did not return a value.
+					std::stringstream s;
+					s << "Control reaches end of procedure without return";
+					mErrorMessage = s.str();
+					mErrorProcedure = procedure;
+					return false;
+				}
+
+				seenBlocks.insert(block);
 			}
 		}
 

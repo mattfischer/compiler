@@ -1,4 +1,9 @@
+void doStuff()
+{
+    print("Hello");
+}
+
 void main(int x)
 {
-	print(x + 12345);
+	doStuff();
 }

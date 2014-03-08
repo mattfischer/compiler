@@ -18,7 +18,7 @@ namespace IR {
 	 */
 	class Procedure {
 	public:
-		Procedure(const std::string &name, bool returnsValue);
+		Procedure(const std::string &name);
 
 		void print(const std::string &prefix = "");
 		
@@ -26,7 +26,6 @@ namespace IR {
 		EntryLabel *end() const { return mEnd; } //!< End label
 		const std::string &name() const { return mName; } //!< Procedure name
 		EntryList &entries() { return mEntries; } //!< Body of procedure
-		bool returnsValue() { return mReturnsValue; } //!< Whether the procedure returns a value
 		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
 		Symbol *newTemp(int size);
 		void addSymbol(Symbol *symbol);

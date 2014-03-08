@@ -12,7 +12,7 @@ namespace IR {
 	 * \brief Constructor
 	 * \param name Procedure name
 	 */
-	Procedure::Procedure(const std::string &name, bool returnsValue)
+	Procedure::Procedure(const std::string &name)
 	{
 		mNextTemp = 0;
 		mNextLabel = 1;
@@ -21,7 +21,6 @@ namespace IR {
 		mEnd = new EntryLabel("end");
 		mEntries.push_back(mStart);
 		mEntries.push_back(mEnd);
-		mReturnsValue = returnsValue;
 	}
 
 	/*!

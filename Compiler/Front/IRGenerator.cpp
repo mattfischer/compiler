@@ -23,7 +23,7 @@ namespace Front {
 		// Create an IR procedure for each procedure definition node
 		for(unsigned int i=0; i<program->procedures.size(); i++) {
 			Procedure *procedure = program->procedures[i];
-			IR::Procedure *irProcedure = new IR::Procedure(procedure->name, !Type::equals(procedure->type->returnType, Types::intrinsic(Types::Void)));
+			IR::Procedure *irProcedure = new IR::Procedure(procedure->name);
 
 			// Emit procedure prologue
 			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
@@ -58,13 +58,17 @@ namespace Front {
 
 			// Construct context
 			Context context;
-			context.program = irProgram;
 			context.procedure = irProcedure;
 			context.breakTarget = 0;
 			context.continueTarget = 0;
 
 			// Emit procedure body
 			processNode(procedure->body, context);
+
+			// If the procedure's return type is void, emit an return statement 
+			if(Type::equals(procedure->type->returnType, Types::intrinsic(Types::Void))) {
+				irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::TypeStoreRet, 0, 0));
+			}
 
 			// Emit function epilogue
 			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::TypeEpilogue));
@@ -326,14 +330,16 @@ namespace Front {
 					}
 
 					// Emit procedure call
-					IR::Procedure *target = context.program->findProcedure(node->children[0]->lexVal.s);
-					procedure->emit(new IR::EntryCall(target->name()));
+					procedure->emit(new IR::EntryCall(node->children[0]->lexVal.s));
 
-					result = procedure->newTemp(node->type->size);
-					if(target->returnsValue()) {
+					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary
+						result = procedure->newTemp(node->type->size);
 						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+					} else {
+						result = 0;
 					}
+
 					break;
 				}
 

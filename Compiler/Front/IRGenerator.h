@@ -20,7 +20,6 @@ namespace Front {
 
 	private:
 		struct Context {
-			IR::Program *program;
 			IR::Procedure *procedure;
 			IR::EntryLabel *breakTarget;
 			IR::EntryLabel *continueTarget;
