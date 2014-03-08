@@ -388,6 +388,8 @@ namespace Front {
 					if(node->nodeSubtype == Node::NodeSubtypeAdd && isChildOfType(node, Types::intrinsic(Types::String))) {
 						coerceChildren(node, Types::intrinsic(Types::String));
 						node->type = Types::intrinsic(Types::String);
+					} else if(node->nodeSubtype == Node::NodeSubtypeAdd && isChildOfType(node, Types::intrinsic(Types::Char)) && isChildOfType(node, Types::intrinsic(Types::Int))) {
+						node->type = Types::intrinsic(Types::Char);
 					} else {
 						coerceChildren(node, Types::intrinsic(Types::Int));
 						node->type = Types::intrinsic(Types::Int);
