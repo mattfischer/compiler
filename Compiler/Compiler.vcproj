@@ -189,11 +189,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Assembler.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Analysis\AvailableExpressions.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Transform\CommonSubexpressionElimination.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Compiler.cpp"
 				>
 			</File>
 			<File
@@ -205,7 +213,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Back\Linker.cpp"
+				RelativePath=".\Linker.cpp"
 				>
 			</File>
 			<File
@@ -487,11 +495,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Assembler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Analysis\AvailableExpressions.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Transform\CommonSubexpressionElimination.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Compiler.h"
 				>
 			</File>
 			<File
@@ -503,7 +519,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Back\Linker.h"
+				RelativePath=".\Linker.h"
 				>
 			</File>
 			<File

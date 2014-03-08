@@ -1,8 +1,6 @@
-#include "Back/Linker.h"
+#include "Linker.h"
 
 #include <sstream>
-
-namespace Back {
 
 Linker::Linker()
 {
@@ -57,6 +55,4 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 
 	linked->imports.clear();
 	return linked;
-}
-
 }

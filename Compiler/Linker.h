@@ -1,11 +1,9 @@
-#ifndef BACK_LINKER_H
-#define BACK_LINKER_H
+#ifndef LINKER_H
+#define LINKER_H
 
 #include "VM/Program.h"
 
 #include <vector>
-
-namespace Back {
 
 class Linker {
 public:
@@ -21,5 +19,4 @@ private:
 	std::string mErrorMessage;
 };
 
-}
 #endif
