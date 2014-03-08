@@ -157,6 +157,32 @@ namespace Back {
 						break;
 					}
 
+				case IR::Entry::TypeDivide:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    div r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
+						if(threeAddr->rhs2) {
+							stream << "r" << regMap[threeAddr->rhs2];
+						} else {
+							stream << "#" << threeAddr->imm;
+						}
+						stream << std::endl;
+						break;
+					}
+
+				case IR::Entry::TypeModulo:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    mod r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
+						if(threeAddr->rhs2) {
+							stream << "r" << regMap[threeAddr->rhs2];
+						} else {
+							stream << "#" << threeAddr->imm;
+						}
+						stream << std::endl;
+						break;
+					}
+
 				case IR::Entry::TypePrint:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;

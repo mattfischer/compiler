@@ -468,10 +468,14 @@ Node *HllParser::parseMultiplyExpression(bool required)
 	}
 
 	while(true) {
-		if(matchLiteral("*")) {
+		if(matchLiteral("*") || matchLiteral("/") || matchLiteral("%")) {
+			Node::NodeSubtype subtype;
+			if(matchLiteral("*")) subtype = Node::NodeSubtypeMultiply;
+			else if(matchLiteral("/")) subtype = Node::NodeSubtypeDivide;
+			else if(matchLiteral("%")) subtype = Node::NodeSubtypeModulo;
 			consume();
 
-			Node *multiplyNode = newNode(Node::NodeTypeArith, node->line, Node::NodeSubtypeMultiply);
+			Node *multiplyNode = newNode(Node::NodeTypeArith, node->line, subtype);
 			multiplyNode->children.push_back(node);
 			multiplyNode->children.push_back(parseSuffixExpression(true));
 			node = multiplyNode;

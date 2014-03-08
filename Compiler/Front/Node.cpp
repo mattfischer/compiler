@@ -31,6 +31,8 @@ const char *subtypeNames[] = {
 	/* NodeSubtypeAdd              */ "add",
 	/* NodeSubtypeSubtract         */ "subtract",
 	/* NodeSubtypeMultiply         */ "multiply",
+	/* NodeSubtypeDivide           */ "divide",
+	/* NodeSubtypeModulo           */ "modulo",
 	/* NodeSubtypeIncrement        */ "increment",
 	/* NodeSubtypeDecrement        */ "decrement",
 	/* NodeSubtypeEqual            */ "equal",

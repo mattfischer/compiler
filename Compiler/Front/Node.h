@@ -48,6 +48,8 @@ namespace Front {
 			NodeSubtypeAdd, //!< Addition operator
 			NodeSubtypeSubtract, //!< Subtraction operator
 			NodeSubtypeMultiply, //!< Multiplication operator
+			NodeSubtypeDivide, //!< Division operator
+			NodeSubtypeModulo, //!< Modulo operator
 			NodeSubtypeIncrement, //!< Increment operator
 			NodeSubtypeDecrement, //!< Decrement operator
 

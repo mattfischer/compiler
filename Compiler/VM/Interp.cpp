@@ -91,6 +91,14 @@ namespace VM {
 							regs[instr.two.regLhs] = regs[instr.two.regRhs] * instr.two.imm;
 							break;
 
+						case VM::TwoAddrDivImm:
+							regs[instr.two.regLhs] = regs[instr.two.regRhs] / instr.two.imm;
+							break;
+
+						case VM::TwoAddrModImm:
+							regs[instr.two.regLhs] = regs[instr.two.regRhs] % instr.two.imm;
+							break;
+
 						case VM::TwoAddrLoad:
 							regs[instr.two.regLhs] = *((unsigned long*)(&mem[regs[instr.two.regRhs] + instr.two.imm]));
 							break;
@@ -129,6 +137,14 @@ namespace VM {
 
 						case VM::ThreeAddrMult:
 							regs[instr.three.regLhs] = regs[instr.three.regRhs1] * regs[instr.three.regRhs2];
+							break;
+
+						case VM::ThreeAddrDiv:
+							regs[instr.three.regLhs] = regs[instr.three.regRhs1] / regs[instr.three.regRhs2];
+							break;
+
+						case VM::ThreeAddrMod:
+							regs[instr.three.regLhs] = regs[instr.three.regRhs1] % regs[instr.three.regRhs2];
 							break;
 
 						case VM::ThreeAddrAddCond:

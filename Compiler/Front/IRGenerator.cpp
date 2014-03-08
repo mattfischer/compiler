@@ -365,6 +365,14 @@ namespace Front {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, result, arguments[0], arguments[1]));
 							break;
 
+						case Node::NodeSubtypeDivide:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeDivide, result, arguments[0], arguments[1]));
+							break;
+
+						case Node::NodeSubtypeModulo:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeModulo, result, arguments[0], arguments[1]));
+							break;
+
 						case Node::NodeSubtypeIncrement:
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, arguments[0]));
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, arguments[0], arguments[0], 0, 1));

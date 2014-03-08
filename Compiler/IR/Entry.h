@@ -29,6 +29,8 @@ namespace IR {
 			TypeAdd, //!< Add two symbols together
 			TypeSubtract, //!< Subtract two symbols
 			TypeMult, //!< Multiply two symbols together
+			TypeDivide, //!< Divide two symbols
+			TypeModulo, //!< Take modulus of two symbols
 			TypePrint, //!< Print a string
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality

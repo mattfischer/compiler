@@ -10,6 +10,8 @@ namespace IR {
 		/* TypeAdd		  */ "add      ",
 		/* TypeSubtract	  */ "sub      ",
 		/* TypeMult		  */ "mult     ",
+		/* TypeDivide	  */ "div      ",
+		/* TypeModulo	  */ "mod      ",
 		/* TypePrint      */ "print    ",
 		/* TypeEqual	  */ "equ      ",
 		/* TypeNequal	  */ "neq      ",

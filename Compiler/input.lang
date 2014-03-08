@@ -32,9 +32,7 @@ string __string_bool(bool x)
   }
 }
 
-void main(bool x)
+void main(int x)
 {
-	string s = "ABC" + x;
-	s[0] = 'C';
-	print(s);
+	print(x/2);
 }

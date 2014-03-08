@@ -232,6 +232,8 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 	static const NameTwoInt imm23Ops[] = {
 		{ "add", VM::TwoAddrAddImm, VM::ThreeAddrAdd },
 		{ "mult", VM::TwoAddrMultImm, VM::ThreeAddrMult },
+		{ "div", VM::TwoAddrDivImm, VM::ThreeAddrDiv },
+		{ "mod", VM::TwoAddrModImm, VM::ThreeAddrMod },
 	};
 
 	for(int i=0; i<N_ENTRIES(imm23Ops); i++) {

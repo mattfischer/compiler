@@ -49,6 +49,8 @@ namespace Transform {
 				case IR::Entry::TypeAdd:
 				case IR::Entry::TypeSubtract:
 				case IR::Entry::TypeMult:
+				case IR::Entry::TypeDivide:
+				case IR::Entry::TypeModulo:
 				case IR::Entry::TypeMove:
 				case IR::Entry::TypeEqual:
 				case IR::Entry::TypeNequal:
@@ -90,6 +92,14 @@ namespace Transform {
 
 								case IR::Entry::TypeMult:
 									value = rhs1 * rhs2;
+									break;
+
+								case IR::Entry::TypeDivide:
+									value = rhs1 / rhs2;
+									break;
+
+								case IR::Entry::TypeModulo:
+									value = rhs1 % rhs2;
 									break;
 
 								case IR::Entry::TypeMove:

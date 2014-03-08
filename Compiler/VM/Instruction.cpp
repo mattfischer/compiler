@@ -128,6 +128,14 @@ namespace VM {
 				printImm(o, "mult", instr.two.regLhs, instr.two.regRhs, instr.two.imm);
 				break;
 
+			case TwoAddrDivImm:
+				printImm(o, "div", instr.two.regLhs, instr.two.regRhs, instr.two.imm);
+				break;
+
+			case TwoAddrModImm:
+				printImm(o, "mod", instr.two.regLhs, instr.two.regRhs, instr.two.imm);
+				break;
+
 			case TwoAddrLoad:
 				printInd(o, "ldr", instr.two.regLhs, instr.two.regRhs, -1, instr.two.imm);
 				break;
@@ -172,6 +180,14 @@ namespace VM {
 
 			case ThreeAddrMult:
 				printStd(o, "mult", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
+				break;
+
+			case ThreeAddrDiv:
+				printStd(o, "div", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
+				break;
+
+			case ThreeAddrMod:
+				printStd(o, "mod", instr.three.regLhs, instr.three.regRhs1, instr.three.regRhs2);
 				break;
 
 			case ThreeAddrAddCond:
