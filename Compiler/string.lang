@@ -1,0 +1,51 @@
+int __string_length(string s)
+{
+  int i=0;
+  while(s[i] != '\0') {
+	i++;
+  }
+
+  return i;
+}
+
+string __string_concat(string x, string y)
+{
+  int xlen = __string_length(x);
+  int ylen = __string_length(y);
+  string result = new string(xlen + ylen + 1);
+  for(int i=0; i<xlen; i++) {
+    result[i] = x[i];
+  }
+  for(int i=0; i<ylen; i++) {
+    result[xlen + i] = y[i];
+  }
+  result[xlen + ylen] = '\0';
+  return result;
+}
+
+string __string_bool(bool x)
+{
+  if(x) {
+    return "true";
+  } else {
+    return "false";
+  }
+}
+
+string __string_char(char c)
+{
+  string result = new string(2);
+  result[0] = c;
+  result[1] = '\0';
+  return result;
+}
+
+string __string_int(int x)
+{
+  string result = "";
+  while(x > 0) {
+    result = ('0' + x % 10) + result;
+    x = x / 10;
+  }
+  return result;
+}

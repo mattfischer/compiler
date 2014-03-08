@@ -20,24 +20,24 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
-int main(int arg, char *argv[])
+bool compile(std::istream &hllIn, std::ostream &asmOut)
 {
-	std::ifstream stream("input.lang");
-	Front::HllTokenizer tokenizer(stream);
+	Front::HllTokenizer tokenizer(hllIn);
 	Front::HllParser parser(tokenizer);
 
 	Front::Node *node = parser.parse();
 	if(!node) {
 		std::cout << "Error, line " << parser.errorLine() << " column " << parser.errorColumn() << ": " << parser.errorMessage() << std::endl;
-		return 1;
+		return false;
 	}
 
 	Front::ProgramGenerator programGenerator(node);
 	Front::Program *program = programGenerator.generate();
 	if(!program) {
 		std::cout << "Error, line " << programGenerator.errorLine() << ": " << programGenerator.errorMessage() << std::endl;
-		return 1;
+		return false;
 	}
 
 	std::cout << "*** Parsed Program ***" << std::endl;
@@ -47,7 +47,7 @@ int main(int arg, char *argv[])
 	Front::IRGenerator generator;
 	IR::Program *irProgram = generator.generate(program);
 	if(!irProgram) {
-		return 1;
+		return false;
 	}
 
 	std::cout << "*** IR (before optimization) ***" << std::endl;
@@ -57,7 +57,7 @@ int main(int arg, char *argv[])
 	Middle::ErrorCheck errorCheck;
 	if(!errorCheck.check(irProgram)) {
 		std::cout << "Error, procedure " << errorCheck.errorProcedure()->name() << ": " << errorCheck.errorMessage() << std::endl;
-		return 1;
+		return false;
 	}
 
 	Middle::Optimizer::optimize(irProgram);
@@ -66,22 +66,68 @@ int main(int arg, char *argv[])
 	irProgram->print();
 	std::cout << std::endl;
 
-	std::stringstream s;
-	Back::CodeGenerator::generate(irProgram, s);
-	std::cout << "*** Assembly ***" << std::endl;
-	std::cout << s.str() << std::endl;
+	Back::CodeGenerator::generate(irProgram, asmOut);
 
-	Back::AsmTokenizer asmTokenizer(s);
+	return true;
+}
+
+VM::Program *assemble(std::istream &asmIn)
+{
+	Back::AsmTokenizer asmTokenizer(asmIn);
 	Back::AsmParser asmParser(asmTokenizer);
 
 	VM::Program *vmProgram = asmParser.parse();
 	if(!vmProgram) {
 		std::cout << "Error, line " << asmParser.errorLine() << " column " << asmParser.errorColumn() << ": " << asmParser.errorMessage() << std::endl;
+		return 0;
+	}
+
+	return vmProgram;
+}
+
+VM::Program *compile(const std::string &filename)
+{
+	std::ifstream hllIn(filename.c_str());
+	std::stringstream buffer;
+	compile(hllIn, buffer);
+
+	std::cout << "*** Assembly ***" << std::endl;
+	std::cout << buffer.str() << std::endl;
+
+	return assemble(buffer);
+}
+
+VM::Program *compileCached(const std::string &filename)
+{
+	std::ifstream hllIn(filename.c_str());
+
+	std::string asmFilename = filename.substr(0, filename.find('.')) + ".asm";
+	std::ifstream asmFileTest(asmFilename.c_str());
+
+	if(asmFileTest.fail()) {
+		std::ofstream asmOut(asmFilename.c_str());
+		compile(hllIn, asmOut);
+	}
+
+	std::ifstream asmIn(asmFilename.c_str());
+	return assemble(asmIn);
+}
+
+int main(int arg, char *argv[])
+{
+	VM::Program *vmProgram = compile("input.lang");
+	if(!vmProgram) {
+		return 1;
+	}
+
+	VM::Program *runtime = compileCached("string.lang");
+	if(!runtime) {
 		return 1;
 	}
 
 	std::vector<VM::Program*> programs;
 	programs.push_back(vmProgram);
+	programs.push_back(runtime);
 
 	Back::Linker linker;
 	VM::Program *linked = linker.link(programs);
