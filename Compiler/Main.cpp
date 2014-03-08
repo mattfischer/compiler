@@ -115,19 +115,18 @@ VM::Program *compileCached(const std::string &filename)
 
 int main(int arg, char *argv[])
 {
+	VM::Program *runtime = compileCached("string.lang");
+	if(!runtime) {
+		return 1;
+	}
 	VM::Program *vmProgram = compile("input.lang");
 	if(!vmProgram) {
 		return 1;
 	}
 
-	VM::Program *runtime = compileCached("string.lang");
-	if(!runtime) {
-		return 1;
-	}
-
 	std::vector<VM::Program*> programs;
-	programs.push_back(vmProgram);
 	programs.push_back(runtime);
+	programs.push_back(vmProgram);
 
 	Back::Linker linker;
 	VM::Program *linked = linker.link(programs);
