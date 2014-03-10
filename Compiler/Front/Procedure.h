@@ -17,6 +17,7 @@ namespace Front {
 		std::vector<Symbol*> arguments; //!< List of arguments
 		TypeProcedure *type; //!< Procedure type
 		Node *body; //!< Body of procedure
+		Type *classType; //!< Containing class, or 0 or non-class procedure
 
 		void print();
 	};

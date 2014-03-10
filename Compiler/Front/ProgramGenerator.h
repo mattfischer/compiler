@@ -34,7 +34,7 @@ namespace Front {
 		void checkType(Node *node, Context &context);
 		void checkChildren(Node *node, Context &context);
 		Type *createType(Node *node, Types *types);
-		Procedure *generateProcedure(Node *node, Program *program, const std::string &name);
+		Procedure *generateProcedure(Node *node, Program *program, Type *classType);
 		void addStruct(Node *node, Program *program);
 		void addClass(Node *node, Program *program);
 	};

@@ -1,7 +1,7 @@
 class Foo {
-  void doStuff()
+  void doStuff(int x)
   {
-    print "Hello";
+    print(x);
   }
 }
 
@@ -9,5 +9,5 @@ void main(int x)
 {
 	Foo foo = new Foo;
 
-	foo.doStuff();
+	foo.doStuff(3);
 }

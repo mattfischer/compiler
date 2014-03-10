@@ -50,8 +50,13 @@ namespace Front {
 
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
 					if(procedure->arguments[k] == locals[j]) {
+						int arg = k;
+						if(procedure->classType) {
+							arg++;
+						}
+
 						// If this symbol is an argument, emit an argument load instruction
-						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, irSymbol, 0, 0, k));
+						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, irSymbol, 0, 0, arg));
 					}
 				}
 			}
@@ -317,23 +322,12 @@ namespace Front {
 
 			case Node::NodeTypeCall:
 				{
-					// Emit code for each argument, building a list of resulting symbols
-					std::vector<IR::Symbol*> args;
-					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-						IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
-						args.push_back(arg);
-					}
-
-					// Emit argument store values for each argument
-					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
-					}
-
-					// Emit procedure call
 					Node *target = node->children[0];
+					std::string name;
+					std::vector<IR::Symbol*> args;
 					switch(target->nodeType) {
 						case Node::NodeTypeId:
-							procedure->emit(new IR::EntryCall(target->lexVal.s));
+							name = target->lexVal.s;
 							break;
 
 						case Node::NodeTypeMember:
@@ -341,10 +335,27 @@ namespace Front {
 								Node *base = target->children[0];
 								std::stringstream s;
 								s << base->type->name << "." << target->lexVal.s;
-								procedure->emit(new IR::EntryCall(s.str()));
+								name = s.str();
+
+								IR::Symbol *object = processRValue(base, context);
+								args.push_back(object);
 								break;
 							}
 					}
+
+					// Emit code for each argument, building a list of resulting symbols
+					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
+						IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
+						args.push_back(arg);
+					}
+
+					// Emit argument store values for each argument
+					for(unsigned int i=0; i<args.size(); i++) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
+					}
+
+					// Emit procedure call
+					procedure->emit(new IR::EntryCall(name));
 
 					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary

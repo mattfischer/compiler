@@ -51,7 +51,7 @@ namespace Front {
 				Node *node = mTree->children[i];
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
-					generateProcedure(mTree->children[i], program, mTree->children[i]->lexVal.s);
+					generateProcedure(mTree->children[i], program, 0);
 				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
 				} else if(node->nodeType == Node::NodeTypeClassDef) {
@@ -139,14 +139,21 @@ namespace Front {
 	 * \param node Tree node for procedure definition
 	 * \param program Program to add procedure to
 	 */
-	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, const std::string &name)
+	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, Type *classType)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
 
 		// Begin populating the procedure object
-		procedure->name = name;
+		if(classType) {
+			std::stringstream s;
+			s << classType->name << "." << node->lexVal.s;
+			procedure->name = s.str();
+		} else {
+			procedure->name = node->lexVal.s;
+		}
 		procedure->locals = new Scope(program->globals);
+		procedure->classType = classType;
 
 		// Iterate the tree's argument items
 		Node *argumentList = node->children[1];
@@ -235,9 +242,7 @@ namespace Front {
 
 				case Node::NodeTypeProcedureDef:
 				{
-					std::stringstream s;
-					s << type->name << "." << memberNode->lexVal.s;
-					Procedure *procedure = generateProcedure(memberNode, program, s.str());
+					Procedure *procedure = generateProcedure(memberNode, program, type);
 					type->addMember(procedure->type, memberNode->lexVal.s);
 					break;
 				}
