@@ -13,11 +13,11 @@ namespace Front {
 	 */
 	struct Procedure {
 		std::string name; //!< Procedure name
-		Scope *locals; //!< Local variables
+		Scope *scope; //!< Local variables
 		std::vector<Symbol*> arguments; //!< List of arguments
 		TypeProcedure *type; //!< Procedure type
 		Node *body; //!< Body of procedure
-		Type *classType; //!< Containing class, or 0 or non-class procedure
+		Symbol *object; //!< Object symbol if procedure is a member function, or 0
 
 		void print();
 	};

@@ -29,7 +29,7 @@ namespace Front {
 			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
 
 			// Add local variables to the procedure
-			const std::vector<Symbol*> locals = procedure->locals->symbols();
+			const std::vector<Symbol*> locals = procedure->scope->symbols();
 			std::set<std::string> names;
 			for(unsigned int j=0; j<locals.size(); j++) {
 				std::string name;
@@ -51,7 +51,7 @@ namespace Front {
 				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
 					if(procedure->arguments[k] == locals[j]) {
 						int arg = k;
-						if(procedure->classType) {
+						if(procedure->object) {
 							arg++;
 						}
 
@@ -66,6 +66,12 @@ namespace Front {
 			context.procedure = irProcedure;
 			context.breakTarget = 0;
 			context.continueTarget = 0;
+			if(procedure->object) {
+				context.object = irProcedure->findSymbol(procedure->object);
+				irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, context.object, 0, 0, 0));
+			} else {
+				context.object = 0;
+			}
 
 			// Emit procedure body
 			processNode(procedure->body, context);
@@ -265,60 +271,66 @@ namespace Front {
 				break;
 
 			case Node::NodeTypeId:
-				// Return the already-existing variable node
-				result = procedure->findSymbol(node->symbol);
+				if(node->symbol->scope->classType()) {
+					// Emit the load from the calculated memory location
+					result = procedure->newTemp(node->type->size);
+					Front::TypeStruct::Member *member = node->symbol->scope->classType()->findMember(node->lexVal.s);
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, context.object, 0, member->offset));
+				} else {
+					// Return the already-existing variable node
+					result = procedure->findSymbol(node->symbol);
+				}
 				break;
 
 			case Node::NodeTypeAssign:
-				// If the LHS is a declaration, process it so that the symbol gets added
-				if(node->children[0]->nodeType == Node::NodeTypeVarDecl) {
-					processNode(node->children[0], context);
-				}
+				{
+					Node *lhs = node->children[0];
+					Node *rhs = node->children[1];
 
-				// Emit code for R-Value of assignment
-				b = processRValue(node->children[1], context);
-
-				if(node->children[0]->nodeType == Node::NodeTypeId || node->children[0]->nodeType == Node::NodeTypeVarDecl) {
-					// Locate symbol to assign into
-					a = procedure->findSymbol(node->children[0]->symbol);
-
-					// Emit a move into the target symbol
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
-				} else if(node->children[0]->nodeType == Node::NodeTypeArray) {
-					Node *arrayNode = node->children[0];
-
-					// Emit code to calculate the array's base address
-					a = processRValue(arrayNode->children[0], context);
-
-					// Emit code to calculate the array subscript
-					IR::Symbol *subscript = processRValue(arrayNode->children[1], context);
-
-					// Compute the offset into array memory based o subscript and type size
-					IR::Symbol *offset = procedure->newTemp(4);
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type)));
-
-					// Emit the store into the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
-				} else if(node->children[0]->nodeType == Node::NodeTypeMember) {
-					Node *memberNode = node->children[0];
-
-					a = processRValue(memberNode->children[0], context);
-
-					int idx;
-					Front::TypeStruct *typeStruct = (Front::TypeStruct*)memberNode->children[0]->type;
-					for(unsigned int i=0; i<typeStruct->members.size(); i++) {
-						if(typeStruct->members[i].name == memberNode->lexVal.s) {
-							idx = i;
-							break;
-						}
+					// If the LHS is a declaration, process it so that the symbol gets added
+					if(lhs->nodeType == Node::NodeTypeVarDecl) {
+						processNode(lhs, context);
 					}
 
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, typeStruct->members[idx].offset));
-				}
+					// Emit code for R-Value of assignment
+					b = processRValue(rhs, context);
 
-				// Return the resulting node
-				result = b;
-				break;
+					if(lhs->nodeType == Node::NodeTypeId || lhs->nodeType == Node::NodeTypeVarDecl) {
+						if(lhs->symbol->scope->classType()) {
+							Front::TypeStruct::Member *member = lhs->symbol->scope->classType()->findMember(lhs->lexVal.s);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, context.object, 0, member->offset));
+						} else {
+							// Locate symbol to assign into
+							a = procedure->findSymbol(lhs->symbol);
+
+							// Emit a move into the target symbol
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+						}
+					} else if(lhs->nodeType == Node::NodeTypeArray) {
+						// Emit code to calculate the array's base address
+						a = processRValue(lhs->children[0], context);
+
+						// Emit code to calculate the array subscript
+						IR::Symbol *subscript = processRValue(lhs->children[1], context);
+
+						// Compute the offset into array memory based o subscript and type size
+						IR::Symbol *offset = procedure->newTemp(4);
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, Type::valueSize(node->type)));
+
+						// Emit the store into the calculated memory location
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
+					} else if(lhs->nodeType == Node::NodeTypeMember) {
+						a = processRValue(lhs->children[0], context);
+
+						Front::TypeStruct *typeStruct = (Front::TypeStruct*)lhs->children[0]->type;
+						Front::TypeStruct::Member *member = typeStruct->findMember(lhs->lexVal.s);
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, member->offset));
+					}
+
+					// Return the resulting node
+					result = b;
+					break;
+				}
 
 			case Node::NodeTypeCall:
 				{
@@ -327,7 +339,14 @@ namespace Front {
 					std::vector<IR::Symbol*> args;
 					switch(target->nodeType) {
 						case Node::NodeTypeId:
-							name = target->lexVal.s;
+							if(target->symbol->scope->classType()) {
+								std::stringstream s;
+								s << target->symbol->scope->classType()->name << "." << target->lexVal.s;
+								name = s.str();
+								args.push_back(context.object);
+							} else {
+								name = target->lexVal.s;
+							}
 							break;
 
 						case Node::NodeTypeMember:
@@ -518,17 +537,11 @@ namespace Front {
 
 					IR::Symbol *base = processRValue(node->children[0], context);
 
-					int idx;
 					Front::TypeStruct *typeStruct = (Front::TypeStruct*)node->children[0]->type;
-					for(unsigned int i=0; i<typeStruct->members.size(); i++) {
-						if(typeStruct->members[i].name == node->lexVal.s) {
-							idx = i;
-							break;
-						}
-					}
+					Front::TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, typeStruct->members[idx].offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, member->offset));
 					break;
 				}
 

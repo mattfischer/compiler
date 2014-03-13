@@ -11,17 +11,19 @@ namespace Front {
 	 */
 	class Scope {
 	public:
-		Scope(Scope *parent = 0);
+		Scope(Scope *parent = 0, TypeStruct *classType = 0);
 
 		bool addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
 		std::vector<Symbol*> symbols();
 		void addChild(Scope *child);
+		TypeStruct *classType() { return mClassType; }
 
 	private:
 		Scope *mParent; //!< Parent scope
 		std::vector<Scope*> mChildren; //!< Child scopes
 		std::vector<Symbol*> mSymbols; //!< Collection of symbols
+		TypeStruct *mClassType;
 	};
 }
 

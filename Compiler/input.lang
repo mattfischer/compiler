@@ -1,7 +1,17 @@
 class Foo {
-  void doStuff(int x)
+  int x;
+  void doOtherStuff(int z)
   {
     print(x);
+    print(z);
+    print(this.x);
+  }
+
+  void doStuff(int z)
+  {
+    print(x);
+    print(z);
+    doOtherStuff(z);
   }
 }
 
@@ -9,5 +19,6 @@ void main(int x)
 {
 	Foo foo = new Foo;
 
+	foo.x = 5;
 	foo.doStuff(3);
 }

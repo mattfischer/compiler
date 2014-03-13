@@ -6,9 +6,11 @@ namespace Front {
 	* \param parent Parent scope
 	* \param procedure Procedure containing scope
 	*/
-	Scope::Scope(Scope *parent)
+	Scope::Scope(Scope *parent, TypeStruct *classType)
 	{
 		mParent = parent;
+		mClassType = classType;
+
 		if(mParent) {
 			mParent->addChild(this);
 		}
@@ -20,6 +22,7 @@ namespace Front {
 	 */
 	bool Scope::addSymbol(Symbol *symbol)
 	{
+		symbol->scope = this;
 		mSymbols.push_back(symbol);
 		return true;
 	}

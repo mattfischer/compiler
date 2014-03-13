@@ -23,6 +23,7 @@ namespace Front {
 			IR::Procedure *procedure;
 			IR::EntryLabel *breakTarget;
 			IR::EntryLabel *continueTarget;
+			IR::Symbol *object;
 		};
 
 		void processNode(Node *node, Context &context);

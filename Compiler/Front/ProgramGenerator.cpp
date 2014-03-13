@@ -43,7 +43,7 @@ namespace Front {
 		try {
 			// Create the root program object
 			Program *program = new Program;
-			program->globals = new Scope();
+			program->scope = new Scope();
 			program->types = new Types();
 
 			// Iterate through the tree's procedure definitions
@@ -51,7 +51,7 @@ namespace Front {
 				Node *node = mTree->children[i];
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
-					generateProcedure(mTree->children[i], program, 0);
+					generateProcedure(mTree->children[i], program, program->scope);
 				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
 				} else if(node->nodeType == Node::NodeTypeClassDef) {
@@ -139,21 +139,27 @@ namespace Front {
 	 * \param node Tree node for procedure definition
 	 * \param program Program to add procedure to
 	 */
-	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, Type *classType)
+	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, Scope *scope)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
 
 		// Begin populating the procedure object
-		if(classType) {
+		if(scope->classType()) {
 			std::stringstream s;
-			s << classType->name << "." << node->lexVal.s;
+			s << scope->classType()->name << "." << node->lexVal.s;
 			procedure->name = s.str();
 		} else {
 			procedure->name = node->lexVal.s;
 		}
-		procedure->locals = new Scope(program->globals);
-		procedure->classType = classType;
+		procedure->scope = new Scope(scope);
+
+		if(scope->classType()) {
+			procedure->object = new Symbol(scope->classType(), "this");
+			procedure->scope->addSymbol(procedure->object);
+		} else {
+			procedure->object = 0;
+		}
 
 		// Iterate the tree's argument items
 		Node *argumentList = node->children[1];
@@ -168,7 +174,7 @@ namespace Front {
 
 			// Construct a symbol for the argument, and add it to the procedure's scope and argument list
 			Symbol *argument = new Symbol(argumentType, argumentList->children[j]->lexVal.s);
-			procedure->locals->addSymbol(argument);
+			procedure->scope->addSymbol(argument);
 			procedure->arguments.push_back(argument);
 		}
 
@@ -177,14 +183,14 @@ namespace Front {
 		procedure->type = new TypeProcedure(returnType, argumentTypes);
 
 		// Construct the procedure symbol
-		Symbol *symbol = new Symbol(procedure->type, procedure->name);
-		program->globals->addSymbol(symbol);
+		Symbol *symbol = new Symbol(procedure->type, node->lexVal.s);
+		scope->addSymbol(symbol);
 
 		// Create a context for the procedure
 		Context context;
 		context.procedure = procedure;
 		context.types = program->types;
-		context.scope = procedure->locals;
+		context.scope = procedure->scope;
 		context.inLoop = false;
 
 		// Type check the body of the procedure
@@ -229,6 +235,8 @@ namespace Front {
 	void ProgramGenerator::addClass(Node *node, Program *program)
 	{
 		TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+		Scope *classScope = new Scope(program->scope, type);
+
 		Node *members = node->children[0];
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
@@ -237,12 +245,13 @@ namespace Front {
 				{
 					Type *memberType = createType(memberNode->children[0], program->types);
 					type->addMember(memberType, memberNode->lexVal.s);
+					classScope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
 					break;
 				}
 
 				case Node::NodeTypeProcedureDef:
 				{
-					Procedure *procedure = generateProcedure(memberNode, program, type);
+					Procedure *procedure = generateProcedure(memberNode, program, classScope);
 					type->addMember(procedure->type, memberNode->lexVal.s);
 					break;
 				}
