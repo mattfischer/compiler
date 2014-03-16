@@ -18,6 +18,7 @@
 
 #include "Util/UniqueQueue.h"
 #include "Util/Timer.h"
+#include "Util/Log.h"
 
 namespace Middle {
 	/*!
@@ -67,7 +68,7 @@ namespace Middle {
 				transforms.push(transform);
 			}
 
-			std::cout << "Optimizations (" << procedure->name() << "):" << std::endl;
+			Util::log("opt") << "Optimizations (" << procedure->name() << "):" << std::endl;
 
 			// Run optimization passes until there are none left
 			while(!transforms.empty()) {
@@ -78,11 +79,11 @@ namespace Middle {
 				Util::Timer timer;
 				timer.start();
 				bool changed = transform->transform(procedure, analysis);
-				std::cout << transform->name() << ": " << timer.stop() << "ms" << std::endl;
+				Util::log("opt.time") << transform->name() << ": " << timer.stop() << "ms" << std::endl;
 
 				if(changed) {
-					procedure->print();
-					std::cout << std::endl;
+					procedure->print(Util::log("opt.ir"));
+					Util::log("opt.ir") << std::endl;
 
 					// If the transform changed the IR, add its follow-up transformations to the queue
 					TransformVector &newTransforms = transformMap[transform];
@@ -93,7 +94,7 @@ namespace Middle {
 				}
 			}
 
-			std::cout << std::endl;
+			Util::log("opt") << std::endl;
 		}
 	}
 }

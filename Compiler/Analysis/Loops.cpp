@@ -176,7 +176,7 @@ namespace Analysis {
 	/*!
 	 * \brief Print the list of loops
 	 */
-	void Loops::print()
+	void Loops::print(std::ostream &o)
 	{
 		std::map<Loop *, int> loopMap;
 		int num = 1;
@@ -187,20 +187,20 @@ namespace Analysis {
 
 		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
 			Loop *loop = *itLoop;
-			std::cout << loopMap[loop] << ": ";
+			o << loopMap[loop] << ": ";
 			if(loop->parent != &mRootLoop) {
-				std::cout << "parent: " << loopMap[loop->parent] << " | ";
+				o << "parent: " << loopMap[loop->parent] << " | ";
 			}
-			std::cout << "header: " << ((IR::EntryLabel*)loop->header->entries.front())->name << " | ";
+			o << "header: " << ((IR::EntryLabel*)loop->header->entries.front())->name << " | ";
 			if(loop->preheader) {
-				std::cout << "preheader: " << ((IR::EntryLabel*)loop->preheader->entries.front())->name << " | ";
+				o << "preheader: " << ((IR::EntryLabel*)loop->preheader->entries.front())->name << " | ";
 			}
-			std::cout << "blocks: ";
+			o << "blocks: ";
 			for(FlowGraph::BlockSet::iterator itBlock = loop->blocks.begin(); itBlock != loop->blocks.end(); itBlock++) {
 				FlowGraph::Block *block = *itBlock;
-				std::cout << ((IR::EntryLabel*)block->entries.front())->name << " ";
+				o << ((IR::EntryLabel*)block->entries.front())->name << " ";
 			}
-			std::cout << std::endl;
+			o << std::endl;
 		}
 	}
 }

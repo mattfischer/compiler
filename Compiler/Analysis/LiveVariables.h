@@ -9,6 +9,7 @@
 
 #include <set>
 #include <map>
+#include <iostream>
 
 namespace Analysis {
 	/*!
@@ -24,7 +25,7 @@ namespace Analysis {
 		LiveVariables(IR::Procedure *procedure, FlowGraph *flowGraph);
 
 		IR::SymbolSet &variables(IR::Entry *entry);
-		void print();
+		void print(std::ostream &o);
 
 	private:
 		std::map<IR::Entry*, IR::SymbolSet> mMap; //!< Map of live ranges

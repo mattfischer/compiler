@@ -9,7 +9,7 @@ namespace VM {
 	 * \brief Run a VM program
 	 * \param program Program to run
 	 */
-	void Interp::run(const Program *program)
+	void Interp::run(const Program *program, std::ostream &o)
 	{
 		int regs[16];
 		int curPC;
@@ -17,12 +17,12 @@ namespace VM {
 		Heap heap(mem, 1024, (int)program->instructions.size());
 
 		if(program->symbols.find("main") == program->symbols.end()) {
-			std::cout << "Error: Undefined reference to main" << std::endl;
+			std::cerr << "Error: Undefined reference to main" << std::endl;
 			return;
 		}
 
 		if(program->imports.size() > 0) {
-			std::cout << "Error: Program has unresolved imports" << std::endl;
+			std::cerr << "Error: Program has unresolved imports" << std::endl;
 			return;
 		}
 
@@ -56,9 +56,9 @@ namespace VM {
 
 						case VM::OneAddrPrint:
 							for(int i = regs[instr.one.reg]; mem[i] != '\0'; i++) {
-								std::cout << (char)mem[i];
+								o << (char)mem[i];
 							}
-							std::cout << std::endl;
+							o << std::endl;
 							break;
 
 						case VM::OneAddrCall:

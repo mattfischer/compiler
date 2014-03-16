@@ -4,6 +4,7 @@
 #include "IR/Procedure.h"
 
 #include <list>
+#include <iostream>
 
 namespace IR {
 	/*!
@@ -19,7 +20,7 @@ namespace IR {
 		void addProcedure(Procedure *procedure);
 		Procedure *findProcedure(const std::string &name);
 
-		void print() const;
+		void print(std::ostream &o) const;
 
 	private:
 		ProcedureList mProcedures;

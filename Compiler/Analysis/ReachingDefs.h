@@ -10,6 +10,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <iostream>
 
 /*!
  * \brief Utilities to analyze a program in various ways
@@ -31,7 +32,7 @@ namespace Analysis {
 		const IR::EntrySet defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void remove(IR::Entry *entry);
-		void print() const;
+		void print(std::ostream &o) const;
 
 	private:
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;

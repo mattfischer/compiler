@@ -10,6 +10,8 @@
 
 #include "Back/CodeGenerator.h"
 
+#include "Util/Log.h"
+
 #include "Assembler.h"
 
 #include <fstream>
@@ -62,9 +64,9 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 		return false;
 	}
 
-	std::cout << "*** Parsed Program ***" << std::endl;
-	program->print();
-	std::cout << std::endl;
+	Util::log("parse") << "*** Parsed Program ***" << std::endl;
+	program->print(Util::log("parse"));
+	Util::log("parse") << std::endl;
 
 	Front::IRGenerator generator;
 	IR::Program *irProgram = generator.generate(program);
@@ -72,9 +74,9 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 		return false;
 	}
 
-	std::cout << "*** IR (before optimization) ***" << std::endl;
-	irProgram->print();
-	std::cout << std::endl;
+	Util::log("ir") << "*** IR (before optimization) ***" << std::endl;
+	irProgram->print(Util::log("ir"));
+	Util::log("ir") << std::endl;
 
 	Middle::ErrorCheck errorCheck;
 	if(!errorCheck.check(irProgram)) {
@@ -86,9 +88,9 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 
 	Middle::Optimizer::optimize(irProgram);
 
-	std::cout << "*** IR (after optimization) ***" << std::endl;
-	irProgram->print();
-	std::cout << std::endl;
+	Util::log("ir") << "*** IR (after optimization) ***" << std::endl;
+	irProgram->print(Util::log("ir"));
+	Util::log("ir") << std::endl;
 
 	Back::CodeGenerator::generate(irProgram, output);
 	return true;
@@ -108,8 +110,8 @@ VM::Program *Compiler::compile(const std::string &filename)
 		return 0;
 	}
 
-	std::cout << "*** Assembly ***" << std::endl;
-	std::cout << buffer.str() << std::endl;
+	Util::log("asm") << "*** Assembly ***" << std::endl;
+	Util::log("asm") << buffer.str() << std::endl;
 
 	Assembler assembler;
 	VM::Program *program = assembler.assemble(buffer);

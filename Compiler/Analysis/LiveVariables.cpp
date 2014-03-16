@@ -6,6 +6,7 @@
 #include "IR/Symbol.h"
 
 #include "Util/Timer.h"
+#include "Util/Log.h"
 
 namespace Analysis {
 	/*!
@@ -50,7 +51,7 @@ namespace Analysis {
 		DataFlow<IR::Symbol*> dataFlow;
 		mMap = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Symbol*>::MeetTypeUnion, DataFlow<IR::Symbol*>::DirectionBackward);
 
-		std::cout << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -66,18 +67,18 @@ namespace Analysis {
 	/*!
 	 * \brief Print out live variable information
 	 */
-	void LiveVariables::print()
+	void LiveVariables::print(std::ostream &o)
 	{
 		// Loop through the procedure, printing out each entry along with the variables live at that point
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			std::cout << *entry << " | ";
+			o << *entry << " | ";
 			IR::SymbolSet &symbols = variables(entry);
 			for(IR::SymbolSet::iterator itSymbol = symbols.begin(); itSymbol != symbols.end(); itSymbol++) {
 				IR::Symbol *symbol = *itSymbol;
-				std::cout << symbol->name << " ";
+				o << symbol->name << " ";
 			}
-			std::cout << std::endl;
+			o << std::endl;
 		}
 	}
 }

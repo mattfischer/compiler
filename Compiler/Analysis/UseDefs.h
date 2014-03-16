@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <iostream>
 
 namespace Analysis {
 	/*!
@@ -30,7 +31,7 @@ namespace Analysis {
 		void replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol);
 		void remove(IR::Entry *entry);
 
-		void print() const;
+		void print(std::ostream &o) const;
 
 	private:
 		typedef std::map<IR::Symbol*, IR::EntrySet> SymbolToEntrySetMap;

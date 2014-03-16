@@ -43,12 +43,12 @@ namespace IR {
 	/*!
 	 * \brief Print program
 	 */
-	void Program::print() const
+	void Program::print(std::ostream &o) const
 	{
 		for(ProcedureList::const_iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
 			Procedure *procedure = *it;
-			std::cout << "<" << procedure->name() << ">" << std::endl;
-			procedure->print("  ");
+			o << "<" << procedure->name() << ">" << std::endl;
+			procedure->print(o, "  ");
 		}
 	}
 }

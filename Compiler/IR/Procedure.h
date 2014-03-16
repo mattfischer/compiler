@@ -20,7 +20,7 @@ namespace IR {
 	public:
 		Procedure(const std::string &name);
 
-		void print(const std::string &prefix = "");
+		void print(std::ostream &o, const std::string &prefix = "");
 		
 		EntryLabel *start() const { return mStart; } //!< Start label
 		EntryLabel *end() const { return mEnd; } //!< End label

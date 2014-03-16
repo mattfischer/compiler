@@ -6,6 +6,7 @@
 #include "Front/Node.h"
 
 #include <string>
+#include <iostream>
 
 namespace Front {
 	/*!
@@ -19,7 +20,7 @@ namespace Front {
 		Node *body; //!< Body of procedure
 		Symbol *object; //!< Object symbol if procedure is a member function, or 0
 
-		void print();
+		void print(std::ostream &o);
 	};
 }
 #endif

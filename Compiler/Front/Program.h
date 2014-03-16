@@ -5,6 +5,7 @@
 #include "Front/Procedure.h"
 #include "Front/Types.h"
 
+#include <iostream>
 #include <vector>
 namespace Front {
 	/*!
@@ -15,7 +16,7 @@ namespace Front {
 		Types *types; //!< Type list
 		std::vector<Procedure*> procedures; //!< List of procedures
 
-		void print();
+		void print(std::ostream &o);
 	};
 }
 

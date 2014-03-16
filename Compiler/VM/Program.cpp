@@ -5,28 +5,28 @@
 
 namespace VM {
 
-void Program::print()
+void Program::print(std::ostream &o)
 {
 	for(unsigned int i = 0; i < instructions.size(); i+=4) {
 		VM::Instruction instr;
 		for(std::map<std::string, int>::iterator it=symbols.begin(); it != symbols.end(); it++) {
 			if(i == it->second) {
-				std::cout << it->first << ":" << std::endl;
+				o << it->first << ":" << std::endl;
 				break;
 			}
 		}
 
-		std::cout << "  ";
+		o << "  ";
 		for(int j=0; j<4; j++) {
 			int d = 0;
 			if(i + j < instructions.size()) {
 				d = instructions[i + j];
 			}
-			std::cout << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
+			o << std::setw(2) << std::setfill('0') << std::setbase(16) << d;
 		}
-		std::cout << std::setbase(10);
+		o << std::setbase(10);
 		std::memcpy(&instr, &instructions[i], 4);
-		std::cout << "  " << instr << std::endl;
+		o << "  " << instr << std::endl;
 	}
 }
 

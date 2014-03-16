@@ -4,6 +4,8 @@
 
 #include "VM/Interp.h"
 
+#include "Util/Log.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -25,7 +27,7 @@ VM::Program *compileCached(const std::string &filename)
 		Compiler compiler;
 		bool success = compiler.compileToAsm(filename, asmOut);
 		if(!success) {
-			std::cout << "Error: " << compiler.errorMessage() << std::endl;
+			Util::log("error") << "Error: " << compiler.errorMessage() << std::endl;
 			return 0;
 		}
 	}
@@ -34,7 +36,7 @@ VM::Program *compileCached(const std::string &filename)
 	Assembler assembler;
 	VM::Program *program = assembler.assemble(asmFilename);
 	if(!program) {
-		std::cout << "Error: " << assembler.errorMessage() << std::endl;
+		Util::log("error") << "Error: " << assembler.errorMessage() << std::endl;
 		return 0;
 	}
 
@@ -53,7 +55,7 @@ int main(int arg, char *argv[])
 	Compiler compiler;
 	VM::Program *vmProgram = compiler.compile("input.lang");
 	if(!vmProgram) {
-		std::cout << "Error: " << compiler.errorMessage() << std::endl;
+		std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 		return 1;
 	}
 
@@ -65,18 +67,18 @@ int main(int arg, char *argv[])
 	Linker linker;
 	VM::Program *linked = linker.link(programs);
 	if(!linked) {
-		std::cout << "Error: " << linker.errorMessage() << std::endl;
+		std::cerr << "Error: " << linker.errorMessage() << std::endl;
 		return 1;
 	}
 
 	// Print out the linked program
-	std::cout << "*** Code ***" << std::endl;
-	linked->print();
-	std::cout << std::endl;
+	Util::log("code") << "*** Code ***" << std::endl;
+	linked->print(Util::log("code"));
+	Util::log("code") << std::endl;
 
 	// Run the program
-	std::cout << "*** Output ***" << std::endl;
-	VM::Interp::run(linked);
+	Util::log("output") << "*** Output ***" << std::endl;
+	VM::Interp::run(linked, Util::log("output"));
 
 	return 0;
 }

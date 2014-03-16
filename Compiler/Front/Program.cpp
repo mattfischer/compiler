@@ -1,11 +1,11 @@
 #include "Front/Program.h"
 
 namespace Front {
-	void Program::print()
+	void Program::print(std::ostream &o)
 	{
 		for(unsigned int i=0; i<procedures.size(); i++) {
-			procedures[i]->print();
-			std::cout << std::endl;
+			procedures[i]->print(o);
+			o << std::endl;
 		}
 	}
 }

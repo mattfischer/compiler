@@ -7,6 +7,7 @@
 #include "Analysis/ReachingDefs.h"
 
 #include "Util/Timer.h"
+#include "Util/Log.h"
 
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when entry lookup fails
@@ -38,7 +39,7 @@ namespace Analysis {
 				}
 			}
 		}
-		std::cout << "  UseDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  UseDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -190,7 +191,7 @@ namespace Analysis {
 	/*!
 	 * \brief Print out use-def and def-use information
 	 */
-	void UseDefs::print() const
+	void UseDefs::print(std::ostream &o) const
 	{
 		// Assign a line number to each entry
 		int line = 1;
@@ -204,7 +205,7 @@ namespace Analysis {
 		// Iterate through the procedure, printing out each entry along with def-use and use-def information
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			std::cout << lineMap[entry] << ": " << *entry;
+			o << lineMap[entry] << ": " << *entry;
 
 			// Print use information
 			bool printedOpen = false;
@@ -213,11 +214,11 @@ namespace Analysis {
 				if(it != mUses.end()) {
 					const IR::EntrySet &u = it->second;
 					if(!u.empty()) {
-						std::cout << " [ Uses: ";
+						o << " [ Uses: ";
 						printedOpen = true;
 						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
 							IR::Entry *e = *it;
-							std::cout << lineMap[e] << " ";
+							o << lineMap[e] << " ";
 						}
 					}
 				}
@@ -230,24 +231,24 @@ namespace Analysis {
 					const SymbolToEntrySetMap &defs = it->second;
 					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
 						if(printedOpen) {
-							std::cout << "| ";
+							o << "| ";
 						} else {
-							std::cout << " [ ";
+							o << " [ ";
 							printedOpen = true;
 						}
-						std::cout << "Defs (" << it->first->name << "): ";
+						o << "Defs (" << it->first->name << "): ";
 						for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
 							IR::Entry *e = *it2;
-							std::cout << lineMap[e] << " ";
+							o << lineMap[e] << " ";
 						}
 					}
 				}
 			}
 
 			if(printedOpen) {
-				std::cout << "]";
+				o << "]";
 			}
-			std::cout << std::endl;
+			o << std::endl;
 		}
 	}
 }

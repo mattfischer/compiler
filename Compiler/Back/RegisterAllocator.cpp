@@ -13,6 +13,8 @@
 
 #include "Front/Type.h"
 
+#include "Util/Log.h"
+
 #include <vector>
 #include <sstream>
 
@@ -330,9 +332,9 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 		registers = tryAllocate(procedure, success, analysis);
 
 		if(!success) {
-			std::cout << "*** IR (after spilling) ***" << std::endl;
-			procedure->print();
-			std::cout << std::endl;
+			Util::log("ir") << "*** IR (after spilling) ***" << std::endl;
+			procedure->print(Util::log("ir"));
+			Util::log("ir") << std::endl;
 		}
 	} while(!success);
 

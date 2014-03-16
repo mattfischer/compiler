@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <iostream>
 
 /*!
  * \brief A virtual machine that is targeted by the compiler
@@ -19,7 +20,7 @@ namespace VM {
 		std::map<std::string, int> symbols;
 		std::map<int, std::string> imports;
 
-		void print();
+		void print(std::ostream &o);
 	};
 }
 

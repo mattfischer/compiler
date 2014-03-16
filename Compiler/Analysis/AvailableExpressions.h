@@ -7,6 +7,7 @@
 #include "Analysis/FlowGraph.h"
 
 #include <map>
+#include <iostream>
 
 namespace Analysis {
 	/*!
@@ -22,7 +23,7 @@ namespace Analysis {
 
 		const IR::EntrySet &expressions(IR::Entry *entry) const;
 
-		void print() const;
+		void print(std::ostream &o) const;
 
 		static bool isExpression(IR::Entry *entry);
 

@@ -10,6 +10,7 @@
 #include "Back/RegisterAllocator.h"
 
 #include "Util/Timer.h"
+#include "Util/Log.h"
 
 #include <map>
 #include <sstream>
@@ -103,7 +104,7 @@ namespace Back {
 		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
 
-		std::cout << "Register allocation (" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "Register allocation (" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 
 		// Determine the set of registers that need to be saved/restored in the prologue/epilogue
 		std::stringstream s;

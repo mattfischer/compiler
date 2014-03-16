@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <iostream>
 
 namespace Analysis {
 	/*!
@@ -39,7 +40,7 @@ namespace Analysis {
 		LoopList &loops();
 		Loop *rootLoop() { return &mRootLoop; } //!< Loop representing the entire procedure
 
-		void print();
+		void print(std::ostream &o);
 
 	private:
 		bool isDominator(FlowGraph::Block *block, FlowGraph::Block *test, DominatorTree &doms);

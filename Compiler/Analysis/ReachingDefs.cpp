@@ -8,6 +8,7 @@
 
 #include "Util/UniqueQueue.h"
 #include "Util/Timer.h"
+#include "Util/Log.h"
 
 namespace Analysis {
 	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
@@ -60,7 +61,7 @@ namespace Analysis {
 		// Perform a forward data flow analysis using the gen/kill sets constructed above
 		DataFlow<IR::Entry*> dataFlow;
 		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::MeetTypeUnion, DataFlow<IR::Entry*>::DirectionForward);
-		std::cout << "  ReachingDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  ReachingDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -141,7 +142,7 @@ namespace Analysis {
 	/*!
 	 * \brief Print out the reaching definition information
 	 */
-	void ReachingDefs::print() const
+	void ReachingDefs::print(std::ostream &o) const
 	{
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
@@ -155,13 +156,13 @@ namespace Analysis {
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			std::cout << lineMap[entry] << ": " << *entry << " -> ";
+			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet d = defs(entry);
 			for(IR::EntrySet::iterator it2 = d.begin(); it2 != d.end(); it2++) {
 				IR::Entry *e = *it2;
-				std::cout << lineMap[e] << " ";
+				o << lineMap[e] << " ";
 			}
-			std::cout << std::endl;
+			o << std::endl;
 		}
 	}
 }

@@ -87,7 +87,7 @@ namespace Analysis {
 	/*!
 	 * \brief Print out the available expression information
 	 */
-	void AvailableExpressions::print() const
+	void AvailableExpressions::print(std::ostream &o) const
 	{
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
@@ -101,13 +101,13 @@ namespace Analysis {
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
 		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
-			std::cout << lineMap[entry] << ": " << *entry << " -> ";
+			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet exps = expressions(entry);
 			for(IR::EntrySet::iterator it2 = exps.begin(); it2 != exps.end(); it2++) {
 				IR::Entry *e = *it2;
-				std::cout << lineMap[e] << " ";
+				o << lineMap[e] << " ";
 			}
-			std::cout << std::endl;
+			o << std::endl;
 		}
 	}
 }
