@@ -1,5 +1,7 @@
 #include "Front/HllTokenizer.h"
 
+#include "Util/Array.h"
+
 #include <cctype>
 #include <sstream>
 
@@ -39,7 +41,7 @@ bool HllTokenizer::evaluateEscapes(std::string &text)
 		if(text[i] == '\\') {
 			bool valid = false;
 			if(i < text.size() - 1) {
-				for(unsigned int j=0; j < sizeof(escapes) / sizeof(escapes[0]); j++) {
+				for(unsigned int j=0; j < N_ELEMENTS(escapes); j++) {
 					if(text[i+1] == escapes[j].escape) {
 						text[i] = escapes[j].value;
 						text.erase(i+1, 1);
@@ -67,7 +69,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 	Token next;
 
 	// Start out by moving past any whitespace
-	skipCharacters(whitespace, sizeof(whitespace) / sizeof(char));
+	skipCharacters(whitespace, N_ELEMENTS(whitespace));
 
 	// Check if we've reached the end of the file
 	if(!fillBuffer(1)) {
@@ -76,7 +78,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 	}
 
 	// Scan through the list of literals and see if any match
-	if(scanLiteral(literals, sizeof(literals)/sizeof(char*), next)) {
+	if(scanLiteral(literals, N_ELEMENTS(literals), next)) {
 		return next;
 	}
 
@@ -94,7 +96,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 		std::string string = buffer().substr(0, len);
 
 		// Check if the string is a keyword
-		for(int i=0; i<sizeof(keywords) / sizeof(char*); i++) {
+		for(int i=0; i<N_ELEMENTS(keywords); i++) {
 			if(string == keywords[i]) {
 				type = TypeLiteral;
 				break;

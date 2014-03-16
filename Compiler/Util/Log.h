@@ -2,6 +2,7 @@
 #define UTIL_LOG_H
 
 #include <iostream>
+#include <string>
 
 namespace Util {
 

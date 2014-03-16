@@ -1,5 +1,7 @@
 #include "Back/AsmParser.h"
 
+#include "Util/Array.h"
+
 namespace Back {
 
 struct NameInt {
@@ -12,8 +14,6 @@ struct NameTwoInt {
 	int value1;
 	int value2;
 };
-
-#define N_ENTRIES(arr) (sizeof(arr) / sizeof(arr[0]))
 
 /*!
  * \brief Constructor
@@ -166,7 +166,7 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 		{ "print", VM::InstrOneAddr, VM::OneAddrPrint }
 	};
 
-	for(int i=0; i<N_ENTRIES(stdOps); i++) {
+	for(int i=0; i<N_ELEMENTS(stdOps); i++) {
 		if(next().text == stdOps[i].name) {
 			switch(stdOps[i].value1) {
 				case VM::InstrThreeAddr:
@@ -218,7 +218,7 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 		{ "stb", VM::TwoAddrStoreByte, VM::ThreeAddrStoreByte },
 	};
 
-	for(int i=0; i<N_ENTRIES(indOps); i++) {
+	for(int i=0; i<N_ELEMENTS(indOps); i++) {
 		if(next().text == indOps[i].name) {
 			consume();
 			int lhs = parseReg();
@@ -270,7 +270,7 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 		{ "mod", VM::TwoAddrModImm, VM::ThreeAddrMod },
 	};
 
-	for(int i=0; i<N_ENTRIES(imm23Ops); i++) {
+	for(int i=0; i<N_ELEMENTS(imm23Ops); i++) {
 		if(next().text == imm23Ops[i].name) {
 			consume();
 			int lhs = parseReg();
@@ -295,7 +295,7 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 		{ "mov", VM::OneAddrLoadImm, VM::TwoAddrAddImm }
 	};
 
-	for(int i=0; i<N_ENTRIES(imm12Ops); i++) {
+	for(int i=0; i<N_ELEMENTS(imm12Ops); i++) {
 		if(next().text == imm12Ops[i].name) {
 			consume();
 			int lhs = parseReg();
@@ -328,7 +328,7 @@ bool AsmParser::parseMultInstr(VM::Instruction &instr)
 		{ "ldm", VM::MultRegLoad, 0 },
 	};
 
-	for(int i=0; i<N_ENTRIES(multOps); i++) {
+	for(int i=0; i<N_ELEMENTS(multOps); i++) {
 		if(next().text == multOps[i].name) {
 			consume();
 			int lhs = parseReg();
@@ -454,7 +454,7 @@ int AsmParser::parseReg()
 		return std::atoi(num.c_str());
 	}
 
-	for(int i=0; i<N_ENTRIES(regs); i++) {
+	for(int i=0; i<N_ELEMENTS(regs); i++) {
 		if(regs[i].name == text) {
 			consume();
 			return regs[i].value;

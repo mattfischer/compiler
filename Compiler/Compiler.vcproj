@@ -513,6 +513,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Util\Array.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Back\AsmParser.h"
 				>
 			</File>
