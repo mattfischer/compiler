@@ -61,10 +61,12 @@ namespace Front {
 			default:
 				return type->size;
 
-			case TypeProcedure:
 			case TypeArray:
 			case TypeStruct:
 				return 4;
+
+			case TypeProcedure:
+				return 0;
 		}
 	}
 
