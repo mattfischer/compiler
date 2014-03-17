@@ -53,13 +53,29 @@ namespace Front {
 				Node *node = mTree->children[i];
 
 				if(node->nodeType == Node::NodeTypeProcedureDef) {
-					generateProcedure(mTree->children[i], program, program->scope);
+					addProcedure(mTree->children[i], program, program->scope);
 				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
 				} else if(node->nodeType == Node::NodeTypeClassDef) {
 					addClass(mTree->children[i], program);
 				}
 			}
+
+			// Now that all procedures have been declared, type check the procedure bodies
+			for(unsigned int i=0; i<program->procedures.size(); i++) {
+				Procedure *procedure = program->procedures[i];
+
+				// Create a context for the procedure
+				Context context;
+				context.procedure = procedure;
+				context.types = program->types;
+				context.scope = procedure->scope;
+				context.inLoop = false;
+
+				// Type check the body of the procedure
+				checkType(procedure->body, context);
+			}
+
 			return program;
 		} catch(TypeError error) {
 			// Collect the error message and line from the exception
@@ -140,8 +156,10 @@ namespace Front {
 	 * \brief Generate a single procedure
 	 * \param node Tree node for procedure definition
 	 * \param program Program to add procedure to
+	 * \param scope Parent scope of procedure
+	 * \return New procedure
 	 */
-	Procedure *ProgramGenerator::generateProcedure(Node *node, Program *program, Scope *scope)
+	Procedure *ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
@@ -188,16 +206,7 @@ namespace Front {
 		Symbol *symbol = new Symbol(procedure->type, node->lexVal.s);
 		scope->addSymbol(symbol);
 
-		// Create a context for the procedure
-		Context context;
-		context.procedure = procedure;
-		context.types = program->types;
-		context.scope = procedure->scope;
-		context.inLoop = false;
-
-		// Type check the body of the procedure
 		procedure->body = node->children[2];
-		checkType(procedure->body, context);
 		node->type = Types::intrinsic(Types::Void);
 
 		// Add the procedure to the program's procedure list
@@ -253,7 +262,7 @@ namespace Front {
 
 				case Node::NodeTypeProcedureDef:
 				{
-					Procedure *procedure = generateProcedure(memberNode, program, classScope);
+					Procedure *procedure = addProcedure(memberNode, program, classScope);
 					type->addMember(procedure->type, memberNode->lexVal.s);
 					break;
 				}

@@ -1,5 +1,4 @@
 class Foo {
-  int x;
   void doOtherStuff(int z)
   {
     print(x);
@@ -13,6 +12,8 @@ class Foo {
     print(z);
     doOtherStuff(z);
   }
+
+  int x;
 }
 
 void main(int x)
