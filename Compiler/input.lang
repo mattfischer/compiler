@@ -4,6 +4,7 @@ class Foo {
     print(x);
     print(z);
     print(this.x);
+    print(bar.x);
   }
 
   void doStuff(int z)
@@ -14,6 +15,11 @@ class Foo {
   }
 
   int x;
+  Bar bar;
+}
+
+class Bar {
+  int x;
 }
 
 void main(int x)
@@ -21,5 +27,7 @@ void main(int x)
 	Foo foo = new Foo;
 
 	foo.x = 5;
+	foo.bar = new Bar;
+	foo.bar.x = 10;
 	foo.doStuff(3);
 }

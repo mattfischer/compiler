@@ -1,4 +1,5 @@
 #include "Front/HllParser.h"
+#include "Front/HllTypeParser.h"
 
 #include "Front/Types.h"
 
@@ -11,7 +12,8 @@ namespace Front {
  * \param tokenizer Tokenizer
  */
 HllParser::HllParser(HllTokenizer &tokenizer)
-: Input::Parser(tokenizer)
+: Input::Parser(tokenizer),
+  mHllTokenizer(tokenizer)
 {
 }
 
@@ -44,8 +46,17 @@ Node *HllParser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype no
  */
 Node *HllParser::parse()
 {
+	// Add intrinsic types to type name list
 	for(int i=0; i<Types::NumIntrinsics; i++) {
 		mTypeNames.push_back(Types::intrinsic((Types::Intrinsic)i)->name);
+	}
+
+	// Parse declared type names from program, and add them to the type list
+	HllTypeParser typeParser(mHllTokenizer);
+	std::set<std::string> types = typeParser.parseTypes();
+	mHllTokenizer.reset();
+	for(std::set<std::string>::iterator it = types.begin(); it != types.end(); it++) {
+		mTypeNames.push_back(*it);
 	}
 
 	try {
@@ -73,7 +84,6 @@ Node *HllParser::parseProgram()
 			list->children.push_back(node);
 		} else if((node = parseStruct()) || (node = parseClass())) {
 			list->children.push_back(node);
-			mTypeNames.push_back(node->lexVal.s);
 		} else {
 			break;
 		}

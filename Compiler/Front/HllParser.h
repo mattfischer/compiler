@@ -22,6 +22,7 @@ public:
 private:
 	std::vector<Node*> mNodes; //!< List of all nodes created so far
 	std::vector<std::string> mTypeNames; //!< List of all type names
+	HllTokenizer &mHllTokenizer; //!< Reference to the tokenizer being used
 
 	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
 

@@ -25,6 +25,8 @@ public:
 		int column; //!< Starting column of token
 	};
 
+	void reset();
+
 	bool error() { return mError; } //!< True if an error has occurred
 	const std::string &errorMessage() { return mErrorMessage; } //!< Error message, if any
 

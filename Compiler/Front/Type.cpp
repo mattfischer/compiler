@@ -63,6 +63,7 @@ namespace Front {
 
 			case TypeArray:
 			case TypeStruct:
+			case TypeClass:
 				return 4;
 
 			case TypeProcedure:

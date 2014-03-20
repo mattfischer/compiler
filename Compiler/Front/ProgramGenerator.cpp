@@ -48,6 +48,28 @@ namespace Front {
 			program->scope = new Scope();
 			program->types = new Types();
 
+			// Loop through the tree and pre-populate all declared type names
+			for(unsigned int i=0; i<mTree->children.size(); i++) {
+				Node *node = mTree->children[i];
+				std::stringstream s;
+
+				if(node->nodeType == Node::NodeTypeStructDef) {
+					TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
+
+					if(!program->types->registerType(type)) {
+						s << "Redefinition of structure " << type->name;
+						throw TypeError(node, s.str());
+					}
+				} else if(node->nodeType == Node::NodeTypeClassDef) {
+					TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+
+					if(!program->types->registerType(type)) {
+						s << "Redefinition of class " << type->name;
+						throw TypeError(node, s.str());
+					}
+				}
+			}
+
 			// Iterate through the tree's procedure definitions
 			for(unsigned int i=0; i<mTree->children.size(); i++) {
 				Node *node = mTree->children[i];
@@ -222,19 +244,12 @@ namespace Front {
 	 */
 	void ProgramGenerator::addStruct(Node *node, Program *program)
 	{
-		TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
+		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
 		Node *members = node->children[0];
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
 			Type *memberType = createType(memberNode->children[0], program->types);
 			type->addMember(memberType, memberNode->lexVal.s);
-		}
-
-		bool success = program->types->registerType(type);
-		if(!success) {
-			std::stringstream s;
-			s << "Redefinition of structure " << type->name;
-			throw TypeError(node, s.str());
 		}
 	}
 
@@ -245,7 +260,7 @@ namespace Front {
 	 */
 	void ProgramGenerator::addClass(Node *node, Program *program)
 	{
-		TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
 		Scope *classScope = new Scope(program->scope, type);
 
 		Node *members = node->children[0];
@@ -267,13 +282,6 @@ namespace Front {
 					break;
 				}
 			}
-		}
-
-		bool success = program->types->registerType(type);
-		if(!success) {
-			std::stringstream s;
-			s << "Redefinition of class " << type->name;
-			throw TypeError(node, s.str());
 		}
 	}
 
