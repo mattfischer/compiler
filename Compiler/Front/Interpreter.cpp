@@ -60,7 +60,7 @@ namespace Front {
 					Variable *variable = findVariable(node->children[0]->lexVal.s);
 					evaluateExpression(node->children[1]);
 
-					pop(variable->data, node->children[1]->type->size);
+					pop(variable->data, node->children[1]->type->valueSize);
 					break;
 				}
 
@@ -104,7 +104,7 @@ namespace Front {
 			case Node::NodeTypeId:
 				{
 					Variable *variable = findVariable(node->lexVal.s);
-					push(variable->data, node->type->size);
+					push(variable->data, node->type->valueSize);
 					break;
 				}
 
@@ -181,7 +181,7 @@ namespace Front {
 		Variable *variable = new Variable;
 
 		variable->name = name;
-		variable->data = new char[type->size];
+		variable->data = new char[type->allocSize];
 
 		mVariables.push_back(variable);
 	}

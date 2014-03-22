@@ -50,28 +50,6 @@ namespace Front {
 	}
 
 	/*!
-	 * \brief Size of a value of the given type
-	 * \param type Type to check
-	 * \return Size
-	 */
-	int Type::valueSize(Type *type)
-	{
-		switch(type->type) {
-			case TypeIntrinsic:
-			default:
-				return type->size;
-
-			case TypeArray:
-			case TypeStruct:
-			case TypeClass:
-				return 4;
-
-			case TypeProcedure:
-				return 0;
-		}
-	}
-
-	/*!
 	 * \brief Get type name for a procedure type
 	 * \param returnType Return type
 	 * \param argumentTypes Argument types
@@ -101,10 +79,10 @@ namespace Front {
 		Member member;
 		member.name = name;
 		member.type = type;
-		member.offset = size;
+		member.offset = allocSize;
 		members.push_back(member);
 
-		size += Type::valueSize(type);
+		allocSize += type->valueSize;
 	}
 
 	TypeStruct::Member *TypeStruct::findMember(const std::string &name)

@@ -18,19 +18,20 @@ namespace Front {
 			TypeClass
 		};
 
-		Type(TypeType _type, std::string _name, int _size)
+		Type(TypeType _type, std::string _name, int _valueSize, int _allocSize)
 			: type(_type),
 			  name(_name),
-			  size(_size)
+			  valueSize(_valueSize),
+			  allocSize(_allocSize)
 		{
 		}
 
 		TypeType type;
 		std::string name;
-		int size;
+		int valueSize;
+		int allocSize;
 
 		static bool equals(Type *a, Type *b);
-		static int valueSize(Type *type);
 
 	private:
 		static std::vector<Type*> sTypes;
@@ -42,7 +43,7 @@ namespace Front {
 	class TypeIntrinsic : public Type {
 	public:
 		TypeIntrinsic(std::string _name, int _size)
-			: Type(Type::TypeIntrinsic, _name, _size)
+			: Type(Type::TypeIntrinsic, _name, _size, _size)
 		{
 		}
 	};
@@ -56,7 +57,7 @@ namespace Front {
 		std::vector<Type*> argumentTypes;
 
 		TypeProcedure(Type *_returnType, std::vector<Type*> _argumentTypes)
-			: Type(Type::TypeProcedure, getTypeName(_returnType, _argumentTypes), 0), returnType(_returnType), argumentTypes(_argumentTypes)
+			: Type(Type::TypeProcedure, getTypeName(_returnType, _argumentTypes), 0, 0), returnType(_returnType), argumentTypes(_argumentTypes)
 		{}
 
 	private:
@@ -71,7 +72,7 @@ namespace Front {
 		Type *baseType;
 
 		TypeArray(Type *_baseType)
-			: Type(Type::TypeArray, _baseType->name + "[]", 0), baseType(_baseType)
+			: Type(Type::TypeArray, _baseType->name + "[]", 4, 0), baseType(_baseType)
 		{}
 	};
 
@@ -89,7 +90,7 @@ namespace Front {
 		std::vector<Member> members;
 
 		TypeStruct(TypeType _type, const std::string &_name)
-			: Type(_type, _name, 0)
+			: Type(_type, _name, 4, 0)
 		{}
 
 		void addMember(Type *type, const std::string &name);
