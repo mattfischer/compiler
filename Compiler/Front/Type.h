@@ -88,6 +88,7 @@ namespace Front {
 		};
 
 		std::vector<Member> members;
+		Front::TypeProcedure *constructor;
 
 		TypeStruct(TypeType _type, const std::string &_name)
 			: Type(_type, _name, 4, 0)

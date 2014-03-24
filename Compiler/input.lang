@@ -14,20 +14,29 @@ class Foo {
     doOtherStuff(z);
   }
 
+  Foo(int _x, Bar _bar)
+  {
+    x = _x;
+    bar = _bar;
+  }
+
   int x;
   Bar bar;
 }
 
 class Bar {
   int x;
+
+  Bar(int a)
+  {
+    x = 10;
+  }
 }
 
 void main(int x)
 {
-	Foo foo = new Foo;
+	Bar bar = new Bar(10);
+	Foo foo = new Foo(5, bar);
 
-	foo.x = 5;
-	foo.bar = new Bar;
-	foo.bar.x = 10;
 	foo.doStuff(3);
 }

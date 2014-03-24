@@ -221,7 +221,12 @@ namespace Front {
 		}
 
 		// Construct the procedure type
-		Type *returnType = createType(node->children[0], program->types);
+		Type *returnType;
+		if(node->children[0]) {
+			returnType = createType(node->children[0], program->types);
+		} else {
+			returnType = Types::intrinsic(Types::Void);
+		}
 		procedure->type = new TypeProcedure(returnType, argumentTypes);
 
 		// Construct the procedure symbol
@@ -245,6 +250,7 @@ namespace Front {
 	void ProgramGenerator::addStruct(Node *node, Program *program)
 	{
 		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
+		type->constructor = 0;
 		Node *members = node->children[0];
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
@@ -261,6 +267,7 @@ namespace Front {
 	void ProgramGenerator::addClass(Node *node, Program *program)
 	{
 		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
+		type->constructor = 0;
 		Scope *classScope = new Scope(program->scope, type);
 
 		Node *members = node->children[0];
@@ -278,7 +285,14 @@ namespace Front {
 				case Node::NodeTypeProcedureDef:
 				{
 					Procedure *procedure = addProcedure(memberNode, program, classScope);
-					type->addMember(procedure->type, memberNode->lexVal.s);
+
+					if(memberNode->lexVal.s == type->name) {
+						type->constructor = procedure->type;
+					} else if(program->types->findType(memberNode->lexVal.s)) {
+						throw TypeError(memberNode, "Illegal procedure name " + memberNode->lexVal.s);
+					} else {
+						type->addMember(procedure->type, memberNode->lexVal.s);
+					}
 					break;
 				}
 			}
@@ -542,18 +556,35 @@ namespace Front {
 						Node *argsNode = node->children[1];
 						checkType(argsNode, context);
 
-						// Only strings can have a constructor argument
-						if(!Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
-							throw TypeError(node, "Constructor argument passed to non-string");
-						}
+						if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
+							if(argsNode->children.size() != 1) {
+								throw TypeError(node->children[1], "Improper number of arguments to constructor");
+							}
+							argsNode->children[0] = coerce(argsNode->children[0], Types::intrinsic(Types::Int));
+						} else if(typeNode->type->type == Type::TypeClass) {
+							TypeStruct *typeStruct = (TypeStruct*)typeNode->type;
 
-						if(argsNode->children.size() != 1) {
-							throw TypeError(node->children[1], "Improper number of arguments to constructor");
-						}
+							// First, check all child nodes
+							checkChildren(argsNode, context);
 
-						argsNode->children[0] = coerce(argsNode->children[0], Types::intrinsic(Types::Int));
-					} else if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
-						throw TypeError(typeNode, "No arguments passed to string allocation");
+							if(typeStruct->constructor) {
+								// Check call target has correct number of parameters
+								if(typeStruct->constructor->argumentTypes.size() != argsNode->children.size()) {
+									throw TypeError(node, "Improper number of arguments to constructor");
+								}
+
+								// Coerce call arguments to proper types
+								for(unsigned int i=0; i<argsNode->children.size(); i++) {
+									argsNode->children[i] = coerce(argsNode->children[i], typeStruct->constructor->argumentTypes[i]);
+								}
+							} else {
+								if(argsNode->children.size() != 0) {
+									throw TypeError(node, "Constructor arguments passed to class with no constructor");
+								}
+							}
+						} else {
+							throw TypeError(node->children[1], "Constuctor arguments passed to non-class type");
+						}
 					}
 
 					break;

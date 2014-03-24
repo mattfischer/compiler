@@ -41,6 +41,22 @@ Node *HllParser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype no
 }
 
 /*!
+ * \brief Check if a string corresponds to a type name
+ * \param name Name to check
+ * \return true if string is type name, false otherwise
+ */
+bool HllParser::isTypeName(const std::string &name)
+{
+	for(unsigned int i=0; i<mTypeNames.size(); i++) {
+		if(name == mTypeNames[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/*!
  * \brief Parse the input stream
  * \return Abstract syntax tree representing parse, or 0 if an error occurred
  */
@@ -143,7 +159,7 @@ Node *HllParser::parseStruct()
 
 Node *HllParser::parseClass()
 {
-	// <Struct> := 'class' IDENTIFIER '{' { <Type> IDENTIFIER { '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | ';' } }* '}'
+	// <Struct> := 'class' IDENTIFIER '{' <ClassMember>* '}'
 	if(!matchLiteral("class")) {
 		return 0;
 	}
@@ -157,36 +173,52 @@ Node *HllParser::parseClass()
 	expectLiteral("{");
 	Node *membersNode = newNode(Node::NodeTypeList, next().line);
 
-	Node *type;
-	while(type = parseType()) {
-		std::string name = next().text;
-		expect(HllTokenizer::TypeIdentifier);
-
-		Node *member;
-		if(matchLiteral("(")) {
-			consume();
-			member = newNode(Node::NodeTypeProcedureDef, type->line);
-			member->children.push_back(type);
-			member->lexVal.s = name;
-
-			member->children.push_back(parseArgumentList());
-			expectLiteral(")");
-
-			expectLiteral("{");
-			member->children.push_back(parseStatementList());
-			expectLiteral("}");
-		} else {
-			member = newNode(Node::NodeTypeVarDecl, type->line);
-			member->lexVal.s = name;
-			member->children.push_back(type);
-			expectLiteral(";");
-		}
-
+	Node *member;
+	while(member = parseClassMember()) {
 		membersNode->children.push_back(member);
 	}
 
 	node->children.push_back(membersNode);
 	expectLiteral("}");
+
+	return node;
+}
+
+Node *HllParser::parseClassMember()
+{
+	// <ClassMember> := { <Type> }? IDENTIFIER '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | <Type> IDENTIFIER ';'
+	Node *type;
+	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text) && matchLiteral("(", 1)) {
+		type = 0;
+	} else {
+		type = parseType();
+		if(!type) {
+			return 0;
+		}
+	}
+
+	std::string name = next().text;
+	expect(HllTokenizer::TypeIdentifier);
+
+	Node *node;
+	if(matchLiteral("(")) {
+		consume();
+		node = newNode(Node::NodeTypeProcedureDef, next().line);
+		node->children.push_back(type);
+		node->lexVal.s = name;
+
+		node->children.push_back(parseArgumentList());
+		expectLiteral(")");
+
+		expectLiteral("{");
+		node->children.push_back(parseStatementList());
+		expectLiteral("}");
+	} else {
+		node = newNode(Node::NodeTypeVarDecl, type->line);
+		node->lexVal.s = name;
+		node->children.push_back(type);
+		expectLiteral(";");
+	}
 
 	return node;
 }
@@ -227,22 +259,18 @@ Node *HllParser::parseType(bool required)
 	// <Type> := IDENTIFIER { '[' ']' }*
 	Node *node;
 
-	if(match(HllTokenizer::TypeIdentifier)) {
-		for(unsigned int i=0; i<mTypeNames.size(); i++) {
-			if(next().text == mTypeNames[i]) {
-				node = newNode(Node::NodeTypeId, next().line);
-				node->lexVal.s = next().text;
-				consume();
+	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text)) {
+		node = newNode(Node::NodeTypeId, next().line);
+		node->lexVal.s = next().text;
+		consume();
 
-				while(matchLiteral("[") && matchLiteral("]", 1)) {
-					consume(2);
-					Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
-					arrayNode->children.push_back(node);
-					node = arrayNode;
-				}
-				return node;
-			}
+		while(matchLiteral("[") && matchLiteral("]", 1)) {
+			consume(2);
+			Node *arrayNode = newNode(Node::NodeTypeArray, node->line);
+			arrayNode->children.push_back(node);
+			node = arrayNode;
 		}
+		return node;
 	}
 
 	// Throw an error if a type was required and none was found
@@ -699,12 +727,12 @@ Node *HllParser::parseBaseExpression(bool required)
 
 			args = parseExpressionList();
 			expectLiteral(")");
+		} else {
+			args = newNode(Node::NodeTypeList, node->line);
 		}
 
 		node->children.push_back(type);
-		if(args) {
-			node->children.push_back(args);
-		}
+		node->children.push_back(args);
 
 		return node;
 	}

@@ -507,6 +507,30 @@ namespace Front {
 
 					// Emit new entry
 					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNew, result, size));
+
+					// If the type is a class with a constructor, emit a call to it
+					if(arg->type->type == Type::TypeClass && ((TypeStruct*)arg->type)->constructor) {
+						std::vector<IR::Symbol*> args;
+
+						// First argument is the object
+						args.push_back(result);
+
+						// Emit code for each argument, building a list of resulting symbols
+						for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
+							IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
+							args.push_back(arg);
+						}
+
+						// Emit argument store values for each argument
+						for(unsigned int i=0; i<args.size(); i++) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
+						}
+
+						// Emit procedure call
+						std::string name = arg->type->name + "." + arg->type->name;
+						procedure->emit(new IR::EntryCall(name));
+					}
+
 					break;
 				}
 

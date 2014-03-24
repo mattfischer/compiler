@@ -25,11 +25,13 @@ private:
 	HllTokenizer &mHllTokenizer; //!< Reference to the tokenizer being used
 
 	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
+	bool isTypeName(const std::string &name);
 
 	Node *parseProgram();
 	Node *parseProcedure();
 	Node *parseStruct();
 	Node *parseClass();
+	Node *parseClassMember();
 	Node *parseVariableDeclaration();
 	Node *parseArgumentList();
 	Node *parseType(bool required = false);
