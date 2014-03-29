@@ -4,10 +4,12 @@
 namespace VM {
 	class Heap {
 	public:
-		Heap(unsigned char *mem, int memSize, int start);
+		Heap(unsigned int start);
+		~Heap();
 
 		unsigned int allocate(unsigned int size);
 		void free(unsigned int index);
+		unsigned char *at(unsigned int index);
 
 	private:
 		struct Header {
@@ -23,10 +25,8 @@ namespace VM {
 		void removeFree(Header *header);
 
 		unsigned char *mMem;
-		int mMemSize;
-		int mStart;
-
-		int mUsedSize;
+		unsigned int mSize;
+		unsigned int mUsedSize;
 		Header *mFreeList;
 	};
 }
