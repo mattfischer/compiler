@@ -6,18 +6,19 @@ namespace VM {
 	const int MinSize = 2 * WordSize;
 	const int PrevInUseBit = 0x1;
 
-	Heap::Heap(unsigned int size)
+	Heap::Heap(AddressSpace &addressSpace, unsigned int start, unsigned int size)
+		: mAddressSpace(addressSpace)
 	{
-		mMem = new unsigned char[size];
+		mStart = start;
 		mSize = size;
+		mAddressSpace.addRegion(start, size);
 
-		mUsedSize = 0;
+		mUsedSize = WordSize;
 		mFreeList = 0;
 	}
 
 	Heap::~Heap()
 	{
-		delete[] mMem;
 	}
 
 	unsigned int Heap::allocate(unsigned int size)
@@ -47,7 +48,7 @@ namespace VM {
 		}
 
 		if(!header) {
-			int index = mUsedSize + WordSize;
+			int index = mStart + mUsedSize + WordSize;
 			mUsedSize += size;
 
 			header = getHeader(index);
@@ -73,19 +74,14 @@ namespace VM {
 		}
 	}
 
-	unsigned char *Heap::at(unsigned int index)
-	{
-		return mMem + index;
-	}
-
 	Heap::Header *Heap::getHeader(unsigned int index)
 	{
-		return (Header*)(mMem + index - 2 * WordSize);
+		return (Header*)mAddressSpace.at(index - 2 * WordSize);
 	}
 
 	unsigned long Heap::getIndex(Header *header)
 	{
-		return (unsigned long)((unsigned char*)header - (unsigned char*)mMem) + 2 * WordSize;
+		return (unsigned long)((unsigned char*)header - mAddressSpace.at(mStart)) + mStart + 2 * WordSize;
 	}
 
 	void Heap::pushFree(Header *header)

@@ -1,5 +1,6 @@
 #include "VM/Interp.h"
 
+#include "VM/AddressSpace.h"
 #include "VM/Heap.h"
 
 #include <sstream>
@@ -13,7 +14,11 @@ namespace VM {
 	{
 		int regs[16];
 		int curPC;
-		Heap heap(1024);
+		AddressSpace addressSpace;
+
+		const int HeapStart = 0x80000000;
+		const int HeapSize = 0x1000;
+		Heap heap(addressSpace, HeapStart, HeapSize);
 
 		if(program->symbols.find("main") == program->symbols.end()) {
 			std::cerr << "Error: Undefined reference to main" << std::endl;
@@ -28,25 +33,27 @@ namespace VM {
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
-		unsigned int codeIndex = heap.allocate((unsigned int)program->instructions.size());
-		std::memcpy(heap.at(codeIndex), &program->instructions[0], program->instructions.size());
+		const unsigned int CodeStart = 0;
+		addressSpace.addRegion(CodeStart, (unsigned int)program->instructions.size());
+		std::memcpy(addressSpace.at(CodeStart), &program->instructions[0], program->instructions.size());
 
-		const unsigned int StackSize = 256;
-		unsigned int stackIndex = heap.allocate(StackSize);
+		const unsigned int StackStart = 0x10000;
+		const unsigned int StackSize = 0x100;
+		addressSpace.addRegion(StackStart, StackSize);
 		// Set SP to the top of the stack
-		regs[VM::RegSP] = stackIndex + StackSize;
+		regs[VM::RegSP] = StackStart + StackSize;
 
 		// Set LR to beyond the end of the program, so program exit can be detected
 		regs[VM::RegLR] = 0xffffffff;
 
 		// Set PC to the program entry point
-		regs[VM::RegPC] = program->symbols.find("main")->second + codeIndex;
+		regs[VM::RegPC] = program->symbols.find("main")->second + CodeStart;
 
 		// Loop until PC is set beyond the end of the program
 		while(regs[VM::RegPC] != 0xffffffff) {
 			curPC = regs[VM::RegPC];
 			Instruction instr;
-			std::memcpy(&instr, heap.at(regs[VM::RegPC]), 4);
+			std::memcpy(&instr, addressSpace.at(regs[VM::RegPC]), 4);
 
 			// Examine the instruction, and interpret it accordingly
 			switch(instr.type) {
@@ -57,8 +64,8 @@ namespace VM {
 							break;
 
 						case VM::OneAddrPrint:
-							for(int i = regs[instr.one.reg]; *heap.at(i) != '\0'; i++) {
-								o << *(char*)heap.at(i);
+							for(int i = regs[instr.one.reg]; *addressSpace.at(i) != '\0'; i++) {
+								o << *(char*)addressSpace.at(i);
 							}
 							o << std::endl;
 							break;
@@ -89,11 +96,11 @@ namespace VM {
 							break;
 
 						case VM::TwoAddrLoad:
-							regs[instr.two.regLhs] = *((unsigned long*)(heap.at(regs[instr.two.regRhs] + instr.two.imm)));
+							regs[instr.two.regLhs] = *((unsigned long*)(addressSpace.at(regs[instr.two.regRhs] + instr.two.imm)));
 							break;
 
 						case VM::TwoAddrStore:
-							*((unsigned long*)(heap.at(regs[instr.two.regRhs] + instr.two.imm))) = regs[instr.two.regLhs];
+							*((unsigned long*)(addressSpace.at(regs[instr.two.regRhs] + instr.two.imm))) = regs[instr.two.regLhs];
 							break;
 
 						case VM::TwoAddrNew:
@@ -101,11 +108,11 @@ namespace VM {
 							break;
 
 						case VM::TwoAddrLoadByte:
-							regs[instr.two.regLhs] = *heap.at(regs[instr.two.regRhs] + instr.two.imm);
+							regs[instr.two.regLhs] = *addressSpace.at(regs[instr.two.regRhs] + instr.two.imm);
 							break;
 
 						case VM::TwoAddrStoreByte:
-							*heap.at(regs[instr.two.regRhs] + instr.two.imm) = regs[instr.two.regLhs] & 0xff;
+							*addressSpace.at(regs[instr.two.regRhs] + instr.two.imm) = regs[instr.two.regLhs] & 0xff;
 							break;
 					}
 					break;
@@ -177,19 +184,19 @@ namespace VM {
 							break;
 
 						case VM::ThreeAddrLoad:
-							regs[instr.three.regLhs] = *(unsigned long*)(heap.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)));
+							regs[instr.three.regLhs] = *(unsigned long*)(addressSpace.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)));
 							break;
 
 						case VM::ThreeAddrStore:
-							*(unsigned long*)(heap.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm))) = regs[instr.three.regLhs];
+							*(unsigned long*)(addressSpace.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm))) = regs[instr.three.regLhs];
 							break;
 
 						case VM::ThreeAddrLoadByte:
-							regs[instr.three.regLhs] = *heap.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm));
+							regs[instr.three.regLhs] = *addressSpace.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm));
 							break;
 
 						case VM::ThreeAddrStoreByte:
-							*heap.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs] & 0xff;
+							*addressSpace.at(regs[instr.three.regRhs1] + (regs[instr.three.regRhs2] << instr.three.imm)) = regs[instr.three.regLhs] & 0xff;
 							break;
 					}
 					break;
@@ -199,7 +206,7 @@ namespace VM {
 						case VM::MultRegLoad:
 							for(int i=0; i<16; i++) {
 								if(instr.mult.regs & (1 << i)) {
-									regs[i] = *(int*)(heap.at(regs[instr.mult.lhs]));
+									regs[i] = *(int*)(addressSpace.at(regs[instr.mult.lhs]));
 									regs[instr.mult.lhs] += sizeof(int);
 								}
 							}
@@ -209,7 +216,7 @@ namespace VM {
 							for(int i=15; i>=0; i--) {
 								if(instr.mult.regs & (1 << i)) {
 									regs[instr.mult.lhs] -= sizeof(int);
-									*(int*)(heap.at(regs[instr.mult.lhs])) = regs[i];
+									*(int*)(addressSpace.at(regs[instr.mult.lhs])) = regs[i];
 								}
 							}
 							break;

@@ -1,15 +1,16 @@
 #ifndef VM_HEAP_H
 #define VM_HEAP_H
 
+#include "VM/AddressSpace.h"
+
 namespace VM {
 	class Heap {
 	public:
-		Heap(unsigned int start);
+		Heap(AddressSpace &addressSpace, unsigned int start, unsigned int size);
 		~Heap();
 
 		unsigned int allocate(unsigned int size);
 		void free(unsigned int index);
-		unsigned char *at(unsigned int index);
 
 	private:
 		struct Header {
@@ -24,7 +25,8 @@ namespace VM {
 		void pushFree(Header *header);
 		void removeFree(Header *header);
 
-		unsigned char *mMem;
+		AddressSpace &mAddressSpace;
+		unsigned int mStart;
 		unsigned int mSize;
 		unsigned int mUsedSize;
 		Header *mFreeList;
