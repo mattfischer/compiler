@@ -5,6 +5,8 @@ namespace VM {
 	const int WordSize = sizeof(unsigned long);
 	const int MinSize = 2 * WordSize;
 	const int PrevInUseBit = 0x1;
+	const int MarkBit = 0x2;
+	const unsigned int SizeMask = 0xfffffffc;
 
 	Heap::Heap(AddressSpace &addressSpace, unsigned int start, unsigned int size)
 		: mAddressSpace(addressSpace)
@@ -13,7 +15,7 @@ namespace VM {
 		mSize = size;
 		mAddressSpace.addRegion(start, size);
 
-		mUsedSize = WordSize;
+		mUsedSize = 2 * WordSize;
 		mFreeList = 0;
 	}
 
@@ -48,7 +50,7 @@ namespace VM {
 		}
 
 		if(!header) {
-			int index = mStart + mUsedSize + WordSize;
+			int index = mStart + mUsedSize;
 			mUsedSize += size;
 
 			header = getHeader(index);
@@ -62,13 +64,14 @@ namespace VM {
 	void Heap::free(unsigned int index)
 	{
 		Header *header = getHeader(index);
-		Header *nextHeader = getHeader(index + header->size);
+		int size = header->size & SizeMask;
+		Header *nextHeader = getHeader(index + size);
 
 		nextHeader->size &= ~PrevInUseBit;
-		nextHeader->prevSize = header->size;
+		nextHeader->prevSize = size;
 
-		if(index == mUsedSize - header->size) {
-			mUsedSize -= header->size;
+		if(index == mUsedSize - size) {
+			mUsedSize -= size;
 		} else {
 			pushFree(header);
 		}
@@ -82,6 +85,47 @@ namespace VM {
 	unsigned long Heap::getIndex(Header *header)
 	{
 		return (unsigned long)((unsigned char*)header - mAddressSpace.at(mStart)) + mStart + 2 * WordSize;
+	}
+
+	unsigned int Heap::firstAllocation()
+	{
+		if(mUsedSize > 2 * WordSize) {
+			return mStart + 2 * WordSize;
+		} else {
+			return 0;
+		}
+	}
+
+	unsigned int Heap::nextAllocation(unsigned int index)
+	{
+		Header *header = getHeader(index);
+		index += header->size & SizeMask;
+		if(index < mStart + mUsedSize) {
+			return index;
+		} else {
+			return 0;
+		}
+	}
+
+	unsigned int Heap::allocationSize(unsigned int index)
+	{
+		Header *header = getHeader(index);
+		return (header->size & SizeMask) - WordSize;
+	}
+
+	bool Heap::allocationMarked(unsigned int index)
+	{
+		Header *header = getHeader(index);
+		return (header->size & MarkBit) != 0;
+	}
+
+	void Heap::setAllocationMarked(unsigned int index, bool marked)
+	{
+		Header *header = getHeader(index);
+		header->size &= ~MarkBit;
+		if(marked) {
+			header->size |= MarkBit;
+		}
 	}
 
 	void Heap::pushFree(Header *header)

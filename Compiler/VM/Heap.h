@@ -12,6 +12,17 @@ namespace VM {
 		unsigned int allocate(unsigned int size);
 		void free(unsigned int index);
 
+		unsigned int start() { return mStart; }
+		unsigned int size() { return mSize; }
+		AddressSpace &addressSpace() { return mAddressSpace; }
+
+		unsigned int firstAllocation();
+		unsigned int nextAllocation(unsigned int index);
+
+		unsigned int allocationSize(unsigned int index);
+		bool allocationMarked(unsigned int index);
+		void setAllocationMarked(unsigned int index, bool marked);
+
 	private:
 		struct Header {
 			unsigned long prevSize;

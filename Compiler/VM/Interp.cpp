@@ -2,6 +2,7 @@
 
 #include "VM/AddressSpace.h"
 #include "VM/Heap.h"
+#include "VM/GarbageCollector.h"
 
 #include <sstream>
 
@@ -19,6 +20,7 @@ namespace VM {
 		const int HeapStart = 0x80000000;
 		const int HeapSize = 0x1000;
 		Heap heap(addressSpace, HeapStart, HeapSize);
+		GarbageCollector collector(heap);
 
 		if(program->symbols.find("main") == program->symbols.end()) {
 			std::cerr << "Error: Undefined reference to main" << std::endl;
@@ -104,6 +106,7 @@ namespace VM {
 							break;
 
 						case VM::TwoAddrNew:
+							collector.collect(regs, StackStart + StackSize);
 							regs[instr.two.regLhs] = heap.allocate(regs[instr.two.regRhs]);
 							break;
 
