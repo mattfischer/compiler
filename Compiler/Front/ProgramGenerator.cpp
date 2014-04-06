@@ -122,8 +122,10 @@ namespace Front {
 			if(Type::equals(type, Types::intrinsic(Types::String))) {
 				if(Type::equals(node->type, Types::intrinsic(Types::Bool)) ||
 				   Type::equals(node->type, Types::intrinsic(Types::Int)) ||
-				   Type::equals(node->type, Types::intrinsic(Types::Char))) {
-					   valid = true;
+				   Type::equals(node->type, Types::intrinsic(Types::Char)))	{
+					valid = true;
+				} else if(node->type->type == Type::TypeArray && Type::equals(((Front::TypeArray*)node->type)->baseType, Types::intrinsic(Types::Char))) {
+					valid = true;
 				}
 			}
 
@@ -409,6 +411,11 @@ namespace Front {
 						default:
 							throw TypeError(node, "Lvalue required");
 					}
+
+					if(lhs->nodeType == Node::NodeTypeArray && Type::equals(lhs->children[0]->type, Types::intrinsic(Types::String))) {
+						throw TypeError(node, "String elements cannot be assigned to");
+					}
+
 					node->type = rhs->type;
 					break;
 				}
@@ -543,6 +550,11 @@ namespace Front {
 					typeNode->type = createType(typeNode, context.types);
 					node->type = typeNode->type;
 
+					// Strings can't be allocated, only created from literals or coerced from char[]
+					if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
+						throw TypeError(typeNode, "Cannot allocate string type");
+					}
+
 					// Check array size argument
 					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], context);
@@ -556,12 +568,7 @@ namespace Front {
 						Node *argsNode = node->children[1];
 						checkType(argsNode, context);
 
-						if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
-							if(argsNode->children.size() != 1) {
-								throw TypeError(node->children[1], "Improper number of arguments to constructor");
-							}
-							argsNode->children[0] = coerce(argsNode->children[0], Types::intrinsic(Types::Int));
-						} else if(typeNode->type->type == Type::TypeClass) {
+						if(typeNode->type->type == Type::TypeClass) {
 							TypeStruct *typeStruct = (TypeStruct*)typeNode->type;
 
 							// First, check all child nodes
@@ -585,6 +592,8 @@ namespace Front {
 						} else {
 							throw TypeError(node->children[1], "Constuctor arguments passed to non-class type");
 						}
+					} else if(typeNode->type->type == Type::TypeClass) {
+						throw TypeError(node->children[1], "Missing constructor arguments");
 					}
 
 					break;

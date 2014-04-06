@@ -577,12 +577,15 @@ namespace Front {
 
 					// Emit the appropriate entry for the type of conversion taking place
 					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
-						if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+						Type *sourceType = node->children[0]->type;
+						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
-						} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Int))) {
+						} else if(Type::equals(sourceType, Types::intrinsic(Types::Int))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
-						} else if(Type::equals(node->children[0]->type, Types::intrinsic(Types::Char))) {
+						} else if(Type::equals(sourceType, Types::intrinsic(Types::Char))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringChar, result, source));
+						} else if(sourceType->type == Type::TypeArray && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, source));
 						}
 					}
 

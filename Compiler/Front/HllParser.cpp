@@ -732,7 +732,9 @@ Node *HllParser::parseBaseExpression(bool required)
 		}
 
 		node->children.push_back(type);
-		node->children.push_back(args);
+		if(args) {
+			node->children.push_back(args);
+		}
 
 		return node;
 	}
