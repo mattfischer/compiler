@@ -73,7 +73,6 @@ void AsmParser::parseProcedure(VM::Program *program)
 	VM::Instruction instr;
 	std::map<int, std::string> jumps;
 	std::map<std::string, int> labels;
-	std::map<std::string, int> strings;
 	std::map<int, std::string> stringLoads;
 
 	while(true) {
@@ -92,9 +91,6 @@ void AsmParser::parseProcedure(VM::Program *program)
 		} else if(matchLiteral("string")) {
 			// Parse a string constant
 			consume();
-			std::string name = next().text;
-			expect(AsmTokenizer::TypeIdentifier);
-			expectLiteral(",");
 			std::string value = next().text;
 			expect(AsmTokenizer::TypeString);
 			int newSize = offset + (int)value.size() + 1;
@@ -104,7 +100,6 @@ void AsmParser::parseProcedure(VM::Program *program)
 			program->instructions.resize(newSize);
 			std::memcpy(&program->instructions[offset], value.c_str(), value.size());
 			program->instructions[offset + value.size()] = '\0';
-			strings[name] = offset;
 		} else {
 			// Parse a literal
 			std::string text = next().text;
@@ -140,7 +135,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		const std::string &name = it->second;
 		VM::Instruction instr;
 		std::memcpy(&instr, &program->instructions[offset], 4);
-		int dataOffset = strings[name];
+		int dataOffset = labels[name];
 		instr.two.imm = dataOffset - offset;
 		std::memcpy(&program->instructions[offset], &instr, 4);
 	}

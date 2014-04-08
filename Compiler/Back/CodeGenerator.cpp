@@ -464,7 +464,8 @@ namespace Back {
 		for(std::map<std::string, std::string>::iterator it = strings.begin(); it != strings.end(); it++) {
 			const std::string &name = it->first;
 			const std::string &value = it->second;
-			stream << "  string " << name << ", \"" << value << "\"" << std::endl;
+			stream << "  " << name << ":" << std::endl;
+			stream << "    string \"" << value << "\"" << std::endl;
 		}
 	}
 }
