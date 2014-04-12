@@ -57,10 +57,6 @@ namespace IR {
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem, //!< Load from memory
 			TypeLoadString, //!< Load a string constant
-			TypeStringConcat, //!< Concatentate strings
-			TypeStringBool, //!< Convert bool to string
-			TypeStringInt, //!< Convert int to string
-			TypeStringChar, //!< Convert char to string
 		};
 
 		Type type; //!< Entry type

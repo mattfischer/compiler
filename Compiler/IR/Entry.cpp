@@ -37,11 +37,7 @@ namespace IR {
 		/* TypeNew        */ "new      ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
-		/* TypeLoadString */ "ldstr    ",
-		/* TypeConcat     */ "concat   ",
-		/* TypeStringBool */ "strbool  ",
-		/* TypeStringInt  */ "strint   ",
-		/* TypeStringChar */ "strchr   ",
+		/* TypeLoadString */ "ldstr    "
 	};
 
 	static bool lhsAssign(Entry::Type type)

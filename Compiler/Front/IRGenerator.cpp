@@ -401,7 +401,10 @@ namespace Front {
 					switch(node->nodeSubtype) {
 						case Node::NodeSubtypeAdd:
 							if(Type::equals(node->type, Types::intrinsic(Types::String))) {
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringConcat, result, arguments[0], arguments[1]));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[0], 0, 0));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[1], 0, 1));
+								procedure->emit(new IR::EntryCall("__string_concat"));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 							} else {
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, arguments[0], arguments[1]));
 							}
@@ -579,11 +582,17 @@ namespace Front {
 					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
 						Type *sourceType = node->children[0]->type;
 						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringBool, result, source));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall("__string_bool"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Int))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringInt, result, source));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall("__string_int"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Char))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStringChar, result, source));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall("__string_char"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(sourceType->type == Type::TypeArray && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, source));
 						}

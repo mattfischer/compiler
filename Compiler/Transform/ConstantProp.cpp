@@ -199,7 +199,7 @@ namespace Transform {
 						}
 						break;
 					}
-
+/*
 				case IR::Entry::TypeStringConcat:
 					{
 						std::string rhs1;
@@ -274,7 +274,7 @@ namespace Transform {
 						}
 						break;
 					}
-
+*/
 				case IR::Entry::TypeLoadMem:
 				case IR::Entry::TypeStoreMem:
 					{

@@ -1,42 +1,4 @@
-class Foo {
-  void doOtherStuff(int z)
-  {
-    print(x);
-    print(z);
-    print(this.x);
-    print(bar.x);
-  }
-
-  void doStuff(int z)
-  {
-    print(x);
-    print(z);
-    doOtherStuff(z);
-  }
-
-  Foo(int _x, Bar _bar)
-  {
-    x = _x;
-    bar = _bar;
-  }
-
-  int x;
-  Bar bar;
-}
-
-class Bar {
-  int x;
-
-  Bar(int a)
-  {
-    x = 10;
-  }
-}
-
 void main(int x)
 {
-	Bar bar = new Bar(10);
-	Foo foo = new Foo(5, bar);
-
-	foo.doStuff(3);
+  print("foo" + "bar");
 }

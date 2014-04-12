@@ -34,57 +34,6 @@ namespace Back {
 	}
 
 	/*!
-	 * \brief Substitute IR entries which are implemented by library calls
-	 * \param procedure Procedure to modify
-	 */
-	static void substituteLibraryCalls(IR::Procedure *procedure)
-	{
-		for(IR::EntryList::iterator it = procedure->entries().begin(); it != procedure->entries().end(); it++) {
-			IR::Entry *entry = *it;
-			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-
-			switch(entry->type) {
-				case IR::Entry::TypeStringConcat:
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs2, 0, 1));
-					procedure->entries().insert(entry, new IR::EntryCall("__string_concat"));
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
-					procedure->entries().erase(it);
-					it--;
-					delete entry;
-					break;
-
-				case IR::Entry::TypeStringBool:
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
-					procedure->entries().insert(entry, new IR::EntryCall("__string_bool"));
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
-					procedure->entries().erase(it);
-					it--;
-					delete entry;
-					break;
-
-				case IR::Entry::TypeStringChar:
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
-					procedure->entries().insert(entry, new IR::EntryCall("__string_char"));
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
-					procedure->entries().erase(it);
-					it--;
-					delete entry;
-					break;
-
-				case IR::Entry::TypeStringInt:
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, threeAddr->rhs1, 0, 0));
-					procedure->entries().insert(entry, new IR::EntryCall("__string_int"));
-					procedure->entries().insert(entry, new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, threeAddr->lhs));
-					procedure->entries().erase(it);
-					it--;
-					delete entry;
-					break;			
-			}
-		}
-	}
-
-	/*!
 	 * \brief Generate code for an IR procedure
 	 * \param procedure Procedure to generate code for
 	 * \param stream Stream to output assembly to
@@ -94,9 +43,6 @@ namespace Back {
 		std::map<IR::Symbol*, int> regMap;
 		std::map<std::string, std::string> strings;
 		std::string savedRegs;
-
-		// Insert library calls
-		substituteLibraryCalls(procedure);
 
 		// Allocate registers for the procedure
 		Util::Timer timer;
@@ -449,14 +395,6 @@ namespace Back {
 						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
 						break;
 					}
-
-				case IR::Entry::TypeStringInt:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    strint r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
-						break;
-					}
-
 			}
 		}
 
