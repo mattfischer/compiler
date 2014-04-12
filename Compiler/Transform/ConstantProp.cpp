@@ -24,6 +24,53 @@ namespace Transform {
 		return ((1 << log2(value)) == value);
 	}
 
+	IR::EntryThreeAddr *getStoreArg(IR::EntryCall *call, int arg)
+	{
+		IR::Entry *entry = call->prev;
+		while(true) {
+			if(entry->type == IR::Entry::TypeStoreArg && ((IR::EntryThreeAddr*)entry)->imm == arg) {
+				return (IR::EntryThreeAddr*)entry;
+			} else {
+				entry = entry->prev;
+			}
+		}
+	}
+
+	IR::EntryThreeAddr *getLoadRet(IR::EntryCall *call)
+	{
+		IR::Entry *entry = call->prev;
+		while(true) {
+			if(entry->type == IR::Entry::TypeLoadRet) {
+				return (IR::EntryThreeAddr*)entry;
+			} else {
+				entry = entry->next;
+			}
+		}
+	}
+
+	void replaceCall(IR::EntryList &entries, IR::Entry *callEntry, IR::Entry *newEntry)
+	{
+		IR::Entry *entry = callEntry->prev;
+		while(entry->type == IR::Entry::TypeStoreArg) {
+			IR::Entry *toDelete = entry;
+			entry = entry->prev;
+			entries.erase(toDelete);
+			delete toDelete;
+		}
+
+		entry = callEntry->next;
+		while(entry->type == IR::Entry::TypeLoadRet) {
+			IR::Entry *toDelete = entry;
+			entry = entry->next;
+			entries.erase(toDelete);
+			delete toDelete;
+		}
+
+		entries.insert(callEntry, newEntry);
+		entries.erase(callEntry);
+		delete callEntry;
+	}
+
 	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
@@ -199,82 +246,84 @@ namespace Transform {
 						}
 						break;
 					}
-/*
-				case IR::Entry::TypeStringConcat:
+
+				case IR::Entry::TypeCall:
 					{
-						std::string rhs1;
-						std::string rhs2;
-						bool rhs1Const;
-						bool rhs2Const;
+						IR::EntryCall *call = (IR::EntryCall*)entry;
 
-						// Examine the right hand side arguments and determine if they are constant
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = constants->getStringValue(threeAddr, threeAddr->rhs1, rhs1Const);
-						rhs2 = constants->getStringValue(threeAddr, threeAddr->rhs2, rhs2Const);
+						if(call->target == "__string_concat") {
+							IR::EntryThreeAddr *rhs1Entry = getStoreArg(call, 0);
+							IR::EntryThreeAddr *rhs2Entry = getStoreArg(call, 1);
+							IR::EntryThreeAddr *retEntry = getLoadRet(call);
 
-						if(rhs1Const && rhs2Const) {
-							IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, threeAddr->lhs, rhs1 + rhs2);
+							std::string rhs1;
+							std::string rhs2;
+							bool rhs1Const;
+							bool rhs2Const;
 
-							// Add all uses of the entry into the queue, it may now be possible
-							// to do further constant propagation on them
-							const IR::EntrySet &entries = useDefs->uses(threeAddr);
-							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-								queue.push(*it);
+							rhs1 = constants->getStringValue(rhs1Entry, rhs1Entry->rhs1, rhs1Const);
+							rhs2 = constants->getStringValue(rhs2Entry, rhs2Entry->rhs1, rhs2Const);
+
+							if(rhs1Const && rhs2Const) {
+								IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, retEntry->lhs, rhs1 + rhs2);
+
+								// Add all uses of the entry into the queue, it may now be possible
+								// to do further constant propagation on them
+								const IR::EntrySet &entries = useDefs->uses(call);
+								for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+									queue.push(*it);
+								}
+
+								// Update the useDef chains to reflect the new entry
+								analysis.remove(rhs1Entry);
+								analysis.remove(rhs2Entry);
+								analysis.replace(retEntry, newEntry);
+
+								replaceCall(procedure->entries(), call, newEntry);
+								changed = true;
 							}
+							break;
+						} else if(call->target == "__string_int" || call->target == "__string_bool" || call->target == "__string_char") {
+							IR::EntryThreeAddr *rhsEntry = getStoreArg(call, 0);
+							IR::EntryThreeAddr *retEntry = getLoadRet(call);
 
-							// Update the useDef chains to reflect the new entry
-							analysis.replace(threeAddr, newEntry);
+							int rhs;
+							bool rhsConst;
 
-							// Substitute the new entry into the procedure
-							procedure->entries().insert(threeAddr, newEntry);
-							procedure->entries().erase(threeAddr);
-							delete threeAddr;
-							changed = true;
+							rhs = constants->getIntValue(rhsEntry, rhsEntry->rhs1, rhsConst);
+
+							if(rhsConst) {
+								std::string str;
+								if(call->target == "__string_bool") {
+									str = rhs ? "true" : "false";
+								} else if(call->target == "__string_int") {
+									std::stringstream s;
+									s << rhs;
+									str = s.str();
+								} else if(call->target == "__string_char") {
+									str = (char)rhs;
+								}
+
+								IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, retEntry->lhs, str);
+
+								// Add all uses of the entry into the queue, it may now be possible
+								// to do further constant propagation on them
+								const IR::EntrySet &entries = useDefs->uses(call);
+								for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
+									queue.push(*it);
+								}
+
+								// Update the useDef chains to reflect the new entry
+								analysis.remove(rhsEntry);
+								analysis.replace(retEntry, newEntry);
+
+								replaceCall(procedure->entries(), call, newEntry);
+								changed = true;
+							}
+							break;
 						}
-						break;
 					}
 
-				case IR::Entry::TypeStringBool:
-				case IR::Entry::TypeStringInt:
-					{
-						int rhs;
-						bool rhsConst;
-
-						// Examine the right hand side arguments and determine if they are constant
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs = constants->getIntValue(threeAddr, threeAddr->rhs1, rhsConst);
-
-						if(rhsConst) {
-							std::string str;
-							if(entry->type == IR::Entry::TypeStringBool) {
-								str = rhs ? "true" : "false";
-							} else if(entry->type == IR::Entry::TypeStringInt) {
-								std::stringstream s;
-								s << rhs;
-								str = s.str();
-							}
-
-							IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, threeAddr->lhs, str);
-
-							// Add all uses of the entry into the queue, it may now be possible
-							// to do further constant propagation on them
-							const IR::EntrySet &entries = useDefs->uses(threeAddr);
-							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-								queue.push(*it);
-							}
-
-							// Update the useDef chains to reflect the new entry
-							analysis.replace(threeAddr, newEntry);
-
-							// Substitute the new entry into the procedure
-							procedure->entries().insert(threeAddr, newEntry);
-							procedure->entries().erase(threeAddr);
-							delete threeAddr;
-							changed = true;
-						}
-						break;
-					}
-*/
 				case IR::Entry::TypeLoadMem:
 				case IR::Entry::TypeStoreMem:
 					{

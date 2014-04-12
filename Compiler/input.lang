@@ -1,4 +1,4 @@
-void main(int x)
+void main()
 {
-  print("foo" + "bar");
+  print(true);
 }
