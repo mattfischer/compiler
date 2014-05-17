@@ -5,6 +5,8 @@
 #include <vector>
 
 namespace Front {
+	class Scope;
+
 	/*!
 	 * \brief Represents a type in the type system
 	 */
@@ -89,6 +91,8 @@ namespace Front {
 
 		std::vector<Member> members;
 		Front::TypeProcedure *constructor;
+		Scope *scope;
+		TypeStruct *parent;
 
 		TypeStruct(TypeType _type, const std::string &_name)
 			: Type(_type, _name, 4, 0)

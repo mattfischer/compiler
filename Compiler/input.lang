@@ -1,4 +1,21 @@
+class Foo {
+  void printStuff() {
+    print("stuff");
+  }
+  int x;
+}
+
+class Bar : Foo {
+  void doOtherStuff() {
+    printStuff();
+  }
+  int y;
+}
+
 void main()
 {
-  print(true);
+  Bar bar = new Bar;
+  bar.printStuff();
+  bar.doOtherStuff();
+  bar.y = 10;
 }

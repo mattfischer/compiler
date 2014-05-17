@@ -352,8 +352,11 @@ namespace Front {
 						case Node::NodeTypeMember:
 							{
 								Node *base = target->children[0];
+								TypeStruct *baseType = (TypeStruct*)base->type;
+								Symbol *symbol = baseType->scope->findSymbol(target->lexVal.s);
+
 								std::stringstream s;
-								s << base->type->name << "." << target->lexVal.s;
+								s << symbol->scope->classType()->name << "." << target->lexVal.s;
 								name = s.str();
 
 								IR::Symbol *object = processRValue(base, context);

@@ -159,7 +159,7 @@ Node *HllParser::parseStruct()
 
 Node *HllParser::parseClass()
 {
-	// <Struct> := 'class' IDENTIFIER '{' <ClassMember>* '}'
+	// <Struct> := 'class' IDENTIFIER { ':' IDENTIFIER }? '{' <ClassMember>* '}'
 	if(!matchLiteral("class")) {
 		return 0;
 	}
@@ -169,6 +169,15 @@ Node *HllParser::parseClass()
 
 	node->lexVal.s = next().text;
 	expect(HllTokenizer::TypeIdentifier);
+
+	if(matchLiteral(":")) {
+		consume();
+		std::string parent = next().text;
+		expect(HllTokenizer::TypeIdentifier);
+		Node *parentNode = newNode(Node::NodeTypeId, next().line);
+		parentNode->lexVal.s = parent;
+		node->children.push_back(parentNode);
+	}
 
 	expectLiteral("{");
 	Node *membersNode = newNode(Node::NodeTypeList, next().line);

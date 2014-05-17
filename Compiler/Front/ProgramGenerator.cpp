@@ -2,6 +2,7 @@
 
 #include "Util/Array.h"
 
+#include <set>
 #include <sstream>
 
 namespace Front {
@@ -71,6 +72,7 @@ namespace Front {
 			}
 
 			// Iterate through the tree's procedure definitions
+			std::vector<Node*> classes;
 			for(unsigned int i=0; i<mTree->children.size(); i++) {
 				Node *node = mTree->children[i];
 
@@ -79,9 +81,10 @@ namespace Front {
 				} else if(node->nodeType == Node::NodeTypeStructDef) {
 					addStruct(mTree->children[i], program);
 				} else if(node->nodeType == Node::NodeTypeClassDef) {
-					addClass(mTree->children[i], program);
+					classes.push_back(mTree->children[i]);
 				}
 			}
+			addClasses(classes, program);
 
 			// Now that all procedures have been declared, type check the procedure bodies
 			for(unsigned int i=0; i<program->procedures.size(); i++) {
@@ -252,6 +255,8 @@ namespace Front {
 	void ProgramGenerator::addStruct(Node *node, Program *program)
 	{
 		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
+		type->parent = 0;
+		type->scope = 0;
 		type->constructor = 0;
 		Node *members = node->children[0];
 		for(unsigned int i=0; i<members->children.size(); i++) {
@@ -269,10 +274,19 @@ namespace Front {
 	void ProgramGenerator::addClass(Node *node, Program *program)
 	{
 		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
-		type->constructor = 0;
-		Scope *classScope = new Scope(program->scope, type);
 
-		Node *members = node->children[0];
+		type->constructor = 0;
+
+		if(node->children.size() == 2) {
+			type->parent = (Front::TypeStruct*)program->types->findType(node->children[0]->lexVal.s);;
+			type->scope = new Scope(type->parent->scope, type);
+			type->allocSize = type->parent->allocSize;
+		} else {
+			type->parent = 0;
+			type->scope = new Scope(program->scope, type);
+		}
+
+		Node *members = node->children[node->children.size() - 1];
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
 			switch(memberNode->nodeType) {
@@ -280,13 +294,13 @@ namespace Front {
 				{
 					Type *memberType = createType(memberNode->children[0], program->types);
 					type->addMember(memberType, memberNode->lexVal.s);
-					classScope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
+					type->scope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
 					break;
 				}
 
 				case Node::NodeTypeProcedureDef:
 				{
-					Procedure *procedure = addProcedure(memberNode, program, classScope);
+					Procedure *procedure = addProcedure(memberNode, program, type->scope);
 
 					if(memberNode->lexVal.s == type->name) {
 						type->constructor = procedure->type;
@@ -297,6 +311,54 @@ namespace Front {
 					}
 					break;
 				}
+			}
+		}
+	}
+
+	/*!
+	* \brief Populate all classes, sorting according to inheritance order
+	* \param nodes Class nodes
+	* \brief program Program to add to
+	*/
+	void ProgramGenerator::addClasses(std::vector<Node*> nodes, Program *program)
+	{
+		std::set<Type*> processed;
+		std::vector<Node*> nextNodes;
+
+		// Loop repeatedly through the list of class nodes until all are processed
+		while(nodes.size() > 0) {
+			for(unsigned int i=0; i<nodes.size(); i++) {
+				Node *node = nodes[i];
+
+				// If the class has a parent, check to see if it is processed
+				if(node->children.size() == 2) {
+					std::string parent = node->children[0]->lexVal.s;
+					Type *type = program->types->findType(parent);
+					if(!type) {
+						throw TypeError(node, "Invalid class parent " + parent);
+					}
+
+					// If the parent is not processed, this node cannot be processed yet
+					if(processed.find(type) == processed.end()) {
+						nextNodes.push_back(node);
+						continue;
+					}
+				}
+
+				// Add the class, and record that it has been processed
+				addClass(node, program);
+				Type *type = program->types->findType(node->lexVal.s);
+				processed.insert(type);
+			}
+
+			// Check if any progress was made during this iteration
+			if(nextNodes.size() == nodes.size()) {
+				// If no classes were processed, there is an inheritance cycle
+				throw TypeError(nodes[0], "Cycle in parents of class " + nodes[0]->lexVal.s);
+			} else {
+				// Otherwise, repeat the procedure with any classes that couldn't be processed this time
+				nodes = nextNodes;
+				nextNodes.clear();
 			}
 		}
 	}

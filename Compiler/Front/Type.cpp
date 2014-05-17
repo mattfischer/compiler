@@ -93,6 +93,10 @@ namespace Front {
 			}
 		}
 
-		return 0;
+		if(parent) {
+			return parent->findMember(name);
+		} else {
+			return 0;
+		}
 	}
 }

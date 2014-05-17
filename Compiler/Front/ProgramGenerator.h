@@ -37,6 +37,7 @@ namespace Front {
 		Procedure *addProcedure(Node *node, Program *program, Scope *scope);
 		void addStruct(Node *node, Program *program);
 		void addClass(Node *node, Program *program);
+		void addClasses(std::vector<Node*> nodes, Program *program);
 	};
 }
 #endif
