@@ -37,7 +37,8 @@ namespace Front {
 			NodeTypeBreak, //!< Break statement
 			NodeTypeContinue, //!< Continue statement
 			NodeTypeMember, //!< Structure member
-			NodeTypeCoerce //!< Convert argument to different type
+			NodeTypeCoerce, //!< Convert argument to different type
+			NodeTypeVirtual //!< Virtual function
 		};
 
 		/*!

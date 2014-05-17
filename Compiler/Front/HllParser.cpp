@@ -197,12 +197,19 @@ Node *HllParser::parseClassMember()
 {
 	// <ClassMember> := { <Type> }? IDENTIFIER '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | <Type> IDENTIFIER ';'
 	Node *type;
+	bool virtualFunction = false;
 	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text) && matchLiteral("(", 1)) {
 		type = 0;
 	} else {
-		type = parseType();
-		if(!type) {
-			return 0;
+		if(matchLiteral("virtual")) {
+			consume();
+			virtualFunction = true;
+			type = parseType(true);
+		} else {
+			type = parseType();
+			if(!type) {
+				return 0;
+			}
 		}
 	}
 
@@ -222,7 +229,17 @@ Node *HllParser::parseClassMember()
 		expectLiteral("{");
 		node->children.push_back(parseStatementList());
 		expectLiteral("}");
+
+		if(virtualFunction) {
+			Node *virtualNode = newNode(Node::NodeTypeVirtual, node->line);
+			virtualNode->children.push_back(node);
+			node = virtualNode;
+		}
 	} else {
+		if(virtualFunction) {
+			errorExpected("(");
+		}
+
 		node = newNode(Node::NodeTypeVarDecl, type->line);
 		node->lexVal.s = name;
 		node->children.push_back(type);

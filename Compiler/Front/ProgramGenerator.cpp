@@ -299,15 +299,30 @@ namespace Front {
 				}
 
 				case Node::NodeTypeProcedureDef:
+				case Node::NodeTypeVirtual:
 				{
-					Procedure *procedure = addProcedure(memberNode, program, type->scope);
+					Node *procedureNode;
+					bool virtualFunction;
+					switch(memberNode->nodeType) {
+						case Node::NodeTypeProcedureDef:
+							procedureNode = memberNode;
+							virtualFunction = false;
+							break;
 
-					if(memberNode->lexVal.s == type->name) {
+						case Node::NodeTypeVirtual:
+							procedureNode = memberNode->children[0];
+							virtualFunction = true;
+							break;
+					}
+
+					Procedure *procedure = addProcedure(procedureNode, program, type->scope);
+
+					if(procedureNode->lexVal.s == type->name) {
 						type->constructor = procedure->type;
-					} else if(program->types->findType(memberNode->lexVal.s)) {
-						throw TypeError(memberNode, "Illegal procedure name " + memberNode->lexVal.s);
+					} else if(program->types->findType(procedureNode->lexVal.s)) {
+						throw TypeError(procedureNode, "Illegal procedure name " + procedureNode->lexVal.s);
 					} else {
-						type->addMember(procedure->type, memberNode->lexVal.s);
+						type->addMember(procedure->type, procedureNode->lexVal.s);
 					}
 					break;
 				}

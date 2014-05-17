@@ -6,7 +6,7 @@ class Foo {
 }
 
 class Bar : Foo {
-  void doOtherStuff() {
+  virtual void doOtherStuff() {
     printStuff();
   }
   int y;

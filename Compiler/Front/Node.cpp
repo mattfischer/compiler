@@ -24,7 +24,8 @@ const char *typeNames[] = {
 	/* NodeTypeBreak        */ "break",
 	/* NodeTypeContinue     */ "continue",
 	/* NodeTypeMember       */ "member",
-	/* NodeTypeCoerceString */ "coerce"
+	/* NodeTypeCoerce       */ "coerce",
+	/* NodeTypeVirtual      */ "virtual"
 };
 
 const char *subtypeNames[] = {
