@@ -74,15 +74,37 @@ namespace Front {
 	 * \param type Type of member
 	 * \param name Member name
 	 */
-	void TypeStruct::addMember(Type *type, const std::string &name)
+	void TypeStruct::addMember(Type *type, const std::string &name, bool virtualFunction)
 	{
 		Member member;
 		member.name = name;
 		member.type = type;
-		member.offset = allocSize;
-		members.push_back(member);
+		member.virtualFunction = virtualFunction;
 
-		allocSize += type->valueSize;
+		if(type->type == Type::TypeProcedure) {
+			if(virtualFunction) {
+				bool overridden = false;
+				if(parent) {
+					Member *parentMember = parent->findMember(name);
+					if(parentMember) {
+						member.offset = parentMember->offset;
+						overridden = true;
+					}
+				}
+
+				if(!overridden) {
+					member.offset = vtableSize;
+					vtableSize++;
+				}
+			} else {
+				member.offset = -1;
+			}
+		} else {
+			member.offset = allocSize;
+			allocSize += type->valueSize;
+		}
+
+		members.push_back(member);
 	}
 
 	TypeStruct::Member *TypeStruct::findMember(const std::string &name)

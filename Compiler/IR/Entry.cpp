@@ -37,7 +37,8 @@ namespace IR {
 		/* TypeNew        */ "new      ",
 		/* TypeStoreMem   */ "stmem    ",
 		/* TypeLoadMem    */ "ldmem    ",
-		/* TypeLoadString */ "ldstr    "
+		/* TypeLoadString */ "ldstr    ",
+		/* TypeFunctionAddr */ "addr     "
 	};
 
 	static bool lhsAssign(Entry::Type type)
@@ -227,8 +228,8 @@ namespace IR {
 		return lhs;
 	}
 
-	EntryCall::EntryCall(const std::string &_target)
-		: Entry(TypeCall), target(_target)
+	EntryCall::EntryCall(Type _type, const std::string &_target)
+		: Entry(_type), target(_target)
 	{
 	}
 

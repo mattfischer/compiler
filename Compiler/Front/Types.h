@@ -17,6 +17,8 @@ namespace Front {
 		bool registerType(Type *type);
 		Type *findType(const std::string &name);
 
+		const std::vector<Type*> &types() { return mTypes; }
+
 		enum Intrinsic {
 			Bool,
 			Int,

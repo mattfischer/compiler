@@ -86,6 +86,7 @@ namespace Front {
 		struct Member {
 			Type *type;
 			std::string name;
+			bool virtualFunction;
 			int offset;
 		};
 
@@ -93,12 +94,13 @@ namespace Front {
 		Front::TypeProcedure *constructor;
 		Scope *scope;
 		TypeStruct *parent;
+		int vtableSize;
 
 		TypeStruct(TypeType _type, const std::string &_name)
 			: Type(_type, _name, 4, 0)
 		{}
 
-		void addMember(Type *type, const std::string &name);
+		void addMember(Type *type, const std::string &name, bool virtualFunction);
 		Member *findMember(const std::string &name);
 	};
 }

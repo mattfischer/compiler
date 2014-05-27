@@ -262,7 +262,7 @@ namespace Front {
 		for(unsigned int i=0; i<members->children.size(); i++) {
 			Node *memberNode = members->children[i];
 			Type *memberType = createType(memberNode->children[0], program->types);
-			type->addMember(memberType, memberNode->lexVal.s);
+			type->addMember(memberType, memberNode->lexVal.s, false);
 		}
 	}
 
@@ -281,8 +281,10 @@ namespace Front {
 			type->parent = (Front::TypeStruct*)program->types->findType(node->children[0]->lexVal.s);;
 			type->scope = new Scope(type->parent->scope, type);
 			type->allocSize = type->parent->allocSize;
+			type->vtableSize = type->parent->vtableSize;
 		} else {
 			type->parent = 0;
+			type->vtableSize = 0;
 			type->scope = new Scope(program->scope, type);
 		}
 
@@ -293,7 +295,7 @@ namespace Front {
 				case Node::NodeTypeVarDecl:
 				{
 					Type *memberType = createType(memberNode->children[0], program->types);
-					type->addMember(memberType, memberNode->lexVal.s);
+					type->addMember(memberType, memberNode->lexVal.s, false);
 					type->scope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
 					break;
 				}
@@ -306,7 +308,11 @@ namespace Front {
 					switch(memberNode->nodeType) {
 						case Node::NodeTypeProcedureDef:
 							procedureNode = memberNode;
-							virtualFunction = false;
+							if(type->parent && type->parent->findMember(procedureNode->lexVal.s)) {
+								virtualFunction = true;
+							} else {
+								virtualFunction = false;
+							}
 							break;
 
 						case Node::NodeTypeVirtual:
@@ -322,7 +328,7 @@ namespace Front {
 					} else if(program->types->findType(procedureNode->lexVal.s)) {
 						throw TypeError(procedureNode, "Illegal procedure name " + procedureNode->lexVal.s);
 					} else {
-						type->addMember(procedure->type, procedureNode->lexVal.s);
+						type->addMember(procedure->type, procedureNode->lexVal.s, virtualFunction);
 					}
 					break;
 				}

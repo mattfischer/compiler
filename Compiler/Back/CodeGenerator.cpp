@@ -395,6 +395,13 @@ namespace Back {
 						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
 						break;
 					}
+
+				case IR::Entry::TypeFunctionAddr:
+					{
+						IR::EntryCall *call = (IR::EntryCall*)entry;
+						stream << "    addr " << call->target << std::endl;
+						break;
+					}
 			}
 		}
 

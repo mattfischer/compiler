@@ -100,6 +100,14 @@ void AsmParser::parseProcedure(VM::Program *program)
 			program->instructions.resize(newSize);
 			std::memcpy(&program->instructions[offset], value.c_str(), value.size());
 			program->instructions[offset + value.size()] = '\0';
+		} else if(matchLiteral("addr")) {
+			consume();
+			std::string name = next().text;
+			expect(AsmTokenizer::TypeIdentifier);
+			program->instructions.resize(offset + 4);
+			int value = 0;
+			std::memcpy(&program->instructions[offset], &value, sizeof(value));
+			program->imports[offset] = name;
 		} else {
 			// Parse a literal
 			std::string text = next().text;

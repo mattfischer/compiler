@@ -2,6 +2,10 @@ class Foo {
   void printStuff() {
     print("stuff");
   }
+  virtual void abc()
+  {
+  }
+
   int x;
 }
 

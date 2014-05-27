@@ -57,6 +57,7 @@ namespace IR {
 			TypeStoreMem, //!< Store to memory
 			TypeLoadMem, //!< Load from memory
 			TypeLoadString, //!< Load a string constant
+			TypeFunctionAddr, //!< Function address
 		};
 
 		Type type; //!< Entry type
@@ -238,7 +239,7 @@ namespace IR {
 		 * \brief Constructor
 		 * \param _target Procedure to call
 		 */
-		EntryCall(const std::string &_target);
+		EntryCall(Type _type, const std::string &_target);
 
 		virtual void print(std::ostream &o) const;
 	};

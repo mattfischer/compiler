@@ -88,6 +88,29 @@ namespace Front {
 			irProgram->addProcedure(irProcedure);
 		}
 
+		for(unsigned int i=0; i<program->types->types().size(); i++) {
+			const Type *type = program->types->types()[i];
+			if(type->type == Type::TypeClass && ((TypeStruct*)type)->vtableSize > 0) {
+				TypeStruct *typeStruct = (TypeStruct*)type;
+				std::string name = typeStruct->name + "$$vtable";
+				std::vector<std::string> vtable(typeStruct->vtableSize);
+				while(typeStruct) {
+					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
+						if(typeStruct->members[j].virtualFunction && vtable[typeStruct->members[j].offset] == "") {
+							vtable[typeStruct->members[j].offset] = typeStruct->name + "." + typeStruct->members[j].name;
+						}
+					}
+					typeStruct = typeStruct->parent;
+				}
+
+				IR::Procedure *irProcedure = *(irProgram->procedures().rbegin());
+				irProcedure->entries().push_back(new IR::EntryLabel(name));
+				for(unsigned int j=0; j<vtable.size(); j++) {
+					irProcedure->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, vtable[j]));
+				}
+			}
+		}
+
 		return irProgram;
 	}
 
@@ -377,7 +400,7 @@ namespace Front {
 					}
 
 					// Emit procedure call
-					procedure->emit(new IR::EntryCall(name));
+					procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, name));
 
 					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary
@@ -406,7 +429,7 @@ namespace Front {
 							if(Type::equals(node->type, Types::intrinsic(Types::String))) {
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[0], 0, 0));
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[1], 0, 1));
-								procedure->emit(new IR::EntryCall("__string_concat"));
+								procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_concat"));
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 							} else {
 								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, arguments[0], arguments[1]));
@@ -534,7 +557,7 @@ namespace Front {
 
 						// Emit procedure call
 						std::string name = arg->type->name + "." + arg->type->name;
-						procedure->emit(new IR::EntryCall(name));
+						procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, name));
 					}
 
 					break;
@@ -586,15 +609,15 @@ namespace Front {
 						Type *sourceType = node->children[0]->type;
 						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall("__string_bool"));
+							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_bool"));
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Int))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall("__string_int"));
+							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_int"));
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Char))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall("__string_char"));
+							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_char"));
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
 						} else if(sourceType->type == Type::TypeArray && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, source));

@@ -12,7 +12,7 @@ static char *literals[] = { "[", "]", ",", ":", "#", "{", "}", "-" };
 static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "div", "mod", "ldr", "str",
 							"new", "cmov", "cadd", "ncmov", "ncadd", "equ",
 							"neq", "lt", "lte", "gt", "gte", "or", "and", "print", "call",
-							"ldm", "stm", "defproc", "string", "lea", "ldb", "stb"
+							"ldm", "stm", "defproc", "string", "lea", "ldb", "stb", "addr"
 						  };
 
 namespace Back {
@@ -49,7 +49,7 @@ AsmTokenizer::Token AsmTokenizer::getNext()
 	// If no literals matched, see if an identifier can be constructed
 	if(std::isalpha(buffer()[0]) || buffer()[0] == '_' || buffer()[0] == '.') {
 		size_t len = 0;
-		while(std::isalnum(buffer()[len]) || buffer()[len] == '_' || buffer()[len] == '.') {
+		while(std::isalnum(buffer()[len]) || buffer()[len] == '_' || buffer()[len] == '.' || buffer()[len] == '$') {
 			len++;
 			if(!fillBuffer(len + 1)) {
 				break;
