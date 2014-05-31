@@ -30,8 +30,8 @@ private:
 	bool parseIndInstr(VM::Instruction &instr);
 	bool parseImmInstr(VM::Instruction &instr);
 	bool parseMultInstr(VM::Instruction &instr);
-	bool parseJumpCall(VM::Instruction &instr, int offset, std::map<int, std::string> &jumps);
-	bool parseStringLoad(VM::Instruction &instr, int offset, std::map<int, std::string> &stringLoads);
+	bool parseLabelRef(VM::Instruction &instr, int offset, std::map<int, std::string> &labelRefs);
+	bool parseCall(VM::Instruction &instr, int offset, std::map<int, std::string> &imports);
 
 	int parseReg();
 };

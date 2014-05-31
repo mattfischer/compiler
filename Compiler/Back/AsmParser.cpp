@@ -71,9 +71,8 @@ VM::Program *AsmParser::parseProgram()
 void AsmParser::parseProcedure(VM::Program *program)
 {
 	VM::Instruction instr;
-	std::map<int, std::string> jumps;
+	std::map<int, std::string> labelRefs;
 	std::map<std::string, int> labels;
-	std::map<int, std::string> stringLoads;
 
 	while(true) {
 		// Break out when the procedure ends
@@ -83,8 +82,8 @@ void AsmParser::parseProcedure(VM::Program *program)
 
 		int offset = (int)program->instructions.size();
 		if(parseStdInstr(instr) || parseIndInstr(instr) || parseImmInstr(instr)
-			|| parseMultInstr(instr) || parseStringLoad(instr, offset, stringLoads)
-			|| parseJumpCall(instr, offset, jumps)) {
+			|| parseMultInstr(instr) || parseLabelRef(instr, offset, labelRefs)
+			|| parseCall(instr, offset, program->imports)) {
 			// Parse a regular instruction
 			program->instructions.resize(offset + 4);
 			std::memcpy(&program->instructions[offset], &instr, 4);
@@ -117,8 +116,8 @@ void AsmParser::parseProcedure(VM::Program *program)
 		}
 	}
 
-	// Patch up jump references
-	for(std::map<int, std::string>::iterator it = jumps.begin(); it != jumps.end(); it++) {
+	// Patch up label references
+	for(std::map<int, std::string>::iterator it = labelRefs.begin(); it != labelRefs.end(); it++) {
 		int offset = it->first;
 		const std::string &target = it->second;
 
@@ -130,21 +129,8 @@ void AsmParser::parseProcedure(VM::Program *program)
 		} else if(instr.type == VM::InstrThreeAddr && (instr.three.type == VM::ThreeAddrAddCond || instr.three.type == VM::ThreeAddrAddNCond)) {
 			int targetOffset = labels[target];
 			instr.three.imm = targetOffset - offset;
-		} else if(instr.type == VM::InstrOneAddr && instr.one.type == VM::OneAddrCall) {
-			program->imports[offset] = target;
 		}
 
-		std::memcpy(&program->instructions[offset], &instr, 4);
-	}
-
-	// Patch up string loads
-	for(std::map<int, std::string>::iterator it = stringLoads.begin(); it != stringLoads.end(); it++) {
-		int offset = it->first;
-		const std::string &name = it->second;
-		VM::Instruction instr;
-		std::memcpy(&instr, &program->instructions[offset], 4);
-		int dataOffset = labels[name];
-		instr.two.imm = dataOffset - offset;
 		std::memcpy(&program->instructions[offset], &instr, 4);
 	}
 }
@@ -369,19 +355,19 @@ bool AsmParser::parseMultInstr(VM::Instruction &instr)
 }
 
 /*!
- * \brief Parse a jump or call instruction
+ * \brief Parse a jump instruction
  * \param instr Instruction to write to
  * \param offset Offset of current instruction in procedure
- * \param jumps Jump map
+ * \param labelRefs Label reference map
  */
-bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, std::string> &jumps)
+bool AsmParser::parseLabelRef(VM::Instruction &instr, int offset, std::map<int, std::string> &labelRefs)
 {
 	if(next().text == "jmp") {
 		consume();
 		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegPC, 0);
-		jumps[offset] = target;
+		labelRefs[offset] = target;
 		return true;
 	}
 
@@ -392,7 +378,7 @@ bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, 
 		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 		instr = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddCond, VM::RegPC, pred, VM::RegPC, 0);
-		jumps[offset] = target;
+		labelRefs[offset] = target;
 		return true;
 	}
 
@@ -403,16 +389,18 @@ bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, 
 		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 		instr = VM::Instruction::makeThreeAddr(VM::ThreeAddrAddNCond, VM::RegPC, pred, VM::RegPC, 0);
-		jumps[offset] = target;
+		labelRefs[offset] = target;
 		return true;
 	}
 
-	if(next().text == "call") {
+	if(matchLiteral("lea")) {
 		consume();
-		std::string target = next().text;
+		int lhs = parseReg();
+		expectLiteral(",");
+		std::string name = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
-		instr = VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, 0);
-		jumps[offset] = target;
+		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, lhs, VM::RegPC, 0);
+		labelRefs[offset] = name;
 		return true;
 	}
 
@@ -420,21 +408,19 @@ bool AsmParser::parseJumpCall(VM::Instruction &instr, int offset, std::map<int, 
 }
 
 /*!
- * \brief Parse a string load instruction
+ * \brief Parse a call instruction
  * \param instr Instruction to write to
  * \param offset Offset of current instruction in procedure
- * \param strings String map
+ * \param imports Import map
  */
-bool AsmParser::parseStringLoad(VM::Instruction &instr, int offset, std::map<int, std::string> &stringLoads)
+bool AsmParser::parseCall(VM::Instruction &instr, int offset, std::map<int, std::string> &imports)
 {
-	if(matchLiteral("lea")) {
+	if(next().text == "call") {
 		consume();
-		int lhs = parseReg();
-		expectLiteral(",");
-		std::string name = next().text;
+		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
-		stringLoads[offset] = name;
-		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, lhs, VM::RegPC, 0);
+		instr = VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, 0);
+		imports[offset] = target;
 		return true;
 	}
 
