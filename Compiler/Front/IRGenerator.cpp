@@ -103,11 +103,11 @@ namespace Front {
 					typeStruct = typeStruct->parent;
 				}
 
-				IR::Procedure *irProcedure = *(irProgram->procedures().rbegin());
-				irProcedure->entries().push_back(new IR::EntryLabel(name));
+				IR::Data *irData = new IR::Data(name);
 				for(unsigned int j=0; j<vtable.size(); j++) {
-					irProcedure->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, vtable[j]));
+					irData->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, vtable[j]));
 				}
+				irProgram->addData(irData);
 			}
 		}
 

@@ -49,7 +49,7 @@ VM::Program *AsmParser::parseProgram()
 	VM::Program *program = new VM::Program;
 
 	// Scan each procedure in turn
-	while(matchLiteral("defproc")) {
+	while(matchLiteral("defproc") || matchLiteral("defdata")) {
 		consume();
 
 		std::string name = next().text;
@@ -77,7 +77,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 
 	while(true) {
 		// Break out when the procedure ends
-		if(match(AsmTokenizer::TypeEnd) || matchLiteral("defproc")) {
+		if(match(AsmTokenizer::TypeEnd) || matchLiteral("defproc") || matchLiteral("defdata")) {
 			break;
 		}
 

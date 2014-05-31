@@ -41,6 +41,15 @@ namespace IR {
 	}
 
 	/*!
+	 * \brief Add a data section to the program
+	 * \param data Data to add
+	 */
+	void Program::addData(Data *data)
+	{
+		mData.push_back(data);
+	}
+
+	/*!
 	 * \brief Print program
 	 */
 	void Program::print(std::ostream &o) const
@@ -49,6 +58,12 @@ namespace IR {
 			Procedure *procedure = *it;
 			o << "<" << procedure->name() << ">" << std::endl;
 			procedure->print(o, "  ");
+		}
+
+		for(DataList::const_iterator it = mData.begin(); it != mData.end(); it++) {
+			Data *data = *it;
+			o << "<" << data->name() << ">" << std::endl;
+			data->print(o, "  ");
 		}
 	}
 }

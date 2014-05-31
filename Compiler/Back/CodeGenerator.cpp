@@ -31,6 +31,17 @@ namespace Back {
 			generateProcedure(irProcedure, stream);
 			stream << std::endl;
 		}
+
+		// Iterate through the data sections, generating each in turn
+		for(IR::DataList::iterator itData = irProgram->data().begin(); itData != irProgram->data().end(); itData++) {
+			IR::Data *irData = *itData;
+
+			// Generate code for the data
+			generateData(irData, stream);
+			stream << std::endl;
+		}
+
+
 	}
 
 	/*!
@@ -395,13 +406,6 @@ namespace Back {
 						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
 						break;
 					}
-
-				case IR::Entry::TypeFunctionAddr:
-					{
-						IR::EntryCall *call = (IR::EntryCall*)entry;
-						stream << "    addr " << call->target << std::endl;
-						break;
-					}
 			}
 		}
 
@@ -411,6 +415,30 @@ namespace Back {
 			const std::string &value = it->second;
 			stream << "  " << name << ":" << std::endl;
 			stream << "    string \"" << value << "\"" << std::endl;
+		}
+	}
+
+	/*!
+	 * \brief Generate code for an IR data section
+	 * \param data Data to generate code for
+	 * \param stream Stream to output assembly to
+	 */
+	void CodeGenerator::generateData(IR::Data *data, std::ostream &stream)
+	{
+		stream << "defdata " << data->name() << std::endl;
+
+		// Iterate through each entry, and emit the appropriate code depending on its type
+		for(IR::EntryList::iterator itEntry = data->entries().begin(); itEntry != data->entries().end(); itEntry++) {
+			IR::Entry *entry = *itEntry;
+
+			switch(entry->type) {
+				case IR::Entry::TypeFunctionAddr:
+					{
+						IR::EntryCall *call = (IR::EntryCall*)entry;
+						stream << "    addr " << call->target << std::endl;
+						break;
+					}
+			}
 		}
 	}
 }
