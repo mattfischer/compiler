@@ -18,7 +18,18 @@ namespace VM {
 	struct Program {
 		std::vector<unsigned char> instructions; //!< Instruction list
 		std::map<std::string, int> symbols;
-		std::map<int, std::string> imports;
+
+		struct Relocation {
+			enum Type {
+				TypeAbsolute,
+				TypeCall
+			};
+
+			int offset;
+			Type type;
+			std::string symbol;
+		};
+		std::vector<Relocation> relocations;
 
 		void print(std::ostream &o);
 	};

@@ -18,7 +18,7 @@ Linker::Linker()
 VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 {
 	VM::Program *linked = new VM::Program;
-	std::map<int, std::string> imports;
+	std::vector<VM::Program::Relocation> relocations;
 
 	// Calculate total program size
 	int size = 0;
@@ -37,31 +37,43 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 			linked->symbols[it->first] = it->second + offset;
 		}
 
-		for(std::map<int, std::string>::iterator it = program->imports.begin(); it != program->imports.end(); it++) {
-			imports[it->first + offset] = it->second;
+		for(unsigned int j=0; j<program->relocations.size(); j++) {
+			VM::Program::Relocation relocation = program->relocations[j];
+			relocation.offset += offset;
+			relocations.push_back(relocation);
 		}
 
 		offset += (int)program->instructions.size();
 	}
 
 	// Resolve symbol references in program
-	for(std::map<int, std::string>::iterator it = imports.begin(); it != imports.end(); it++) {
-		int offset = it->first;
-		const std::string &symbol = it->second;
-		VM::Instruction instr;
-
-		std::memcpy(&instr, &linked->instructions[offset], 4);
-		if(linked->symbols.find(symbol) == linked->symbols.end()) {
+	for(unsigned int i=0; i<relocations.size(); i++) {
+		if(linked->symbols.find(relocations[i].symbol) == linked->symbols.end()) {
 			mError = true;
 			std::stringstream s;
-			s << "Undefined symbol " << symbol;
+			s << "Undefined symbol " << relocations[i].symbol;
 			mErrorMessage = s.str();
 			delete linked;
 			return 0;
-		} else {
-			int symbolOffset = linked->symbols[symbol];
-			instr.one.imm = (symbolOffset - offset) / 4;
-			std::memcpy(&linked->instructions[offset], &instr, 4);
+		}
+
+		switch(relocations[i].type) {
+			case VM::Program::Relocation::TypeAbsolute:
+				{
+					unsigned long address = linked->symbols[relocations[i].symbol];
+					std::memcpy(&linked->instructions[relocations[i].offset], &address, 4);
+					break;
+				}
+
+			case VM::Program::Relocation::TypeCall:
+				{
+					VM::Instruction instr;
+					std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
+					int symbolOffset = linked->symbols[relocations[i].symbol];
+					instr.one.imm = (symbolOffset - relocations[i].offset) / 4;
+					std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
+					break;
+				}
 		}
 	}
 

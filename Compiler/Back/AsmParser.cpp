@@ -83,7 +83,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		int offset = (int)program->instructions.size();
 		if(parseStdInstr(instr) || parseIndInstr(instr) || parseImmInstr(instr)
 			|| parseMultInstr(instr) || parseLabelRef(instr, offset, labelRefs)
-			|| parseCall(instr, offset, program->imports)) {
+			|| parseCall(instr, offset, program->relocations)) {
 			// Parse a regular instruction
 			program->instructions.resize(offset + 4);
 			std::memcpy(&program->instructions[offset], &instr, 4);
@@ -106,7 +106,11 @@ void AsmParser::parseProcedure(VM::Program *program)
 			program->instructions.resize(offset + 4);
 			int value = 0;
 			std::memcpy(&program->instructions[offset], &value, sizeof(value));
-			program->imports[offset] = name;
+			VM::Program::Relocation relocation;
+			relocation.offset = offset;
+			relocation.type = VM::Program::Relocation::TypeAbsolute;
+			relocation.symbol = name;
+			program->relocations.push_back(relocation);
 		} else {
 			// Parse a literal
 			std::string text = next().text;
@@ -413,14 +417,18 @@ bool AsmParser::parseLabelRef(VM::Instruction &instr, int offset, std::map<int, 
  * \param offset Offset of current instruction in procedure
  * \param imports Import map
  */
-bool AsmParser::parseCall(VM::Instruction &instr, int offset, std::map<int, std::string> &imports)
+bool AsmParser::parseCall(VM::Instruction &instr, int offset, std::vector<VM::Program::Relocation> &relocations)
 {
 	if(next().text == "call") {
 		consume();
 		std::string target = next().text;
 		expect(AsmTokenizer::TypeIdentifier);
 		instr = VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, 0);
-		imports[offset] = target;
+		VM::Program::Relocation relocation;
+		relocation.offset = offset;
+		relocation.type = VM::Program::Relocation::TypeCall;
+		relocation.symbol = target;
+		relocations.push_back(relocation);
 		return true;
 	}
 

@@ -27,8 +27,8 @@ namespace VM {
 			return;
 		}
 
-		if(program->imports.size() > 0) {
-			std::cerr << "Error: Program has unresolved imports" << std::endl;
+		if(program->relocations.size() > 0) {
+			std::cerr << "Error: Program has unresolved relocations" << std::endl;
 			return;
 		}
 
