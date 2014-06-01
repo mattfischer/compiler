@@ -22,7 +22,8 @@ namespace VM {
 		struct Relocation {
 			enum Type {
 				TypeAbsolute,
-				TypeCall
+				TypeCall,
+				TypeAddPCRel
 			};
 
 			int offset;

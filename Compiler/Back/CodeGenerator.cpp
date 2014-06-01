@@ -29,7 +29,6 @@ namespace Back {
 
 			// Generate code for the procedure
 			generateProcedure(irProcedure, stream);
-			stream << std::endl;
 		}
 
 		// Iterate through the data sections, generating each in turn
@@ -403,18 +402,20 @@ namespace Back {
 						std::stringstream s;
 						s << "str" << strings.size();
 						strings[s.str()] = string->string;
-						stream << "    lea r" << regMap[string->lhs] << ", " << s.str() << std::endl;
+						stream << "    lea r" << regMap[string->lhs] << ", " << procedure->name() << "$$" << s.str() << std::endl;
 						break;
 					}
 			}
 		}
+		stream << std::endl;
 
 		// Write out string constants
 		for(std::map<std::string, std::string>::iterator it = strings.begin(); it != strings.end(); it++) {
 			const std::string &name = it->first;
 			const std::string &value = it->second;
-			stream << "  " << name << ":" << std::endl;
+			stream << "defdata " << procedure->name() << "$$" << name << std::endl;
 			stream << "    string \"" << value << "\"" << std::endl;
+			stream << std::endl;
 		}
 	}
 

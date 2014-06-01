@@ -74,6 +74,16 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 					std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
 					break;
 				}
+
+			case VM::Program::Relocation::TypeAddPCRel:
+				{
+					VM::Instruction instr;
+					std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
+					int symbolOffset = linked->symbols[relocations[i].symbol];
+					instr.two.imm = symbolOffset - relocations[i].offset;
+					std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
+					break;
+				}
 		}
 	}
 

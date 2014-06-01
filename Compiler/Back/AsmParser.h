@@ -31,7 +31,7 @@ private:
 	bool parseImmInstr(VM::Instruction &instr);
 	bool parseMultInstr(VM::Instruction &instr);
 	bool parseLabelRef(VM::Instruction &instr, int offset, std::map<int, std::string> &labelRefs);
-	bool parseCall(VM::Instruction &instr, int offset, std::vector<VM::Program::Relocation> &relocations);
+	bool parseExternalRef(VM::Instruction &instr, int offset, std::vector<VM::Program::Relocation> &relocations);
 
 	int parseReg();
 };

@@ -83,7 +83,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 		int offset = (int)program->instructions.size();
 		if(parseStdInstr(instr) || parseIndInstr(instr) || parseImmInstr(instr)
 			|| parseMultInstr(instr) || parseLabelRef(instr, offset, labelRefs)
-			|| parseCall(instr, offset, program->relocations)) {
+			|| parseExternalRef(instr, offset, program->relocations)) {
 			// Parse a regular instruction
 			program->instructions.resize(offset + 4);
 			std::memcpy(&program->instructions[offset], &instr, 4);
@@ -397,27 +397,16 @@ bool AsmParser::parseLabelRef(VM::Instruction &instr, int offset, std::map<int, 
 		return true;
 	}
 
-	if(matchLiteral("lea")) {
-		consume();
-		int lhs = parseReg();
-		expectLiteral(",");
-		std::string name = next().text;
-		expect(AsmTokenizer::TypeIdentifier);
-		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, lhs, VM::RegPC, 0);
-		labelRefs[offset] = name;
-		return true;
-	}
-
 	return false;
 }
 
 /*!
- * \brief Parse a call instruction
+ * \brief Parse a reference to an external symbol
  * \param instr Instruction to write to
  * \param offset Offset of current instruction in procedure
- * \param imports Import map
+ * \param relocations Relocation map
  */
-bool AsmParser::parseCall(VM::Instruction &instr, int offset, std::vector<VM::Program::Relocation> &relocations)
+bool AsmParser::parseExternalRef(VM::Instruction &instr, int offset, std::vector<VM::Program::Relocation> &relocations)
 {
 	if(next().text == "call") {
 		consume();
@@ -427,6 +416,21 @@ bool AsmParser::parseCall(VM::Instruction &instr, int offset, std::vector<VM::Pr
 		VM::Program::Relocation relocation;
 		relocation.offset = offset;
 		relocation.type = VM::Program::Relocation::TypeCall;
+		relocation.symbol = target;
+		relocations.push_back(relocation);
+		return true;
+	}
+
+	if(matchLiteral("lea")) {
+		consume();
+		int lhs = parseReg();
+		expectLiteral(",");
+		std::string target = next().text;
+		expect(AsmTokenizer::TypeIdentifier);
+		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, lhs, VM::RegPC, 0);
+		VM::Program::Relocation relocation;
+		relocation.offset = offset;
+		relocation.type = VM::Program::Relocation::TypeAddPCRel;
 		relocation.symbol = target;
 		relocations.push_back(relocation);
 		return true;
