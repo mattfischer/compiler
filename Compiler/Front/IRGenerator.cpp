@@ -69,6 +69,12 @@ namespace Front {
 			if(procedure->object) {
 				context.object = irProcedure->findSymbol(procedure->object);
 				irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, context.object, 0, 0, 0));
+				TypeStruct *classType = procedure->scope->parent()->classType();
+				if(procedure->name == classType->name + "." + classType->name && classType->vtableSize > 0) {
+					IR::Symbol *vtable = irProcedure->newTemp(4);
+					irProcedure->emit(new IR::EntryString(IR::Entry::TypeLoadAddress, vtable, classType->name + "$$vtable"));
+					irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, vtable, context.object, 0));
+				}
 			} else {
 				context.object = 0;
 			}

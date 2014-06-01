@@ -51,6 +51,7 @@ namespace IR {
 			TypeStoreArg, //!< Store a value in an argument register
 			TypeLoadStack, //!< Load a value from a stack location
 			TypeStoreStack, //!< Store a value to a stack location
+			TypeLoadAddress, //!< Load the address of a symbol
 			TypePrologue, //!< Function prologue
 			TypeEpilogue, //!< Function epilogue
 			TypeNew, //!< Allocate memory

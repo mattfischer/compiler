@@ -405,6 +405,13 @@ namespace Back {
 						stream << "    lea r" << regMap[string->lhs] << ", " << procedure->name() << "$$" << s.str() << std::endl;
 						break;
 					}
+
+				case IR::Entry::TypeLoadAddress:
+					{
+						IR::EntryString *string = (IR::EntryString*)entry;
+						stream << "    lea r" << regMap[string->lhs] << ", " << string->string << std::endl;
+						break;
+					}
 			}
 		}
 		stream << std::endl;

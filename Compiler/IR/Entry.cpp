@@ -32,6 +32,7 @@ namespace IR {
 		/* TypeStoreArg   */ "starg    ",
 		/* TypeLoadStack  */ "ldstk    ",
 		/* TypeStoreStack */ "ststk    ",
+		/* TypeLoadAddress*/ "ldaddr   ",
 		/* TypePrologue   */ "prologue ",
 		/* TypeEpilogue   */ "epilogue ",
 		/* TypeNew        */ "new      ",

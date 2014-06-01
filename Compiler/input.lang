@@ -1,4 +1,7 @@
 class Foo {
+  Foo() {
+  }
+
   void printStuff() {
     print("stuff");
   }
@@ -10,6 +13,9 @@ class Foo {
 }
 
 class Bar : Foo {
+  Bar() {
+  }
+
   virtual void doOtherStuff() {
     printStuff();
   }
