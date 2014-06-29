@@ -2,10 +2,6 @@ class Foo {
   Foo() {
   }
 
-  void printStuff() {
-    doPrint();
-  }
-
   virtual void doPrint()
   {
     print("Foo");
@@ -22,10 +18,14 @@ class Bar : Foo {
   }
 }
 
+void printStuff(Foo foo) {
+    foo.doPrint();
+}
+
 void main()
 {
   Foo foo = new Foo;
   Bar bar = new Bar;
-  foo.printStuff();
-  bar.printStuff();
+  printStuff(foo);
+  printStuff(bar);
 }

@@ -627,11 +627,12 @@ namespace Front {
 
 			case Node::NodeTypeCoerce:
 				{
-					result = procedure->newTemp(node->type->valueSize);
 					IR::Symbol *source = processRValue(node->children[0], context);
 
 					// Emit the appropriate entry for the type of conversion taking place
 					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+						result = procedure->newTemp(node->type->valueSize);
+
 						Type *sourceType = node->children[0]->type;
 						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
@@ -648,6 +649,8 @@ namespace Front {
 						} else if(sourceType->type == Type::TypeArray && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, source));
 						}
+					} else {
+						result = source;
 					}
 
 					break;

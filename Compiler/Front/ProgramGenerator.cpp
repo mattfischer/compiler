@@ -130,6 +130,15 @@ namespace Front {
 				} else if(node->type->type == Type::TypeArray && Type::equals(((Front::TypeArray*)node->type)->baseType, Types::intrinsic(Types::Char))) {
 					valid = true;
 				}
+			} else if(type->type == Type::TypeClass && node->type->type == Type::TypeClass) {
+				TypeStruct *classType = (TypeStruct*)node->type;
+				while(classType) {
+					if(Type::equals(classType, type)) {
+						valid = true;
+						break;
+					}
+					classType = classType->parent;
+				}
 			}
 
 			if(!valid) {
