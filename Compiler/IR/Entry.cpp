@@ -26,6 +26,7 @@ namespace IR {
 		/* TypeCJump	  */ "cjmp     ",
 		/* TypePhi	      */ "phi      ",
 		/* TypeCall       */ "call     ",
+		/* TypeCallIndirect*/ "calli    ",
 		/* TypeLoadRet    */ "ldret    ",
 		/* TypeStoreRet   */ "stret    ",
 		/* TypeLoadArg    */ "ldarg    ",

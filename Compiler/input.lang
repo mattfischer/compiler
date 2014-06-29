@@ -3,29 +3,31 @@ class Foo {
   }
 
   void printStuff() {
-    print("stuff");
-  }
-  virtual void abc()
-  {
+    doPrint();
   }
 
+  virtual void doPrint()
+  {
+    print("Foo");
+  }
+  
   int x;
 }
 
 class Bar : Foo {
   Bar() {
   }
-
-  virtual void doOtherStuff() {
-    printStuff();
+  
+  virtual void doPrint()
+  {
+    print("Bar");
   }
-  int y;
 }
 
 void main()
 {
+  Foo foo = new Foo;
   Bar bar = new Bar;
+  foo.printStuff();
   bar.printStuff();
-  bar.doOtherStuff();
-  bar.y = 10;
 }

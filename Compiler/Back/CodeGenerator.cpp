@@ -80,7 +80,7 @@ namespace Back {
 		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
-			if(entry->type == IR::Entry::TypeCall) {
+			if(entry->type == IR::Entry::TypeCall || entry->type == IR::Entry::TypeCallIndirect) {
 				if(needComma) {
 					s << ", ";
 				}
@@ -257,6 +257,13 @@ namespace Back {
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 						stream << "    call " << call->target << std::endl;
+						break;
+					}
+
+				case IR::Entry::TypeCallIndirect:
+					{
+						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
+						stream << "    calli r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 

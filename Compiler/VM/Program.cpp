@@ -16,7 +16,14 @@ void Program::print(std::ostream &o)
 			}
 		}
 
-		o << "  ";
+		int addressWidth = 0;
+		int size = instructions.size();
+		while(size > 0) {
+			size >>= 4;
+			addressWidth++;
+		}
+
+		o << "  0x" << std::setw(addressWidth) << std::setfill('0') << std::setbase(16) << i << ": ";
 		for(int j=0; j<4; j++) {
 			int d = 0;
 			if(i + j < instructions.size()) {

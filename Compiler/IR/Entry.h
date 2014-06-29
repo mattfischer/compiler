@@ -45,6 +45,7 @@ namespace IR {
 			TypeCJump, //!< Jump to one of two labels based on a symbol's value
 			TypePhi, //!< Phi function for SSA
 			TypeCall, //!< Call a procedure
+			TypeCallIndirect, //!< Call a procedure via an address in a symbol
 			TypeLoadRet, //!< Load a value from the return register
 			TypeStoreRet, //!< Store a value in the return register
 			TypeLoadArg, //!< Load a value from an argument register

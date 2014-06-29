@@ -364,18 +364,19 @@ namespace Front {
 			case Node::NodeTypeCall:
 				{
 					Node *target = node->children[0];
+					Front::TypeStruct *classType;
+					IR::Symbol *object;
 					std::string name;
+					IR::Entry *callEntry;
 					std::vector<IR::Symbol*> args;
+
+					// Determine the target of the call, and the class type and object if it is
+					// a member function call
 					switch(target->nodeType) {
 						case Node::NodeTypeId:
-							if(target->symbol->scope->classType()) {
-								std::stringstream s;
-								s << target->symbol->scope->classType()->name << "." << target->lexVal.s;
-								name = s.str();
-								args.push_back(context.object);
-							} else {
-								name = target->lexVal.s;
-							}
+							classType = target->symbol->scope->classType();
+							object = context.object;
+							name = target->lexVal.s;
 							break;
 
 						case Node::NodeTypeMember:
@@ -384,14 +385,33 @@ namespace Front {
 								TypeStruct *baseType = (TypeStruct*)base->type;
 								Symbol *symbol = baseType->scope->findSymbol(target->lexVal.s);
 
-								std::stringstream s;
-								s << symbol->scope->classType()->name << "." << target->lexVal.s;
-								name = s.str();
-
-								IR::Symbol *object = processRValue(base, context);
-								args.push_back(object);
+								classType = symbol->scope->classType();
+								object = processRValue(base, context);
+								name = target->lexVal.s;
 								break;
 							}
+					}
+
+					// Construct the call entry
+					if(classType) {
+						Front::TypeStruct::Member *member = classType->findMember(name);
+						if(member->virtualFunction) {
+							IR::Symbol *vtable = procedure->newTemp(4);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, vtable, object));
+							IR::Symbol *callTarget = procedure->newTemp(4);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, callTarget, vtable, 0, member->offset * 4));
+							callEntry = new IR::EntryThreeAddr(IR::Entry::TypeCallIndirect, 0, callTarget);
+						} else {
+							std::stringstream s;
+							s << classType->name << "." << name;
+							std::string name = s.str();
+							callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
+						}
+
+						// Add the object as the first parameter
+						args.push_back(object);
+					} else {
+						callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
 					}
 
 					// Emit code for each argument, building a list of resulting symbols
@@ -406,7 +426,7 @@ namespace Front {
 					}
 
 					// Emit procedure call
-					procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, name));
+					procedure->emit(callEntry);
 
 					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary
