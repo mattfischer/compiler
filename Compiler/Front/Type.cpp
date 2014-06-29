@@ -93,6 +93,10 @@ namespace Front {
 				}
 
 				if(!overridden) {
+					if(vtableSize == 0) {
+						vtableOffset = allocSize;
+						allocSize += 4;
+					}
 					member.offset = vtableSize;
 					vtableSize++;
 				}

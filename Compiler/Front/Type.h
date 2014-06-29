@@ -95,6 +95,7 @@ namespace Front {
 		Scope *scope;
 		TypeStruct *parent;
 		int vtableSize;
+		int vtableOffset;
 
 		TypeStruct(TypeType _type, const std::string &_name)
 			: Type(_type, _name, 4, 0)

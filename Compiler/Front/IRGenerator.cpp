@@ -73,7 +73,7 @@ namespace Front {
 				if(procedure->name == classType->name + "." + classType->name && classType->vtableSize > 0) {
 					IR::Symbol *vtable = irProcedure->newTemp(4);
 					irProcedure->emit(new IR::EntryString(IR::Entry::TypeLoadAddress, vtable, classType->name + "$$vtable"));
-					irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, vtable, context.object, 0));
+					irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, vtable, context.object, 0, classType->vtableOffset));
 				}
 			} else {
 				context.object = 0;
@@ -397,7 +397,7 @@ namespace Front {
 						Front::TypeStruct::Member *member = classType->findMember(name);
 						if(member->virtualFunction) {
 							IR::Symbol *vtable = procedure->newTemp(4);
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, vtable, object));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, vtable, object, 0, classType->vtableOffset));
 							IR::Symbol *callTarget = procedure->newTemp(4);
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, callTarget, vtable, 0, member->offset * 4));
 							callEntry = new IR::EntryThreeAddr(IR::Entry::TypeCallIndirect, 0, callTarget);

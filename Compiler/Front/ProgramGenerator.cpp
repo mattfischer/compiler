@@ -282,9 +282,11 @@ namespace Front {
 			type->scope = new Scope(type->parent->scope, type);
 			type->allocSize = type->parent->allocSize;
 			type->vtableSize = type->parent->vtableSize;
+			type->vtableOffset = type->parent->vtableOffset;
 		} else {
 			type->parent = 0;
 			type->vtableSize = 0;
+			type->vtableOffset = 0;
 			type->scope = new Scope(program->scope, type);
 		}
 
