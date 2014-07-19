@@ -32,6 +32,10 @@ namespace VM {
 		};
 		std::vector<Relocation> relocations;
 
+		Program();
+		Program(std::istream &stream);
+
+		void write(std::ostream &o);
 		void print(std::ostream &o);
 	};
 }
