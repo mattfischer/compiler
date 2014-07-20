@@ -33,14 +33,11 @@ VM::Program *compileCached(const std::string &outputFilename, const std::vector<
 
 		Linker linker;
 		VM::Program *linked = linker.link(programs);
-		std::ofstream outputFile(outputFilename.c_str());
-		linked->write(outputFile);
-		outputFile.close();
+		linked->write(outputFilename);
 	}
 
 	// Load the runtime binary
-	std::ifstream fileIn(outputFilename.c_str());
-	VM::Program *program = new VM::Program(fileIn);
+	VM::Program *program = new VM::Program(outputFilename);
 	return program;
 }
 

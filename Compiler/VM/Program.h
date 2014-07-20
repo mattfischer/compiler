@@ -2,11 +2,10 @@
 #define VM_PROGRAM_H
 
 #include "VM/Instruction.h"
+#include "VM/OrcFile.h"
 
 #include <vector>
-#include <map>
 #include <string>
-#include <iostream>
 
 /*!
  * \brief A virtual machine that is targeted by the compiler
@@ -33,9 +32,13 @@ namespace VM {
 		std::vector<Relocation> relocations;
 
 		Program();
-		Program(std::istream &stream);
+		Program(const OrcFile &file);
+		Program(const std::string &filename);
 
-		void write(std::ostream &o);
+		void read(const OrcFile &file);
+		void write(OrcFile &file);
+		void write(const std::string &filename);
+
 		void print(std::ostream &o);
 	};
 }
