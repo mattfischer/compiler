@@ -11,7 +11,7 @@ namespace Front {
 	class ProgramGenerator
 	{
 	public:
-		ProgramGenerator(Node *tree);
+		ProgramGenerator(Node *tree, Types *types, Scope *scope);
 
 		Program *generate();
 
@@ -20,6 +20,8 @@ namespace Front {
 
 	private:
 		Node *mTree; //!< Abstract syntax tree
+		Types *mTypes;
+		Scope *mScope;
 
 		std::string mErrorMessage; //!< Error message
 		int mErrorLine; //!< Error line

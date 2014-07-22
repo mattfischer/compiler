@@ -2,6 +2,7 @@
 
 #include "Front/HllTokenizer.h"
 #include "Front/HllParser.h"
+#include "Front/EnvironmentGenerator.h"
 #include "Front/ProgramGenerator.h"
 #include "Front/IRGenerator.h"
 
@@ -55,7 +56,15 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 		return false;
 	}
 
-	Front::ProgramGenerator programGenerator(node);
+	Front::EnvironmentGenerator environmentGenerator(node);
+	if(!environmentGenerator.types() || !environmentGenerator.scope()) {
+		std::stringstream s;
+		s << "line " << environmentGenerator.errorLine() << ": " << environmentGenerator.errorMessage() << std::endl;
+		setError(s.str());
+		return false;
+	}
+
+	Front::ProgramGenerator programGenerator(node, environmentGenerator.types(), environmentGenerator.scope());
 	Front::Program *program = programGenerator.generate();
 	if(!program) {
 		std::stringstream s;

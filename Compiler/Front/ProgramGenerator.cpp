@@ -32,9 +32,11 @@ namespace Front {
 	 * \brief Constructor
 	 * \param tree Abstract syntax tree
 	 */
-	ProgramGenerator::ProgramGenerator(Node *tree)
+	ProgramGenerator::ProgramGenerator(Node *tree, Types *types, Scope *scope)
 	{
 		mTree = tree;
+		mTypes = types;
+		mScope = scope;
 	}
 
 	/*!
@@ -46,45 +48,48 @@ namespace Front {
 		try {
 			// Create the root program object
 			Program *program = new Program;
-			program->scope = new Scope();
-			program->types = new Types();
-
-			// Loop through the tree and pre-populate all declared type names
-			for(unsigned int i=0; i<mTree->children.size(); i++) {
-				Node *node = mTree->children[i];
-				std::stringstream s;
-
-				if(node->nodeType == Node::NodeTypeStructDef) {
-					TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
-
-					if(!program->types->registerType(type)) {
-						s << "Redefinition of structure " << type->name;
-						throw TypeError(node, s.str());
-					}
-				} else if(node->nodeType == Node::NodeTypeClassDef) {
-					TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
-
-					if(!program->types->registerType(type)) {
-						s << "Redefinition of class " << type->name;
-						throw TypeError(node, s.str());
-					}
-				}
-			}
+			program->types = mTypes;
+			program->scope = mScope;
 
 			// Iterate through the tree's procedure definitions
-			std::vector<Node*> classes;
 			for(unsigned int i=0; i<mTree->children.size(); i++) {
 				Node *node = mTree->children[i];
 
-				if(node->nodeType == Node::NodeTypeProcedureDef) {
-					addProcedure(mTree->children[i], program, program->scope);
-				} else if(node->nodeType == Node::NodeTypeStructDef) {
-					addStruct(mTree->children[i], program);
-				} else if(node->nodeType == Node::NodeTypeClassDef) {
-					classes.push_back(mTree->children[i]);
+				switch(node->nodeType) {
+					case Node::NodeTypeProcedureDef:
+						addProcedure(mTree->children[i], program, program->scope);
+						break;
+
+					case Node::NodeTypeClassDef:
+						{
+							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
+							Node *members = node->children[node->children.size() - 1];
+							for(unsigned int i=0; i<members->children.size(); i++) {
+								Node *memberNode = members->children[i];
+								Node *procedureNode;
+
+								switch(memberNode->nodeType) {
+									case Node::NodeTypeProcedureDef:
+										procedureNode = memberNode;
+										break;
+									case Node::NodeTypeVirtual:
+										procedureNode = memberNode->children[0];
+										break;
+									default:
+										procedureNode = 0;
+										break;
+								}
+
+								if(!procedureNode) {
+									continue;
+								}
+
+								Procedure *procedure = addProcedure(procedureNode, program, typeStruct->scope);
+							}
+							break;
+						}
 				}
 			}
-			addClasses(classes, program);
 
 			// Now that all procedures have been declared, type check the procedure bodies
 			for(unsigned int i=0; i<program->procedures.size(); i++) {
@@ -199,6 +204,8 @@ namespace Front {
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
+		Symbol *symbol = scope->findSymbol(node->lexVal.s);
+		procedure->type = (TypeProcedure*)symbol->type;
 
 		// Begin populating the procedure object
 		if(scope->classType()) {
@@ -219,33 +226,12 @@ namespace Front {
 
 		// Iterate the tree's argument items
 		Node *argumentList = node->children[1];
-		std::vector<Type*> argumentTypes;
-		for(unsigned int j=0; j<argumentList->children.size(); j++) {
-			// Construct the argument type, and add it to the list of types
-			Type *argumentType = createType(argumentList->children[j]->children[0], program->types);
-			if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
-				throw TypeError(argumentList->children[j], "Cannot declare procedure argument of type void");
-			}
-			argumentTypes.push_back(argumentType);
-
+		for(unsigned int i=0; i<argumentList->children.size(); i++) {
 			// Construct a symbol for the argument, and add it to the procedure's scope and argument list
-			Symbol *argument = new Symbol(argumentType, argumentList->children[j]->lexVal.s);
+			Symbol *argument = new Symbol(procedure->type->argumentTypes[i], argumentList->children[i]->lexVal.s);
 			procedure->scope->addSymbol(argument);
 			procedure->arguments.push_back(argument);
 		}
-
-		// Construct the procedure type
-		Type *returnType;
-		if(node->children[0]) {
-			returnType = createType(node->children[0], program->types);
-		} else {
-			returnType = Types::intrinsic(Types::Void);
-		}
-		procedure->type = new TypeProcedure(returnType, argumentTypes);
-
-		// Construct the procedure symbol
-		Symbol *symbol = new Symbol(procedure->type, node->lexVal.s);
-		scope->addSymbol(symbol);
 
 		procedure->body = node->children[2];
 		node->type = Types::intrinsic(Types::Void);
@@ -254,145 +240,6 @@ namespace Front {
 		program->procedures.push_back(procedure);
 
 		return procedure;
-	}
-
-	/*!
-	 * \brief Add a structure to the type list
-	 * \param node Node describing structure
-	 * \param program Program to add to
-	 */
-	void ProgramGenerator::addStruct(Node *node, Program *program)
-	{
-		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
-		type->parent = 0;
-		type->scope = 0;
-		type->constructor = 0;
-		Node *members = node->children[0];
-		for(unsigned int i=0; i<members->children.size(); i++) {
-			Node *memberNode = members->children[i];
-			Type *memberType = createType(memberNode->children[0], program->types);
-			type->addMember(memberType, memberNode->lexVal.s, false);
-		}
-	}
-
-	/*!
-	 * \brief Add a class to the type list
-	 * \param node Node describing structure
-	 * \param program Program to add to
-	 */
-	void ProgramGenerator::addClass(Node *node, Program *program)
-	{
-		TypeStruct *type = (Front::TypeStruct*)program->types->findType(node->lexVal.s);
-
-		type->constructor = 0;
-
-		if(node->children.size() == 2) {
-			type->parent = (Front::TypeStruct*)program->types->findType(node->children[0]->lexVal.s);;
-			type->scope = new Scope(type->parent->scope, type);
-			type->allocSize = type->parent->allocSize;
-			type->vtableSize = type->parent->vtableSize;
-			type->vtableOffset = type->parent->vtableOffset;
-		} else {
-			type->parent = 0;
-			type->vtableSize = 0;
-			type->vtableOffset = 0;
-			type->scope = new Scope(program->scope, type);
-		}
-
-		Node *members = node->children[node->children.size() - 1];
-		for(unsigned int i=0; i<members->children.size(); i++) {
-			Node *memberNode = members->children[i];
-			switch(memberNode->nodeType) {
-				case Node::NodeTypeVarDecl:
-				{
-					Type *memberType = createType(memberNode->children[0], program->types);
-					type->addMember(memberType, memberNode->lexVal.s, false);
-					type->scope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
-					break;
-				}
-
-				case Node::NodeTypeProcedureDef:
-				case Node::NodeTypeVirtual:
-				{
-					Node *procedureNode;
-					bool virtualFunction;
-					switch(memberNode->nodeType) {
-						case Node::NodeTypeProcedureDef:
-							procedureNode = memberNode;
-							if(type->parent && type->parent->findMember(procedureNode->lexVal.s)) {
-								virtualFunction = true;
-							} else {
-								virtualFunction = false;
-							}
-							break;
-
-						case Node::NodeTypeVirtual:
-							procedureNode = memberNode->children[0];
-							virtualFunction = true;
-							break;
-					}
-
-					Procedure *procedure = addProcedure(procedureNode, program, type->scope);
-
-					if(procedureNode->lexVal.s == type->name) {
-						type->constructor = procedure->type;
-					} else if(program->types->findType(procedureNode->lexVal.s)) {
-						throw TypeError(procedureNode, "Illegal procedure name " + procedureNode->lexVal.s);
-					} else {
-						type->addMember(procedure->type, procedureNode->lexVal.s, virtualFunction);
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	/*!
-	* \brief Populate all classes, sorting according to inheritance order
-	* \param nodes Class nodes
-	* \brief program Program to add to
-	*/
-	void ProgramGenerator::addClasses(std::vector<Node*> nodes, Program *program)
-	{
-		std::set<Type*> processed;
-		std::vector<Node*> nextNodes;
-
-		// Loop repeatedly through the list of class nodes until all are processed
-		while(nodes.size() > 0) {
-			for(unsigned int i=0; i<nodes.size(); i++) {
-				Node *node = nodes[i];
-
-				// If the class has a parent, check to see if it is processed
-				if(node->children.size() == 2) {
-					std::string parent = node->children[0]->lexVal.s;
-					Type *type = program->types->findType(parent);
-					if(!type) {
-						throw TypeError(node, "Invalid class parent " + parent);
-					}
-
-					// If the parent is not processed, this node cannot be processed yet
-					if(processed.find(type) == processed.end()) {
-						nextNodes.push_back(node);
-						continue;
-					}
-				}
-
-				// Add the class, and record that it has been processed
-				addClass(node, program);
-				Type *type = program->types->findType(node->lexVal.s);
-				processed.insert(type);
-			}
-
-			// Check if any progress was made during this iteration
-			if(nextNodes.size() == nodes.size()) {
-				// If no classes were processed, there is an inheritance cycle
-				throw TypeError(nodes[0], "Cycle in parents of class " + nodes[0]->lexVal.s);
-			} else {
-				// Otherwise, repeat the procedure with any classes that couldn't be processed this time
-				nodes = nextNodes;
-				nextNodes.clear();
-			}
-		}
 	}
 
 	/*!
