@@ -5,6 +5,7 @@
 #include "Front/EnvironmentGenerator.h"
 #include "Front/ProgramGenerator.h"
 #include "Front/IRGenerator.h"
+#include "Front/ExportInfo.h"
 
 #include "Middle/Optimizer.h"
 #include "Middle/ErrorCheck.h"
@@ -76,6 +77,8 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 	Util::log("parse") << "*** Parsed Program ***" << std::endl;
 	program->print(Util::log("parse"));
 	Util::log("parse") << std::endl;
+
+	Front::ExportInfo exportInfo(program->types, program->scope);
 
 	Front::IRGenerator generator;
 	IR::Program *irProgram = generator.generate(program);

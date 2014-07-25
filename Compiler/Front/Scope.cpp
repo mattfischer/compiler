@@ -61,11 +61,11 @@ namespace Front {
 	 * \brief Return all symbols in scope and children
 	 * \return Symbols
 	 */
-	std::vector<Symbol*> Scope::symbols()
+	std::vector<Symbol*> Scope::allSymbols()
 	{
 		std::vector<Symbol*> result = mSymbols;
 		for(unsigned int i=0; i<mChildren.size(); i++) {
-			std::vector<Symbol*> childSymbols = mChildren[i]->symbols();
+			std::vector<Symbol*> childSymbols = mChildren[i]->allSymbols();
 			result.insert(result.end(), childSymbols.begin(), childSymbols.end());
 		}
 

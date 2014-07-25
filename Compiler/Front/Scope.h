@@ -16,7 +16,9 @@ namespace Front {
 		Scope *parent() { return mParent; }
 		bool addSymbol(Symbol *symbol);
 		Symbol *findSymbol(const std::string &name);
-		std::vector<Symbol*> symbols();
+		std::vector<Symbol*> allSymbols();
+		std::vector<Symbol*> &symbols() { return mSymbols; }
+
 		void addChild(Scope *child);
 		TypeStruct *classType() { return mClassType; }
 

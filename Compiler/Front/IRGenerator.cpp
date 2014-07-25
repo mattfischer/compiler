@@ -29,7 +29,7 @@ namespace Front {
 			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
 
 			// Add local variables to the procedure
-			const std::vector<Symbol*> locals = procedure->scope->symbols();
+			const std::vector<Symbol*> locals = procedure->scope->allSymbols();
 			std::set<std::string> names;
 			for(unsigned int j=0; j<locals.size(); j++) {
 				std::string name;
