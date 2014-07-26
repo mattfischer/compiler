@@ -12,6 +12,10 @@ namespace Front {
 		}
 	}
 
+	Types::~Types()
+	{
+	}
+
 	/*!
 	 * \brief Register a new type with the type system
 	 * \param type Type to register
@@ -24,6 +28,7 @@ namespace Front {
 		}
 
 		mTypes.push_back(type);
+
 		return true;
 	}
 

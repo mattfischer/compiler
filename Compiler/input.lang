@@ -1,13 +1,3 @@
-class Foo {
-  Foo() {
-  }
-
-  virtual void doPrint()
-  {
-    print("Foo");
-  }
-}
-
 class Bar : Foo {
   Bar() {
   }
@@ -15,6 +5,16 @@ class Bar : Foo {
   virtual void doPrint()
   {
     print("Bar");
+  }
+}
+
+class Foo {
+  Foo() {
+  }
+
+  virtual void doPrint()
+  {
+    print("Foo");
   }
 }
 

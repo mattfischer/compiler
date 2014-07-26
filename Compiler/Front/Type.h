@@ -17,7 +17,8 @@ namespace Front {
 			TypeProcedure,
 			TypeArray,
 			TypeStruct,
-			TypeClass
+			TypeClass,
+			TypeDummy
 		};
 
 		Type(TypeType _type, std::string _name, int _valueSize, int _allocSize)
@@ -103,6 +104,18 @@ namespace Front {
 
 		void addMember(Type *type, const std::string &name, bool virtualFunction);
 		Member *findMember(const std::string &name);
+	};
+
+	/*!
+	 * \brief A placeholder type
+	 */
+	class TypeDummy : public Type {
+	public:
+		std::string origin;
+
+		TypeDummy(const std::string &_name, const std::string &_origin)
+			: Type(Type::TypeDummy, _name, 0, 0), origin(_origin)
+		{}
 	};
 }
 

@@ -5,30 +5,37 @@
 #include "Front/Types.h"
 
 #include <vector>
+#include <set>
 
 namespace Front {
 
+/*!
+ * \brief Generate a compilation environment, consisting of a type list and global symbols
+ */
 class EnvironmentGenerator {
 public:
 	EnvironmentGenerator(Node *tree);
 
-	Types *types() { return mTypes; }
-	Scope *scope() { return mScope; }
+	Types *types() { return mTypes; } //!< Types in environment
+	Scope *scope() { return mScope; } //!< Global scope of environment
 
-	std::string errorMessage() { return mErrorMessage; } //!< Error message
-	int errorLine() { return mErrorLine; } //!< Error line
+	const std::string &errorMessage() { return mErrorMessage; } //!< Error message
+	const std::string &errorLocation() { return mErrorLocation; } //!< Error line
 
 private:
-	Types *mTypes;
-	Scope *mScope;
+	Types *mTypes; //!< Types in environment
+	Scope *mScope; //!< Global scope of environment
+	std::set<Type*> mCompleteTypes; //!< List of known-complete types
+	std::vector<Type*> mCompletionStack; //!< List of types currently being completed
 	std::string mErrorMessage; //!< Error message
-	int mErrorLine; //!< Error line
+	std::string mErrorLocation; //!< Error location
 
-	TypeProcedure *addProcedure(Node *node, Types *types, Scope *scope);
-	void addStruct(Node *node, Types *types);
-	void addClass(Node *node, Types *types, Scope *scope);
-	void addClasses(std::vector<Node*> nodes, Types *types, Scope *scope);
-	Type *createType(Node *node, Types *types);
+	void addStruct(Node *node);
+	void addClass(Node *node);
+	Type *createType(Node *node, bool dummy);
+	Type *completeType(Type *type);
+	void completeTypes();
+	void constructScope(TypeStruct *typeStruct, Scope *scope);
 };
 
 }

@@ -60,7 +60,7 @@ bool Compiler::compileToAsm(const std::string &filename, std::ostream &output)
 	Front::EnvironmentGenerator environmentGenerator(node);
 	if(!environmentGenerator.types() || !environmentGenerator.scope()) {
 		std::stringstream s;
-		s << "line " << environmentGenerator.errorLine() << ": " << environmentGenerator.errorMessage() << std::endl;
+		s << environmentGenerator.errorLocation() << ": " << environmentGenerator.errorMessage() << std::endl;
 		setError(s.str());
 		return false;
 	}

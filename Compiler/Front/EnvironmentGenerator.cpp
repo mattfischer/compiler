@@ -18,129 +18,102 @@ public:
 	 * \param node Node on which error occurred
 	 * \param message Error message
 	 */
-	EnvironmentError(Node *node, const std::string &message)
-		: mNode(node), mMessage(message)
+	EnvironmentError(const std::string &location, const std::string &message)
+		: mLocation(location), mMessage(message)
 	{}
 
-	Node *node() { return mNode; } //!< Node of error
+	const std::string &location() { return mLocation; } //!< Error location
 	const std::string &message() { return mMessage; } //!< Error message
 
 private:
-	Node *mNode; //!< Node
+	std::string mLocation; //!< Error location
 	std::string mMessage; //!< Error message
 };
 
+/*!
+ * \brief Constructor
+ * \param tree Parse tree
+ */
 EnvironmentGenerator::EnvironmentGenerator(Node *tree)
 {
 	try {
-		Types *types = new Types;
-		Scope *scope = new Scope;
+		mTypes = new Types;
+		mScope = new Scope;
 
 		// Loop through the tree and pre-populate all declared type names
 		for(unsigned int i=0; i<tree->children.size(); i++) {
 			Node *node = tree->children[i];
 			std::stringstream s;
 
-			if(node->nodeType == Node::NodeTypeStructDef) {
-				TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
+			switch(node->nodeType) {
+				case Node::NodeTypeStructDef:
+					addStruct(node);
+					break;
 
-				if(!types->registerType(type)) {
-					s << "Redefinition of structure " << type->name;
-					throw EnvironmentError(node, s.str());
-				}
-			} else if(node->nodeType == Node::NodeTypeClassDef) {
-				TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
-
-				if(!types->registerType(type)) {
-					s << "Redefinition of class " << type->name;
-					throw EnvironmentError(node, s.str());
-				}
+				case Node::NodeTypeClassDef:
+					addClass(node);
+					break;
 			}
 		}
 
-		// Iterate through the tree's procedure definitions
-		std::vector<Node*> classes;
+		// Complete each type, and construct scopes for class types
+		std::set<Type*> completeTypes;
+		for(unsigned int i=0; i<mTypes->types().size(); i++) {
+			Type *type = mTypes->types()[i];
+			completeType(type);
+			if(type->type == Type::TypeClass) {
+				constructScope((TypeStruct*)type, mScope);
+			}
+		}
+
+		// Iterate through the tree, and construct symbols for each procedure
 		for(unsigned int i=0; i<tree->children.size(); i++) {
 			Node *node = tree->children[i];
-
-			switch(node->nodeType) {
-				case Node::NodeTypeProcedureDef:
-					addProcedure(node, types, scope);
-					break;
-				case Node::NodeTypeStructDef:
-					addStruct(node, types);
-					break;
-				case Node::NodeTypeClassDef:
-					classes.push_back(node);
-					break;
+			if(node->nodeType == Node::NodeTypeProcedureDef) {
+				Symbol *symbol = new Symbol(createType(node, false), node->lexVal.s);
+				mScope->addSymbol(symbol);
 			}
 		}
-		addClasses(classes, types, scope);
-
-		mTypes = types;
-		mScope = scope;
 	} catch(EnvironmentError error) {
-		// Collect the error message and line from the exception
+		delete mTypes;
 		mTypes = 0;
+
+		delete mScope;
 		mScope = 0;
-		mErrorLine = error.node()->line;
+
+		// Collect the error message and line from the exception
+		mErrorLocation = error.location();
 		mErrorMessage = error.message();
 	}
 }
 
 /*!
- * \brief Generate a single procedure
- * \param node Tree node for procedure definition
- * \param program Program to add procedure to
- * \param scope Parent scope of procedure
- * \return New procedure
- */
-TypeProcedure *EnvironmentGenerator::addProcedure(Node *node, Types *types, Scope *scope)
-{
-	// Iterate the tree's argument items
-	Node *argumentList = node->children[1];
-	std::vector<Type*> argumentTypes;
-	for(unsigned int j=0; j<argumentList->children.size(); j++) {
-		// Construct the argument type, and add it to the list of types
-		Type *argumentType = createType(argumentList->children[j]->children[0], types);
-		if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
-			throw EnvironmentError(argumentList->children[j], "Cannot declare procedure argument of type void");
-		}
-		argumentTypes.push_back(argumentType);
-	}
-
-	// Construct the procedure type
-	Type *returnType;
-	if(node->children[0]) {
-		returnType = createType(node->children[0], types);
-	} else {
-		returnType = Types::intrinsic(Types::Void);
-	}
-
-	TypeProcedure *procedureType = new TypeProcedure(returnType, argumentTypes);
-
-	// Construct the procedure symbol
-	Symbol *symbol = new Symbol(procedureType, node->lexVal.s);
-	scope->addSymbol(symbol);
-
-	return procedureType;
-}
-
-/*!
  * \brief Add a structure to the type list
  * \param node Node describing structure
- * \param program Program to add to
  */
-void EnvironmentGenerator::addStruct(Node *node, Types *types)
+void EnvironmentGenerator::addStruct(Node *node)
 {
-	TypeStruct *type = (Front::TypeStruct*)types->findType(node->lexVal.s);
+	// Create the type
+	TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
+	if(!mTypes->registerType(type)) {
+		std::stringstream s1;
+		s1 << "Line " << node->line;
+
+		std::stringstream s2;
+		s2 << "Redefinition of structure " << type->name;
+
+		throw EnvironmentError(s1.str(), s2.str());
+	}
+
 	type->parent = 0;
 	type->scope = 0;
 	type->constructor = 0;
+
+	// Iterate through the member nodes, and create type members for each
 	Node *members = node->children[0];
 	for(unsigned int i=0; i<members->children.size(); i++) {
 		Node *memberNode = members->children[i];
-		Type *memberType = createType(memberNode->children[0], types);
+		Type *memberType = createType(memberNode->children[0], true);
 		type->addMember(memberType, memberNode->lexVal.s, false);
 	}
 }
@@ -150,34 +123,39 @@ void EnvironmentGenerator::addStruct(Node *node, Types *types)
  * \param node Node describing structure
  * \param program Program to add to
  */
-void EnvironmentGenerator::addClass(Node *node, Types *types, Scope *scope)
+void EnvironmentGenerator::addClass(Node *node)
 {
-	TypeStruct *type = (Front::TypeStruct*)types->findType(node->lexVal.s);
+	// Create the type
+	TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+	if(!mTypes->registerType(type)) {
+		std::stringstream s1;
+		s1 << "Line " << node->line;
 
+		std::stringstream s2;
+		s2 << "Redefinition of class " << type->name;
+		throw EnvironmentError(s1.str(), s2.str());
+	}
+
+	type->scope = 0;
 	type->constructor = 0;
 
 	if(node->children.size() == 2) {
-		type->parent = (Front::TypeStruct*)types->findType(node->children[0]->lexVal.s);
-		type->scope = new Scope(type->parent->scope, type);
-		type->allocSize = type->parent->allocSize;
-		type->vtableSize = type->parent->vtableSize;
-		type->vtableOffset = type->parent->vtableOffset;
+		std::stringstream s;
+		s << "Line " << node->line;
+		type->parent = (Front::TypeStruct*)new TypeDummy(node->children[0]->lexVal.s, s.str());
 	} else {
 		type->parent = 0;
-		type->vtableSize = 0;
-		type->vtableOffset = 0;
-		type->scope = new Scope(scope, type);
 	}
 
+	// Iterate through the member nodes, and create type members for each
 	Node *members = node->children[node->children.size() - 1];
 	for(unsigned int i=0; i<members->children.size(); i++) {
 		Node *memberNode = members->children[i];
 		switch(memberNode->nodeType) {
 			case Node::NodeTypeVarDecl:
 			{
-				Type *memberType = createType(memberNode->children[0], types);
+				Type *memberType = createType(memberNode->children[0], true);
 				type->addMember(memberType, memberNode->lexVal.s, false);
-				type->scope->addSymbol(new Symbol(memberType, memberNode->lexVal.s));
 				break;
 			}
 
@@ -189,11 +167,7 @@ void EnvironmentGenerator::addClass(Node *node, Types *types, Scope *scope)
 				switch(memberNode->nodeType) {
 					case Node::NodeTypeProcedureDef:
 						procedureNode = memberNode;
-						if(type->parent && type->parent->findMember(procedureNode->lexVal.s)) {
-							virtualFunction = true;
-						} else {
-							virtualFunction = false;
-						}
+						virtualFunction = false;
 						break;
 
 					case Node::NodeTypeVirtual:
@@ -202,11 +176,9 @@ void EnvironmentGenerator::addClass(Node *node, Types *types, Scope *scope)
 						break;
 				}
 
-				TypeProcedure *procedureType = addProcedure(procedureNode, types, type->scope);
+				TypeProcedure *procedureType = (TypeProcedure*)createType(procedureNode, true);
 				if(procedureNode->lexVal.s == type->name) {
 					type->constructor = procedureType;
-				} else if(types->findType(procedureNode->lexVal.s)) {
-					throw EnvironmentError(procedureNode, "Illegal procedure name " + procedureNode->lexVal.s);
 				} else {
 					type->addMember(procedureType, procedureNode->lexVal.s, virtualFunction);
 				}
@@ -218,78 +190,225 @@ void EnvironmentGenerator::addClass(Node *node, Types *types, Scope *scope)
 }
 
 /*!
-* \brief Populate all classes, sorting according to inheritance order
-* \param nodes Class nodes
-* \brief program Program to add to
-*/
-void EnvironmentGenerator::addClasses(std::vector<Node*> nodes, Types *types, Scope *scope)
-{
-	std::set<Type*> processed;
-	std::vector<Node*> nextNodes;
-
-	// Loop repeatedly through the list of class nodes until all are processed
-	while(nodes.size() > 0) {
-		for(unsigned int i=0; i<nodes.size(); i++) {
-			Node *node = nodes[i];
-
-			// If the class has a parent, check to see if it is processed
-			if(node->children.size() == 2) {
-				std::string parent = node->children[0]->lexVal.s;
-				Type *type = types->findType(parent);
-				if(!type) {
-					throw EnvironmentError(node, "Invalid class parent " + parent);
-				}
-
-				// If the parent is not processed, this node cannot be processed yet
-				if(processed.find(type) == processed.end()) {
-					nextNodes.push_back(node);
-					continue;
-				}
-			}
-
-			// Add the class, and record that it has been processed
-			addClass(node, types, scope);
-			Type *type = types->findType(node->lexVal.s);
-			processed.insert(type);
-		}
-
-		// Check if any progress was made during this iteration
-		if(nextNodes.size() == nodes.size()) {
-			// If no classes were processed, there is an inheritance cycle
-			throw EnvironmentError(nodes[0], "Cycle in parents of class " + nodes[0]->lexVal.s);
-		} else {
-			// Otherwise, repeat the procedure with any classes that couldn't be processed this time
-			nodes = nextNodes;
-			nextNodes.clear();
-		}
-	}
-}
-
-/*!
  * \brief Search for a type named by a node
  * \param node Node describing type
+ * \param dummy Whether to create a dummy type if not found
  * \return Type
  */
-Type *EnvironmentGenerator::createType(Node *node, Types *types)
+Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 {
 	Type *type = 0;
-	if(node->nodeType == Node::NodeTypeArray) {
-		type = createType(node->children[0], types);
-		if(Type::equals(type, Types::intrinsic(Types::Void))) {
-			throw EnvironmentError(node, "Cannot declare array of voids");
-		}
-		type = new TypeArray(type);
-	} else {
-		std::string name = node->lexVal.s;
-		type = types->findType(name);
-		if(!type) {
-			std::stringstream s;
-			s << "Type '" << name << "' not found.";
-			throw EnvironmentError(node, s.str());
-		}
+	switch(node->nodeType) {
+		case Node::NodeTypeArray:
+			type = createType(node->children[0], dummy);
+			if(Type::equals(type, Types::intrinsic(Types::Void))) {
+				std::stringstream s;
+				s << "Line " << node->line;
+				throw EnvironmentError(s.str(), "Cannot declare array of voids");
+			}
+			type = new TypeArray(type);
+			break;
+
+		case Node::NodeTypeProcedureDef:
+			{
+				// Iterate the tree's argument items
+				Node *argumentList = node->children[1];
+				std::vector<Type*> argumentTypes;
+				for(unsigned int j=0; j<argumentList->children.size(); j++) {
+					// Construct the argument type, and add it to the list of types
+					Type *argumentType = createType(argumentList->children[j]->children[0], dummy);
+					if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
+						std::stringstream s;
+						s << "Line " << argumentList->children[j]->line;
+						throw EnvironmentError(s.str(), "Cannot declare procedure argument of type void");
+					}
+					argumentTypes.push_back(argumentType);
+				}
+
+				// Construct the procedure type
+				Type *returnType = node->children[0] ? createType(node->children[0], dummy) : Types::intrinsic(Types::Void);
+				type = new TypeProcedure(returnType, argumentTypes);
+				break;
+			}
+
+		default:
+			type = mTypes->findType(node->lexVal.s);
+			if(!type) {
+				std::stringstream s;
+				s << "Line " << node->line;
+				if(dummy) {
+					type = new TypeDummy(node->lexVal.s, s.str());
+				} else {
+					std::stringstream s2;
+					s2 << "Type '" << node->lexVal.s << "' not found";
+					throw EnvironmentError(s.str(), s2.str());
+				}
+			}
+			break;
 	}
 
 	return type;
+}
+
+/*!
+ * \brief Complete a type, replace dummy types with real types, and populating structure/class member offsets
+ * \param type Type to complete
+ * \return Resulting type, possibly different than parameter if it is a dummy type
+ */
+Type *EnvironmentGenerator::completeType(Type *type)
+{
+	// Bail out early if the type is known to be complete
+	if(mCompleteTypes.find(type) != mCompleteTypes.end()) {
+		return type;
+	}
+
+	mCompletionStack.push_back(type);
+
+	switch(type->type) {
+		case Type::TypeProcedure:
+			{
+				// Complete the procedure's return and argument types
+				TypeProcedure *typeProcedure = (TypeProcedure*)type;
+
+				typeProcedure->returnType = completeType(typeProcedure->returnType);
+
+				for(unsigned int i=0; i<typeProcedure->argumentTypes.size(); i++) {
+					typeProcedure->argumentTypes[i] = completeType(typeProcedure->argumentTypes[i]);
+				}
+				break;
+			}
+
+		case Type::TypeArray:
+			{
+				// Complete the array's base type
+				TypeArray *typeArray = (TypeArray*)type;
+				typeArray->baseType = completeType(typeArray->baseType);
+				break;
+			}
+
+		case Type::TypeStruct:
+		case Type::TypeClass:
+			{
+				TypeStruct *typeStruct = (TypeStruct*)type;
+				if(typeStruct->parent) {
+					for(unsigned int i=0; i<mCompletionStack.size(); i++) {
+						if(mCompletionStack[i]->name == typeStruct->parent->name) {
+							std::stringstream s;
+							s << "Class " << typeStruct->name;
+							std::stringstream s2;
+							s2 << "Inheritance cycle with parent " << typeStruct->parent->name;
+							throw EnvironmentError(s.str(), s2.str());
+						}
+					}
+
+					// Complete parent type
+					typeStruct->parent = (TypeStruct*)completeType(typeStruct->parent);
+
+					// Now that parent is complete, populate sizes and offsets
+					typeStruct->vtableOffset = typeStruct->parent->vtableOffset;
+					typeStruct->vtableSize = typeStruct->parent->vtableSize;
+					typeStruct->allocSize = typeStruct->parent->allocSize;
+				} else {
+					typeStruct->vtableOffset = 0;
+					typeStruct->vtableSize = 0;
+				}
+
+				for(unsigned int i=0; i<typeStruct->members.size(); i++) {
+					TypeStruct::Member &member = typeStruct->members[i];
+
+					// Complete member type
+					member.type = completeType(member.type);
+
+					if(member.type->type == Type::TypeProcedure) {
+						// If the member is a procedure, check to see whether the parent class has an
+						// identically-named member
+						TypeStruct::Member *parentMember = 0;
+						if(typeStruct->parent) {
+							parentMember = typeStruct->parent->findMember(member.name);
+						}
+
+						if(parentMember) {
+							// Set the member's offset to the parent class's member offset
+							member.virtualFunction = true;
+							member.offset = parentMember->offset;
+						} else if(member.virtualFunction) {
+							// Allocate a new vtable slot for the function
+							member.offset = typeStruct->vtableSize;
+							typeStruct->vtableSize++;
+						}
+					} else {
+						// Allocate space at the end of the object for the member
+						member.offset = typeStruct->allocSize;
+						typeStruct->allocSize += member.type->valueSize;
+					}
+				}
+
+				if(typeStruct->constructor) {
+					// Complete the constructor type
+					typeStruct->constructor = (TypeProcedure*)completeType(typeStruct->constructor);
+				}
+
+				// Mark this type as complete
+				mCompleteTypes.insert(type);
+
+				break;
+			}
+
+		case Type::TypeDummy:
+			{
+				TypeDummy *typeDummy = (TypeDummy*)type;
+
+				// Locate the actual (non-dummy) version of the type
+				Type *realType = mTypes->findType(type->name);
+				if(!realType) {
+					std::stringstream s;
+					s << "Type '" << type->name << "' not found.";
+					throw EnvironmentError(typeDummy->origin, s.str());
+				}
+				delete type;
+
+				// Complete the type
+				type = completeType(realType);
+			}
+	}
+
+	mCompletionStack.pop_back();
+
+	return type;
+}
+
+/*!
+ * \brief Construct a scope for a class type
+ * \param typeStruct Class to construct scope for
+ * \param globalScope Scope containing globals
+ */
+void EnvironmentGenerator::constructScope(TypeStruct *typeStruct, Scope *globalScope)
+{
+	if(typeStruct->parent) {
+		// Ensure the parent scope has been constructed
+		if(!typeStruct->parent->scope) {
+			constructScope(typeStruct->parent, globalScope);
+		}
+
+		// Construct a new scope based on the parent's scope
+		typeStruct->scope = new Scope(typeStruct->parent->scope, typeStruct);
+	} else {
+		// Construct a new scope based on the global scope
+		typeStruct->scope = new Scope(globalScope, typeStruct);
+	}
+
+	// Add symbols for each member of the class
+	for(unsigned int i=0; i<typeStruct->members.size(); i++) {
+		TypeStruct::Member &member = typeStruct->members[i];
+		Symbol *symbol = new Symbol(member.type, member.name);
+		typeStruct->scope->addSymbol(symbol);
+	}
+
+	// Add a constructor symbol
+	if(typeStruct->constructor) {
+		Symbol *symbol = new Symbol(typeStruct->constructor, typeStruct->name);
+		typeStruct->scope->addSymbol(symbol);
+	}
 }
 
 }

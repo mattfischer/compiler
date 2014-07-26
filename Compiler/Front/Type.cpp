@@ -19,6 +19,7 @@ namespace Front {
 			case TypeIntrinsic:
 			case TypeStruct:
 			case TypeClass:
+			case TypeDummy:
 				return a == b;
 
 			case TypeProcedure:
@@ -80,33 +81,6 @@ namespace Front {
 		member.name = name;
 		member.type = type;
 		member.virtualFunction = virtualFunction;
-
-		if(type->type == Type::TypeProcedure) {
-			if(virtualFunction) {
-				bool overridden = false;
-				if(parent) {
-					Member *parentMember = parent->findMember(name);
-					if(parentMember) {
-						member.offset = parentMember->offset;
-						overridden = true;
-					}
-				}
-
-				if(!overridden) {
-					if(vtableSize == 0) {
-						vtableOffset = allocSize;
-						allocSize += 4;
-					}
-					member.offset = vtableSize;
-					vtableSize++;
-				}
-			} else {
-				member.offset = -1;
-			}
-		} else {
-			member.offset = allocSize;
-			allocSize += type->valueSize;
-		}
 
 		members.push_back(member);
 	}
