@@ -1,5 +1,7 @@
 #include "Middle/ErrorCheck.h"
 
+#include "Front/Symbol.h"
+
 #include "IR/Program.h"
 #include "IR/Procedure.h"
 #include "IR/Symbol.h"

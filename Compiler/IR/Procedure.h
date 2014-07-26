@@ -5,8 +5,6 @@
 #include "IR/Symbol.h"
 #include "IR/Entry.h"
 
-#include "Front/Type.h"
-
 #include <string>
 #include <list>
 #include <vector>

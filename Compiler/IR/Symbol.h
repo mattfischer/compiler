@@ -1,12 +1,13 @@
 #ifndef IR_SYMBOL_H
 #define IR_SYMBOL_H
 
-#include "Front/Type.h"
-#include "Front/Symbol.h"
-
 #include <string>
 #include <set>
 #include <list>
+
+namespace Front {
+	struct Symbol;
+}
 
 namespace IR {
 	/*!
