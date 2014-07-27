@@ -20,17 +20,15 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 	VM::Program *linked = new VM::Program;
 	std::vector<VM::Program::Relocation> relocations;
 
-	// Calculate total program size
-	int size = 0;
-	for(unsigned int i=0; i<programs.size(); i++) {
-		size += (int)programs[i]->instructions.size();
-	}
-	linked->instructions.resize(size);
+	std::vector<unsigned char> exportInfoData;
+	std::vector<unsigned char> exportInfoStringData;
 
 	// Concatenate programs together into linked program
 	int offset = 0;
 	for(unsigned int i=0; i<programs.size(); i++) {
 		VM::Program *program = programs[i];
+
+		linked->instructions.resize(linked->instructions.size() + programs[i]->instructions.size());
 		std::memcpy(&linked->instructions[offset], &program->instructions[0], program->instructions.size());
 
 		for(std::map<std::string, int>::iterator it = program->symbols.begin(); it != program->symbols.end(); it++) {
@@ -44,6 +42,17 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		}
 
 		offset += (int)program->instructions.size();
+
+		unsigned int exportInfoOffset = (unsigned int)exportInfoData.size();
+		unsigned int exportInfoStringOffset = (unsigned int)exportInfoStringData.size();
+
+		exportInfoData.resize(exportInfoOffset + program->exportInfo->data().size() + 2);
+		exportInfoData[exportInfoOffset] = Front::ExportInfo::ExportItemStringBase;
+		exportInfoData[exportInfoOffset + 1] = exportInfoStringOffset;
+		std::memcpy(&exportInfoData[exportInfoOffset + 2], &program->exportInfo->data()[0], program->exportInfo->data().size());
+
+		exportInfoStringData.resize(exportInfoStringOffset + program->exportInfo->strings().size());
+		std::memcpy(&exportInfoStringData[exportInfoStringOffset], &program->exportInfo->strings()[0], program->exportInfo->strings().size());
 	}
 
 	// Resolve symbol references in program
@@ -87,7 +96,7 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		}
 	}
 
-	linked->exportInfo = programs[0]->exportInfo;
+	linked->exportInfo = new Front::ExportInfo(exportInfoData, exportInfoStringData);
 
 	return linked;
 }

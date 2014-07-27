@@ -43,6 +43,10 @@ void Program::read(const OrcFile &file)
 		std::string name = file.getString(symbolStringsSection, symbol->name);
 		symbols[name] = symbol->offset;
 	}
+
+	const OrcFile::Section *exportInfoSection = file.section("export_info");
+	const OrcFile::Section *exportInfoStringsSection = file.section("export_info.strings");
+	exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
 }
 
 void Program::write(OrcFile &file)

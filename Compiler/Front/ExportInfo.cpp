@@ -2,11 +2,6 @@
 
 namespace Front {
 
-enum ExportItem {
-	ExportItemTypeDefinition,
-	ExportItemSymbol
-};
-
 enum ExportType {
 	ExportTypeSimple,
 	ExportTypeProcedure,
@@ -85,6 +80,8 @@ ExportInfo::ExportInfo(const std::vector<unsigned char> &data, const std::vector
 void ExportInfo::read(Types *types, Scope *scope)
 {
 	unsigned int offset = 0;
+	unsigned int stringBase = 0;
+
 	while(offset < mData.size()) {
 		ExportItem exportItem = (ExportItem)mData[offset];
 		offset++;
@@ -93,7 +90,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 				{
 					ExportDefinition exportDefinition = (ExportDefinition)mData[offset];
 					offset++;
-					std::string name = getString(mData[offset]);
+					std::string name = getString(mData[offset], stringBase);
 					offset++;
 
 					Type *type;
@@ -104,7 +101,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 								if(mData[offset] == 0xff) {
 									typeStruct->parent = 0;
 								} else {
-									typeStruct->parent = (TypeStruct*)getType(getString(mData[offset]), types);
+									typeStruct->parent = (TypeStruct*)getType(getString(mData[offset], stringBase), types);
 								}
 								typeStruct->constructor = 0;
 								offset++;
@@ -114,8 +111,8 @@ void ExportInfo::read(Types *types, Scope *scope)
 								for(int i=0; i<numMembers; i++) {
 									ExportMember exportMember = (ExportMember)mData[offset];
 									offset++;
-									Type *memberType = readType(offset, types);
-									std::string memberName = getString(mData[offset]);
+									Type *memberType = readType(offset, types, stringBase);
+									std::string memberName = getString(mData[offset], stringBase);
 									offset++;
 									typeStruct->addMember(memberType, memberName, exportMember == ExportMemberVirtual);
 
@@ -134,8 +131,8 @@ void ExportInfo::read(Types *types, Scope *scope)
 								int numMembers = mData[offset];
 								offset++;
 								for(int i=0; i<numMembers; i++) {
-									Type *memberType = readType(offset, types);
-									std::string memberName = getString(mData[offset]);
+									Type *memberType = readType(offset, types, stringBase);
+									std::string memberName = getString(mData[offset], stringBase);
 									offset++;
 									typeStruct->addMember(memberType, memberName, false);
 								}
@@ -149,10 +146,17 @@ void ExportInfo::read(Types *types, Scope *scope)
 
 			case ExportItemSymbol:
 				{
-					Type *type = readType(offset, types);
-					std::string name = getString(mData[offset]);
+					Type *type = readType(offset, types, stringBase);
+					std::string name = getString(mData[offset], stringBase);
 					offset++;
 					scope->addSymbol(new Symbol(type, name));
+					break;
+				}
+
+			case ExportItemStringBase:
+				{
+					stringBase = mData[offset];
+					offset++;
 					break;
 				}
 		}
@@ -164,6 +168,7 @@ std::vector<std::string> ExportInfo::typeNames()
 	std::vector<std::string> typeNames;
 
 	unsigned int offset = 0;
+	unsigned int stringBase = 0;
 	while(offset < mData.size()) {
 		ExportItem exportItem = (ExportItem)mData[offset];
 		offset++;
@@ -172,7 +177,7 @@ std::vector<std::string> ExportInfo::typeNames()
 				{
 					ExportDefinition exportDefinition = (ExportDefinition)mData[offset];
 					offset++;
-					std::string name = getString(mData[offset]);
+					std::string name = getString(mData[offset], stringBase);
 					offset++;
 
 					switch(exportDefinition) {
@@ -210,6 +215,13 @@ std::vector<std::string> ExportInfo::typeNames()
 					offset++;
 					break;
 				}
+
+			case ExportItemStringBase:
+				{
+					stringBase = mData[offset];
+					offset++;
+					break;
+				}
 		}
 	}
 
@@ -233,12 +245,12 @@ unsigned char ExportInfo::addString(const std::string &str)
 	}
 }
 
-std::string ExportInfo::getString(unsigned int offset)
+std::string ExportInfo::getString(unsigned int offset, unsigned int stringBase)
 {
-	return std::string((char*)&mStrings[offset]);
+	return std::string((char*)&mStrings[stringBase + offset]);
 }
 
-Type *ExportInfo::readType(unsigned int &offset, Types *types)
+Type *ExportInfo::readType(unsigned int &offset, Types *types, unsigned int stringBase)
 {
 	ExportType exportType = (ExportType)mData[offset];
 	offset++;
@@ -247,7 +259,7 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types)
 	switch(exportType) {
 		case ExportTypeSimple:
 			{
-				std::string name = getString(mData[offset]);
+				std::string name = getString(mData[offset], stringBase);
 				offset++;
 				type = getType(name, types);
 				break;
@@ -255,12 +267,12 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types)
 
 		case ExportTypeProcedure:
 			{
-				Type *returnType = readType(offset, types);
+				Type *returnType = readType(offset, types, stringBase);
 				int numArguments = mData[offset];
 				offset++;
 				std::vector<Type*> argumentTypes;
 				for(int i=0; i<numArguments; i++) {
-					argumentTypes.push_back(readType(offset, types));
+					argumentTypes.push_back(readType(offset, types, stringBase));
 				}
 				type = new TypeProcedure(returnType, argumentTypes);
 				break;
@@ -268,7 +280,7 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types)
 
 		case ExportTypeArray:
 			{
-				Type *baseType = readType(offset, types);
+				Type *baseType = readType(offset, types, stringBase);
 				type = new TypeArray(baseType);
 				break;
 			}

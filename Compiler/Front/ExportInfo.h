@@ -20,16 +20,22 @@ public:
 	const std::vector<unsigned char> &data() { return mData; }
 	const std::vector<unsigned char> &strings() { return mStrings; }
 
+	enum ExportItem {
+		ExportItemTypeDefinition,
+		ExportItemSymbol,
+		ExportItemStringBase
+	};
+
 private:
 	std::vector<unsigned char> mData;
 	std::vector<unsigned char> mStrings;
 
 	std::map<std::string, unsigned char> mStringMap;
 
-	std::string getString(unsigned int offset);
+	std::string getString(unsigned int offset, unsigned int stringBase);
 	unsigned char addString(const std::string &str);
 
-	Type *readType(unsigned int &offset, Types *types);
+	Type *readType(unsigned int &offset, Types *types, unsigned int stringBase);
 	void bypassType(unsigned int &offset);
 	void writeType(Type *type);
 
