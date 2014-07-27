@@ -4,6 +4,8 @@
 #include "VM/Instruction.h"
 #include "VM/OrcFile.h"
 
+#include "Front/ExportInfo.h"
+
 #include <vector>
 #include <string>
 
@@ -30,6 +32,8 @@ namespace VM {
 			std::string symbol;
 		};
 		std::vector<Relocation> relocations;
+
+		Front::ExportInfo *exportInfo;
 
 		Program();
 		Program(const OrcFile &file);

@@ -28,7 +28,7 @@ OrcFile::OrcFile(std::istream &stream)
 
 OrcFile::OrcFile(const std::string &filename)
 {
-	std::ifstream stream(filename.c_str());
+	std::ifstream stream(filename.c_str(), std::ios_base::in | std::ios_base::binary);
 	read(stream);
 }
 
@@ -76,7 +76,7 @@ void OrcFile::write(std::ostream &stream)
 
 void OrcFile::write(const std::string &filename)
 {
-	std::ofstream stream(filename.c_str());
+	std::ofstream stream(filename.c_str(), std::ios_base::out | std::ios_base::binary);
 	write(stream);
 }
 

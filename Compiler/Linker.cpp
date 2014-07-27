@@ -87,5 +87,7 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		}
 	}
 
+	linked->exportInfo = programs[0]->exportInfo;
+
 	return linked;
 }

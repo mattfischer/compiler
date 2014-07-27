@@ -13,7 +13,6 @@ public:
 	Compiler();
 
 	VM::Program *compile(const std::string &filename);
-	bool compileToAsm(const std::string &filename, std::ostream &output);
 
 	bool error() { return mError; }
 	const std::string &errorMessage() { return mErrorMessage; }

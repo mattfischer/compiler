@@ -14,15 +14,18 @@ struct OrcSymbol {
 
 Program::Program()
 {
+	exportInfo = 0;
 }
 
 Program::Program(const OrcFile &file)
 {
+	exportInfo = 0;
 	read(file);
 }
 
 Program::Program(const std::string &filename)
 {
+	exportInfo = 0;
 	OrcFile file(filename);
 	read(file);
 }
@@ -57,6 +60,14 @@ void Program::write(OrcFile &file)
 		s++;
 		symbol->name = file.addString(symbolStringsSection, it->first);
 		symbol->offset = it->second;
+	}
+
+	if(exportInfo) {
+		OrcFile::Section *exportInfoSection = file.addSection("export_info");
+		OrcFile::Section *exportInfoStringsSection = file.addSection("export_info.strings");
+
+		exportInfoSection->data = exportInfo->data();
+		exportInfoStringsSection->data = exportInfo->strings();
 	}
 }
 
