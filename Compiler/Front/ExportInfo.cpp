@@ -51,7 +51,7 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 					}
 					mData.push_back((unsigned char)typeStruct->members.size());
 					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						if(typeStruct->members[j].virtualFunction) {
+						if(typeStruct->members[j].qualifiers | TypeStruct::Member::QualifierVirtual) {
 							mData.push_back((unsigned char)ExportMemberVirtual);
 						} else {
 							mData.push_back((unsigned char)ExportMemberNormal);

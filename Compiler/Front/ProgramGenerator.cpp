@@ -67,16 +67,10 @@ namespace Front {
 							for(unsigned int i=0; i<members->children.size(); i++) {
 								Node *qualifiersNode = members->children[i]->children[0];
 								Node *memberNode = members->children[i]->children[1];
+								TypeStruct::Member *member = typeStruct->findMember(memberNode->lexVal.s);
 
 								if(memberNode->nodeType == Node::NodeTypeProcedureDef) {
-									bool nativeFunction = false;
-									for(unsigned int j = 0; j<qualifiersNode->children.size(); j++) {
-										if(qualifiersNode->children[j]->nodeSubtype == Node::NodeSubtypeNative) {
-											nativeFunction = true;
-										}
-									}
-
-									if(nativeFunction) {
+									if(member->qualifiers & TypeStruct::Member::QualifierNative) {
 										if(memberNode->children.size() == 3) {
 											throw TypeError(memberNode, "Native function cannot have body");
 										}

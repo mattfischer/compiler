@@ -102,7 +102,7 @@ namespace Front {
 				std::vector<std::string> vtable(typeStruct->vtableSize);
 				while(typeStruct) {
 					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						if(typeStruct->members[j].virtualFunction && vtable[typeStruct->members[j].offset] == "") {
+						if((typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierVirtual) && vtable[typeStruct->members[j].offset] == "") {
 							vtable[typeStruct->members[j].offset] = typeStruct->name + "." + typeStruct->members[j].name;
 						}
 					}
@@ -395,7 +395,7 @@ namespace Front {
 					// Construct the call entry
 					if(classType) {
 						Front::TypeStruct::Member *member = classType->findMember(name);
-						if(member->virtualFunction) {
+						if(member->qualifiers & TypeStruct::Member::QualifierVirtual) {
 							IR::Symbol *vtable = procedure->newTemp(4);
 							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, vtable, object, 0, classType->vtableOffset));
 							IR::Symbol *callTarget = procedure->newTemp(4);

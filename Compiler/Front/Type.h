@@ -85,9 +85,13 @@ namespace Front {
 	class TypeStruct : public Type {
 	public:
 		struct Member {
+			enum Qualifier {
+				QualifierVirtual = 0x1,
+				QualifierNative = 0x2,
+			};
 			Type *type;
 			std::string name;
-			bool virtualFunction;
+			unsigned int qualifiers;
 			int offset;
 		};
 
@@ -102,7 +106,7 @@ namespace Front {
 			: Type(_type, _name, 4, 0)
 		{}
 
-		void addMember(Type *type, const std::string &name, bool virtualFunction);
+		void addMember(Type *type, const std::string &name, unsigned int qualifiers);
 		Member *findMember(const std::string &name);
 	};
 

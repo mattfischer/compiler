@@ -75,12 +75,12 @@ namespace Front {
 	 * \param type Type of member
 	 * \param name Member name
 	 */
-	void TypeStruct::addMember(Type *type, const std::string &name, bool virtualFunction)
+	void TypeStruct::addMember(Type *type, const std::string &name, unsigned int qualifiers)
 	{
 		Member member;
 		member.name = name;
 		member.type = type;
-		member.virtualFunction = virtualFunction;
+		member.qualifiers = qualifiers;
 
 		members.push_back(member);
 	}

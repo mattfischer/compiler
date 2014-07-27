@@ -163,24 +163,29 @@ void EnvironmentGenerator::addClass(Node *node)
 			case Node::NodeTypeVarDecl:
 			{
 				Type *memberType = createType(memberNode->children[0], true);
-				type->addMember(memberType, memberNode->lexVal.s, false);
+				type->addMember(memberType, memberNode->lexVal.s, 0);
 				break;
 			}
 
 			case Node::NodeTypeProcedureDef:
 			{
-				bool virtualFunction = false;
+				unsigned int qualifiers = 0;
 				for(unsigned int i=0; i<qualifiersNode->children.size(); i++) {
-					if(qualifiersNode->children[i]->nodeSubtype == Node::NodeSubtypeVirtual) {
-						virtualFunction = true;
+					switch(qualifiersNode->children[i]->nodeSubtype) {
+						case Node::NodeSubtypeVirtual:
+							qualifiers |= TypeStruct::Member::QualifierVirtual;
+							break;
+
+						case Node::NodeSubtypeNative:
+							qualifiers |= TypeStruct::Member::QualifierNative;
+							break;
 					}
 				}
 
 				TypeProcedure *procedureType = (TypeProcedure*)createType(memberNode, true);
+				type->addMember(procedureType, memberNode->lexVal.s, qualifiers);
 				if(memberNode->lexVal.s == type->name) {
 					type->constructor = procedureType;
-				} else {
-					type->addMember(procedureType, memberNode->lexVal.s, virtualFunction);
 				}
 
 				break;
@@ -329,9 +334,9 @@ Type *EnvironmentGenerator::completeType(Type *type)
 
 						if(parentMember) {
 							// Set the member's offset to the parent class's member offset
-							member.virtualFunction = true;
+							member.qualifiers |= TypeStruct::Member::QualifierVirtual;
 							member.offset = parentMember->offset;
-						} else if(member.virtualFunction) {
+						} else if(member.qualifiers & TypeStruct::Member::QualifierVirtual) {
 							// Allocate a new vtable slot for the function
 							member.offset = typeStruct->vtableSize;
 							typeStruct->vtableSize++;
@@ -401,12 +406,6 @@ void EnvironmentGenerator::constructScope(TypeStruct *typeStruct, Scope *globalS
 	for(unsigned int i=0; i<typeStruct->members.size(); i++) {
 		TypeStruct::Member &member = typeStruct->members[i];
 		Symbol *symbol = new Symbol(member.type, member.name);
-		typeStruct->scope->addSymbol(symbol);
-	}
-
-	// Add a constructor symbol
-	if(typeStruct->constructor) {
-		Symbol *symbol = new Symbol(typeStruct->constructor, typeStruct->name);
 		typeStruct->scope->addSymbol(symbol);
 	}
 }
