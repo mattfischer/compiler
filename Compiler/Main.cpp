@@ -11,55 +11,62 @@
 #include <fstream>
 
 /*!
- * \brief Compile a program, caching the assembly file
- * \param filename Input filename
- * \return Compiled program
+ * \brief Compile the runtime if not already present
+ * \param runtimeFilename Filename to store runtime in
+ * \return True if success
  */
-VM::Program *compileCached(const std::string &outputFilename, const std::vector<std::string> &sourceFilenames, const std::vector<std::string> &importFilenames)
+bool compileRuntime(const std::string &runtimeFilename)
 {
-	std::ifstream outputFileTest(outputFilename.c_str());
-	if(outputFileTest.fail()) {
+	std::ifstream runtimeFileTest(runtimeFilename.c_str());
+	if(runtimeFileTest.fail()) {
 		// If runtime file was not present, compile it
+		std::vector<std::string> sourceFilenames;
+		std::vector<std::string> importFilenames;
+		sourceFilenames.push_back("string.lang");
+
 		Compiler compiler;
 		std::vector<VM::Program*> programs;
 		for(unsigned int i=0; i<sourceFilenames.size(); i++) {
 			VM::Program *program = compiler.compile(sourceFilenames[i], importFilenames);
 			if(!program) {
-				Util::log("error") << "Error: " << compiler.errorMessage() << std::endl;
-				return 0;
+				std::cerr << "Error: " << compiler.errorMessage() << std::endl;
+				return false;
 			}
 			programs.push_back(program);
 		}
 
 		Linker linker;
 		VM::Program *linked = linker.link(programs);
-		linked->write(outputFilename);
+		if(!linked) {
+			std::cerr << "Error: " << linker.errorMessage() << std::endl;
+			return false;
+		}
+		linked->write(runtimeFilename);
 	}
 
-	// Load the runtime binary
-	VM::Program *program = new VM::Program(outputFilename);
-	return program;
+	return true;
 }
 
 int main(int arg, char *argv[])
 {
-	// Compile the runtime library and cache to a binary
-	std::vector<std::string> sourceFilenames;
-	std::vector<std::string> importFilenames;
-	sourceFilenames.push_back("string.lang");
-	VM::Program *runtime = compileCached("runtime.orc", sourceFilenames, importFilenames);
-	if(!runtime) {
+	// Ensure that the runtime is compiled
+	std::string runtimeFilename = "runtime.orc";
+	if(!compileRuntime(runtimeFilename)) {
 		return 1;
 	}
 
 	// Compile the user program
 	Compiler compiler;
-	importFilenames.push_back("runtime.orc");
+	std::vector<std::string> importFilenames;
+	importFilenames.push_back(runtimeFilename);
 	VM::Program *vmProgram = compiler.compile("input.lang", importFilenames);
 	if(!vmProgram) {
 		std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 		return 1;
 	}
+
+	// Load the runtime binary
+	VM::Program *runtime = new VM::Program(runtimeFilename);
 
 	// Link runtime library into program
 	std::vector<VM::Program*> programs;
