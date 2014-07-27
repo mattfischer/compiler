@@ -65,26 +65,11 @@ namespace Front {
 							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
 							Node *members = node->children[node->children.size() - 1];
 							for(unsigned int i=0; i<members->children.size(); i++) {
-								Node *memberNode = members->children[i];
-								Node *procedureNode;
+								Node *memberNode = members->children[i]->children[1];
 
-								switch(memberNode->nodeType) {
-									case Node::NodeTypeProcedureDef:
-										procedureNode = memberNode;
-										break;
-									case Node::NodeTypeVirtual:
-										procedureNode = memberNode->children[0];
-										break;
-									default:
-										procedureNode = 0;
-										break;
+								if(memberNode->nodeType == Node::NodeTypeProcedureDef) {
+									Procedure *procedure = addProcedure(memberNode, program, typeStruct->scope);
 								}
-
-								if(!procedureNode) {
-									continue;
-								}
-
-								Procedure *procedure = addProcedure(procedureNode, program, typeStruct->scope);
 							}
 							break;
 						}

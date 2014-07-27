@@ -21,6 +21,7 @@ namespace Front {
 			NodeTypeVarDecl, //!< Variable declaration
 			NodeTypeStructDef, //!< Structure definition
 			NodeTypeClassDef, //!< Class definition
+			NodeTypeClassMember, //!< Class member
 			NodeTypeReturn, //!< Return statement
 			NodeTypePrint, //!< Print statement
 			NodeTypeAssign, //!< Assignment operator
@@ -38,7 +39,7 @@ namespace Front {
 			NodeTypeContinue, //!< Continue statement
 			NodeTypeMember, //!< Structure member
 			NodeTypeCoerce, //!< Convert argument to different type
-			NodeTypeVirtual //!< Virtual function
+			NodeTypeQualifier //!< Member qualifier
 		};
 
 		/*!
@@ -63,6 +64,8 @@ namespace Front {
 			NodeSubtypeGreaterThanEqual, //!< Greater-than-equal comparison
 			NodeSubtypeOr, //!< Or comparison
 			NodeSubtypeAnd, //!< And comparison
+
+			NodeSubtypeVirtual //!< Virtual function
 		};
 
 		NodeType nodeType; //!< Node type

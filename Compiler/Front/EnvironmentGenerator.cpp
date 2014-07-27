@@ -155,7 +155,10 @@ void EnvironmentGenerator::addClass(Node *node)
 	// Iterate through the member nodes, and create type members for each
 	Node *members = node->children[node->children.size() - 1];
 	for(unsigned int i=0; i<members->children.size(); i++) {
-		Node *memberNode = members->children[i];
+		Node *child = members->children[i];
+		Node *qualifiersNode = child->children[0];
+		Node *memberNode = child->children[1];
+
 		switch(memberNode->nodeType) {
 			case Node::NodeTypeVarDecl:
 			{
@@ -165,27 +168,19 @@ void EnvironmentGenerator::addClass(Node *node)
 			}
 
 			case Node::NodeTypeProcedureDef:
-			case Node::NodeTypeVirtual:
 			{
-				Node *procedureNode;
-				bool virtualFunction;
-				switch(memberNode->nodeType) {
-					case Node::NodeTypeProcedureDef:
-						procedureNode = memberNode;
-						virtualFunction = false;
-						break;
-
-					case Node::NodeTypeVirtual:
-						procedureNode = memberNode->children[0];
+				bool virtualFunction = false;
+				for(unsigned int i=0; i<qualifiersNode->children.size(); i++) {
+					if(qualifiersNode->children[i]->nodeSubtype == Node::NodeSubtypeVirtual) {
 						virtualFunction = true;
-						break;
+					}
 				}
 
-				TypeProcedure *procedureType = (TypeProcedure*)createType(procedureNode, true);
-				if(procedureNode->lexVal.s == type->name) {
+				TypeProcedure *procedureType = (TypeProcedure*)createType(memberNode, true);
+				if(memberNode->lexVal.s == type->name) {
 					type->constructor = procedureType;
 				} else {
-					type->addMember(procedureType, procedureNode->lexVal.s, virtualFunction);
+					type->addMember(procedureType, memberNode->lexVal.s, virtualFunction);
 				}
 
 				break;

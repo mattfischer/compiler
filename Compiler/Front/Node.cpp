@@ -8,6 +8,7 @@ const char *typeNames[] = {
 	/* NodeTypeVarDecl      */ "declare",
 	/* NodeTypeStructDef    */ "struct",
 	/* NodeTypeClassDef     */ "class",
+	/* NodeTypeClassMember  */ "member",
 	/* NodeTypeReturn       */ "return",
 	/* NodeTypePrint        */ "print",
 	/* NodeTypeAssign       */ "assign",
@@ -25,7 +26,7 @@ const char *typeNames[] = {
 	/* NodeTypeContinue     */ "continue",
 	/* NodeTypeMember       */ "member",
 	/* NodeTypeCoerce       */ "coerce",
-	/* NodeTypeVirtual      */ "virtual"
+	/* NodeTypeQualifier    */ "qualifier"
 };
 
 const char *subtypeNames[] = {
@@ -44,7 +45,8 @@ const char *subtypeNames[] = {
 	/* NodeSubtypeGreaterThan      */ "greater-than",
 	/* NodeSubtypeGreaterThanEqual */ "greater-than-equal",
 	/* NodeSubtypeOr               */ "or",
-	/* NodeSubtypeAnd              */ "and"
+	/* NodeSubtypeAnd              */ "and",
+	/* NodeSubtypeVirtual          */ "virtual"
 };
 
 namespace Front {

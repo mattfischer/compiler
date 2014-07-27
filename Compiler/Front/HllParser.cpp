@@ -203,54 +203,59 @@ Node *HllParser::parseClassMember()
 {
 	// <ClassMember> := { <Type> }? IDENTIFIER '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | <Type> IDENTIFIER ';'
 	Node *type;
-	bool virtualFunction = false;
+	std::vector<Node*> qualifiers;
+
 	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text) && matchLiteral("(", 1)) {
 		type = 0;
 	} else {
-		if(matchLiteral("virtual")) {
-			consume();
-			virtualFunction = true;
-			type = parseType(true);
-		} else {
-			type = parseType();
-			if(!type) {
-				return 0;
+		while(true) {
+			if(matchLiteral("virtual")) {
+				qualifiers.push_back(newNode(Node::NodeTypeQualifier, next().line, Node::NodeSubtypeVirtual));
+				consume();
+			} else {
+				break;
 			}
+		}
+
+		type = parseType(qualifiers.size() > 0);
+		if(!type) {
+			return 0;
 		}
 	}
 
 	std::string name = next().text;
 	expect(HllTokenizer::TypeIdentifier);
 
-	Node *node;
+	Node *node = newNode(Node::NodeTypeClassMember, next().line);
+	Node *qualifiersNode = newNode(Node::NodeTypeList, next().line);
+	qualifiersNode->children = qualifiers;
+	node->children.push_back(qualifiersNode);
+
+	Node *memberNode;
 	if(matchLiteral("(")) {
 		consume();
-		node = newNode(Node::NodeTypeProcedureDef, next().line);
-		node->children.push_back(type);
-		node->lexVal.s = name;
+		memberNode = newNode(Node::NodeTypeProcedureDef, next().line);
+		memberNode->children.push_back(type);
+		memberNode->lexVal.s = name;
 
-		node->children.push_back(parseArgumentList());
+		memberNode->children.push_back(parseArgumentList());
 		expectLiteral(")");
 
 		expectLiteral("{");
-		node->children.push_back(parseStatementList());
+		memberNode->children.push_back(parseStatementList());
 		expectLiteral("}");
-
-		if(virtualFunction) {
-			Node *virtualNode = newNode(Node::NodeTypeVirtual, node->line);
-			virtualNode->children.push_back(node);
-			node = virtualNode;
-		}
 	} else {
-		if(virtualFunction) {
+		if(qualifiersNode->children.size() > 0) {
 			errorExpected("(");
 		}
 
-		node = newNode(Node::NodeTypeVarDecl, type->line);
-		node->lexVal.s = name;
-		node->children.push_back(type);
+		memberNode = newNode(Node::NodeTypeVarDecl, type->line);
+		memberNode->lexVal.s = name;
+		memberNode->children.push_back(type);
 		expectLiteral(";");
 	}
+
+	node->children.push_back(memberNode);
 
 	return node;
 }
