@@ -12,7 +12,7 @@ class Compiler {
 public:
 	Compiler();
 
-	VM::Program *compile(const std::string &filename);
+	VM::Program *compile(const std::string &filename, const std::vector<std::string> &importFilenames);
 
 	bool error() { return mError; }
 	const std::string &errorMessage() { return mErrorMessage; }

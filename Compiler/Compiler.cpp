@@ -42,11 +42,20 @@ void Compiler::setError(const std::string &message)
  * \param filename Input filename
  * \return Compiled program
  */
-VM::Program *Compiler::compile(const std::string &filename)
+VM::Program *Compiler::compile(const std::string &filename, const std::vector<std::string> &importFilenames)
 {
+	std::vector<Front::ExportInfo*> imports;
+	for(unsigned int i=0; i<importFilenames.size(); i++) {
+		VM::OrcFile importFile(importFilenames[i]);
+		const VM::OrcFile::Section *exportInfoSection = importFile.section("export_info");
+		const VM::OrcFile::Section *exportInfoStringsSection = importFile.section("export_info.strings");
+		Front::ExportInfo *exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
+		imports.push_back(exportInfo);
+	}
+
 	std::ifstream hllIn(filename.c_str());
 	Front::HllTokenizer tokenizer(hllIn);
-	Front::HllParser parser(tokenizer);
+	Front::HllParser parser(tokenizer, imports);
 
 	Front::Node *node = parser.parse();
 	if(!node) {
@@ -56,7 +65,7 @@ VM::Program *Compiler::compile(const std::string &filename)
 		return 0;
 	}
 
-	Front::EnvironmentGenerator environmentGenerator(node);
+	Front::EnvironmentGenerator environmentGenerator(node, imports);
 	if(!environmentGenerator.types() || !environmentGenerator.scope()) {
 		std::stringstream s;
 		s << environmentGenerator.errorLocation() << ": " << environmentGenerator.errorMessage() << std::endl;

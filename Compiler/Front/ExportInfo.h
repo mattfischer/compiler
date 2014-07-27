@@ -14,23 +14,26 @@ public:
 	ExportInfo(Types *types, Scope *scope);
 	ExportInfo(const std::vector<unsigned char> &data, const std::vector<unsigned char> &strings);
 
+	void read(Types *types, Scope *scope);
+	std::vector<std::string> typeNames();
+
 	const std::vector<unsigned char> &data() { return mData; }
 	const std::vector<unsigned char> &strings() { return mStrings; }
-
-	Types *types();
-	Scope *scope();
 
 private:
 	std::vector<unsigned char> mData;
 	std::vector<unsigned char> mStrings;
-	Types *mTypes;
-	Scope *mScope;
 
 	std::map<std::string, unsigned char> mStringMap;
 
-	void parse();
+	std::string getString(unsigned int offset);
 	unsigned char addString(const std::string &str);
+
+	Type *readType(unsigned int &offset, Types *types);
+	void bypassType(unsigned int &offset);
 	void writeType(Type *type);
+
+	Type *getType(const std::string &name, Types *types);
 };
 
 }

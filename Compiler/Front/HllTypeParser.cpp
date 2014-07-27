@@ -14,6 +14,7 @@ HllTypeParser::HllTypeParser(HllTokenizer &tokenizer)
 std::set<std::string> HllTypeParser::parseTypes()
 {
 	std::set<std::string> types;
+	types.insert("LibFoo");
 	while(!match(HllTokenizer::TypeEnd)) {
 		if(matchLiteral("class") || matchLiteral("struct")) {
 			consume();

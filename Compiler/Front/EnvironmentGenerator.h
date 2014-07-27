@@ -3,6 +3,7 @@
 
 #include "Front/Node.h"
 #include "Front/Types.h"
+#include "Front/ExportInfo.h"
 
 #include <vector>
 #include <set>
@@ -14,7 +15,7 @@ namespace Front {
  */
 class EnvironmentGenerator {
 public:
-	EnvironmentGenerator(Node *tree);
+	EnvironmentGenerator(Node *tree, const std::vector<ExportInfo*> &imports);
 
 	Types *types() { return mTypes; } //!< Types in environment
 	Scope *scope() { return mScope; } //!< Global scope of environment

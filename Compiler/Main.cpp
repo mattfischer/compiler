@@ -15,7 +15,7 @@
  * \param filename Input filename
  * \return Compiled program
  */
-VM::Program *compileCached(const std::string &outputFilename, const std::vector<std::string> &sourceFilenames)
+VM::Program *compileCached(const std::string &outputFilename, const std::vector<std::string> &sourceFilenames, const std::vector<std::string> &importFilenames)
 {
 	std::ifstream outputFileTest(outputFilename.c_str());
 	if(outputFileTest.fail()) {
@@ -23,7 +23,7 @@ VM::Program *compileCached(const std::string &outputFilename, const std::vector<
 		Compiler compiler;
 		std::vector<VM::Program*> programs;
 		for(unsigned int i=0; i<sourceFilenames.size(); i++) {
-			VM::Program *program = compiler.compile(sourceFilenames[i]);
+			VM::Program *program = compiler.compile(sourceFilenames[i], importFilenames);
 			if(!program) {
 				Util::log("error") << "Error: " << compiler.errorMessage() << std::endl;
 				return 0;
@@ -45,15 +45,17 @@ int main(int arg, char *argv[])
 {
 	// Compile the runtime library and cache to a binary
 	std::vector<std::string> sourceFilenames;
+	std::vector<std::string> importFilenames;
 	sourceFilenames.push_back("string.lang");
-	VM::Program *runtime = compileCached("runtime.orc", sourceFilenames);
+	VM::Program *runtime = compileCached("runtime.orc", sourceFilenames, importFilenames);
 	if(!runtime) {
 		return 1;
 	}
 
 	// Compile the user program
 	Compiler compiler;
-	VM::Program *vmProgram = compiler.compile("input.lang");
+	importFilenames.push_back("runtime.orc");
+	VM::Program *vmProgram = compiler.compile("input.lang", importFilenames);
 	if(!vmProgram) {
 		std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 		return 1;

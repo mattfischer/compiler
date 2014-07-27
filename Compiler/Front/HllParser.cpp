@@ -11,9 +11,10 @@ namespace Front {
  * \brief Constructor
  * \param tokenizer Tokenizer
  */
-HllParser::HllParser(HllTokenizer &tokenizer)
+HllParser::HllParser(HllTokenizer &tokenizer, const std::vector<ExportInfo*> &imports)
 : Input::Parser(tokenizer),
-  mHllTokenizer(tokenizer)
+  mHllTokenizer(tokenizer),
+  mImports(imports)
 {
 }
 
@@ -73,6 +74,11 @@ Node *HllParser::parse()
 	mHllTokenizer.reset();
 	for(std::set<std::string>::iterator it = types.begin(); it != types.end(); it++) {
 		mTypeNames.push_back(*it);
+	}
+
+	for(unsigned int i=0; i<mImports.size(); i++) {
+		std::vector<std::string> typeNames = mImports[i]->typeNames();
+		mTypeNames.insert(mTypeNames.end(), typeNames.begin(), typeNames.end());
 	}
 
 	try {
