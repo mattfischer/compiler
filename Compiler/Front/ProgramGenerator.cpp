@@ -65,10 +65,28 @@ namespace Front {
 							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
 							Node *members = node->children[node->children.size() - 1];
 							for(unsigned int i=0; i<members->children.size(); i++) {
+								Node *qualifiersNode = members->children[i]->children[0];
 								Node *memberNode = members->children[i]->children[1];
 
 								if(memberNode->nodeType == Node::NodeTypeProcedureDef) {
-									Procedure *procedure = addProcedure(memberNode, program, typeStruct->scope);
+									bool nativeFunction = false;
+									for(unsigned int j = 0; j<qualifiersNode->children.size(); j++) {
+										if(qualifiersNode->children[j]->nodeSubtype == Node::NodeSubtypeNative) {
+											nativeFunction = true;
+										}
+									}
+
+									if(nativeFunction) {
+										if(memberNode->children.size() == 3) {
+											throw TypeError(memberNode, "Native function cannot have body");
+										}
+									} else {
+										if(memberNode->children.size() == 2) {
+											throw TypeError(memberNode, "Non-native function requires a body");
+										} else {
+											addProcedure(memberNode, program, typeStruct->scope);
+										}
+									}
 								}
 							}
 							break;
@@ -185,7 +203,7 @@ namespace Front {
 	 * \param scope Parent scope of procedure
 	 * \return New procedure
 	 */
-	Procedure *ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope)
+	void ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
@@ -223,8 +241,6 @@ namespace Front {
 
 		// Add the procedure to the program's procedure list
 		program->procedures.push_back(procedure);
-
-		return procedure;
 	}
 
 	/*!

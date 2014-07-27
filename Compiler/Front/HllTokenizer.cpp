@@ -12,7 +12,7 @@ static char *literals[] = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
 					};
 
 static char *keywords[] = { "print", "if", "else", "while", "return", "new", "for", "break",
-					 "continue", "true", "false", "struct", "class", "virtual"
+					 "continue", "true", "false", "struct", "class", "virtual", "native"
 					};
 
 namespace Front {

@@ -65,7 +65,8 @@ namespace Front {
 			NodeSubtypeOr, //!< Or comparison
 			NodeSubtypeAnd, //!< And comparison
 
-			NodeSubtypeVirtual //!< Virtual function
+			NodeSubtypeVirtual, //!< Virtual function
+			NodeSubtypeNative, //!< Native function
 		};
 
 		NodeType nodeType; //!< Node type

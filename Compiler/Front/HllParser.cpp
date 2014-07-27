@@ -212,6 +212,9 @@ Node *HllParser::parseClassMember()
 			if(matchLiteral("virtual")) {
 				qualifiers.push_back(newNode(Node::NodeTypeQualifier, next().line, Node::NodeSubtypeVirtual));
 				consume();
+			} else if(matchLiteral("native")) {
+				qualifiers.push_back(newNode(Node::NodeTypeQualifier, next().line, Node::NodeSubtypeNative));
+				consume();
 			} else {
 				break;
 			}
@@ -241,9 +244,13 @@ Node *HllParser::parseClassMember()
 		memberNode->children.push_back(parseArgumentList());
 		expectLiteral(")");
 
-		expectLiteral("{");
-		memberNode->children.push_back(parseStatementList());
-		expectLiteral("}");
+		if(matchLiteral("{")) {
+			consume();
+			memberNode->children.push_back(parseStatementList());
+			expectLiteral("}");
+		} else {
+			expectLiteral(";");
+		}
 	} else {
 		if(qualifiersNode->children.size() > 0) {
 			errorExpected("(");

@@ -46,7 +46,8 @@ const char *subtypeNames[] = {
 	/* NodeSubtypeGreaterThanEqual */ "greater-than-equal",
 	/* NodeSubtypeOr               */ "or",
 	/* NodeSubtypeAnd              */ "and",
-	/* NodeSubtypeVirtual          */ "virtual"
+	/* NodeSubtypeVirtual          */ "virtual",
+	/* NodeSubtypeNative           */ "native"
 };
 
 namespace Front {
