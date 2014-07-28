@@ -110,8 +110,76 @@ void Program::print(std::ostream &o)
 		}
 		o << std::setbase(10);
 		std::memcpy(&instr, &instructions[i], 4);
-		o << "  " << instr << std::endl;
+
+		o << "  ";
+		if(!prettyPrintInstruction(o, instr, i, addressWidth)) {
+			o << instr;
+		}
+		o << std::endl;
 	}
+}
+
+/*!
+ * \brief Pretty-print an instruction using extra information such as address and symbol information
+ * \param o Output stream
+ * \param instr Instruction
+ * \param addr Address of instruction
+ * \param addressWidth Width to print addresses
+ * \return True if pretty printing was possible
+ */
+bool Program::prettyPrintInstruction(std::ostream &o, const Instruction &instr, unsigned int addr, int addressWidth)
+{
+	switch(instr.type) {
+		case VM::InstrOneAddr:
+			switch(instr.one.type) {
+				case VM::OneAddrCall:
+					{
+						unsigned int target = addr + instr.one.imm * 4;
+						for(std::map<std::string, int>::iterator it = symbols.begin(); it != symbols.end(); it++) {
+							if(it->second == target) {
+								o << "call " << it->first;
+								return true;
+							}
+						}
+						break;
+					}
+			}
+			break;
+
+		case VM::InstrTwoAddr:
+			switch(instr.two.type) {
+				case VM::TwoAddrAddImm:
+					if(instr.two.regLhs == VM::RegPC && instr.two.regRhs == VM::RegPC) {
+						unsigned int target = addr + instr.two.imm;
+						o << "jmp 0x" << std::setw(addressWidth) << std::setbase(16) << target;
+						return true;
+					}
+					break;
+			}
+			break;
+
+		case VM::InstrThreeAddr:
+			switch(instr.three.type) {
+				case VM::ThreeAddrAddCond:
+					if(instr.three.regLhs == VM::RegPC && instr.three.regRhs2 == VM::RegPC) {
+						unsigned int target = addr + instr.three.imm;
+						o << "cjmp " << Instruction::regName(instr.three.regRhs1) << ", 0x" << std::setw(addressWidth) << std::setbase(16) << target;
+						return true;
+					}
+					break;
+
+				case VM::ThreeAddrAddNCond:
+					if(instr.three.regLhs == VM::RegPC && instr.three.regRhs2 == VM::RegPC) {
+						unsigned int target = addr + instr.three.imm;
+						o << "ncjmp " << Instruction::regName(instr.three.regRhs1) << ", 0x" << std::setw(addressWidth) << std::setbase(16) << target;
+						return true;
+					}
+					break;
+			}
+			break;
+	}
+
+	return false;
 }
 
 }

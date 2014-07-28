@@ -56,6 +56,7 @@ namespace VM {
 		} mult;
 
 
+		static std::string regName(int reg);
 		static Instruction makeOneAddr(unsigned char type, unsigned char reg, long imm);
 		static Instruction makeTwoAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs, long imm);
 		static Instruction makeThreeAddr(unsigned char type, unsigned char regLhs, unsigned char regRhs1, unsigned char regRhs2, short imm);

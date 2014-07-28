@@ -44,6 +44,7 @@ namespace VM {
 		void write(const std::string &filename);
 
 		void print(std::ostream &o);
+		bool prettyPrintInstruction(std::ostream &o, const Instruction &instr, unsigned int addr, int addressWidth);
 	};
 }
 

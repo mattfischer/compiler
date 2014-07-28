@@ -8,7 +8,7 @@ namespace VM {
 	 * \param reg Register number
 	 * \return Register name
 	 */
-	std::string regName(int reg)
+	std::string Instruction::regName(int reg)
 	{
 		// Handle specially-named registers first
 		switch(reg) {
@@ -35,15 +35,15 @@ namespace VM {
 	{
 		o << name << " ";
 		if(reg0 != -1) {
-			o << regName(reg0);
+			o << Instruction::regName(reg0);
 		}
 
 		if(reg1 != -1) {
-			o << ", " << regName(reg1);
+			o << ", " << Instruction::regName(reg1);
 		}
 
 		if(reg2 != -1) {
-			o << ", " << regName(reg2);
+			o << ", " << Instruction::regName(reg2);
 		}
 	}
 
@@ -52,7 +52,7 @@ namespace VM {
 		bool needComma = false;
 		o << name << " ";
 		if(reg0 != -1) {
-			o << regName(reg0);
+			o << Instruction::regName(reg0);
 			needComma = true;
 		}
 
@@ -60,7 +60,7 @@ namespace VM {
 			if(needComma) {
 				o << ", ";
 			}
-			o << regName(reg1);
+			o << Instruction::regName(reg1);
 			needComma = true;
 		}
 
@@ -74,12 +74,12 @@ namespace VM {
 	{
 		o << name << " ";
 		if(reg0 != -1) {
-			o << regName(reg0) << ", ";
+			o << Instruction::regName(reg0) << ", ";
 		}
 
-		o << "[" << regName(reg1);
+		o << "[" << Instruction::regName(reg1);
 		if(reg2 != -1) {
-			o << ", " << regName(reg2);
+			o << ", " << Instruction::regName(reg2);
 		}
 
 		if(imm != 0) {
@@ -205,7 +205,7 @@ namespace VM {
 						printStd(o, "cmov", instr.three.regRhs1, instr.three.regRhs2);
 					} else {
 						// With a positive immediate value, print as a conditional add
-						o << "cadd " << regName(instr.three.regRhs1) << ", " << regName(instr.three.regLhs) << ", " << regName(instr.three.regRhs2) << ", #" << instr.three.imm;
+						o << "cadd " << Instruction::regName(instr.three.regRhs1) << ", " << Instruction::regName(instr.three.regLhs) << ", " << Instruction::regName(instr.three.regRhs2) << ", #" << instr.three.imm;
 					}
 				}
 				break;
@@ -229,7 +229,7 @@ namespace VM {
 						printStd(o, "ncmov", instr.three.regRhs1, instr.three.regRhs2);
 					} else {
 						// With a positive immediate value, print as a conditional add
-						o << "ncadd " << regName(instr.three.regRhs1) << ", " << regName(instr.three.regLhs) << ", " << regName(instr.three.regRhs2) << ", #" << instr.three.imm;
+						o << "ncadd " << Instruction::regName(instr.three.regRhs1) << ", " << Instruction::regName(instr.three.regLhs) << ", " << Instruction::regName(instr.three.regRhs2) << ", #" << instr.three.imm;
 					}
 				}
 				break;
@@ -325,7 +325,7 @@ namespace VM {
 		}
 
 		// Print the register list
-		o << regName(instr.mult.lhs) << ", {";
+		o << Instruction::regName(instr.mult.lhs) << ", {";
 
 		bool needComma = false;
 		int firstReg = -1;
@@ -335,9 +335,9 @@ namespace VM {
 					o << ", ";
 				}
 				if(firstReg != i-1) {
-					o << regName(firstReg) << "-";
+					o << Instruction::regName(firstReg) << "-";
 				}
-				o << regName(i-1);
+				o << Instruction::regName(i-1);
 				needComma = true;
 				firstReg = -1;
 			}
@@ -351,7 +351,7 @@ namespace VM {
 					if(needComma) {
 						o << ", ";
 					}
-					o << regName(i);
+					o << Instruction::regName(i);
 					needComma = true;
 				}
 			}
