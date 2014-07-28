@@ -17,20 +17,6 @@ Tokenizer::Tokenizer(std::istream &stream, int lookahead)
 }
 
 /*!
- * \brief Reset the tokenizer stream
- */
-void Tokenizer::reset()
-{
-	mLine = 1;
-	mColumn = 1;
-	mError = false;
-	mPopulated = false;
-	mStream.clear();
-	mStream.seekg(0);
-	mBuffer.clear();
-}
-
-/*!
  * \brief Return the next token in the stream
  * \param num Lookahead number
  * \return Token in stream

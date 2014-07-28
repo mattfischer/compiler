@@ -5,7 +5,6 @@
 
 #include "Front/HllTokenizer.h"
 #include "Front/Node.h"
-#include "Front/ExportInfo.h"
 
 namespace Front {
 /*!
@@ -16,18 +15,15 @@ namespace Front {
  */
 class HllParser : public Input::Parser {
 public:
-	HllParser(HllTokenizer &tokenizer, const std::vector<ExportInfo*> &imports);
+	HllParser(HllTokenizer &tokenizer);
 
 	Node *parse();
 
 private:
 	std::vector<Node*> mNodes; //!< List of all nodes created so far
-	std::vector<std::string> mTypeNames; //!< List of all type names
 	HllTokenizer &mHllTokenizer; //!< Reference to the tokenizer being used
-	std::vector<ExportInfo*> mImports; //!< Imports from other modules
 
 	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
-	bool isTypeName(const std::string &name);
 
 	Node *parseProgram();
 	Node *parseProcedure();

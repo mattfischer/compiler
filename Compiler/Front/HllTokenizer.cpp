@@ -21,7 +21,7 @@ namespace Front {
  * \param filename Filename to tokenize
  */
 HllTokenizer::HllTokenizer(std::istream &stream)
-: Input::Tokenizer(stream, 2)
+: Input::Tokenizer(stream, 3)
 {
 }
 

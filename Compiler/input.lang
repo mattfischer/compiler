@@ -29,6 +29,7 @@ void printStuff(Foo foo) {
 
 void main()
 {
+  Foo.doStatic();
   Foo foo = new Foo;
   foo.doStatic();
   Bar bar = new Bar;

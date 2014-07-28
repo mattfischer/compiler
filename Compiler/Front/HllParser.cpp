@@ -1,5 +1,4 @@
 #include "Front/HllParser.h"
-#include "Front/HllTypeParser.h"
 
 #include "Front/Types.h"
 
@@ -11,10 +10,9 @@ namespace Front {
  * \brief Constructor
  * \param tokenizer Tokenizer
  */
-HllParser::HllParser(HllTokenizer &tokenizer, const std::vector<ExportInfo*> &imports)
+HllParser::HllParser(HllTokenizer &tokenizer)
 : Input::Parser(tokenizer),
-  mHllTokenizer(tokenizer),
-  mImports(imports)
+  mHllTokenizer(tokenizer)
 {
 }
 
@@ -42,45 +40,11 @@ Node *HllParser::newNode(Node::NodeType nodeType, int line, Node::NodeSubtype no
 }
 
 /*!
- * \brief Check if a string corresponds to a type name
- * \param name Name to check
- * \return true if string is type name, false otherwise
- */
-bool HllParser::isTypeName(const std::string &name)
-{
-	for(unsigned int i=0; i<mTypeNames.size(); i++) {
-		if(name == mTypeNames[i]) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/*!
  * \brief Parse the input stream
  * \return Abstract syntax tree representing parse, or 0 if an error occurred
  */
 Node *HllParser::parse()
 {
-	// Add intrinsic types to type name list
-	for(int i=0; i<Types::NumIntrinsics; i++) {
-		mTypeNames.push_back(Types::intrinsic((Types::Intrinsic)i)->name);
-	}
-
-	// Parse declared type names from program, and add them to the type list
-	HllTypeParser typeParser(mHllTokenizer);
-	std::set<std::string> types = typeParser.parseTypes();
-	mHllTokenizer.reset();
-	for(std::set<std::string>::iterator it = types.begin(); it != types.end(); it++) {
-		mTypeNames.push_back(*it);
-	}
-
-	for(unsigned int i=0; i<mImports.size(); i++) {
-		std::vector<std::string> typeNames = mImports[i]->typeNames();
-		mTypeNames.insert(mTypeNames.end(), typeNames.begin(), typeNames.end());
-	}
-
 	try {
 		// Parse the stream
 		return parseProgram();
@@ -205,7 +169,7 @@ Node *HllParser::parseClassMember()
 	Node *type;
 	std::vector<Node*> qualifiers;
 
-	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text) && matchLiteral("(", 1)) {
+	if(match(HllTokenizer::TypeIdentifier) && matchLiteral("(", 1)) {
 		type = 0;
 	} else {
 		while(true) {
@@ -273,6 +237,16 @@ Node *HllParser::parseClassMember()
 Node *HllParser::parseVariableDeclaration()
 {
 	// <VariableDeclaration> := <Type> IDENTIFIER
+	if(match(HllTokenizer::TypeIdentifier)) {
+		if(matchLiteral("[", 1)) {
+			if(!matchLiteral("]", 2)) {
+				return 0;
+			}
+		} else if(!match(HllTokenizer::TypeIdentifier, 1)) {
+			return 0;
+		}
+	}
+
 	Node *type = parseType();
 	if(!type) return 0;
 
@@ -306,7 +280,7 @@ Node *HllParser::parseType(bool required)
 	// <Type> := IDENTIFIER { '[' ']' }*
 	Node *node;
 
-	if(match(HllTokenizer::TypeIdentifier) && isTypeName(next().text)) {
+	if(match(HllTokenizer::TypeIdentifier)) {
 		node = newNode(Node::NodeTypeId, next().line);
 		node->lexVal.s = next().text;
 		consume();

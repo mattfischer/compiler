@@ -44,18 +44,9 @@ void Compiler::setError(const std::string &message)
  */
 VM::Program *Compiler::compile(const std::string &filename, const std::vector<std::string> &importFilenames)
 {
-	std::vector<Front::ExportInfo*> imports;
-	for(unsigned int i=0; i<importFilenames.size(); i++) {
-		VM::OrcFile importFile(importFilenames[i]);
-		const VM::OrcFile::Section *exportInfoSection = importFile.section("export_info");
-		const VM::OrcFile::Section *exportInfoStringsSection = importFile.section("export_info.strings");
-		Front::ExportInfo *exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
-		imports.push_back(exportInfo);
-	}
-
 	std::ifstream hllIn(filename.c_str());
 	Front::HllTokenizer tokenizer(hllIn);
-	Front::HllParser parser(tokenizer, imports);
+	Front::HllParser parser(tokenizer);
 
 	Front::Node *node = parser.parse();
 	if(!node) {
@@ -63,6 +54,15 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 		s << "line " << parser.errorLine() << " column " << parser.errorColumn() << ": " << parser.errorMessage() << std::endl;
 		setError(s.str());
 		return 0;
+	}
+
+	std::vector<Front::ExportInfo*> imports;
+	for(unsigned int i=0; i<importFilenames.size(); i++) {
+		VM::OrcFile importFile(importFilenames[i]);
+		const VM::OrcFile::Section *exportInfoSection = importFile.section("export_info");
+		const VM::OrcFile::Section *exportInfoStringsSection = importFile.section("export_info.strings");
+		Front::ExportInfo *exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
+		imports.push_back(exportInfo);
 	}
 
 	Front::EnvironmentGenerator environmentGenerator(node, imports);
