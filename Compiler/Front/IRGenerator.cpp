@@ -382,12 +382,13 @@ namespace Front {
 						case Node::NodeTypeMember:
 							{
 								Node *base = target->children[0];
-								TypeStruct *baseType = (TypeStruct*)base->type;
-								Symbol *symbol = baseType->scope->findSymbol(target->lexVal.s);
-
-								classType = symbol->scope->classType();
-								object = processRValue(base, context);
+								classType = (TypeStruct*)base->type;
 								name = target->lexVal.s;
+
+								if(base->symbol) {
+									object = processRValue(base, context);
+								}
+
 								break;
 							}
 					}
@@ -408,8 +409,10 @@ namespace Front {
 							callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
 						}
 
-						// Add the object as the first parameter
-						args.push_back(object);
+						if(!(member->qualifiers & TypeStruct::Member::QualifierStatic)) {
+							// Add the object as the first parameter
+							args.push_back(object);
+						}
 					} else {
 						callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
 					}

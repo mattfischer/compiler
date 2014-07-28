@@ -67,6 +67,7 @@ namespace Front {
 
 			NodeSubtypeVirtual, //!< Virtual function
 			NodeSubtypeNative, //!< Native function
+			NodeSubtypeStatic, //!< Static function
 		};
 
 		NodeType nodeType; //!< Node type

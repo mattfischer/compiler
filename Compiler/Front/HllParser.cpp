@@ -215,6 +215,9 @@ Node *HllParser::parseClassMember()
 			} else if(matchLiteral("native")) {
 				qualifiers.push_back(newNode(Node::NodeTypeQualifier, next().line, Node::NodeSubtypeNative));
 				consume();
+			} else if(matchLiteral("static")) {
+				qualifiers.push_back(newNode(Node::NodeTypeQualifier, next().line, Node::NodeSubtypeStatic));
+				consume();
 			} else {
 				break;
 			}

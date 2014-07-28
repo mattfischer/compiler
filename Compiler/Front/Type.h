@@ -88,6 +88,7 @@ namespace Front {
 			enum Qualifier {
 				QualifierVirtual = 0x1,
 				QualifierNative = 0x2,
+				QualifierStatic = 0x4
 			};
 			Type *type;
 			std::string name;

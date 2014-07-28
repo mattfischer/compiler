@@ -57,7 +57,7 @@ namespace Front {
 
 				switch(node->nodeType) {
 					case Node::NodeTypeProcedureDef:
-						addProcedure(mTree->children[i], program, program->scope);
+						addProcedure(mTree->children[i], program, program->scope, false);
 						break;
 
 					case Node::NodeTypeClassDef:
@@ -78,7 +78,8 @@ namespace Front {
 										if(memberNode->children.size() == 2) {
 											throw TypeError(memberNode, "Non-native function requires a body");
 										} else {
-											addProcedure(memberNode, program, typeStruct->scope);
+											bool instanceMethod = !(member->qualifiers & TypeStruct::Member::QualifierStatic);
+											addProcedure(memberNode, program, typeStruct->scope, instanceMethod);
 										}
 									}
 								}
@@ -197,7 +198,7 @@ namespace Front {
 	 * \param scope Parent scope of procedure
 	 * \return New procedure
 	 */
-	void ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope)
+	void ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope, bool instanceMethod)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
@@ -214,7 +215,7 @@ namespace Front {
 		}
 		procedure->scope = new Scope(scope);
 
-		if(scope->classType()) {
+		if(instanceMethod) {
 			procedure->object = new Symbol(scope->classType(), "this");
 			procedure->scope->addSymbol(procedure->object);
 		} else {
@@ -295,6 +296,7 @@ namespace Front {
 					if(procedureNode->type->type != Type::TypeProcedure) {
 						throw TypeError(node, "Expression does not evaluate to a procedure");
 					}
+
 					TypeProcedure *procedureType = (TypeProcedure*)procedureNode->type;
 					Node *argumentsNode = node->children[1];
 
@@ -459,6 +461,13 @@ namespace Front {
 						throw TypeError(node, s.str());
 					}
 
+					if(symbol->scope->classType() && !context.procedure->object) {
+						TypeStruct::Member *member = symbol->scope->classType()->findMember(name);
+						if(!(member->qualifiers & TypeStruct::Member::QualifierStatic)) {
+							throw TypeError(node, "Cannot access class member from a static method");
+						}
+					}
+
 					node->type = symbol->type;
 					node->symbol = symbol;
 					break;
@@ -576,14 +585,26 @@ namespace Front {
 
 			case Node::NodeTypeMember:
 			{
-				checkType(node->children[0], context);
 				Node *base = node->children[0];
+
+				bool typeName;
+				TypeStruct *baseType = (TypeStruct*)context.types->findType(base->lexVal.s);
+				if(baseType) {
+					base->type = baseType;
+					typeName = true;
+				} else {
+					checkType(node->children[0], context);
+					typeName = false;
+				}
 
 				if(base->type->type == Type::TypeStruct || base->type->type == Type::TypeClass) {
 					// Check structure field
 					TypeStruct *typeStruct = (TypeStruct*)base->type;
 					TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
 					if(member) {
+						if(typeName && !(member->qualifiers & TypeStruct::Member::QualifierStatic)) {
+							throw TypeError(node, "Attempt to address instance member via class name");
+						}
 						node->type = member->type;
 					} else {
 						std::stringstream s;

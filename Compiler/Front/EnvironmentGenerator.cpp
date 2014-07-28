@@ -22,6 +22,14 @@ public:
 		: mLocation(location), mMessage(message)
 	{}
 
+	EnvironmentError(Node *node, const std::string &message)
+		: mMessage(message)
+	{
+		std::stringstream s;
+		s << "Line " << node->line;
+		mLocation = s.str();
+	}
+
 	const std::string &location() { return mLocation; } //!< Error location
 	const std::string &message() { return mMessage; } //!< Error message
 
@@ -101,13 +109,10 @@ void EnvironmentGenerator::addStruct(Node *node)
 	// Create the type
 	TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
 	if(!mTypes->registerType(type)) {
-		std::stringstream s1;
-		s1 << "Line " << node->line;
+		std::stringstream s;
+		s << "Redefinition of structure " << type->name;
 
-		std::stringstream s2;
-		s2 << "Redefinition of structure " << type->name;
-
-		throw EnvironmentError(s1.str(), s2.str());
+		throw EnvironmentError(node, s.str());
 	}
 
 	type->parent = 0;
@@ -133,12 +138,9 @@ void EnvironmentGenerator::addClass(Node *node)
 	// Create the type
 	TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
 	if(!mTypes->registerType(type)) {
-		std::stringstream s1;
-		s1 << "Line " << node->line;
-
-		std::stringstream s2;
-		s2 << "Redefinition of class " << type->name;
-		throw EnvironmentError(s1.str(), s2.str());
+		std::stringstream s;
+		s << "Redefinition of class " << type->name;
+		throw EnvironmentError(node, s.str());
 	}
 
 	type->scope = 0;
@@ -179,7 +181,15 @@ void EnvironmentGenerator::addClass(Node *node)
 						case Node::NodeSubtypeNative:
 							qualifiers |= TypeStruct::Member::QualifierNative;
 							break;
+
+						case Node::NodeSubtypeStatic:
+							qualifiers |= TypeStruct::Member::QualifierStatic;
+							break;
 					}
+				}
+
+				if((qualifiers & TypeStruct::Member::QualifierStatic) && (qualifiers & TypeStruct::Member::QualifierVirtual)) {
+					throw EnvironmentError(memberNode, "Virtual function cannot be static");
 				}
 
 				TypeProcedure *procedureType = (TypeProcedure*)createType(memberNode, true);
@@ -207,9 +217,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 		case Node::NodeTypeArray:
 			type = createType(node->children[0], dummy);
 			if(Type::equals(type, Types::intrinsic(Types::Void))) {
-				std::stringstream s;
-				s << "Line " << node->line;
-				throw EnvironmentError(s.str(), "Cannot declare array of voids");
+				throw EnvironmentError(node, "Cannot declare array of voids");
 			}
 			type = new TypeArray(type);
 			break;
@@ -223,9 +231,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 					// Construct the argument type, and add it to the list of types
 					Type *argumentType = createType(argumentList->children[j]->children[0], dummy);
 					if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
-						std::stringstream s;
-						s << "Line " << argumentList->children[j]->line;
-						throw EnvironmentError(s.str(), "Cannot declare procedure argument of type void");
+						throw EnvironmentError(argumentList->children[j], "Cannot declare procedure argument of type void");
 					}
 					argumentTypes.push_back(argumentType);
 				}
@@ -239,14 +245,14 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 		default:
 			type = mTypes->findType(node->lexVal.s);
 			if(!type) {
-				std::stringstream s;
-				s << "Line " << node->line;
 				if(dummy) {
+					std::stringstream s;
+					s << "Line " << node->line;
 					type = new TypeDummy(node->lexVal.s, s.str());
 				} else {
-					std::stringstream s2;
-					s2 << "Type '" << node->lexVal.s << "' not found";
-					throw EnvironmentError(s.str(), s2.str());
+					std::stringstream s;
+					s << "Type '" << node->lexVal.s << "' not found";
+					throw EnvironmentError(node, s.str());
 				}
 			}
 			break;

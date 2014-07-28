@@ -12,6 +12,11 @@ class Foo {
   Foo() {
   }
 
+  static void doStatic()
+  {
+    print("Static foo");
+  }
+ 
   virtual void doPrint()
   {
     print("Foo");
@@ -25,6 +30,7 @@ void printStuff(Foo foo) {
 void main()
 {
   Foo foo = new Foo;
+  foo.doStatic();
   Bar bar = new Bar;
   printStuff(foo);
   printStuff(bar);
