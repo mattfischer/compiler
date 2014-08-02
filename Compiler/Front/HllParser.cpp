@@ -345,15 +345,6 @@ Node *HllParser::parseStatement(bool required)
 		expectLiteral(";");
 
 		return node;
-	} else if(matchLiteral("print")) {
-		// <Statement> := 'print' <Expression> ';'
-		node = newNode(Node::NodeTypePrint, next().line);
-		consume();
-
-		node->children.push_back(parseExpression(true));
-		expectLiteral(";");
-
-		return node;
 	} else if(matchLiteral("if")) {
 		// <Statement> := 'if' '(' <Expression> ')' <Clause> { 'else' <Clause> }?
 		node = newNode(Node::NodeTypeIf, next().line);

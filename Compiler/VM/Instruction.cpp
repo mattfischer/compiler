@@ -296,10 +296,6 @@ namespace VM {
 				printImm(o, "mov", instr.one.reg, -1, instr.one.imm);
 				break;
 
-			case OneAddrPrint:
-				printStd(o, "print", instr.one.reg);
-				break;
-
 			case OneAddrCall:
 				printInd(o, "call", -1, instr.one.reg, -1, instr.one.imm);
 				break;

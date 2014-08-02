@@ -15,7 +15,8 @@ enum ExportDefinition {
 
 enum ExportMember {
 	ExportMemberNormal,
-	ExportMemberVirtual
+	ExportMemberVirtual,
+	ExportMemberStatic
 };
 
 ExportInfo::ExportInfo(Types *types, Scope *scope)
@@ -51,11 +52,14 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 					}
 					mData.push_back((unsigned char)typeStruct->members.size());
 					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						if(typeStruct->members[j].qualifiers | TypeStruct::Member::QualifierVirtual) {
+						if(typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierVirtual) {
 							mData.push_back((unsigned char)ExportMemberVirtual);
+						} else if(typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierStatic) {
+							mData.push_back((unsigned char)ExportMemberStatic);
 						} else {
 							mData.push_back((unsigned char)ExportMemberNormal);
 						}
+
 						writeType(typeStruct->members[j].type);
 						mData.push_back(addString(typeStruct->members[j].name));
 					}
@@ -114,7 +118,17 @@ void ExportInfo::read(Types *types, Scope *scope)
 									Type *memberType = readType(offset, types, stringBase);
 									std::string memberName = getString(mData[offset], stringBase);
 									offset++;
-									typeStruct->addMember(memberType, memberName, exportMember == ExportMemberVirtual);
+									unsigned int qualifiers = 0;
+									switch(exportMember) {
+										case ExportMemberVirtual: 
+											qualifiers = TypeStruct::Member::QualifierVirtual;
+											break;
+										case ExportMemberStatic:
+											qualifiers = TypeStruct::Member::QualifierStatic;
+											break;
+									}
+
+									typeStruct->addMember(memberType, memberName, qualifiers);
 
 									if(memberName == typeStruct->name) {
 										typeStruct->constructor = (TypeProcedure*)memberType;

@@ -1,0 +1,3 @@
+class System {
+	static native void print(string str);
+}

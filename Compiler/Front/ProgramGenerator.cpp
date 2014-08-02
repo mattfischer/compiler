@@ -279,13 +279,6 @@ namespace Front {
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
-			case Node::NodeTypePrint:
-				checkChildren(node, context);
-
-				node->children[0] = coerce(node->children[0], Types::intrinsic(Types::String));
-				node->type = Types::intrinsic(Types::Void);
-				break;
-
 			case Node::NodeTypeCall:
 				{
 					// First, check all child nodes

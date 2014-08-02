@@ -12,7 +12,7 @@ class Linker {
 public:
 	Linker();
 
-	VM::Program *link(const std::vector<VM::Program*> &programs);
+	VM::Program *link(const std::vector<const VM::Program*> &programs);
 
 	bool error() { return mError; }
 	std::string errorMessage() { return mErrorMessage; }

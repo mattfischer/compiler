@@ -138,14 +138,6 @@ namespace Front {
 				}
 				break;
 
-			case Node::NodeTypePrint:
-				// Process RHS value
-				rhs = processRValue(node->children[0], context);
-
-				// Emit print instruction
-				procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrint, 0, rhs));
-				break;
-
 			case Node::NodeTypeVarDecl:
 				// No work to do, symbol was already added when creating the procedure
 				break;

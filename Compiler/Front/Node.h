@@ -23,7 +23,6 @@ namespace Front {
 			NodeTypeClassDef, //!< Class definition
 			NodeTypeClassMember, //!< Class member
 			NodeTypeReturn, //!< Return statement
-			NodeTypePrint, //!< Print statement
 			NodeTypeAssign, //!< Assignment operator
 			NodeTypeIf, //!< If statement
 			NodeTypeWhile, //!< While statement

@@ -12,7 +12,6 @@ namespace IR {
 		/* TypeMult		  */ "mult     ",
 		/* TypeDivide	  */ "div      ",
 		/* TypeModulo	  */ "mod      ",
-		/* TypePrint      */ "print    ",
 		/* TypeEqual	  */ "equ      ",
 		/* TypeNequal	  */ "neq      ",
 		/* TypeLessThan	  */ "lt       ",

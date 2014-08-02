@@ -4,9 +4,32 @@
 #include "VM/Heap.h"
 #include "VM/GarbageCollector.h"
 
+#include "Linker.h"
+
 #include <sstream>
 
 namespace VM {
+	struct Context {
+		std::ostream &output;
+		AddressSpace &addressSpace;
+		int *regs;
+
+		Context(std::ostream &_output, AddressSpace &_addressSpace, int *_regs)
+			: output(_output), addressSpace(_addressSpace), regs(_regs)
+		{}
+
+		char *getArgString(int arg) {
+			return (char*)addressSpace.at(regs[arg]);
+		}
+	};
+
+	void SystemPrint(Context &context)
+	{
+		context.output << context.getArgString(0) << std::endl;
+	}
+
+	typedef void (*NativeCallback)(Context&);
+
 	/*!
 	 * \brief Run a VM program
 	 * \param program Program to run
@@ -27,17 +50,37 @@ namespace VM {
 			return;
 		}
 
-		if(program->relocations.size() > 0) {
+		std::map<std::string, NativeCallback> nativeCallbacks;
+		nativeCallbacks["System.print"] = SystemPrint;
+		Program *nativeSymbols = new Program;
+		unsigned int offset = 0;
+		std::map<unsigned int, NativeCallback> callbackAddrs;
+		nativeSymbols->symbols["$$nativeStart"] = 0;
+		for(std::map<std::string, NativeCallback>::iterator it = nativeCallbacks.begin(); it != nativeCallbacks.end(); it++) {
+			nativeSymbols->symbols[it->first] = offset;
+			callbackAddrs[offset] = it->second;
+			offset += 4;
+		}
+
+		Linker linker;
+		std::vector<const Program*> programs;
+		programs.push_back(program);
+		programs.push_back(nativeSymbols);
+		Program *linked = linker.link(programs);
+
+		if(linked->relocations.size() > 0) {
 			std::cerr << "Error: Program has unresolved relocations" << std::endl;
 			return;
 		}
+
+		unsigned int nativeStart = linked->symbols["$$nativeStart"];
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
 
 		const unsigned int CodeStart = 0;
-		addressSpace.addRegion(CodeStart, (unsigned int)program->instructions.size());
-		std::memcpy(addressSpace.at(CodeStart), &program->instructions[0], program->instructions.size());
+		addressSpace.addRegion(CodeStart, (unsigned int)linked->instructions.size());
+		std::memcpy(addressSpace.at(CodeStart), &linked->instructions[0], linked->instructions.size());
 
 		const unsigned int StackStart = 0x10000;
 		const unsigned int StackSize = 0x100;
@@ -49,7 +92,7 @@ namespace VM {
 		regs[VM::RegLR] = 0xffffffff;
 
 		// Set PC to the program entry point
-		regs[VM::RegPC] = program->symbols.find("main")->second + CodeStart;
+		regs[VM::RegPC] = linked->symbols.find("main")->second + CodeStart;
 
 		// Loop until PC is set beyond the end of the program
 		while(regs[VM::RegPC] != 0xffffffff) {
@@ -65,17 +108,18 @@ namespace VM {
 							regs[instr.one.reg] = instr.one.imm;
 							break;
 
-						case VM::OneAddrPrint:
-							for(int i = regs[instr.one.reg]; *addressSpace.at(i) != '\0'; i++) {
-								o << *(char*)addressSpace.at(i);
-							}
-							o << std::endl;
-							break;
-
 						case VM::OneAddrCall:
-							regs[VM::RegLR] = regs[VM::RegPC] + 4;
-							regs[VM::RegPC] = regs[instr.one.reg] + 4 * instr.one.imm;
-							break;
+							{
+								unsigned int addr = regs[instr.one.reg] + 4 * instr.one.imm;
+								if(addr >= nativeStart) {
+									Context context(o, addressSpace, regs);
+									callbackAddrs[addr - nativeStart](context);
+								} else {
+									regs[VM::RegLR] = regs[VM::RegPC] + 4;
+									regs[VM::RegPC] = addr;
+								}
+								break;
+							}
 					}
 					break;
 

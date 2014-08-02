@@ -1,38 +1,4 @@
-class Bar : Foo {
-  Bar() {
-  }
-  
-  virtual void doPrint()
-  {
-    print("Bar");
-  }
-}
-
-class Foo {
-  Foo() {
-  }
-
-  static void doStatic()
-  {
-    print("Static foo");
-  }
- 
-  virtual void doPrint()
-  {
-    print("Foo");
-  }
-}
-
-void printStuff(Foo foo) {
-    foo.doPrint();
-}
-
 void main()
 {
-  Foo.doStatic();
-  Foo foo = new Foo;
-  foo.doStatic();
-  Bar bar = new Bar;
-  printStuff(foo);
-  printStuff(bar);
+  System.print("Hello, world!");
 }

@@ -11,7 +11,7 @@ static char *literals[] = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
 					 ">", "<", "+", "-", "*", "/", "%", "(", ")", "=", ";", "{", "}", ",", "[", "]", ".", ":"
 					};
 
-static char *keywords[] = { "print", "if", "else", "while", "return", "new", "for", "break",
+static char *keywords[] = { "if", "else", "while", "return", "new", "for", "break",
 					 "continue", "true", "false", "struct", "class", "virtual", "native", "static"
 					};
 

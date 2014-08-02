@@ -31,7 +31,6 @@ namespace IR {
 			TypeMult, //!< Multiply two symbols together
 			TypeDivide, //!< Divide two symbols
 			TypeModulo, //!< Take modulus of two symbols
-			TypePrint, //!< Print a string
 			TypeEqual, //!< Test two symbols for equality
 			TypeNequal, //!< Test two symbols for inequality
 			TypeLessThan, //!< Test two symbols for less-than

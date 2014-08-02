@@ -102,8 +102,7 @@ namespace VM {
 	const int ThreeAddrStoreByte = 0x12;
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
-	const int OneAddrPrint = 0x1; //!< Print string
-	const int OneAddrCall = 0x2; //!< Call procedure: Save next address into LR and jump to location in register
+	const int OneAddrCall = 0x1; //!< Call procedure: Save next address into LR and jump to location in register
 
 	const int MultRegStore = 0x0; //!< Store multiple registers to stack
 	const int MultRegLoad = 0x1; //!< Load multiple registers from stack

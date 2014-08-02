@@ -15,7 +15,7 @@ Linker::Linker()
  * \param programs List of programs
  * \return Linked program
  */
-VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
+VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
 {
 	VM::Program *linked = new VM::Program;
 	std::vector<VM::Program::Relocation> relocations;
@@ -26,12 +26,14 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 	// Concatenate programs together into linked program
 	int offset = 0;
 	for(unsigned int i=0; i<programs.size(); i++) {
-		VM::Program *program = programs[i];
+		const VM::Program *program = programs[i];
 
-		linked->instructions.resize(linked->instructions.size() + programs[i]->instructions.size());
-		std::memcpy(&linked->instructions[offset], &program->instructions[0], program->instructions.size());
+		if(program->instructions.size() > 0) {
+			linked->instructions.resize(linked->instructions.size() + programs[i]->instructions.size());
+			std::memcpy(&linked->instructions[offset], &program->instructions[0], program->instructions.size());
+		}
 
-		for(std::map<std::string, int>::iterator it = program->symbols.begin(); it != program->symbols.end(); it++) {
+		for(std::map<std::string, int>::const_iterator it = program->symbols.begin(); it != program->symbols.end(); it++) {
 			linked->symbols[it->first] = it->second + offset;
 		}
 
@@ -46,53 +48,50 @@ VM::Program *Linker::link(const std::vector<VM::Program*> &programs)
 		unsigned int exportInfoOffset = (unsigned int)exportInfoData.size();
 		unsigned int exportInfoStringOffset = (unsigned int)exportInfoStringData.size();
 
-		exportInfoData.resize(exportInfoOffset + program->exportInfo->data().size() + 2);
-		exportInfoData[exportInfoOffset] = Front::ExportInfo::ExportItemStringBase;
-		exportInfoData[exportInfoOffset + 1] = exportInfoStringOffset;
-		std::memcpy(&exportInfoData[exportInfoOffset + 2], &program->exportInfo->data()[0], program->exportInfo->data().size());
+		if(program->exportInfo && program->exportInfo->data().size() > 0) {
+			exportInfoData.resize(exportInfoOffset + program->exportInfo->data().size() + 2);
+			exportInfoData[exportInfoOffset] = Front::ExportInfo::ExportItemStringBase;
+			exportInfoData[exportInfoOffset + 1] = exportInfoStringOffset;
+			std::memcpy(&exportInfoData[exportInfoOffset + 2], &program->exportInfo->data()[0], program->exportInfo->data().size());
 
-		exportInfoStringData.resize(exportInfoStringOffset + program->exportInfo->strings().size());
-		std::memcpy(&exportInfoStringData[exportInfoStringOffset], &program->exportInfo->strings()[0], program->exportInfo->strings().size());
+			exportInfoStringData.resize(exportInfoStringOffset + program->exportInfo->strings().size());
+			std::memcpy(&exportInfoStringData[exportInfoStringOffset], &program->exportInfo->strings()[0], program->exportInfo->strings().size());
+		}
 	}
 
 	// Resolve symbol references in program
 	for(unsigned int i=0; i<relocations.size(); i++) {
 		if(linked->symbols.find(relocations[i].symbol) == linked->symbols.end()) {
-			mError = true;
-			std::stringstream s;
-			s << "Undefined symbol " << relocations[i].symbol;
-			mErrorMessage = s.str();
-			delete linked;
-			return 0;
-		}
+			linked->relocations.push_back(relocations[i]);
+		} else {
+			switch(relocations[i].type) {
+				case VM::Program::Relocation::TypeAbsolute:
+					{
+						unsigned long address = linked->symbols[relocations[i].symbol];
+						std::memcpy(&linked->instructions[relocations[i].offset], &address, 4);
+						break;
+					}
 
-		switch(relocations[i].type) {
-			case VM::Program::Relocation::TypeAbsolute:
-				{
-					unsigned long address = linked->symbols[relocations[i].symbol];
-					std::memcpy(&linked->instructions[relocations[i].offset], &address, 4);
-					break;
-				}
+				case VM::Program::Relocation::TypeCall:
+					{
+						VM::Instruction instr;
+						std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
+						int symbolOffset = linked->symbols[relocations[i].symbol];
+						instr.one.imm = (symbolOffset - relocations[i].offset) / 4;
+						std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
+						break;
+					}
 
-			case VM::Program::Relocation::TypeCall:
-				{
-					VM::Instruction instr;
-					std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
-					int symbolOffset = linked->symbols[relocations[i].symbol];
-					instr.one.imm = (symbolOffset - relocations[i].offset) / 4;
-					std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
-					break;
-				}
-
-			case VM::Program::Relocation::TypeAddPCRel:
-				{
-					VM::Instruction instr;
-					std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
-					int symbolOffset = linked->symbols[relocations[i].symbol];
-					instr.two.imm = symbolOffset - relocations[i].offset;
-					std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
-					break;
-				}
+				case VM::Program::Relocation::TypeAddPCRel:
+					{
+						VM::Instruction instr;
+						std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
+						int symbolOffset = linked->symbols[relocations[i].symbol];
+						instr.two.imm = symbolOffset - relocations[i].offset;
+						std::memcpy(&linked->instructions[relocations[i].offset], &instr, 4);
+						break;
+					}
+			}
 		}
 	}
 

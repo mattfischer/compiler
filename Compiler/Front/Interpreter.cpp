@@ -32,22 +32,6 @@ namespace Front {
 				}
 				break;
 
-			case Node::NodeTypePrint:
-				{
-					int result;
-
-					evaluateExpression(node->children[0]);
-					pop(&result, sizeof(result));
-
-					Type *type = node->children[0]->type;
-					if(type == Types::intrinsic(Types::Int))
-						std::cout << result << std::endl;
-					else if(type == Types::intrinsic(Types::Bool))
-						std::cout << ((result == 1) ? "true" : "false") << std::endl;
-
-					break;
-				}
-
 			case Node::NodeTypeVarDecl:
 				{
 					Type *type = 0; // FIXME: Type::find(node->children[0]->lexVal.s);

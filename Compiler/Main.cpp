@@ -23,9 +23,10 @@ bool compileRuntime(const std::string &runtimeFilename)
 		std::vector<std::string> sourceFilenames;
 		std::vector<std::string> importFilenames;
 		sourceFilenames.push_back("string.lang");
+		sourceFilenames.push_back("System.lang");
 
 		Compiler compiler;
-		std::vector<VM::Program*> programs;
+		std::vector<const VM::Program*> programs;
 		for(unsigned int i=0; i<sourceFilenames.size(); i++) {
 			VM::Program *program = compiler.compile(sourceFilenames[i], importFilenames);
 			if(!program) {
@@ -69,7 +70,7 @@ int main(int arg, char *argv[])
 	VM::Program *runtime = new VM::Program(runtimeFilename);
 
 	// Link runtime library into program
-	std::vector<VM::Program*> programs;
+	std::vector<const VM::Program*> programs;
 	programs.push_back(runtime);
 	programs.push_back(vmProgram);
 

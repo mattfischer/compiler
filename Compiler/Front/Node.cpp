@@ -10,7 +10,6 @@ const char *typeNames[] = {
 	/* NodeTypeClassDef     */ "class",
 	/* NodeTypeClassMember  */ "member",
 	/* NodeTypeReturn       */ "return",
-	/* NodeTypePrint        */ "print",
 	/* NodeTypeAssign       */ "assign",
 	/* NodeTypeIf           */ "if",
 	/* NodeTypeWhile        */ "while",

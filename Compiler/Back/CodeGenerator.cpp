@@ -162,13 +162,6 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypePrint:
-					{
-						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						stream << "    print r" << regMap[threeAddr->rhs1] << std::endl;
-						break;
-					}
-
 				case IR::Entry::TypeEqual:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
