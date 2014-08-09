@@ -1,0 +1,448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Analysis">
+      <UniqueIdentifier>{5f913cfe-0820-4119-9b90-9078ce4994f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\IR">
+      <UniqueIdentifier>{57a6a918-39c1-4ada-8440-9cedf5775e5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Front">
+      <UniqueIdentifier>{124153c0-9f3b-4c1c-bad8-6cbf2b6ed508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Transform">
+      <UniqueIdentifier>{f3ed9166-8ac6-4097-9e18-23bd1e5d85e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Middle">
+      <UniqueIdentifier>{45a5adaf-4c4c-46f4-8b3a-cc8e58580c5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM">
+      <UniqueIdentifier>{1051ca18-b973-4c97-83fd-574f545afe59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Back">
+      <UniqueIdentifier>{bec3fc56-bd7d-4e5e-b1f3-c52a4cc7fd83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Analysis">
+      <UniqueIdentifier>{4e83e066-a454-4609-9493-773065e7af87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IR">
+      <UniqueIdentifier>{8c99faad-cc6f-4be6-b388-b7cf21626bd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Front">
+      <UniqueIdentifier>{175b5d88-13cb-4345-8a4f-859888db55a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Transform">
+      <UniqueIdentifier>{03a92a79-fd8d-41e7-ab5a-427e45be6c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Middle">
+      <UniqueIdentifier>{38d3e623-8e97-45ff-973f-b09197e9d0f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Util">
+      <UniqueIdentifier>{e85efaab-3d5a-4d76-b982-41fbccad2e71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VM">
+      <UniqueIdentifier>{c086abdc-8046-4cb2-96b5-264702f398da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Back">
+      <UniqueIdentifier>{681fc13f-c9a4-4900-b8f5-57112555d8fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{5ff71b74-a79b-45c0-b5cc-88f0b11d3d7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Util">
+      <UniqueIdentifier>{fb5b4be5-d650-40cf-a8ca-56cad421a8e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{bb1b235d-7fe9-4f14-b5be-f16adcd63bf8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Assembler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Linker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\BlockSort.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\DominanceFrontiers.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\DominatorTree.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\FlowGraph.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\InterferenceGraph.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\LiveVariables.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\Loops.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\ReachingDefs.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\UseDefs.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="IR\Entry.cpp">
+      <Filter>Source Files\IR</Filter>
+    </ClCompile>
+    <ClCompile Include="IR\EntryList.cpp">
+      <Filter>Source Files\IR</Filter>
+    </ClCompile>
+    <ClCompile Include="IR\Procedure.cpp">
+      <Filter>Source Files\IR</Filter>
+    </ClCompile>
+    <ClCompile Include="IR\Program.cpp">
+      <Filter>Source Files\IR</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\HllParser.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\HllTokenizer.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Interpreter.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\IRGenerator.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Type.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\ConstantProp.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\CopyProp.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\DeadCodeElimination.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\LiveRangeRenaming.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\LoopInvariantCodeMotion.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\SSA.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\ThreadJumps.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Middle\ErrorCheck.cpp">
+      <Filter>Source Files\Middle</Filter>
+    </ClCompile>
+    <ClCompile Include="Middle\Optimizer.cpp">
+      <Filter>Source Files\Middle</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\Instruction.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\Interp.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="Back\CodeGenerator.cpp">
+      <Filter>Source Files\Back</Filter>
+    </ClCompile>
+    <ClCompile Include="Back\RegisterAllocator.cpp">
+      <Filter>Source Files\Back</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\AddressSpace.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\GarbageCollector.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\Heap.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\OrcFile.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="Back\AsmTokenizer.cpp">
+      <Filter>Source Files\Back</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\Analysis.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Back\AsmParser.cpp">
+      <Filter>Source Files\Back</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\AvailableExpressions.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform\CommonSubexpressionElimination.cpp">
+      <Filter>Source Files\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Analysis\Constants.cpp">
+      <Filter>Source Files\Analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="IR\Data.cpp">
+      <Filter>Source Files\IR</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\EnvironmentGenerator.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\ExportInfo.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Log.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Node.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Parser.cpp">
+      <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Tokenizer.cpp">
+      <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Procedure.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\Program.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Program.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\ProgramGenerator.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Scope.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+    <ClCompile Include="Front\Types.cpp">
+      <Filter>Source Files\Front</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Assembler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Linker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\BlockSort.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\DataFlow.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\DominanceFrontiers.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\DominatorTree.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\FlowGraph.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\InterferenceGraph.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\LiveVariables.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\Loops.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\ReachingDefs.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\UseDefs.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\Entry.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\EntryList.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\EntrySubList.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\Procedure.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\Program.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\Symbol.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\HllParser.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\HllTokenizer.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Interpreter.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\IRGenerator.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Node.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Type.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\ConstantProp.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\CopyProp.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\DeadCodeElimination.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\LiveRangeRenaming.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\LoopInvariantCodeMotion.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\SSA.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\ThreadJumps.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\Transform.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Middle\ErrorCheck.h">
+      <Filter>Header Files\Middle</Filter>
+    </ClInclude>
+    <ClInclude Include="Middle\Optimizer.h">
+      <Filter>Header Files\Middle</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\UniqueQueue.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\Instruction.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\Interp.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\Program.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="Back\CodeGenerator.h">
+      <Filter>Header Files\Back</Filter>
+    </ClInclude>
+    <ClInclude Include="Back\RegisterAllocator.h">
+      <Filter>Header Files\Back</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\AddressSpace.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\Analysis.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Array.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Back\AsmParser.h">
+      <Filter>Header Files\Back</Filter>
+    </ClInclude>
+    <ClInclude Include="Back\AsmTokenizer.h">
+      <Filter>Header Files\Back</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\AvailableExpressions.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform\CommonSubexpressionElimination.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Analysis\Constants.h">
+      <Filter>Header Files\Analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="IR\Data.h">
+      <Filter>Header Files\IR</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\EnvironmentGenerator.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\ExportInfo.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\GarbageCollector.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\Heap.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="VM\OrcFile.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Procedure.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Log.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Program.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\ProgramGenerator.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Scope.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Timer.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Symbol.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Front\Types.h">
+      <Filter>Header Files\Front</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Parser.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Tokenizer.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="string.lang" />
+    <None Include="System.lang" />
+  </ItemGroup>
+</Project>
