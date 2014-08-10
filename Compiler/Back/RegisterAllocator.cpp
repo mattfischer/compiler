@@ -37,27 +37,19 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::Flo
 	Analysis::Loops::Loop *rootLoop = loops.rootLoop();
 
 	// Iterate through the blocks of the procedure
-	for(Analysis::FlowGraph::BlockSet::iterator blockIt = rootLoop->blocks.begin(); blockIt != rootLoop->blocks.end(); blockIt++) {
-		Analysis::FlowGraph::Block *block = *blockIt;
-
+	for(Analysis::FlowGraph::Block *block : rootLoop->blocks) {
 		// Determine the cost of a variable use in this block, based on its loop depth.
 		int cost = 1;
-		for(Analysis::Loops::LoopList::iterator loopIt = loops.loops().begin(); loopIt != loops.loops().end(); loopIt++) {
-			Analysis::Loops::Loop *loop = *loopIt;
-
+		for(Analysis::Loops::Loop *loop : loops.loops()) {
 			if(loop->blocks.find(block) != loop->blocks.end()) {
 				cost *= 10;
 			}
 		}
 
 		// Iterate through the block's entries
-		for(IR::EntrySubList::iterator entryIt = block->entries.begin(); entryIt != block->entries.end(); entryIt++) {
-			IR::Entry *entry = *entryIt;
-
+		for(IR::Entry *entry : block->entries) {
 			// Iterate through the symbols in the procedure
-			for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
-				IR::Symbol *symbol = *symbolIt;
-
+			for(IR::Symbol *symbol : procedure->symbols()) {
 				// Any assignment to the variable adds to its cost
 				if(entry->assign() == symbol) {
 					costs[symbol] += cost;
@@ -83,10 +75,9 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::Flo
  */
 void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &symbols, IR::Symbol *symbol, IR::Symbol *exclude)
 {
-	for(IR::SymbolSet::const_iterator symbolIt = symbols.begin(); symbolIt != symbols.end(); symbolIt++) {
-		IR::Symbol *otherSymbol = *symbolIt;
-		if(otherSymbol != exclude) {
-			graph.addEdge(symbol, otherSymbol);
+	for(IR::Symbol *symbol : symbols) {
+		if(symbol != exclude) {
+			graph.addEdge(symbol, symbol);
 		}
 	}
 }
@@ -101,8 +92,7 @@ void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &s
 void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std::vector<IR::Symbol*> callerSavedRegisters, IR::Procedure *procedure, Analysis::LiveVariables &liveVariables)
 {
 	// Iterate through the procedure's entries
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-		IR::Entry *entry = *entryIt;
+	for(IR::Entry *entry : procedure->entries()) {
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		// Determine variables which are live in this entry
@@ -112,8 +102,8 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
 			case IR::Entry::TypeCall:
 				// A call creates interferences between all caller-saved registers and
 				// all live variables
-				for(unsigned int i=0; i<callerSavedRegisters.size(); i++) {
-					addInterferences(graph, variables, callerSavedRegisters[i], 0);
+				for(IR::Symbol *reg : callerSavedRegisters) {
+					addInterferences(graph, variables, reg, 0);
 				}
 				break;
 
@@ -154,8 +144,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 	std::map<IR::Symbol*, int> preferredRegisters;
 
 	// Iterate through the procedure's entries
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-		IR::Entry *entry = *entryIt;
+	for(IR::Entry *entry : procedure->entries()) {
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		switch(entry->type) {
@@ -223,9 +212,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	Analysis::Constants *constants = analysis.constants();
 
 	// Iterate through the entries in the procedure
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-		IR::Entry *entry = *entryIt;
-
+	for(IR::Entry *entry : procedure->entries()) {
 		// If the entry uses the symbol and the symbol was not already live, the symbol must be
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
@@ -244,7 +231,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			}
 
 			// Insert the new instruction
-			procedure->entries().insert(entryIt, def);
+			procedure->entries().insert(entry, def);
 			spillLoads.insert(def);
 
 			// The variable is now live
@@ -266,9 +253,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			// cease at that point, then spilling the variable would not be effective in reducing
 			// register pressure
 			IR::SymbolSet &currentVariables = liveVariables.variables(entry);
-			for(IR::SymbolSet::iterator symbolIt = liveSet.begin(); symbolIt != liveSet.end(); symbolIt++) {
-				IR::Symbol *s = *symbolIt;
-
+			for(IR::Symbol *s : liveSet) {
 				if(currentVariables.find(s) == currentVariables.end()) {
 					live = false;
 					break;
@@ -301,9 +286,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	// If a spill to the stack was necessary, increase the size of the stack frame in the
 	// prologue and epilogue to the function
 	if(neededDefs.size() > 0) {
-		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-			IR::Entry *entry = *entryIt;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
 				IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 				idx = threeAddr->imm;
@@ -383,9 +366,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 		IR::Symbol *spillCandidate = 0;
 
 		// Iterate through the list of symbols in the procedure
-		for(IR::SymbolSet::const_iterator symbolIt = simplifiedGraph.symbols().begin(); symbolIt != simplifiedGraph.symbols().end(); symbolIt++) {
-			IR::Symbol *symbol = *symbolIt;
-
+		for(IR::Symbol *symbol : simplifiedGraph.symbols()) {
 			// If the symbol has a lower spill cost than the previous spill candidate, save
 			// it off as the new spill candidate
 			if(!spillCandidate || spillCosts[symbol] < spillCosts[spillCandidate]) {
@@ -449,8 +430,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 			}
 
 			// Loop through the interfering symbols, and see if any of them use the current register number
-			for(IR::SymbolSet::const_iterator symbolIt = set.begin(); symbolIt != set.end(); symbolIt++) {
-				IR::Symbol *otherSymbol = *symbolIt;
+			for(IR::Symbol *otherSymbol : set) {
 				std::map<IR::Symbol*, int>::iterator regIt = registers.find(otherSymbol);
 				if(regIt != registers.end() && regIt->second == reg) {
 					found = true;

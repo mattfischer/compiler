@@ -24,17 +24,13 @@ namespace Back {
 	void CodeGenerator::generate(IR::Program *irProgram, std::ostream &stream)
 	{
 		// Iterate through the procedures, generating each in turn
-		for(IR::ProcedureList::iterator itProc = irProgram->procedures().begin(); itProc != irProgram->procedures().end(); itProc++) {
-			IR::Procedure *irProcedure = *itProc;
-
+		for(IR::Procedure *irProcedure : irProgram->procedures()) {
 			// Generate code for the procedure
 			generateProcedure(irProcedure, stream);
 		}
 
 		// Iterate through the data sections, generating each in turn
-		for(IR::DataList::iterator itData = irProgram->data().begin(); itData != irProgram->data().end(); itData++) {
-			IR::Data *irData = *itData;
-
+		for(IR::Data *irData : irProgram->data()) {
 			// Generate code for the data
 			generateData(irData, stream);
 			stream << std::endl;
@@ -66,20 +62,18 @@ namespace Back {
 		std::stringstream s;
 		bool needComma = false;
 		s << "{";
-		for(std::map<IR::Symbol*, int>::iterator regIt = regMap.begin(); regIt != regMap.end(); regIt++) {
-			if(regIt->second > 3) {
+		for(auto &reg : regMap) {
+			if(reg.second > 3) {
 				if(needComma) {
 					s << ", ";
 				}
-				s << "r" << regIt->second;
+				s << "r" << reg.second;
 				needComma = true;
 			}
 		}
 
 		// If any calls are made in the procedure, LR must be saved as well
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(entry->type == IR::Entry::TypeCall || entry->type == IR::Entry::TypeCallIndirect) {
 				if(needComma) {
 					s << ", ";
@@ -93,9 +87,7 @@ namespace Back {
 		stream << "defproc " << procedure->name() << std::endl;
 
 		// Iterate through each entry, and emit the appropriate code depending on its type
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			switch(entry->type) {
 				case IR::Entry::TypeMove:
 					{
@@ -417,9 +409,9 @@ namespace Back {
 		stream << std::endl;
 
 		// Write out string constants
-		for(std::map<std::string, std::string>::iterator it = strings.begin(); it != strings.end(); it++) {
-			const std::string &name = it->first;
-			const std::string &value = it->second;
+		for(auto &string : strings) {
+			const std::string &name = string.first;
+			const std::string &value = string.second;
 			stream << "defdata " << procedure->name() << "$$" << name << std::endl;
 			stream << "    string \"" << value << "\"" << std::endl;
 			stream << std::endl;
@@ -436,9 +428,7 @@ namespace Back {
 		stream << "defdata " << data->name() << std::endl;
 
 		// Iterate through each entry, and emit the appropriate code depending on its type
-		for(IR::EntryList::iterator itEntry = data->entries().begin(); itEntry != data->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : data->entries()) {
 			switch(entry->type) {
 				case IR::Entry::TypeFunctionAddr:
 					{
