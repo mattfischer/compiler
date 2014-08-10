@@ -30,9 +30,7 @@ namespace Transform {
 		bool changed = false;
 
 		// Iterate through the procedure's entries
-		for(IR::EntryList::iterator itEntry = proc->entries().begin(); itEntry != proc->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : proc->entries()) {
 			switch(entry->type) {
 				case IR::Entry::TypeJump:
 					{

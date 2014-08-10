@@ -81,8 +81,7 @@ namespace Transform {
 		Util::UniqueQueue<IR::Entry*> queue;
 
 		// Start by iterating through the entire procedure
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : procedure->entries()) {
 			queue.push(entry);
 		}
 
@@ -230,9 +229,8 @@ namespace Transform {
 						if(newEntry) {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them
-							const IR::EntrySet &entries = useDefs->uses(threeAddr);
-							for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-								queue.push(*it);
+							for(IR::Entry *entry : useDefs->uses(entry)) {
+								queue.push(entry);
 							}
 
 							// Update the useDef chains to reflect the new entry
@@ -269,9 +267,8 @@ namespace Transform {
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								const IR::EntrySet &entries = useDefs->uses(call);
-								for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-									queue.push(*it);
+								for(IR::Entry *entry : useDefs->uses(call)) {
+									queue.push(entry);
 								}
 
 								// Update the useDef chains to reflect the new entry
@@ -308,9 +305,8 @@ namespace Transform {
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								const IR::EntrySet &entries = useDefs->uses(call);
-								for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-									queue.push(*it);
+								for(IR::Entry *entry : useDefs->uses(call)) {
+									queue.push(entry);
 								}
 
 								// Update the useDef chains to reflect the new entry

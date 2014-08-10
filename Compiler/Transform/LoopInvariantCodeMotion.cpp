@@ -32,8 +32,7 @@ namespace Transform {
 		bool changed = false;
 
 		// Process all child loops recursively
-		for(Analysis::Loops::LoopSet::iterator itLoop = loop->children.begin(); itLoop != loop->children.end(); itLoop++) {
-			Analysis::Loops::Loop *child = *itLoop;
+		for(Analysis::Loops::Loop *child : loop->children) {
 			changed |= processLoop(child, procedure, loops);
 		}
 
@@ -47,10 +46,8 @@ namespace Transform {
 		typedef std::map<IR::Symbol *, IR::EntrySet> SymbolToEntrySetMap;
 		SymbolToEntrySetMap defs;
 
-		for(Analysis::FlowGraph::BlockSet::iterator itBlock = loop->blocks.begin(); itBlock != loop->blocks.end(); itBlock++) {
-			Analysis::FlowGraph::Block *block = *itBlock;
-			for(IR::EntrySubList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-				IR::Entry *entry = *itEntry;
+		for(Analysis::FlowGraph::Block *block : loop->blocks) {
+			for(IR::Entry *entry : block->entries) {
 				if(entry->assign()) {
 					// Record all definitions which take place inside of the loop
 					defs[entry->assign()].insert(entry);
@@ -65,9 +62,7 @@ namespace Transform {
 		}
 
 		// Iterate through the invariant entries discovered above
-		for(IR::EntrySet::iterator itEntry = invariants.begin(); itEntry != invariants.end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : invariants) {
 			// TODO: Test for use outside of loops
 			if(defs[entry->assign()].size() != 1) {
 				continue;

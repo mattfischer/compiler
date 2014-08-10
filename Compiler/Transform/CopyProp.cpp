@@ -29,9 +29,7 @@ namespace Transform {
 		std::map<IR::Entry*, IR::EntrySet> kill;
 
 		// Construct the set of all move entries in the procedure
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
@@ -41,16 +39,12 @@ namespace Transform {
 		}
 
 		// Construct gen/kill sets for data flow analysis
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(!entry->assign()) {
 				continue;
 			}
 
-			for(IR::EntrySet::iterator itLoad = allLoads.begin(); itLoad != allLoads.end(); itLoad++) {
-				IR::Entry *load = *itLoad;
-
+			for(IR::Entry *load : allLoads) {
 				// Any entry which assigns to a symbol kills all moves to that same symbol
 				if(entry != load && (load->assign() == entry->assign() || load->uses(entry->assign()))) {
 					kill[entry].insert(load);
@@ -64,14 +58,11 @@ namespace Transform {
 		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
 
 		// Iterate through the procedure's entries
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			// If a move entry survived to this point, any use of the move's LHS can be
 			// replaced with its RHS
-			IR::EntrySet &c = loads[entry];
-			for(IR::EntrySet::iterator itLoad = c.begin(); itLoad != c.end(); itLoad++) {
-				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
+			for(IR::Entry *load : loads[entry]) {
+				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)load;
 				if(entry->uses(load->lhs)) {
 					analysis.replaceUse(entry, load->lhs, load->rhs1);
 					entry->replaceUse(load->lhs, load->rhs1);
@@ -96,9 +87,7 @@ namespace Transform {
 		std::map<IR::Entry*, IR::EntrySet> kill;
 
 		// Construct the set of all move entries in the procedure
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
@@ -108,14 +97,12 @@ namespace Transform {
 		}
 
 		// Construct gen/kill sets for data flow analysis
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
-			for(IR::EntrySet::iterator itLoad = allLoads.begin(); itLoad != allLoads.end(); itLoad++) {
-				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
+		for(IR::Entry *entry : procedure->entries()) {
+			for(IR::Entry *load : allLoads) {
+				IR::EntryThreeAddr *loadThreeAddr = (IR::EntryThreeAddr*)load;
 
 				// Any entry which assigns to a symbol kills all moves to that same symbol
-				if(entry != load && (entry->assign() == load->lhs || entry->assign() == load->rhs1 || entry->uses(load->lhs) || entry->uses(load->rhs1))) {
+				if(entry != load && (entry->assign() == loadThreeAddr->lhs || entry->assign() == loadThreeAddr->rhs1 || entry->uses(loadThreeAddr->lhs) || entry->uses(loadThreeAddr->rhs1))) {
 					kill[entry].insert(load);
 				}
 			}
@@ -129,17 +116,14 @@ namespace Transform {
 		IR::EntrySet deleted;
 
 		// Iterate backwards through the procedure's entries
-		for(IR::EntryList::reverse_iterator itEntry = procedure->entries().rbegin(); itEntry != procedure->entries().rend(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
-			IR::EntrySet &c = loads[entry];
-			for(IR::EntrySet::iterator itLoad = c.begin(); itLoad != c.end(); itLoad++) {
-				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itLoad;
+		for(IR::Entry *entry : procedure->entries()) {
+			for(IR::Entry *load : loads[entry]) {
+				IR::EntryThreeAddr *loadThreeAddr = (IR::EntryThreeAddr*)load;
 
 				// If a move entry survived to this point, any assignment to the load's RHS
 				// can be assigned directly to its LHS instead
-				if(entry->assign() == load->rhs1) {
-					entry->replaceAssign(entry->assign(), load->lhs);
+				if(entry->assign() == loadThreeAddr->rhs1) {
+					entry->replaceAssign(entry->assign(), loadThreeAddr->lhs);
 					deleted.insert(load);
 					changed = true;
 				}
@@ -148,9 +132,9 @@ namespace Transform {
 
 		// Reflect the change in variables by changing all loads into no-ops, since their RHS
 		// no longer contains the correct value
-		for(IR::EntrySet::iterator itEntry = deleted.begin(); itEntry != deleted.end(); itEntry++) {
-			IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)*itEntry;
-			load->rhs1 = load->lhs;
+		for(IR::Entry *load : deleted) {
+			IR::EntryThreeAddr *loadThreeAddr = (IR::EntryThreeAddr*)load;
+			loadThreeAddr->rhs1 = loadThreeAddr->lhs;
 		}
 
 		if(changed) {

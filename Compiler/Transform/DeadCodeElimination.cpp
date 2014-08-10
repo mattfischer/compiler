@@ -17,9 +17,7 @@ namespace Transform {
 		Analysis::UseDefs *useDefs = analysis.useDefs();
 
 		// Iterate through the blocks of the graph
-		for(Analysis::FlowGraph::BlockSet::iterator it = flowGraph->blocks().begin(); it != flowGraph->blocks().end(); it++) {
-			Analysis::FlowGraph::Block *block = *it;
-
+		for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block != flowGraph->start()) {
 				IR::EntryList::iterator itNext;
@@ -101,8 +99,7 @@ namespace Transform {
 
 		// Count the number of assignments to each symbol in the procedure
 		std::map<IR::Symbol*, int> symbolCount;
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : procedure->entries()) {
 			IR::Symbol *assign = entry->assign();
 			if(assign) {
 				symbolCount[assign]++;

@@ -39,15 +39,12 @@ namespace Transform {
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
 		// Iterate through the list of symbols in the procedure
-		for(IR::SymbolList::iterator symIt = proc->symbols().begin(); symIt != proc->symbols().end(); symIt++) {
-			IR::Symbol *symbol = *symIt;
+		for(IR::Symbol *symbol : proc->symbols()) {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph->blocks().begin(); blockIt != flowGraph->blocks().end(); blockIt++) {
-				Analysis::FlowGraph::Block *block = *blockIt;
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-					IR::Entry *entry = *itEntry;
+			for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
+				for(IR::Entry *entry : block->entries) {
 					if(entry->assign() == symbol) {
 						blocks.push(block);
 					}
@@ -59,9 +56,7 @@ namespace Transform {
 				Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
 
-				const Analysis::FlowGraph::BlockSet &frontiers = dominanceFrontiers.frontiers(block);
-				for(Analysis::FlowGraph::BlockSet::const_iterator frontIt = frontiers.begin(); frontIt != frontiers.end(); frontIt++) {
-					Analysis::FlowGraph::Block *frontier = *frontIt;
+				for(Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
 					IR::Entry *head = *(frontier->entries.begin()++);
 
 					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
@@ -76,14 +71,12 @@ namespace Transform {
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
 			activeList[flowGraph->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
 			newSymbols.push_back(activeList[flowGraph->start()]);
-			for(Analysis::FlowGraph::BlockSet::iterator blockIt = flowGraph->blocks().begin(); blockIt != flowGraph->blocks().end(); blockIt++) {
-				Analysis::FlowGraph::Block *block = *blockIt;
+			for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[dominatorTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-					IR::Entry *entry = *itEntry;
+				for(IR::Entry *entry : block->entries) {
 					if(entry->uses(symbol)) {
 						entry->replaceUse(symbol, active);
 					}
@@ -99,14 +92,12 @@ namespace Transform {
 				}
 
 				// Propagate variable uses into Phi functions
-				for(Analysis::FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-					Analysis::FlowGraph::Block *succ = *it;
+				for(Analysis::FlowGraph::Block *succ : block->succ) {
 					IR::Entry *head = *(succ->entries.begin()++);
 
 					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
-						for(Analysis::FlowGraph::BlockSet::iterator it2 = succ->pred.begin(); it2 != succ->pred.end(); it2++) {
-							Analysis::FlowGraph::Block *pred = *it2;
+						for(Analysis::FlowGraph::Block *pred : succ->pred) {
 							if(pred == block) {
 								((IR::EntryPhi*)head)->setArg(l, active);
 								break;
@@ -119,8 +110,8 @@ namespace Transform {
 		}
 
 		// Add newly-created symbols into symbol table
-		for(unsigned int i=0; i<newSymbols.size(); i++) {
-			proc->addSymbol(newSymbols[i]);
+		for(IR::Symbol *symbol : newSymbols) {
+			proc->addSymbol(symbol);
 		}
 
 		analysis.invalidate();

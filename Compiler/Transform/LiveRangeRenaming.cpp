@@ -34,9 +34,8 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry assigns to the symbol, rename it and add all uses of the assignment
 			// to the queue for further processing
 			entry->replaceAssign(symbol, newSymbol);
-			const IR::EntrySet &set = useDefs->uses(entry);
-			for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
-				entries.push(*it);
+			for(IR::Entry *use : useDefs->uses(entry)) {
+				entries.push(use);
 			}
 		}
 
@@ -44,9 +43,8 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry uses the symbol, rename it and add all definitions of the symbol
 			// to the queue for further processing
 			entry->replaceUse(symbol, newSymbol);
-			const IR::EntrySet &set = useDefs->defines(entry, symbol);
-			for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
-				entries.push(*it);
+			for(IR::Entry *def : useDefs->defines(entry, symbol)) {
+				entries.push(def);
 			}
 		}
 	}
@@ -62,14 +60,11 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &
 	Analysis::UseDefs *useDefs = analysis.useDefs();
 
 	// Iterate through each symbol in the procedure
-	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
-		IR::Symbol *symbol = *symbolIt;
+	for(IR::Symbol *symbol : procedure->symbols()) {
 		int idx = 0;
 
 		// Iterate through each entry in the procedure
-		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-			IR::Entry *entry = *entryIt;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			// If the given symbol is assigned or used in this entry, rename all uses of the variable
 			// that are connected to this one by def-use or use-def chains
 			if(entry->assign() == symbol || entry->uses(symbol)) {

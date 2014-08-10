@@ -12,9 +12,7 @@ namespace Transform {
 	 * \return Symbol containing entry's value
 	 */
 	IR::Symbol *findMatch(IR::Entry *entry, const IR::EntrySet &exps) {
-		for(IR::EntrySet::const_iterator expIt = exps.begin(); expIt != exps.end(); expIt++) {
-			IR::Entry *exp = *expIt;
-
+		for(IR::Entry *exp : exps) {
 			// Reject the expression if it is of a different type than the entry, with the
 			// special exception that a memory store expression can be used to satisfy a
 			// memory load entry
@@ -60,8 +58,7 @@ namespace Transform {
 		Util::UniqueQueue<IR::Entry*> queue;
 
 		// Start by iterating through the entire procedure
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : procedure->entries()) {
 			queue.push(entry);
 		}
 
@@ -84,9 +81,8 @@ namespace Transform {
 
 				// Add all uses of the entry into the queue, it may now be possible
 				// to do further subexpression elimination on them
-				const IR::EntrySet &entries = useDefs->uses(entry);
-				for(IR::EntrySet::const_iterator it = entries.begin(); it != entries.end(); it++) {
-					queue.push(*it);
+				for(IR::Entry *entry : useDefs->uses(entry)) {
+					queue.push(entry);
 				}
 
 				// Update the useDef chains to reflect the new entry
