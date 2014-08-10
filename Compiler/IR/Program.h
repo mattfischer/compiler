@@ -15,7 +15,6 @@ namespace IR {
 	public:
 		Program();
 
-		Procedure *main() { return mMain; } //!< Main procedure
 		ProcedureList &procedures() { return mProcedures; } //!< List of all procedures
 		DataList &data() { return mData; }
 
@@ -29,7 +28,6 @@ namespace IR {
 	private:
 		ProcedureList mProcedures;
 		DataList mData;
-		Procedure *mMain;
 	};
 }
 

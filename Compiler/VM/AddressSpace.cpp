@@ -8,8 +8,8 @@ AddressSpace::AddressSpace()
 
 AddressSpace::~AddressSpace()
 {
-	for(unsigned int i=0; i<mRegions.size(); i++) {
-		delete[] mRegions[i].data;
+	for(Region &region : mRegions) {
+		delete[] region.data;
 	}
 }
 
@@ -25,9 +25,9 @@ void AddressSpace::addRegion(unsigned int start, unsigned int size)
 
 unsigned char *AddressSpace::at(unsigned int address)
 {
-	for(unsigned int i=0; i<mRegions.size(); i++) {
-		if(address >= mRegions[i].start && address < mRegions[i].start + mRegions[i].size) {
-			return mRegions[i].data + (address - mRegions[i].start);
+	for(Region &region : mRegions) {
+		if(address >= region.start && address < region.start + region.size) {
+			return region.data + (address - region.start);
 		}
 	}
 

@@ -54,17 +54,14 @@ namespace Middle {
 		transformMap[Transform::CommonSubexpressionElimination::instance()].push_back(Transform::CopyProp::instance());
 
 		// Optimize each procedure in turn
-		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
-			IR::Procedure *procedure = *it;
-
+		for(IR::Procedure *procedure : program->procedures()) {
 			Analysis::Analysis analysis(procedure);
 
 			// Queue of transformations to run
 			Util::UniqueQueue<Transform::Transform*> transforms;
 
 			// Start by running each optimization pass once
-			for(TransformVector::iterator itTransform = startingTransforms.begin(); itTransform != startingTransforms.end(); itTransform++) {
-				Transform::Transform *transform = *itTransform;
+			for(Transform::Transform *transform : startingTransforms) {
 				transforms.push(transform);
 			}
 
@@ -87,8 +84,7 @@ namespace Middle {
 
 					// If the transform changed the IR, add its follow-up transformations to the queue
 					TransformVector &newTransforms = transformMap[transform];
-					for(TransformVector::iterator itTransform = newTransforms.begin(); itTransform != newTransforms.end(); itTransform++) {
-						Transform::Transform *newTransform = *itTransform;
+					for(Transform::Transform *newTransform : newTransforms) {
 						transforms.push(newTransform);
 					}
 				}

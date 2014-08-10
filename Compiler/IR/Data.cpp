@@ -12,8 +12,7 @@ namespace IR {
 	 */
 	void Data::print(std::ostream &o, const std::string &prefix)
 	{
-		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mEntries) {
 			o << prefix << *entry << std::endl;
 		}
 		o << prefix << std::endl;

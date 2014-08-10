@@ -8,7 +8,6 @@ namespace IR {
 	 */
 	Program::Program()
 	{
-		mMain = 0;
 	}
 
 	/*!
@@ -18,9 +17,6 @@ namespace IR {
 	void Program::addProcedure(Procedure *procedure)
 	{
 		mProcedures.push_back(procedure);
-		if(procedure->name() == "main") {
-			mMain = procedure;
-		}
 	}
 
 	/*!

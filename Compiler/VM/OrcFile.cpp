@@ -44,8 +44,8 @@ OrcFile::OrcFile()
 
 OrcFile::~OrcFile()
 {
-	for(unsigned int i=0; i<mSectionList.size(); i++) {
-		delete mSectionList[i];
+	for(Section *section : mSectionList) {
+		delete section;
 	}
 }
 
@@ -59,18 +59,18 @@ void OrcFile::write(std::ostream &stream)
 	stream.write((char*)&header, sizeof(header));
 
 	unsigned int offset = (unsigned int)(sizeof(OrcHeader) + mSectionList.size() * sizeof(OrcSectionHeader));
-	for(unsigned int i=0; i<mSectionList.size(); i++) {
+	for(Section *section : mSectionList) {
 		OrcSectionHeader sectionHeader;
-		sectionHeader.name = mSectionList[i]->name;
+		sectionHeader.name = section->name;
 		sectionHeader.offset = offset;
-		sectionHeader.size = (unsigned int)mSectionList[i]->data.size();
-		offset += (unsigned int)mSectionList[i]->data.size();
+		sectionHeader.size = (unsigned int)section->data.size();
+		offset += (unsigned int)section->data.size();
 
 		stream.write((char*)&sectionHeader, sizeof(sectionHeader));
 	}
 
-	for(unsigned int i=0; i<mSectionList.size(); i++) {
-		stream.write((char*)&mSectionList[i]->data[0], (std::streamsize)mSectionList[i]->data.size());
+	for(Section *section : mSectionList) {
+		stream.write((char*)&section->data[0], (std::streamsize)section->data.size());
 	}
 }
 
@@ -144,8 +144,8 @@ void OrcFile::read(std::istream &stream)
 		mSectionList.push_back(section);
 	}
 
-	for(unsigned int i=0; i<mSectionList.size(); i++) {
-		mSectionMap[getString(mSectionList[mNameSection], mSectionList[i]->name)] = mSectionList[i];
+	for(Section *section : mSectionList) {
+		mSectionMap[getString(mSectionList[mNameSection], section->name)] = section;
 	}
 }
 

@@ -20,9 +20,7 @@ namespace Middle {
 	bool ErrorCheck::check(IR::Program *program)
 	{
 		// Check each procedure of program
-		for(IR::ProcedureList::iterator it = program->procedures().begin(); it != program->procedures().end(); it++) {
-			IR::Procedure *procedure = *it;
-
+		for(IR::Procedure *procedure : program->procedures()) {
 			// *** Check for variables which are used before they are defined ***
 
 			Analysis::Analysis analysis(procedure);
@@ -49,9 +47,7 @@ namespace Middle {
 
 			// Iterate backwards through the procedure, looking for any path which reaches the start label
 			blockList.insert(blockList.begin(), end);
-			for(Analysis::FlowGraph::BlockList::iterator blockIt = blockList.begin(); blockIt != blockList.end(); blockIt++) {
-				Analysis::FlowGraph::Block *block = *blockIt;
-
+			for(Analysis::FlowGraph::Block *block : blockList) {
 				// Breadth-first search of the control flow graph
 				if(seenBlocks.find(block) != seenBlocks.end()) {
 					continue;

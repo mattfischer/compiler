@@ -59,11 +59,11 @@ void Program::write(OrcFile &file)
 
 	symbolsSection->data.resize(symbols.size() * sizeof(OrcSymbol));
 	unsigned int s=0;
-	for(std::map<std::string, int>::iterator it = symbols.begin(); it != symbols.end(); it++) {
+	for(auto &symbolEntry : symbols) {
 		OrcSymbol *symbol = (OrcSymbol*)&symbolsSection->data[0] + s;
 		s++;
-		symbol->name = file.addString(symbolStringsSection, it->first);
-		symbol->offset = it->second;
+		symbol->name = file.addString(symbolStringsSection, symbolEntry.first);
+		symbol->offset = symbolEntry.second;
 	}
 
 	if(exportInfo) {
@@ -84,6 +84,13 @@ void Program::write(const std::string &filename)
 
 void Program::print(std::ostream &o)
 {
+	int addressWidth = 0;
+	unsigned int size = (unsigned int)instructions.size();
+	while(size > 0) {
+		size >>= 4;
+		addressWidth++;
+	}
+
 	for(unsigned int i = 0; i < instructions.size(); i+=4) {
 		VM::Instruction instr;
 		for(std::map<std::string, int>::iterator it=symbols.begin(); it != symbols.end(); it++) {
@@ -91,13 +98,6 @@ void Program::print(std::ostream &o)
 				o << it->first << ":" << std::endl;
 				break;
 			}
-		}
-
-		int addressWidth = 0;
-		unsigned int size = (unsigned int)instructions.size();
-		while(size > 0) {
-			size >>= 4;
-			addressWidth++;
 		}
 
 		o << "  0x" << std::setw(addressWidth) << std::setfill('0') << std::setbase(16) << i << ": ";
@@ -135,9 +135,9 @@ bool Program::prettyPrintInstruction(std::ostream &o, const Instruction &instr, 
 				case VM::OneAddrCall:
 					{
 						unsigned int target = addr + instr.one.imm * 4;
-						for(std::map<std::string, int>::iterator it = symbols.begin(); it != symbols.end(); it++) {
-							if(it->second == target) {
-								o << "call " << it->first;
+						for(auto &symbolEntry : symbols) {
+							if(symbolEntry.second == target) {
+								o << "call " << symbolEntry.first;
 								return true;
 							}
 						}

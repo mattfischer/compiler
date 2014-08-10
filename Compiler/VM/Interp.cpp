@@ -56,9 +56,9 @@ namespace VM {
 		unsigned int offset = 0;
 		std::map<unsigned int, NativeCallback> callbackAddrs;
 		nativeSymbols->symbols["$$nativeStart"] = 0;
-		for(std::map<std::string, NativeCallback>::iterator it = nativeCallbacks.begin(); it != nativeCallbacks.end(); it++) {
-			nativeSymbols->symbols[it->first] = offset;
-			callbackAddrs[offset] = it->second;
+		for(auto &callback : nativeCallbacks) {
+			nativeSymbols->symbols[callback.first] = offset;
+			callbackAddrs[offset] = callback.second;
 			offset += 4;
 		}
 

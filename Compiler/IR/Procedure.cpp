@@ -29,8 +29,7 @@ namespace IR {
 	 */
 	void Procedure::print(std::ostream &o, const std::string &prefix)
 	{
-		for(IR::EntryList::iterator itEntry = mEntries.begin(); itEntry != mEntries.end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(Entry *entry : mEntries) {
 			o << prefix << *entry << std::endl;
 		}
 		o << prefix << std::endl;
@@ -47,7 +46,7 @@ namespace IR {
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		IR::Symbol *symbol = new Symbol(name, size, 0);
+		Symbol *symbol = new Symbol(name, size, 0);
 		addSymbol(symbol);
 
 		return symbol;
@@ -69,8 +68,7 @@ namespace IR {
 	 */
 	Symbol *Procedure::findSymbol(Front::Symbol *symbol)
 	{
-		for(SymbolList::iterator it = mSymbols.begin(); it != mSymbols.end(); it++) {
-			Symbol *irSymbol = *it;
+		for(Symbol *irSymbol : mSymbols) {
 			if(irSymbol->symbol == symbol) {
 				return irSymbol;
 			}
