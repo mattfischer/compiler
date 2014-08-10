@@ -39,9 +39,9 @@ namespace Front {
 	 */
 	Type *Types::findType(const std::string &name)
 	{
-		for(unsigned int i=0; i<mTypes.size(); i++) {
-			if(mTypes[i]->name == name) {
-				return mTypes[i];
+		for(Type *type : mTypes) {
+			if(type->name == name) {
+				return type;
 			}
 		}
 

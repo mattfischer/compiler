@@ -21,21 +21,19 @@ namespace Front {
 		IR::Program *irProgram = new IR::Program;
 
 		// Create an IR procedure for each procedure definition node
-		for(unsigned int i=0; i<program->procedures.size(); i++) {
-			Procedure *procedure = program->procedures[i];
+		for(Procedure *procedure : program->procedures) {
 			IR::Procedure *irProcedure = new IR::Procedure(procedure->name);
 
 			// Emit procedure prologue
 			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
 
 			// Add local variables to the procedure
-			const std::vector<Symbol*> locals = procedure->scope->allSymbols();
 			std::set<std::string> names;
-			for(unsigned int j=0; j<locals.size(); j++) {
+			for(Symbol *local : procedure->scope->allSymbols()) {
 				std::string name;
 				for(int idx=0;; idx++) {
 					std::stringstream s;
-					s << locals[j]->name;
+					s << local->name;
 					if(idx > 0) {
 						s << "." << idx;
 					}
@@ -45,19 +43,20 @@ namespace Front {
 						break;
 					}
 				}
-				IR::Symbol *irSymbol = new IR::Symbol(name, locals[j]->type->valueSize, locals[j]);
+				IR::Symbol *irSymbol = new IR::Symbol(name, local->type->valueSize, local);
 				irProcedure->addSymbol(irSymbol);
 
-				for(unsigned int k=0; k<procedure->arguments.size(); k++) {
-					if(procedure->arguments[k] == locals[j]) {
-						int arg = k;
-						if(procedure->object) {
-							arg++;
-						}
+				int arg = 0;
+				if(procedure->object) {
+					arg++;
+				}
 
+				for(Symbol *argument : procedure->arguments) {
+					if(argument == local) {
 						// If this symbol is an argument, emit an argument load instruction
 						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, irSymbol, 0, 0, arg));
 					}
+					arg++;
 				}
 			}
 
@@ -101,17 +100,17 @@ namespace Front {
 				std::string name = typeStruct->name + "$$vtable";
 				std::vector<std::string> vtable(typeStruct->vtableSize);
 				while(typeStruct) {
-					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						if((typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierVirtual) && vtable[typeStruct->members[j].offset] == "") {
-							vtable[typeStruct->members[j].offset] = typeStruct->name + "." + typeStruct->members[j].name;
+					for(TypeStruct::Member &member : typeStruct->members) {
+						if((member.qualifiers & TypeStruct::Member::QualifierVirtual) && vtable[member.offset] == "") {
+							vtable[member.offset] = typeStruct->name + "." + member.name;
 						}
 					}
 					typeStruct = typeStruct->parent;
 				}
 
 				IR::Data *irData = new IR::Data(name);
-				for(unsigned int j=0; j<vtable.size(); j++) {
-					irData->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, vtable[j]));
+				for(std::string &target : vtable) {
+					irData->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, target));
 				}
 				irProgram->addData(irData);
 			}
@@ -133,8 +132,8 @@ namespace Front {
 		switch(node->nodeType) {
 			case Node::NodeTypeList:
 				// Process each item in the list
-				for(unsigned int i=0; i<node->children.size(); i++) {
-					processNode(node->children[i], context);
+				for(Node *child : node->children) {
+					processNode(child, context);
 				}
 				break;
 
@@ -410,14 +409,16 @@ namespace Front {
 					}
 
 					// Emit code for each argument, building a list of resulting symbols
-					for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-						IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
+					for(Node *argumentNode : node->children[1]->children) {
+						IR::Symbol *arg = processRValue(argumentNode, context);
 						args.push_back(arg);
 					}
 
 					// Emit argument store values for each argument
-					for(unsigned int i=0; i<args.size(); i++) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
+					int argIndex = 0;
+					for(IR::Symbol *arg : args) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arg, 0, argIndex));
+						argIndex++;
 					}
 
 					// Emit procedure call
@@ -440,8 +441,8 @@ namespace Front {
 
 					// Emit code for operator arguments
 					std::vector<IR::Symbol*> arguments;
-					for(unsigned int i=0; i<node->children.size(); i++) {
-						arguments.push_back(processRValue(node->children[i], context));
+					for(Node *child : node->children) {
+						arguments.push_back(processRValue(child, context));
 					}
 
 					// Emit the appropriate type of arithmetic operation
@@ -566,14 +567,16 @@ namespace Front {
 						args.push_back(result);
 
 						// Emit code for each argument, building a list of resulting symbols
-						for(unsigned int i=0; i<node->children[1]->children.size(); i++) {
-							IR::Symbol *arg = processRValue(node->children[1]->children[i], context);
+						for(Node *child : node->children[1]->children) {
+							IR::Symbol *arg = processRValue(child, context);
 							args.push_back(arg);
 						}
 
 						// Emit argument store values for each argument
-						for(unsigned int i=0; i<args.size(); i++) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, args[i], 0, i));
+						int argIndex = 0;
+						for(IR::Symbol *arg : args) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arg, 0, argIndex));
+							argIndex++;
 						}
 
 						// Emit procedure call

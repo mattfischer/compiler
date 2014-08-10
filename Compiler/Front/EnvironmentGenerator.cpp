@@ -49,8 +49,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 		mScope = new Scope;
 
 		// Loop through the tree and pre-populate all declared type names
-		for(unsigned int i=0; i<tree->children.size(); i++) {
-			Node *node = tree->children[i];
+		for(Node *node : tree->children) {
 			std::stringstream s;
 
 			switch(node->nodeType) {
@@ -65,14 +64,13 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 		}
 
 		// Read types from imported binary files
-		for(unsigned int i=0; i<imports.size(); i++) {
-			imports[i]->read(mTypes, mScope);
+		for(ExportInfo *info : imports) {
+			info->read(mTypes, mScope);
 		}
 
 		// Complete each type, and construct scopes for class types
 		std::set<Type*> completeTypes;
-		for(unsigned int i=0; i<mTypes->types().size(); i++) {
-			Type *type = mTypes->types()[i];
+		for(Type *type : mTypes->types()) {
 			completeType(type);
 			if(type->type == Type::TypeClass) {
 				constructScope((TypeStruct*)type, mScope);
@@ -80,8 +78,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 		}
 
 		// Iterate through the tree, and construct symbols for each procedure
-		for(unsigned int i=0; i<tree->children.size(); i++) {
-			Node *node = tree->children[i];
+		for(Node *node : tree->children) {
 			if(node->nodeType == Node::NodeTypeProcedureDef) {
 				Symbol *symbol = new Symbol(createType(node, false), node->lexVal.s);
 				mScope->addSymbol(symbol);
@@ -120,9 +117,7 @@ void EnvironmentGenerator::addStruct(Node *node)
 	type->constructor = 0;
 
 	// Iterate through the member nodes, and create type members for each
-	Node *members = node->children[0];
-	for(unsigned int i=0; i<members->children.size(); i++) {
-		Node *memberNode = members->children[i];
+	for(Node *memberNode : node->children[0]->children) {
 		Type *memberType = createType(memberNode->children[0], true);
 		type->addMember(memberType, memberNode->lexVal.s, false);
 	}
@@ -156,8 +151,7 @@ void EnvironmentGenerator::addClass(Node *node)
 
 	// Iterate through the member nodes, and create type members for each
 	Node *members = node->children[node->children.size() - 1];
-	for(unsigned int i=0; i<members->children.size(); i++) {
-		Node *child = members->children[i];
+	for(Node *child : members->children) {
 		Node *qualifiersNode = child->children[0];
 		Node *memberNode = child->children[1];
 
@@ -172,8 +166,8 @@ void EnvironmentGenerator::addClass(Node *node)
 			case Node::NodeTypeProcedureDef:
 			{
 				unsigned int qualifiers = 0;
-				for(unsigned int i=0; i<qualifiersNode->children.size(); i++) {
-					switch(qualifiersNode->children[i]->nodeSubtype) {
+				for(Node *qualifierNode : qualifiersNode->children) {
+					switch(qualifierNode->nodeSubtype) {
 						case Node::NodeSubtypeVirtual:
 							qualifiers |= TypeStruct::Member::QualifierVirtual;
 							break;
@@ -227,11 +221,11 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 				// Iterate the tree's argument items
 				Node *argumentList = node->children[1];
 				std::vector<Type*> argumentTypes;
-				for(unsigned int j=0; j<argumentList->children.size(); j++) {
+				for(Node *argumentNode : argumentList->children) {
 					// Construct the argument type, and add it to the list of types
-					Type *argumentType = createType(argumentList->children[j]->children[0], dummy);
+					Type *argumentType = createType(argumentNode->children[0], dummy);
 					if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
-						throw EnvironmentError(argumentList->children[j], "Cannot declare procedure argument of type void");
+						throw EnvironmentError(argumentNode, "Cannot declare procedure argument of type void");
 					}
 					argumentTypes.push_back(argumentType);
 				}
@@ -302,8 +296,8 @@ Type *EnvironmentGenerator::completeType(Type *type)
 			{
 				TypeStruct *typeStruct = (TypeStruct*)type;
 				if(typeStruct->parent) {
-					for(unsigned int i=0; i<mCompletionStack.size(); i++) {
-						if(mCompletionStack[i]->name == typeStruct->parent->name) {
+					for(Type *completionType : mCompletionStack) {
+						if(completionType->name == typeStruct->parent->name) {
 							std::stringstream s;
 							s << "Class " << typeStruct->name;
 							std::stringstream s2;
@@ -324,9 +318,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 					typeStruct->vtableSize = 0;
 				}
 
-				for(unsigned int i=0; i<typeStruct->members.size(); i++) {
-					TypeStruct::Member &member = typeStruct->members[i];
-
+				for(TypeStruct::Member &member : typeStruct->members) {
 					// Complete member type
 					member.type = completeType(member.type);
 
@@ -409,8 +401,7 @@ void EnvironmentGenerator::constructScope(TypeStruct *typeStruct, Scope *globalS
 	}
 
 	// Add symbols for each member of the class
-	for(unsigned int i=0; i<typeStruct->members.size(); i++) {
-		TypeStruct::Member &member = typeStruct->members[i];
+	for(TypeStruct::Member &member : typeStruct->members) {
 		Symbol *symbol = new Symbol(member.type, member.name);
 		typeStruct->scope->addSymbol(symbol);
 	}

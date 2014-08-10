@@ -34,9 +34,9 @@ namespace Front {
 	 */
 	Symbol *Scope::findSymbol(const std::string &name)
 	{
-		for(unsigned int i=0; i<mSymbols.size(); i++) {
-			if(mSymbols[i]->name == name) {
-				return mSymbols[i];
+		for(Symbol *symbol : mSymbols) {
+			if(symbol->name == name) {
+				return symbol;
 			}
 		}
 
@@ -64,8 +64,8 @@ namespace Front {
 	std::vector<Symbol*> Scope::allSymbols()
 	{
 		std::vector<Symbol*> result = mSymbols;
-		for(unsigned int i=0; i<mChildren.size(); i++) {
-			std::vector<Symbol*> childSymbols = mChildren[i]->allSymbols();
+		for(Scope *child : mChildren) {
+			std::vector<Symbol*> childSymbols = child->allSymbols();
 			result.insert(result.end(), childSymbols.begin(), childSymbols.end());
 		}
 

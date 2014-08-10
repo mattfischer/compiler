@@ -52,21 +52,19 @@ namespace Front {
 			program->scope = mScope;
 
 			// Iterate through the tree's procedure definitions
-			for(unsigned int i=0; i<mTree->children.size(); i++) {
-				Node *node = mTree->children[i];
-
+			for(Node *node : mTree->children) {
 				switch(node->nodeType) {
 					case Node::NodeTypeProcedureDef:
-						addProcedure(mTree->children[i], program, program->scope, false);
+						addProcedure(node, program, program->scope, false);
 						break;
 
 					case Node::NodeTypeClassDef:
 						{
 							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
 							Node *members = node->children[node->children.size() - 1];
-							for(unsigned int i=0; i<members->children.size(); i++) {
-								Node *qualifiersNode = members->children[i]->children[0];
-								Node *memberNode = members->children[i]->children[1];
+							for(Node *child : members->children) {
+								Node *qualifiersNode = child->children[0];
+								Node *memberNode = child->children[1];
 								TypeStruct::Member *member = typeStruct->findMember(memberNode->lexVal.s);
 
 								if(memberNode->nodeType == Node::NodeTypeProcedureDef) {
@@ -90,9 +88,7 @@ namespace Front {
 			}
 
 			// Now that all procedures have been declared, type check the procedure bodies
-			for(unsigned int i=0; i<program->procedures.size(); i++) {
-				Procedure *procedure = program->procedures[i];
-
+			for(Procedure *procedure : program->procedures) {
 				// Create a context for the procedure
 				Context context;
 				context.procedure = procedure;
@@ -182,8 +178,8 @@ namespace Front {
 	 */
 	bool isChildOfType(Node *node, Type *type)
 	{
-		for(unsigned int i=0; i<node->children.size(); i++) {
-			if(Type::equals(node->children[i]->type, type)) {
+		for(Node *child : node->children) {
+			if(Type::equals(child->type, type)) {
 				return true;
 			}
 		}
@@ -618,8 +614,8 @@ namespace Front {
 	 */
 	void ProgramGenerator::checkChildren(Node *node, Context &context)
 	{
-		for(unsigned int i=0; i<node->children.size(); i++) {
-			checkType(node->children[i], context);
+		for(Node *child : node->children) {
+			checkType(child, context);
 		}
 	}
 }

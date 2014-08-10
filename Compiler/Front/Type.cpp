@@ -87,9 +87,9 @@ namespace Front {
 
 	TypeStruct::Member *TypeStruct::findMember(const std::string &name)
 	{
-		for(unsigned int i=0; i<members.size(); i++) {
-			if(members[i].name == name) {
-				return &members[i];
+		for(Member &member : members) {
+			if(member.name == name) {
+				return &member;
 			}
 		}
 

@@ -21,9 +21,7 @@ enum ExportMember {
 
 ExportInfo::ExportInfo(Types *types, Scope *scope)
 {
-	for(unsigned int i=0; i<types->types().size(); i++) {
-		Type *type = types->types()[i];
-
+	for(Type *type : types->types()) {
 		switch(type->type) {
 			case Type::TypeStruct:
 				{
@@ -32,9 +30,9 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 					mData.push_back((unsigned char)ExportDefinitionStruct);
 					mData.push_back(addString(type->name));
 					mData.push_back((unsigned char)typeStruct->members.size());
-					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						writeType(typeStruct->members[j].type);
-						mData.push_back(addString(typeStruct->members[j].name));
+					for(TypeStruct::Member &member : typeStruct->members) {
+						writeType(member.type);
+						mData.push_back(addString(member.name));
 					}
 					break;
 				}
@@ -51,25 +49,24 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 						mData.push_back((unsigned char)0xff);
 					}
 					mData.push_back((unsigned char)typeStruct->members.size());
-					for(unsigned int j=0; j<typeStruct->members.size(); j++) {
-						if(typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierVirtual) {
+					for(TypeStruct::Member &member : typeStruct->members) {
+						if(member.qualifiers & TypeStruct::Member::QualifierVirtual) {
 							mData.push_back((unsigned char)ExportMemberVirtual);
-						} else if(typeStruct->members[j].qualifiers & TypeStruct::Member::QualifierStatic) {
+						} else if(member.qualifiers & TypeStruct::Member::QualifierStatic) {
 							mData.push_back((unsigned char)ExportMemberStatic);
 						} else {
 							mData.push_back((unsigned char)ExportMemberNormal);
 						}
 
-						writeType(typeStruct->members[j].type);
-						mData.push_back(addString(typeStruct->members[j].name));
+						writeType(member.type);
+						mData.push_back(addString(member.name));
 					}
 					break;
 				}
 		}
 	}
 
-	for(unsigned int i=0; i<scope->symbols().size(); i++) {
-		Symbol *symbol = scope->symbols()[i];
+	for(Symbol *symbol : scope->symbols()) {
 		mData.push_back((unsigned char)ExportItemSymbol);
 		writeType(symbol->type);
 		mData.push_back(addString(symbol->name));
@@ -350,8 +347,8 @@ void ExportInfo::writeType(Type *type)
 				mData.push_back((unsigned char)ExportTypeProcedure);
 				writeType(typeProcedure->returnType);
 				mData.push_back((unsigned char)typeProcedure->argumentTypes.size());
-				for(unsigned int i=0; i<typeProcedure->argumentTypes.size(); i++) {
-					writeType(typeProcedure->argumentTypes[i]);
+				for(Type *argumentType : typeProcedure->argumentTypes) {
+					writeType(argumentType);
 				}
 				break;
 			}

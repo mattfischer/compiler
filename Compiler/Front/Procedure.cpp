@@ -6,8 +6,8 @@ namespace Front {
 	void printNode(Node *node, std::ostream &o, std::string prefix)
 	{
 		o << prefix << node << std::endl;
-		for(unsigned int i=0; i<node->children.size(); i++) {
-			printNode(node->children[i], o, prefix + "  ");
+		for(Node *child : node->children) {
+			printNode(child, o, prefix + "  ");
 		}
 	}
 
@@ -15,8 +15,8 @@ namespace Front {
 	{
 		o << "Procedure " << name << std::endl;
 		o << "  Arguments:" << std::endl;
-		for(unsigned int i=0; i<arguments.size(); i++) {
-			o << "    " << arguments[i]->type->name << " " << arguments[i]->name << std::endl;
+		for(Symbol *argument : arguments) {
+			o << "    " << argument->type->name << " " << argument->name << std::endl;
 		}
 		o << "  Body:" << std::endl;
 		printNode(body, o, "    ");
