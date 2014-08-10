@@ -23,13 +23,10 @@ namespace Analysis {
 		timer.start();
 
 		// Iterate through the procedure, examining the reaching definition information at each entry
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : mProcedure->entries()) {
 			// Iterate through the definitions which reach this entry
 			const IR::EntrySet &defs = mReachingDefs->defs(entry);
-			for(IR::EntrySet::const_iterator it = defs.begin(); it != defs.end(); it++) {
-				IR::Entry *defEntry = *it;
+			for(IR::Entry *defEntry : defs) {
 				IR::Symbol *symbol = defEntry->assign();
 				if(entry->uses(symbol)) {
 					// If the entry uses the symbol from this definition, then add it to the
@@ -88,10 +85,9 @@ namespace Analysis {
 	{
 		// Remove oldEntry from the def-use chains
 		SymbolToEntrySetMap &map = mDefines[oldEntry];
-		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
-			IR::EntrySet &defs = it->second;
-			for(IR::EntrySet::iterator it2 = defs.begin(); it2 != defs.end(); it2++) {
-				IR::Entry *use = *it2;
+		for(auto &def : map) {
+			IR::EntrySet &defs = def.second;
+			for(IR::Entry *use : defs) {
 				mUses[use].erase(oldEntry);
 			}
 		}
@@ -100,8 +96,7 @@ namespace Analysis {
 
 		// Construct new def-use information for the new entry from the reaching def information
 		const IR::EntrySet &newDefs = mReachingDefs->defs(oldEntry);
-		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : newDefs) {
 			IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
 				mDefines[newEntry][symbol].insert(def);
@@ -113,8 +108,7 @@ namespace Analysis {
 		mUses[newEntry] = mUses[oldEntry];
 		mUses.erase(oldEntry);
 		IR::EntrySet &uses = mUses[newEntry];
-		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
-			IR::Entry *use = *it;
+		for(IR::Entry *use : uses) {
 			IR::EntrySet &defs = mDefines[use][newEntry->assign()];
 			defs.erase(oldEntry);
 			defs.insert(newEntry);
@@ -133,10 +127,8 @@ namespace Analysis {
 			IR::Symbol *symbol = entry->assign();
 			IR::EntrySet &defs = mDefines[entry][symbol];
 			IR::EntrySet &uses = mUses[entry];
-			for(IR::EntrySet::iterator itUse = uses.begin(); itUse != uses.end(); itUse++) {
-				IR::Entry *use = *itUse;
-				for(IR::EntrySet::iterator itDef = defs.begin(); itDef != defs.end(); itDef++) {
-					IR::Entry *def = *itDef;
+			for(IR::Entry *use : uses) {
+				for(IR::Entry *def : defs) {
 					mDefines[use][symbol].insert(def);
 					mUses[def].insert(use);
 				}
@@ -145,10 +137,8 @@ namespace Analysis {
 
 		// Remove the entry from the use-def chains
 		SymbolToEntrySetMap &map = mDefines[entry];
-		for(SymbolToEntrySetMap::iterator it = map.begin(); it != map.end(); it++) {
-			IR::EntrySet &defSet = it->second;
-			for(IR::EntrySet::iterator it2 = defSet.begin(); it2 != defSet.end(); it2++) {
-				IR::Entry *def = *it2;
+		for(auto &defs : map) {
+			for(IR::Entry *def : defs.second) {
 				mUses[def].erase(entry);
 			}
 		}
@@ -156,8 +146,7 @@ namespace Analysis {
 		// Remove the entry from the def-use chains
 		mDefines.erase(entry);
 		IR::EntrySet &uses = mUses[entry];
-		for(IR::EntrySet::iterator it = uses.begin(); it != uses.end(); it++) {
-			IR::Entry *use = *it;
+		for(IR::Entry *use : uses) {
 			mDefines[use][entry->assign()].erase(entry);
 		}
 		mUses.erase(entry);
@@ -173,16 +162,14 @@ namespace Analysis {
 	{
 		// Remove the existing def-use and use-def information
 		IR::EntrySet &oldDefs = mDefines[entry][oldSymbol];
-		for(IR::EntrySet::iterator it = oldDefs.begin(); it != oldDefs.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : oldDefs) {
 			mUses[def].erase(entry);
 		}
 		mDefines[entry].erase(oldSymbol);
 
 		// Construct new use-def and def-use information from the underlying reaching def information
 		const IR::EntrySet &newDefs = mReachingDefs->defsForSymbol(entry, newSymbol);
-		for(IR::EntrySet::const_iterator it = newDefs.begin(); it != newDefs.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : newDefs) {
 			mUses[def].insert(entry);
 		}
 		mDefines[entry][newSymbol] = newDefs;
@@ -196,15 +183,13 @@ namespace Analysis {
 		// Assign a line number to each entry
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			lineMap[entry] = line;
 			line++;
 		}
 
 		// Iterate through the procedure, printing out each entry along with def-use and use-def information
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			o << lineMap[entry] << ": " << *entry;
 
 			// Print use information
@@ -216,8 +201,7 @@ namespace Analysis {
 					if(!u.empty()) {
 						o << " [ Uses: ";
 						printedOpen = true;
-						for(IR::EntrySet::const_iterator it = u.begin(); it != u.end(); it++) {
-							IR::Entry *e = *it;
+						for(IR::Entry *e : u) {
 							o << lineMap[e] << " ";
 						}
 					}
@@ -229,16 +213,15 @@ namespace Analysis {
 				std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(entry);
 				if(it != mDefines.end()) {
 					const SymbolToEntrySetMap &defs = it->second;
-					for(SymbolToEntrySetMap::const_iterator it = defs.begin(); it != defs.end(); it++) {
+					for(auto &def : defs) {
 						if(printedOpen) {
 							o << "| ";
 						} else {
 							o << " [ ";
 							printedOpen = true;
 						}
-						o << "Defs (" << it->first->name << "): ";
-						for(IR::EntrySet::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-							IR::Entry *e = *it2;
+						o << "Defs (" << def.first->name << "): ";
+						for(IR::Entry *e : def.second) {
 							o << lineMap[e] << " ";
 						}
 					}

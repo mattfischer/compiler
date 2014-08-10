@@ -15,17 +15,14 @@ namespace Analysis {
 		// Construct the root loop
 		mRootLoop.parent = &mRootLoop;
 		mRootLoop.header = flowGraph->start();
-		for(FlowGraph::BlockSet::iterator itBlock = flowGraph->blocks().begin(); itBlock != flowGraph->blocks().end(); itBlock++) {
-			FlowGraph::Block *block = *itBlock;
+		for(FlowGraph::Block *block : flowGraph->blocks()) {
 			mRootLoop.blocks.insert(block);
 		}
 		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		// Iterate through the graph, looking for loops
-		for(FlowGraph::BlockSet::iterator itBlock = flowGraph->blocks().begin(); itBlock != flowGraph->blocks().end(); itBlock++) {
-			FlowGraph::Block *block = *itBlock;
-			for(FlowGraph::BlockSet::iterator itSucc = block->succ.begin(); itSucc != block->succ.end(); itSucc++) {
-				FlowGraph::Block *succ = *itSucc;
+		for(FlowGraph::Block *block : flowGraph->blocks()) {
+			for(FlowGraph::Block *succ : block->succ) {
 				// If a block's successor dominates the block, then the successor is the head of a loop
 				if(dominatorTree.dominates(block, succ)) {
 					// Build a new loop out of the blocks found
@@ -47,8 +44,7 @@ namespace Analysis {
 	 */
 	Loops::~Loops()
 	{
-		for(LoopList::iterator it = mLoops.begin(); it != mLoops.end(); it++) {
-			Loop *loop = *it;
+		for(Loop *loop : mLoops) {
 			delete loop;
 		}
 	}
@@ -91,8 +87,7 @@ namespace Analysis {
 			loop->blocks.insert(block);
 
 			// Continue following the block's predecessors
-			for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-				FlowGraph::Block *pred = *it;
+			for(FlowGraph::Block *pred : block->pred) {
 				queue.push(pred);
 			}
 		}
@@ -113,9 +108,7 @@ namespace Analysis {
 	void Loops::findParents(DominatorTree &doms)
 	{
 		// Iterate through the list of loops
-		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
-			Loop *loop = *itLoop;
-
+		for(Loop *loop : mLoops) {
 			FlowGraph::Block *block = loop->header;
 			FlowGraph::Block *idom = doms.idom(block);
 
@@ -146,8 +139,7 @@ namespace Analysis {
 		FlowGraph::Block *preheader = 0;
 
 		// Search through the predecessors of the header block
-		for(FlowGraph::BlockSet::iterator itBlock = loop->header->pred.begin(); itBlock != loop->header->pred.end(); itBlock++) {
-			FlowGraph::Block *block = *itBlock;
+		for(FlowGraph::Block *block : loop->header->pred) {
 			if(loop->blocks.find(block) != loop->blocks.end()) {
 				// This block is still in the loop, so it can't be the preheader
 				continue;
@@ -180,13 +172,11 @@ namespace Analysis {
 	{
 		std::map<Loop *, int> loopMap;
 		int num = 1;
-		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
-			Loop *loop = *itLoop;
+		for(Loop *loop : mLoops) {
 			loopMap[loop] = num++;
 		}
 
-		for(LoopList::iterator itLoop = mLoops.begin(); itLoop != mLoops.end(); itLoop++) {
-			Loop *loop = *itLoop;
+		for(Loop *loop : mLoops) {
 			o << loopMap[loop] << ": ";
 			if(loop->parent != &mRootLoop) {
 				o << "parent: " << loopMap[loop->parent] << " | ";
@@ -196,8 +186,7 @@ namespace Analysis {
 				o << "preheader: " << ((IR::EntryLabel*)loop->preheader->entries.front())->name << " | ";
 			}
 			o << "blocks: ";
-			for(FlowGraph::BlockSet::iterator itBlock = loop->blocks.begin(); itBlock != loop->blocks.end(); itBlock++) {
-				FlowGraph::Block *block = *itBlock;
+			for(FlowGraph::Block *block : loop->blocks) {
 				o << ((IR::EntryLabel*)block->entries.front())->name << " ";
 			}
 			o << std::endl;

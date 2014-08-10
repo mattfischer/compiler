@@ -25,12 +25,8 @@ namespace Analysis {
 		// Construct gen/kill sets for data flow analysis.
 		std::map<IR::Entry*, IR::SymbolSet> gen;
 		std::map<IR::Entry*, IR::SymbolSet> kill;
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
-			for(IR::SymbolSet::iterator itSymbol = all.begin(); itSymbol != all.end(); itSymbol++) {
-				IR::Symbol *symbol = *itSymbol;
-
+		for(IR::Entry *entry : procedure->entries()) {
+			for(IR::Symbol *symbol : all) {
 				IR::SymbolSet &g = gen[entry];
 				if(entry->uses(symbol)) {
 					// An entry which uses a symbol adds that symbol to the set of live symbols
@@ -70,12 +66,10 @@ namespace Analysis {
 	void LiveVariables::print(std::ostream &o)
 	{
 		// Loop through the procedure, printing out each entry along with the variables live at that point
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			o << *entry << " | ";
 			IR::SymbolSet &symbols = variables(entry);
-			for(IR::SymbolSet::iterator itSymbol = symbols.begin(); itSymbol != symbols.end(); itSymbol++) {
-				IR::Symbol *symbol = *itSymbol;
+			for(IR::Symbol *symbol : symbols) {
 				o << symbol->name << " ";
 			}
 			o << std::endl;

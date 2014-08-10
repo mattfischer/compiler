@@ -27,8 +27,7 @@ namespace Analysis {
 
 		// Find all definitions in the procedure
 		IR::EntrySet allDefs;
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			if(entry->assign()) {
 				allDefs.insert(entry);
 			}
@@ -37,9 +36,7 @@ namespace Analysis {
 		// Construct gen and kill sets for data flow analysis
 		EntryToEntrySetMap gen;
 		EntryToEntrySetMap kill;
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(!entry->assign()) {
 				continue;
 			}
@@ -50,8 +47,7 @@ namespace Analysis {
 			}
 
 			// An assignment also kills any other assignment to the same variable
-			for(IR::EntrySet::const_iterator itDef = allDefs.begin(); itDef != allDefs.end(); itDef++) {
-				IR::Entry *def = *itDef;
+			for(IR::Entry *def : allDefs) {
 				if(def->assign() == entry->assign() && def != entry) {
 					kill[entry].insert(def);
 				}
@@ -89,8 +85,7 @@ namespace Analysis {
 	{
 		IR::EntrySet result;
 		const IR::EntrySet &all = defs(entry);
-		for(IR::EntrySet::const_iterator it = all.begin(); it != all.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : all) {
 			if(def->assign() == symbol) {
 				result.insert(def);
 			}
@@ -112,8 +107,8 @@ namespace Analysis {
 		mDefs.erase(oldEntry);
 
 		// Search through all reaching definitions, and replace the old entry with the new one
-		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
-			IR::EntrySet &set = it->second;
+		for(auto &def : mDefs) {
+			IR::EntrySet &set = def.second;
 			IR::EntrySet::iterator setIt = set.find(oldEntry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
@@ -129,8 +124,8 @@ namespace Analysis {
 	void ReachingDefs::remove(IR::Entry *entry)
 	{
 		// Remove all references to the given entry
-		for(EntryToEntrySetMap::iterator it = mDefs.begin(); it != mDefs.end(); it++) {
-			IR::EntrySet &set = it->second;
+		for(auto &def : mDefs) {
+			IR::EntrySet &set = def.second;
 			IR::EntrySet::iterator setIt = set.find(entry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
@@ -148,18 +143,15 @@ namespace Analysis {
 		std::map<IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet d = defs(entry);
-			for(IR::EntrySet::iterator it2 = d.begin(); it2 != d.end(); it2++) {
-				IR::Entry *e = *it2;
+			for(IR::Entry *e : d) {
 				o << lineMap[e] << " ";
 			}
 			o << std::endl;

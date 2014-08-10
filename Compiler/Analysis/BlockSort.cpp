@@ -19,8 +19,7 @@ namespace Analysis {
 		seenBlocks.insert(block);
 
 		// Add all successors of this block into the list
-		for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-			FlowGraph::Block *succ = *it;
+		for(FlowGraph::Block *succ : block->succ) {
 			sortRecurse(succ, blocks, seenBlocks);
 		}
 
@@ -37,8 +36,7 @@ namespace Analysis {
 		FlowGraph::BlockSet seenBlocks;
 
 		// Add each block into the list in sequence
-		for(FlowGraph::BlockSet::iterator it = flowGraph->blocks().begin(); it != flowGraph->blocks().end(); it++) {
-			FlowGraph::Block *block = *it;
+		for(FlowGraph::Block *block : flowGraph->blocks()) {
 			sortRecurse(block, mSorted, seenBlocks);
 		}
 

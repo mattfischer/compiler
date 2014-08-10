@@ -15,9 +15,7 @@ namespace Analysis {
 		mProcedure = procedure;
 
 		IR::EntrySet all;
-		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-			IR::Entry *entry = *entryIt;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(isExpression(entry)) {
 				all.insert(entry);
 			}
@@ -26,9 +24,7 @@ namespace Analysis {
 		EntryToEntrySetMap gen;
 		EntryToEntrySetMap kill;
 
-		for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-			IR::Entry *entry = *entryIt;
-
+		for(IR::Entry *entry : procedure->entries()) {
 			if(all.find(entry) == all.end()) {
 				continue;
 			}
@@ -36,8 +32,7 @@ namespace Analysis {
 			gen[entry].insert(entry);
 
 			if(entry->assign()) {
-				for(IR::EntrySet::iterator expIt = all.begin(); expIt != all.end(); expIt++) {
-					IR::Entry *exp = *expIt;
+				for(IR::Entry *exp : all) {
 					if(exp->uses(entry->assign()) || exp->assign() == entry->assign()) {
 						kill[entry].insert(exp);
 					}
@@ -93,18 +88,15 @@ namespace Analysis {
 		std::map<IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::EntryList::iterator itEntry = mProcedure->entries().begin(); itEntry != mProcedure->entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : mProcedure->entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet exps = expressions(entry);
-			for(IR::EntrySet::iterator it2 = exps.begin(); it2 != exps.end(); it2++) {
-				IR::Entry *e = *it2;
+			for(IR::Entry *e : exps) {
 				o << lineMap[e] << " ";
 			}
 			o << std::endl;

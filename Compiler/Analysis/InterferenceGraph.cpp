@@ -16,15 +16,12 @@ IR::SymbolSet emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
 InterferenceGraph::InterferenceGraph(IR::Procedure *procedure, LiveVariables *liveVariables)
 {
 	// Collect the set of all symbols in the procedure
-	for(IR::SymbolList::iterator symbolIt = procedure->symbols().begin(); symbolIt != procedure->symbols().end(); symbolIt++) {
-		IR::Symbol *symbol = *symbolIt;
+	for(IR::Symbol *symbol : procedure->symbols()) {
 		addSymbol(symbol);
 	}
 
 	// Walk through the procedure.  For each entry, add graph edges between all variables live at that point
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
-		IR::Entry *entry = *entryIt;
-
+	for(IR::Entry *entry : procedure->entries()) {
 		IR::SymbolSet &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges
@@ -87,8 +84,8 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
 	mSymbols.erase(mSymbols.find(symbol));
 
 	// Loop through the rest of the symbol sets, removing the symbol from any which contain it
-	for(SymbolToSymbolSetMap::iterator it = mGraph.begin(); it != mGraph.end(); it++) {
-		IR::SymbolSet &set = it->second;
+	for(auto &edge : mGraph) {
+		IR::SymbolSet &set = edge.second;
 		if(set.find(symbol) != set.end()) {
 			set.erase(set.find(symbol));
 		}

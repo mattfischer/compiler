@@ -20,8 +20,7 @@ namespace Analysis {
 
 		// Check each definition that reaches this entry
 		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
-		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : set) {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
 
 			if(def->type != IR::Entry::TypeMove || threeAddr->rhs1) {
@@ -61,8 +60,7 @@ namespace Analysis {
 
 		// Check each definition that reaches this entry
 		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
-		for(IR::EntrySet::const_iterator it = set.begin(); it != set.end(); it++) {
-			IR::Entry *def = *it;
+		for(IR::Entry *def : set) {
 			IR::EntryString *string = (IR::EntryString*)def;
 
 			if(def->type != IR::Entry::TypeLoadString) {

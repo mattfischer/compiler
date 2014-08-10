@@ -11,14 +11,11 @@ namespace Analysis {
 	 */
 	DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
 	{
-		for(unsigned int i=0; i<tree.blocks().size(); i++) {
-			FlowGraph::Block *block = tree.blocks()[i];
-
+		for(FlowGraph::Block *block : tree.blocks()) {
 			if(block->pred.size() < 2)
 				continue;
 
-			for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-				FlowGraph::Block *runner = *it;
+			for(FlowGraph::Block *runner : block->pred) {
 				while(runner != tree.idom(block)) {
 					mFrontiers[runner].insert(block);
 					runner = tree.idom(runner);

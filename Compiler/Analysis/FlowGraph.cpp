@@ -61,8 +61,7 @@ namespace Analysis {
 		mEnd = mFrontMap[procedure->end()];
 
 		// Now loop through the blocks and construct the links between them
-		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
-			Block *block = *it;
+		for(Block *block : mBlockSet) {
 			linkBlock(block, block->entries.back());
 		}
 	}
@@ -72,8 +71,7 @@ namespace Analysis {
 	 */
 	FlowGraph::~FlowGraph()
 	{
-		for(BlockSet::iterator it = mBlockSet.begin(); it != mBlockSet.end(); it++) {
-			Block *block = *it;
+		for(Block *block : mBlockSet) {
 			delete block;
 		}
 	}
@@ -135,8 +133,7 @@ namespace Analysis {
 		Block *block = mBackMap[oldEntry];
 		if(block) {
 			// Break links with all successor blocks
-			for(BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-				Block *succ = *it;
+			for(Block *succ : block->succ) {
 				succ->pred.erase(block);
 			}
 			block->succ.clear();
