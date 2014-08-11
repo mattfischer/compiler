@@ -374,9 +374,6 @@
     <ClInclude Include="Analysis\Analysis.h">
       <Filter>Header Files\Analysis</Filter>
     </ClInclude>
-    <ClInclude Include="Util\Array.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
     <ClInclude Include="Back\AsmParser.h">
       <Filter>Header Files\Back</Filter>
     </ClInclude>

@@ -225,7 +225,6 @@
     <ClInclude Include="Transform\SSA.h" />
     <ClInclude Include="Transform\ThreadJumps.h" />
     <ClInclude Include="Transform\Transform.h" />
-    <ClInclude Include="Util\Array.h" />
     <ClInclude Include="Util\Log.h" />
     <ClInclude Include="Util\Timer.h" />
     <ClInclude Include="Util\UniqueQueue.h" />

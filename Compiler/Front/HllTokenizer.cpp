@@ -1,17 +1,15 @@
 #include "Front/HllTokenizer.h"
 
-#include "Util/Array.h"
-
 #include <cctype>
 #include <sstream>
 
-static char whitespace[] = { ' ', '\t', '\r', '\n' };
+static std::vector<char> whitespace = { ' ', '\t', '\r', '\n' };
 
-static char *literals[] = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
+static std::vector<std::string> literals = { "==", "!=", ">=", "<=", "++", "--", "&&", "||",
 					 ">", "<", "+", "-", "*", "/", "%", "(", ")", "=", ";", "{", "}", ",", "[", "]", ".", ":"
 					};
 
-static char *keywords[] = { "if", "else", "while", "return", "new", "for", "break",
+static std::vector<std::string> keywords = { "if", "else", "while", "return", "new", "for", "break",
 					 "continue", "true", "false", "struct", "class", "virtual", "native", "static"
 					};
 
@@ -41,9 +39,9 @@ bool HllTokenizer::evaluateEscapes(std::string &text)
 		if(text[i] == '\\') {
 			bool valid = false;
 			if(i < text.size() - 1) {
-				for(unsigned int j=0; j < N_ELEMENTS(escapes); j++) {
-					if(text[i+1] == escapes[j].escape) {
-						text[i] = escapes[j].value;
+				for(auto &escape : escapes) {
+					if(text[i+1] == escape.escape) {
+						text[i] = escape.value;
 						text.erase(i+1, 1);
 						valid = true;
 						break;
@@ -69,7 +67,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 	Token next;
 
 	// Start out by moving past any whitespace
-	skipCharacters(whitespace, N_ELEMENTS(whitespace));
+	skipCharacters(whitespace);
 
 	// Check if we've reached the end of the file
 	if(!fillBuffer(1)) {
@@ -78,7 +76,7 @@ HllTokenizer::Token HllTokenizer::getNext()
 	}
 
 	// Scan through the list of literals and see if any match
-	if(scanLiteral(literals, N_ELEMENTS(literals), next)) {
+	if(scanLiteral(literals, next)) {
 		return next;
 	}
 
@@ -96,8 +94,8 @@ HllTokenizer::Token HllTokenizer::getNext()
 		std::string string = buffer().substr(0, len);
 
 		// Check if the string is a keyword
-		for(int i=0; i<N_ELEMENTS(keywords); i++) {
-			if(string == keywords[i]) {
+		for(std::string &keyword : keywords) {
+			if(string == keyword) {
 				type = TypeLiteral;
 				break;
 			}

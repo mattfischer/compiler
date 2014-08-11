@@ -96,7 +96,7 @@ void Tokenizer::emptyBuffer(size_t length)
  * \param characters Characters to skip
  * \param numCharacters Number of characters in list
  */
-void Tokenizer::skipCharacters(const char characters[], int numCharacters)
+void Tokenizer::skipCharacters(const std::vector<char> &characters)
 {
 	while(true) {
 		// Ensure the buffer has at least one character
@@ -106,8 +106,8 @@ void Tokenizer::skipCharacters(const char characters[], int numCharacters)
 
 		// If the front character matches any of the characters in the list, remove it
 		bool found = false;
-		for(int i=0; i<numCharacters; i++) {
-			if(mBuffer[0] == characters[i]) {
+		for(char c : characters) {
+			if(mBuffer[0] == c) {
 				emptyBuffer(1);
 				found = true;
 				break;
@@ -157,12 +157,11 @@ Tokenizer::Token Tokenizer::createToken(int type, const std::string &text)
  * \param literalType Type to assign to token if literal is found
  * \return True if literal was found
  */
-bool Tokenizer::scanLiteral(char *literals[], int numLiterals, Token &token)
+bool Tokenizer::scanLiteral(const std::vector<std::string> &literals, Token &token)
 {
 	// Scan through the list of literals and see if any match
-	for(int i=0; i<numLiterals; i++) {
-		char *lit = literals[i];
-		size_t len = strlen(lit);
+	for(const std::string &lit : literals) {
+		size_t len = lit.size();
 
 		// Ensure that there are a sufficient number of characters in the buffer
 		if(!fillBuffer(len)) {

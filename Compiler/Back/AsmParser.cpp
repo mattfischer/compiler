@@ -1,7 +1,5 @@
 #include "Back/AsmParser.h"
 
-#include "Util/Array.h"
-
 namespace Back {
 
 struct NameInt {
@@ -159,9 +157,9 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 		{ "calli", VM::InstrOneAddr, VM::OneAddrCall }
 	};
 
-	for(int i=0; i<N_ELEMENTS(stdOps); i++) {
-		if(next().text == stdOps[i].name) {
-			switch(stdOps[i].value1) {
+	for(const NameTwoInt &op : stdOps) {
+		if(next().text == op.name) {
+			switch(op.value1) {
 				case VM::InstrThreeAddr:
 				{
 					consume();
@@ -171,7 +169,7 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 					expectLiteral(",");
 					int rhs2 = parseReg();
 
-					instr = VM::Instruction::makeThreeAddr(stdOps[i].value2, lhs, rhs1, rhs2, 0);
+					instr = VM::Instruction::makeThreeAddr(op.value2, lhs, rhs1, rhs2, 0);
 					return true;
 				}
 				case VM::InstrTwoAddr:
@@ -181,7 +179,7 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 					expectLiteral(",");
 					int rhs = parseReg();
 
-					instr = VM::Instruction::makeTwoAddr(stdOps[i].value2, lhs, rhs, 0);
+					instr = VM::Instruction::makeTwoAddr(op.value2, lhs, rhs, 0);
 					return true;
 				}
 				case VM::InstrOneAddr: 
@@ -189,7 +187,7 @@ bool AsmParser::parseStdInstr(VM::Instruction &instr)
 					consume();
 					int lhs = parseReg();
 
-					instr = VM::Instruction::makeOneAddr(stdOps[i].value2, lhs, 0);
+					instr = VM::Instruction::makeOneAddr(op.value2, lhs, 0);
 					return true;
 				}
 			}
@@ -211,8 +209,8 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 		{ "stb", VM::TwoAddrStoreByte, VM::ThreeAddrStoreByte },
 	};
 
-	for(int i=0; i<N_ELEMENTS(indOps); i++) {
-		if(next().text == indOps[i].name) {
+	for(const NameTwoInt &op : indOps) {
+		if(next().text == op.name) {
 			consume();
 			int lhs = parseReg();
 			expectLiteral(",");
@@ -220,7 +218,7 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 			int rhs1 = parseReg();
 			if(matchLiteral("]")) {
 				consume();
-				instr = VM::Instruction::makeTwoAddr(indOps[i].value1, lhs, rhs1, 0);
+				instr = VM::Instruction::makeTwoAddr(op.value1, lhs, rhs1, 0);
 			} else {
 				expectLiteral(",");
 				if(matchLiteral("#")) {
@@ -228,7 +226,7 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 					int imm = std::atoi(next().text.c_str());
 					expect(AsmTokenizer::TypeNumber);
 					expectLiteral("]");
-					instr = VM::Instruction::makeTwoAddr(indOps[i].value1, lhs, rhs1, imm);
+					instr = VM::Instruction::makeTwoAddr(op.value1, lhs, rhs1, imm);
 				} else {
 					int rhs2 = parseReg();
 					int imm = 0;
@@ -239,7 +237,7 @@ bool AsmParser::parseIndInstr(VM::Instruction &instr)
 						expect(AsmTokenizer::TypeNumber);
 					}
 					expectLiteral("]");
-					instr = VM::Instruction::makeThreeAddr(indOps[i].value2, lhs, rhs1, rhs2, imm);
+					instr = VM::Instruction::makeThreeAddr(op.value2, lhs, rhs1, rhs2, imm);
 				}
 			}
 
@@ -263,8 +261,8 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 		{ "mod", VM::TwoAddrModImm, VM::ThreeAddrMod },
 	};
 
-	for(int i=0; i<N_ELEMENTS(imm23Ops); i++) {
-		if(next().text == imm23Ops[i].name) {
+	for(const NameTwoInt &op : imm23Ops) {
+		if(next().text == op.name) {
 			consume();
 			int lhs = parseReg();
 			expectLiteral(",");
@@ -275,10 +273,10 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 				consume();
 				int imm = std::atoi(next().text.c_str());
 				expect(AsmTokenizer::TypeNumber);
-				instr = VM::Instruction::makeTwoAddr(imm23Ops[i].value1, lhs, rhs1, imm);
+				instr = VM::Instruction::makeTwoAddr(op.value1, lhs, rhs1, imm);
 			} else {
 				int rhs2 = parseReg();
-				instr = VM::Instruction::makeThreeAddr(imm23Ops[i].value2, lhs, rhs1, rhs2, 0);
+				instr = VM::Instruction::makeThreeAddr(op.value2, lhs, rhs1, rhs2, 0);
 			}
 			return true;
 		}
@@ -288,8 +286,8 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 		{ "mov", VM::OneAddrLoadImm, VM::TwoAddrAddImm }
 	};
 
-	for(int i=0; i<N_ELEMENTS(imm12Ops); i++) {
-		if(next().text == imm12Ops[i].name) {
+	for(const NameTwoInt &op : imm12Ops) {
+		if(next().text == op.name) {
 			consume();
 			int lhs = parseReg();
 			expectLiteral(",");
@@ -298,10 +296,10 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 				consume();
 				int imm = std::atoi(next().text.c_str());
 				expect(AsmTokenizer::TypeNumber);
-				instr = VM::Instruction::makeOneAddr(imm12Ops[i].value1, lhs, imm);
+				instr = VM::Instruction::makeOneAddr(op.value1, lhs, imm);
 			} else {
 				int rhs = parseReg();
-				instr = VM::Instruction::makeTwoAddr(imm12Ops[i].value2, lhs, rhs, 0);
+				instr = VM::Instruction::makeTwoAddr(op.value2, lhs, rhs, 0);
 			}
 			return true;
 		}
@@ -321,8 +319,8 @@ bool AsmParser::parseMultInstr(VM::Instruction &instr)
 		{ "ldm", VM::MultRegLoad, 0 },
 	};
 
-	for(int i=0; i<N_ELEMENTS(multOps); i++) {
-		if(next().text == multOps[i].name) {
+	for(const NameTwoInt &op : multOps) {
+		if(next().text == op.name) {
 			consume();
 			int lhs = parseReg();
 			expectLiteral(",");
@@ -350,7 +348,7 @@ bool AsmParser::parseMultInstr(VM::Instruction &instr)
 			}
 			expectLiteral("}");
 
-			instr = VM::Instruction::makeMultReg(multOps[i].value1, lhs, regs);
+			instr = VM::Instruction::makeMultReg(op.value1, lhs, regs);
 			return true;
 		}
 	}
@@ -455,10 +453,10 @@ int AsmParser::parseReg()
 		return std::atoi(num.c_str());
 	}
 
-	for(int i=0; i<N_ELEMENTS(regs); i++) {
-		if(regs[i].name == text) {
+	for(const NameInt &reg : regs) {
+		if(reg.name == text) {
 			consume();
-			return regs[i].value;
+			return reg.value;
 		}
 	}
 

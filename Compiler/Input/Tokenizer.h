@@ -40,12 +40,12 @@ protected:
 	const std::string &buffer() { return mBuffer; }
 	bool fillBuffer(size_t length);
 	void emptyBuffer(size_t length);
-	void skipCharacters(const char characters[], int numCharacters);
+	void skipCharacters(const std::vector<char> &characters);
 	void setError(const std::string &message);
 
 	Token createToken(int type, const std::string& text);
 
-	bool scanLiteral(char *literals[], int numLiterals, Token &token);
+	bool scanLiteral(const std::vector<std::string> &literals, Token &token);
 
 	virtual Token getNext() = 0;
 

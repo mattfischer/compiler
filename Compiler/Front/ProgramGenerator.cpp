@@ -1,7 +1,5 @@
 #include "Front/ProgramGenerator.h"
 
-#include "Util/Array.h"
-
 #include <set>
 #include <sstream>
 
@@ -404,8 +402,8 @@ namespace Front {
 						{
 							Types::Intrinsic intrinsics[] = { Types::Int, Types::Bool, Types::Char };
 							bool found = false;
-							for(int i=0; i<N_ELEMENTS(intrinsics); i++) {
-								Type *type = Types::intrinsic(intrinsics[i]);
+							for(Types::Intrinsic &intrinsic : intrinsics) {
+								Type *type = Types::intrinsic(intrinsic);
 								if(isChildOfType(node, type)) {
 									coerceChildren(node, type);
 									found = true;

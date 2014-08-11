@@ -1,15 +1,13 @@
 #include "Back/AsmTokenizer.h"
 
-#include "Util/Array.h"
-
 #include <cctype>
 #include <sstream>
 
-static char whitespace[] = { ' ', '\t', '\r', '\n' };
+static std::vector<char> whitespace = { ' ', '\t', '\r', '\n' };
 
-static char *literals[] = { "[", "]", ",", ":", "#", "{", "}", "-" };
+static std::vector<std::string> literals = { "[", "]", ",", ":", "#", "{", "}", "-" };
 
-static char *keywords[] = { "jmp", "add", "sub", "mov", "mult", "div", "mod", "ldr", "str",
+static std::vector<std::string> keywords = { "jmp", "add", "sub", "mov", "mult", "div", "mod", "ldr", "str",
 							"new", "cmov", "cadd", "ncmov", "ncadd", "equ",
 							"neq", "lt", "lte", "gt", "gte", "or", "and", "call", "calli",
 							"ldm", "stm", "defproc", "defdata", "string", "lea", "ldb", "stb", "addr",
@@ -33,7 +31,7 @@ AsmTokenizer::Token AsmTokenizer::getNext()
 	Token next;
 
 	// Start out by moving past any whitespace
-	skipCharacters(whitespace, N_ELEMENTS(whitespace));
+	skipCharacters(whitespace);
 
 	// Check if we've reached the end of the file
 	if(!fillBuffer(1)) {
@@ -42,7 +40,7 @@ AsmTokenizer::Token AsmTokenizer::getNext()
 	}
 
 	// Scan through the list of literals and see if any match
-	if(scanLiteral(literals, N_ELEMENTS(literals), next)) {
+	if(scanLiteral(literals, next)) {
 		return next;
 	}
 
@@ -60,8 +58,8 @@ AsmTokenizer::Token AsmTokenizer::getNext()
 		std::string string = buffer().substr(0, len);
 
 		// Check if the string is a keyword
-		for(int i=0; i<N_ELEMENTS(keywords); i++) {
-			if(string == keywords[i]) {
+		for(std::string &keyword : keywords) {
+			if(string == keyword) {
 				type = TypeLiteral;
 				break;
 			}

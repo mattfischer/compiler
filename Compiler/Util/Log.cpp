@@ -1,11 +1,11 @@
 #include "Util/Log.h"
-#include "Util/Array.h"
 
 #include <fstream>
+#include <vector>
 
 namespace Util {
 
-const char *enabledLogs[] = {
+std::vector<std::string> enabledLogs = {
 	"asm",
 	"output"
 };
@@ -14,8 +14,8 @@ std::ofstream nullstream;
 
 std::ostream &log(const std::string &name)
 {
-	for(int i=0; i<N_ELEMENTS(enabledLogs); i++) {
-		if(enabledLogs[i] == name) {
+	for(std::string &log : enabledLogs) {
+		if(log == name) {
 			return std::cout;
 		}
 	}
