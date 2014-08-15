@@ -25,7 +25,7 @@ namespace Front {
 			IR::Procedure *irProcedure = new IR::Procedure(procedure->name);
 
 			// Emit procedure prologue
-			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypePrologue));
+			irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Prologue));
 
 			// Add local variables to the procedure
 			std::set<std::string> names;
@@ -54,7 +54,7 @@ namespace Front {
 				for(Symbol *argument : procedure->arguments) {
 					if(argument == local) {
 						// If this symbol is an argument, emit an argument load instruction
-						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, irSymbol, 0, 0, arg));
+						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadArg, irSymbol, 0, 0, arg));
 					}
 					arg++;
 				}
@@ -67,12 +67,12 @@ namespace Front {
 			context.continueTarget = 0;
 			if(procedure->object) {
 				context.object = irProcedure->findSymbol(procedure->object);
-				irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadArg, context.object, 0, 0, 0));
+				irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadArg, context.object, 0, 0, 0));
 				TypeStruct *classType = procedure->scope->parent()->classType();
 				if(procedure->name == classType->name + "." + classType->name && classType->vtableSize > 0) {
 					IR::Symbol *vtable = irProcedure->newTemp(4);
-					irProcedure->emit(new IR::EntryString(IR::Entry::TypeLoadAddress, vtable, classType->name + "$$vtable"));
-					irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, vtable, context.object, 0, classType->vtableOffset));
+					irProcedure->emit(new IR::EntryString(IR::Entry::Type::LoadAddress, vtable, classType->name + "$$vtable"));
+					irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreMem, vtable, context.object, 0, classType->vtableOffset));
 				}
 			} else {
 				context.object = 0;
@@ -83,11 +83,11 @@ namespace Front {
 
 			// If the procedure's return type is void, emit an return statement 
 			if(Type::equals(procedure->type->returnType, Types::intrinsic(Types::Void))) {
-				irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::TypeStoreRet, 0, 0));
+				irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::Type::StoreRet, 0, 0));
 			}
 
 			// Emit function epilogue
-			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::TypeEpilogue));
+			irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::Type::Epilogue));
 
 			// Add procedure to procedure list
 			irProgram->addProcedure(irProcedure);
@@ -95,7 +95,7 @@ namespace Front {
 
 		for(unsigned int i=0; i<program->types->types().size(); i++) {
 			const Type *type = program->types->types()[i];
-			if(type->type == Type::TypeClass && ((TypeStruct*)type)->vtableSize > 0) {
+			if(type->kind == Type::Kind::Class && ((TypeStruct*)type)->vtableSize > 0) {
 				TypeStruct *typeStruct = (TypeStruct*)type;
 				std::string name = typeStruct->name + "$$vtable";
 				std::vector<std::string> vtable(typeStruct->vtableSize);
@@ -110,7 +110,7 @@ namespace Front {
 
 				IR::Data *irData = new IR::Data(name);
 				for(std::string &target : vtable) {
-					irData->entries().push_back(new IR::EntryCall(IR::Entry::TypeFunctionAddr, target));
+					irData->entries().push_back(new IR::EntryCall(IR::Entry::Type::FunctionAddr, target));
 				}
 				irProgram->addData(irData);
 			}
@@ -130,18 +130,18 @@ namespace Front {
 		IR::Procedure *procedure = context.procedure;
 
 		switch(node->nodeType) {
-			case Node::NodeTypeList:
+			case Node::Type::List:
 				// Process each item in the list
 				for(Node *child : node->children) {
 					processNode(child, context);
 				}
 				break;
 
-			case Node::NodeTypeVarDecl:
+			case Node::Type::VarDecl:
 				// No work to do, symbol was already added when creating the procedure
 				break;
 
-			case Node::NodeTypeIf:
+			case Node::Type::If:
 				// Process statement predicate
 				lhs = processRValue(node->children[0], context);
 				if(node->children.size() == 2) {
@@ -179,7 +179,7 @@ namespace Front {
 				}
 				break;
 
-			case Node::NodeTypeWhile:
+			case Node::Type::While:
 				{
 					IR::EntryLabel *testLabel = procedure->newLabel();
 					IR::EntryLabel *mainLabel = procedure->newLabel();
@@ -205,7 +205,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeFor:
+			case Node::Type::For:
 				{
 					IR::EntryLabel *testLabel = procedure->newLabel();
 					IR::EntryLabel *mainLabel = procedure->newLabel();
@@ -238,13 +238,13 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeReturn:
+			case Node::Type::Return:
 				{
 					// Emit code for return value
 					rhs = processRValue(node->children[0], context);
 
 					// Emit procedure return and jump to end block
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreRet, 0, rhs));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreRet, 0, rhs));
 					procedure->emit(new IR::EntryJump(procedure->end()));
 
 					// Emit label following statement
@@ -253,11 +253,11 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeBreak:
+			case Node::Type::Break:
 				procedure->emit(new IR::EntryJump(context.breakTarget));
 				break;
 
-			case Node::NodeTypeContinue:
+			case Node::Type::Continue:
 				procedure->emit(new IR::EntryJump(context.continueTarget));
 				break;
 
@@ -280,53 +280,53 @@ namespace Front {
 		IR::Procedure *procedure = context.procedure;
 
 		switch(node->nodeType) {
-			case Node::NodeTypeConstant:
+			case Node::Type::Constant:
 				// Construct a temporary to contain the new value
 				result = procedure->newTemp(node->type->valueSize);
 				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
-					procedure->emit(new IR::EntryString(IR::Entry::TypeLoadString, result, node->lexVal.s));
+					procedure->emit(new IR::EntryString(IR::Entry::Type::LoadString, result, node->lexVal.s));
 				} else {
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, 0, 0, node->lexVal.i));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, 0, 0, node->lexVal.i));
 				}
 				break;
 
-			case Node::NodeTypeId:
+			case Node::Type::Id:
 				if(node->symbol->scope->classType()) {
 					// Emit the load from the calculated memory location
 					result = procedure->newTemp(node->type->valueSize);
 					Front::TypeStruct::Member *member = node->symbol->scope->classType()->findMember(node->lexVal.s);
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, context.object, 0, member->offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadMem, result, context.object, 0, member->offset));
 				} else {
 					// Return the already-existing variable node
 					result = procedure->findSymbol(node->symbol);
 				}
 				break;
 
-			case Node::NodeTypeAssign:
+			case Node::Type::Assign:
 				{
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
 
 					// If the LHS is a declaration, process it so that the symbol gets added
-					if(lhs->nodeType == Node::NodeTypeVarDecl) {
+					if(lhs->nodeType == Node::Type::VarDecl) {
 						processNode(lhs, context);
 					}
 
 					// Emit code for R-Value of assignment
 					b = processRValue(rhs, context);
 
-					if(lhs->nodeType == Node::NodeTypeId || lhs->nodeType == Node::NodeTypeVarDecl) {
+					if(lhs->nodeType == Node::Type::Id || lhs->nodeType == Node::Type::VarDecl) {
 						if(lhs->symbol->scope->classType()) {
 							Front::TypeStruct::Member *member = lhs->symbol->scope->classType()->findMember(lhs->lexVal.s);
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, context.object, 0, member->offset));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreMem, b, context.object, 0, member->offset));
 						} else {
 							// Locate symbol to assign into
 							a = procedure->findSymbol(lhs->symbol);
 
 							// Emit a move into the target symbol
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, a, b));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, a, b));
 						}
-					} else if(lhs->nodeType == Node::NodeTypeArray) {
+					} else if(lhs->nodeType == Node::Type::Array) {
 						// Emit code to calculate the array's base address
 						a = processRValue(lhs->children[0], context);
 
@@ -335,16 +335,16 @@ namespace Front {
 
 						// Compute the offset into array memory based on subscript and type size
 						IR::Symbol *offset = procedure->newTemp(4);
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, 0, node->type->valueSize));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, offset, subscript, 0, node->type->valueSize));
 
 						// Emit the store into the calculated memory location
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, offset));
-					} else if(lhs->nodeType == Node::NodeTypeMember) {
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreMem, b, a, offset));
+					} else if(lhs->nodeType == Node::Type::Member) {
 						a = processRValue(lhs->children[0], context);
 
 						Front::TypeStruct *typeStruct = (Front::TypeStruct*)lhs->children[0]->type;
 						Front::TypeStruct::Member *member = typeStruct->findMember(lhs->lexVal.s);
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreMem, b, a, 0, member->offset));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreMem, b, a, 0, member->offset));
 					}
 
 					// Return the resulting node
@@ -352,7 +352,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeCall:
+			case Node::Type::Call:
 				{
 					Node *target = node->children[0];
 					Front::TypeStruct *classType;
@@ -364,13 +364,13 @@ namespace Front {
 					// Determine the target of the call, and the class type and object if it is
 					// a member function call
 					switch(target->nodeType) {
-						case Node::NodeTypeId:
+						case Node::Type::Id:
 							classType = target->symbol->scope->classType();
 							object = context.object;
 							name = target->lexVal.s;
 							break;
 
-						case Node::NodeTypeMember:
+						case Node::Type::Member:
 							{
 								Node *base = target->children[0];
 								classType = (TypeStruct*)base->type;
@@ -389,15 +389,15 @@ namespace Front {
 						Front::TypeStruct::Member *member = classType->findMember(name);
 						if(member->qualifiers & TypeStruct::Member::QualifierVirtual) {
 							IR::Symbol *vtable = procedure->newTemp(4);
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, vtable, object, 0, classType->vtableOffset));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadMem, vtable, object, 0, classType->vtableOffset));
 							IR::Symbol *callTarget = procedure->newTemp(4);
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, callTarget, vtable, 0, member->offset * 4));
-							callEntry = new IR::EntryThreeAddr(IR::Entry::TypeCallIndirect, 0, callTarget);
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadMem, callTarget, vtable, 0, member->offset * 4));
+							callEntry = new IR::EntryThreeAddr(IR::Entry::Type::CallIndirect, 0, callTarget);
 						} else {
 							std::stringstream s;
 							s << classType->name << "." << name;
 							std::string name = s.str();
-							callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
+							callEntry = new IR::EntryCall(IR::Entry::Type::Call, name);
 						}
 
 						if(!(member->qualifiers & TypeStruct::Member::QualifierStatic)) {
@@ -405,7 +405,7 @@ namespace Front {
 							args.push_back(object);
 						}
 					} else {
-						callEntry = new IR::EntryCall(IR::Entry::TypeCall, name);
+						callEntry = new IR::EntryCall(IR::Entry::Type::Call, name);
 					}
 
 					// Emit code for each argument, building a list of resulting symbols
@@ -417,7 +417,7 @@ namespace Front {
 					// Emit argument store values for each argument
 					int argIndex = 0;
 					for(IR::Symbol *arg : args) {
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arg, 0, argIndex));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arg, 0, argIndex));
 						argIndex++;
 					}
 
@@ -427,7 +427,7 @@ namespace Front {
 					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary
 						result = procedure->newTemp(node->type->valueSize);
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
 					} else {
 						result = 0;
 					}
@@ -435,7 +435,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeArith:
+			case Node::Type::Arith:
 				{
 					result = procedure->newTemp(node->type->valueSize);
 
@@ -447,47 +447,47 @@ namespace Front {
 
 					// Emit the appropriate type of arithmetic operation
 					switch(node->nodeSubtype) {
-						case Node::NodeSubtypeAdd:
+					case Node::Subtype::Add:
 							if(Type::equals(node->type, Types::intrinsic(Types::String))) {
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[0], 0, 0));
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arguments[1], 0, 1));
-								procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_concat"));
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arguments[0], 0, 0));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arguments[1], 0, 1));
+								procedure->emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_concat"));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
 							} else {
-								procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, result, arguments[0], arguments[1]));
+								procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Add, result, arguments[0], arguments[1]));
 							}
 							break;
 
-						case Node::NodeSubtypeSubtract:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeSubtract, result, arguments[0], arguments[1]));
+						case Node::Subtype::Subtract:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Subtract, result, arguments[0], arguments[1]));
 							break;
 
-						case Node::NodeSubtypeMultiply:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, result, arguments[0], arguments[1]));
+						case Node::Subtype::Multiply:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, result, arguments[0], arguments[1]));
 							break;
 
-						case Node::NodeSubtypeDivide:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeDivide, result, arguments[0], arguments[1]));
+						case Node::Subtype::Divide:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Divide, result, arguments[0], arguments[1]));
 							break;
 
-						case Node::NodeSubtypeModulo:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeModulo, result, arguments[0], arguments[1]));
+						case Node::Subtype::Modulo:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Modulo, result, arguments[0], arguments[1]));
 							break;
 
-						case Node::NodeSubtypeIncrement:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, arguments[0]));
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, arguments[0], arguments[0], 0, 1));
+						case Node::Subtype::Increment:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, arguments[0]));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Add, arguments[0], arguments[0], 0, 1));
 							break;
 
-						case Node::NodeSubtypeDecrement:
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, arguments[0]));
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAdd, arguments[0], arguments[0], 0, -1));
+						case Node::Subtype::Decrement:
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, arguments[0]));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Add, arguments[0], arguments[0], 0, -1));
 							break;
 					}
 					break;
 				}
 
-			case Node::NodeTypeCompare:
+			case Node::Type::Compare:
 				// Construct a new temporary to hold value
 				result = procedure->newTemp(node->type->valueSize);
 
@@ -497,41 +497,41 @@ namespace Front {
 
 				// Emit the appropriate type of comparison operation
 				switch(node->nodeSubtype) {
-					case Node::NodeSubtypeEqual:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeEqual, result, a, b));
+					case Node::Subtype::Equal:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Equal, result, a, b));
 						break;
 
-					case Node::NodeSubtypeNequal:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNequal, result, a, b));
+					case Node::Subtype::Nequal:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Nequal, result, a, b));
 						break;
 
-					case Node::NodeSubtypeLessThan:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLessThan, result, a, b));
+					case Node::Subtype::LessThan:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LessThan, result, a, b));
 						break;
 
-					case Node::NodeSubtypeLessThanEqual:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLessThanE, result, a, b));
+					case Node::Subtype::LessThanEqual:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LessThanE, result, a, b));
 						break;
 
-					case Node::NodeSubtypeGreaterThan:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeGreaterThan, result, a, b));
+					case Node::Subtype::GreaterThan:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::GreaterThan, result, a, b));
 						break;
 
-					case Node::NodeSubtypeGreaterThanEqual:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeGreaterThanE, result, a, b));
+					case Node::Subtype::GreaterThanEqual:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::GreaterThanE, result, a, b));
 						break;
 
-					case Node::NodeSubtypeOr:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeOr, result, a, b));
+					case Node::Subtype::Or:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Or, result, a, b));
 						break;
 
-					case Node::NodeSubtypeAnd:
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeAnd, result, a, b));
+					case Node::Subtype::And:
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::And, result, a, b));
 						break;
 				}
 				break;
 
-			case Node::NodeTypeNew:
+			case Node::Type::New:
 				{
 					Node *arg = node->children[0];
 
@@ -539,28 +539,28 @@ namespace Front {
 					result = procedure->newTemp(arg->type->valueSize);
 
 					IR::Symbol *size = procedure->newTemp(4);
-					if(arg->nodeType == Node::NodeTypeArray && arg->children.size() == 2) {
+					if(arg->nodeType == Node::Type::Array && arg->children.size() == 2) {
 						// Array allocation: total size is typeSize * count
 						Type *type = arg->children[0]->type;
 						IR::Symbol *typeSize = procedure->newTemp(4);
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, typeSize, 0, 0, type->valueSize));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, typeSize, 0, 0, type->valueSize));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, size, typeSize, count));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, size, typeSize, count));
 					} else if(Type::equals(arg->type, Types::intrinsic(Types::String))) {
 						// String allocation: total size is constructor argument value
 						size = processRValue(node->children[1]->children[0], context);
 					} else {
 						// Single allocation: total size is type's allocSize
 						Type *type = arg->type;
-						procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, size, 0, 0, type->allocSize));
+						procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, size, 0, 0, type->allocSize));
 					}
 
 					// Emit new entry
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeNew, result, size));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::New, result, size));
 
 					// If the type is a class with a constructor, emit a call to it
-					if(arg->type->type == Type::TypeClass && ((TypeStruct*)arg->type)->constructor) {
+					if(arg->type->kind == Type::Kind::Class && ((TypeStruct*)arg->type)->constructor) {
 						std::vector<IR::Symbol*> args;
 
 						// First argument is the object
@@ -575,19 +575,19 @@ namespace Front {
 						// Emit argument store values for each argument
 						int argIndex = 0;
 						for(IR::Symbol *arg : args) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, arg, 0, argIndex));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arg, 0, argIndex));
 							argIndex++;
 						}
 
 						// Emit procedure call
 						std::string name = arg->type->name + "." + arg->type->name;
-						procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, name));
+						procedure->emit(new IR::EntryCall(IR::Entry::Type::Call, name));
 					}
 
 					break;
 				}
 
-			case Node::NodeTypeArray:
+			case Node::Type::Array:
 				{
 					result = procedure->newTemp(node->type->valueSize);
 
@@ -601,15 +601,15 @@ namespace Front {
 					IR::Symbol *offset = procedure->newTemp(4);
 					IR::Symbol *size = procedure->newTemp(4);
 
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, size, 0, 0, node->type->valueSize));
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMult, offset, subscript, size));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, size, 0, 0, node->type->valueSize));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, offset, subscript, size));
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadMem, result, base, offset));
 					break;
 				}
 
-			case Node::NodeTypeMember:
+			case Node::Type::Member:
 				{
 					result = procedure->newTemp(node->type->valueSize);
 
@@ -619,11 +619,11 @@ namespace Front {
 					Front::TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
 
 					// Emit the load from the calculated memory location
-					procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadMem, result, base, 0, member->offset));
+					procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadMem, result, base, 0, member->offset));
 					break;
 				}
 
-			case Node::NodeTypeCoerce:
+			case Node::Type::Coerce:
 				{
 					IR::Symbol *source = processRValue(node->children[0], context);
 
@@ -633,19 +633,19 @@ namespace Front {
 
 						Type *sourceType = node->children[0]->type;
 						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_bool"));
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_bool"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Int))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_int"));
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_int"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
 						} else if(Type::equals(sourceType, Types::intrinsic(Types::Char))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeStoreArg, 0, source, 0, 0));
-							procedure->emit(new IR::EntryCall(IR::Entry::TypeCall, "__string_char"));
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeLoadRet, result));
-						} else if(sourceType->type == Type::TypeArray && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
-							procedure->emit(new IR::EntryThreeAddr(IR::Entry::TypeMove, result, source));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
+							procedure->emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_char"));
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
+						} else if(sourceType->kind == Type::Kind::Array && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
+							procedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, source));
 						}
 					} else {
 						result = source;

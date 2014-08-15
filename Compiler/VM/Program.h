@@ -21,10 +21,10 @@ namespace VM {
 		std::map<std::string, int> symbols;
 
 		struct Relocation {
-			enum Type {
-				TypeAbsolute,
-				TypeCall,
-				TypeAddPCRel
+			enum class Type {
+				Absolute,
+				Call,
+				AddPCRel
 			};
 
 			int offset;

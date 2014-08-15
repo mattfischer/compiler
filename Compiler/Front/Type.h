@@ -12,24 +12,24 @@ namespace Front {
 	 */
 	class Type {
 	public:
-		enum TypeType {
-			TypeIntrinsic,
-			TypeProcedure,
-			TypeArray,
-			TypeStruct,
-			TypeClass,
-			TypeDummy
+		enum class Kind {
+			Intrinsic,
+			Procedure,
+			Array,
+			Struct,
+			Class,
+			Dummy
 		};
 
-		Type(TypeType _type, std::string _name, int _valueSize, int _allocSize)
-			: type(_type),
+		Type(Kind _kind, std::string _name, int _valueSize, int _allocSize)
+			: kind(_kind),
 			  name(_name),
 			  valueSize(_valueSize),
 			  allocSize(_allocSize)
 		{
 		}
 
-		TypeType type;
+		Kind kind;
 		std::string name;
 		int valueSize;
 		int allocSize;
@@ -46,7 +46,7 @@ namespace Front {
 	class TypeIntrinsic : public Type {
 	public:
 		TypeIntrinsic(std::string _name, int _size)
-			: Type(Type::TypeIntrinsic, _name, _size, _size)
+			: Type(Kind::Intrinsic, _name, _size, _size)
 		{
 		}
 	};
@@ -60,7 +60,7 @@ namespace Front {
 		std::vector<Type*> argumentTypes;
 
 		TypeProcedure(Type *_returnType, std::vector<Type*> _argumentTypes)
-			: Type(Type::TypeProcedure, getTypeName(_returnType, _argumentTypes), 0, 0), returnType(_returnType), argumentTypes(_argumentTypes)
+			: Type(Kind::Procedure, getTypeName(_returnType, _argumentTypes), 0, 0), returnType(_returnType), argumentTypes(_argumentTypes)
 		{}
 
 	private:
@@ -75,7 +75,7 @@ namespace Front {
 		Type *baseType;
 
 		TypeArray(Type *_baseType)
-			: Type(Type::TypeArray, _baseType->name + "[]", 4, 0), baseType(_baseType)
+			: Type(Kind::Array, _baseType->name + "[]", 4, 0), baseType(_baseType)
 		{}
 	};
 
@@ -103,8 +103,8 @@ namespace Front {
 		int vtableSize;
 		int vtableOffset;
 
-		TypeStruct(TypeType _type, const std::string &_name)
-			: Type(_type, _name, 4, 0)
+		TypeStruct(Kind _kind, const std::string &_name)
+			: Type(_kind, _name, 4, 0)
 		{}
 
 		void addMember(Type *type, const std::string &name, unsigned int qualifiers);
@@ -119,7 +119,7 @@ namespace Front {
 		std::string origin;
 
 		TypeDummy(const std::string &_name, const std::string &_origin)
-			: Type(Type::TypeDummy, _name, 0, 0), origin(_origin)
+			: Type(Kind::Dummy, _name, 0, 0), origin(_origin)
 		{}
 	};
 }

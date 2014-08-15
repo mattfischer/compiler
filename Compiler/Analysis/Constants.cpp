@@ -23,7 +23,7 @@ namespace Analysis {
 		for(IR::Entry *def : set) {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
 
-			if(def->type != IR::Entry::TypeMove || threeAddr->rhs1) {
+			if(def->type != IR::Entry::Type::Move || threeAddr->rhs1) {
 				// This definition is not constant, therefore the symbol can't be
 				ret = 0;
 				isConstant = false;
@@ -63,7 +63,7 @@ namespace Analysis {
 		for(IR::Entry *def : set) {
 			IR::EntryString *string = (IR::EntryString*)def;
 
-			if(def->type != IR::Entry::TypeLoadString) {
+			if(def->type != IR::Entry::Type::LoadString) {
 				// This definition is not constant, therefore the symbol can't be
 				ret = "";
 				isConstant = false;

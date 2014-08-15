@@ -2,32 +2,32 @@
 
 namespace Front {
 
-enum ExportType {
-	ExportTypeSimple,
-	ExportTypeProcedure,
-	ExportTypeArray
+enum class ExportType {
+	Simple,
+	Procedure,
+	Array
 };
 
-enum ExportDefinition {
-	ExportDefinitionClass,
-	ExportDefinitionStruct
+enum class ExportDefinition {
+	Class,
+	Struct
 };
 
 enum ExportMember {
-	ExportMemberNormal,
-	ExportMemberVirtual,
-	ExportMemberStatic
+	Normal,
+	Virtual,
+	Static
 };
 
 ExportInfo::ExportInfo(Types *types, Scope *scope)
 {
 	for(Type *type : types->types()) {
-		switch(type->type) {
-			case Type::TypeStruct:
+		switch(type->kind) {
+			case Type::Kind::Struct:
 				{
 					TypeStruct *typeStruct = (TypeStruct*)type;
-					mData.push_back((unsigned char)ExportItemTypeDefinition);
-					mData.push_back((unsigned char)ExportDefinitionStruct);
+					mData.push_back((unsigned char)ExportItem::TypeDefinition);
+					mData.push_back((unsigned char)ExportDefinition::Struct);
 					mData.push_back(addString(type->name));
 					mData.push_back((unsigned char)typeStruct->members.size());
 					for(TypeStruct::Member &member : typeStruct->members) {
@@ -37,11 +37,11 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 					break;
 				}
 
-			case Type::TypeClass:
+			case Type::Kind::Class:
 				{
 					TypeStruct *typeStruct = (TypeStruct*)type;
-					mData.push_back((unsigned char)ExportItemTypeDefinition);
-					mData.push_back((unsigned char)ExportDefinitionClass);
+					mData.push_back((unsigned char)ExportItem::TypeDefinition);
+					mData.push_back((unsigned char)ExportDefinition::Class);
 					mData.push_back(addString(type->name));
 					if(typeStruct->parent) {
 						mData.push_back(addString(typeStruct->parent->name));
@@ -51,11 +51,11 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 					mData.push_back((unsigned char)typeStruct->members.size());
 					for(TypeStruct::Member &member : typeStruct->members) {
 						if(member.qualifiers & TypeStruct::Member::QualifierVirtual) {
-							mData.push_back((unsigned char)ExportMemberVirtual);
+							mData.push_back((unsigned char)ExportMember::Virtual);
 						} else if(member.qualifiers & TypeStruct::Member::QualifierStatic) {
-							mData.push_back((unsigned char)ExportMemberStatic);
+							mData.push_back((unsigned char)ExportMember::Static);
 						} else {
-							mData.push_back((unsigned char)ExportMemberNormal);
+							mData.push_back((unsigned char)ExportMember::Normal);
 						}
 
 						writeType(member.type);
@@ -67,7 +67,7 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 	}
 
 	for(Symbol *symbol : scope->symbols()) {
-		mData.push_back((unsigned char)ExportItemSymbol);
+		mData.push_back((unsigned char)ExportItem::Symbol);
 		writeType(symbol->type);
 		mData.push_back(addString(symbol->name));
 	}
@@ -87,7 +87,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 		ExportItem exportItem = (ExportItem)mData[offset];
 		offset++;
 		switch(exportItem) {
-			case ExportItemTypeDefinition:
+			case ExportItem::TypeDefinition:
 				{
 					ExportDefinition exportDefinition = (ExportDefinition)mData[offset];
 					offset++;
@@ -96,9 +96,9 @@ void ExportInfo::read(Types *types, Scope *scope)
 
 					Type *type;
 					switch(exportDefinition) {
-						case ExportDefinitionClass:
+						case ExportDefinition::Class:
 							{
-								TypeStruct *typeStruct = new TypeStruct(Type::TypeClass, name);
+								TypeStruct *typeStruct = new TypeStruct(Type::Kind::Class, name);
 								if(mData[offset] == 0xff) {
 									typeStruct->parent = 0;
 								} else {
@@ -117,10 +117,10 @@ void ExportInfo::read(Types *types, Scope *scope)
 									offset++;
 									unsigned int qualifiers = 0;
 									switch(exportMember) {
-										case ExportMemberVirtual: 
+										case ExportMember::Virtual: 
 											qualifiers = TypeStruct::Member::QualifierVirtual;
 											break;
-										case ExportMemberStatic:
+										case ExportMember::Static:
 											qualifiers = TypeStruct::Member::QualifierStatic;
 											break;
 									}
@@ -135,9 +135,9 @@ void ExportInfo::read(Types *types, Scope *scope)
 								break;
 							}
 
-						case ExportDefinitionStruct:
+						case ExportDefinition::Struct:
 							{
-								TypeStruct *typeStruct = new TypeStruct(Type::TypeStruct, name);
+								TypeStruct *typeStruct = new TypeStruct(Type::Kind::Struct, name);
 								typeStruct->constructor = 0;
 								int numMembers = mData[offset];
 								offset++;
@@ -155,7 +155,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 					break;
 				}
 
-			case ExportItemSymbol:
+			case ExportItem::Symbol:
 				{
 					Type *type = readType(offset, types, stringBase);
 					std::string name = getString(mData[offset], stringBase);
@@ -164,7 +164,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 					break;
 				}
 
-			case ExportItemStringBase:
+			case ExportItem::StringBase:
 				{
 					stringBase = mData[offset];
 					offset++;
@@ -184,7 +184,7 @@ std::vector<std::string> ExportInfo::typeNames()
 		ExportItem exportItem = (ExportItem)mData[offset];
 		offset++;
 		switch(exportItem) {
-			case ExportItemTypeDefinition:
+			case ExportItem::TypeDefinition:
 				{
 					ExportDefinition exportDefinition = (ExportDefinition)mData[offset];
 					offset++;
@@ -192,7 +192,7 @@ std::vector<std::string> ExportInfo::typeNames()
 					offset++;
 
 					switch(exportDefinition) {
-						case ExportDefinitionClass:
+						case ExportDefinition::Class:
 							{
 								offset++;
 								int numMembers = mData[offset];
@@ -205,7 +205,7 @@ std::vector<std::string> ExportInfo::typeNames()
 								break;
 							}
 
-						case ExportDefinitionStruct:
+						case ExportDefinition::Struct:
 							{
 								int numMembers = mData[offset];
 								offset++;
@@ -220,14 +220,14 @@ std::vector<std::string> ExportInfo::typeNames()
 					break;
 				}
 
-			case ExportItemSymbol:
+			case ExportItem::Symbol:
 				{
 					bypassType(offset);
 					offset++;
 					break;
 				}
 
-			case ExportItemStringBase:
+			case ExportItem::StringBase:
 				{
 					stringBase = mData[offset];
 					offset++;
@@ -268,7 +268,7 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types, unsigned int stri
 
 	Type *type;
 	switch(exportType) {
-		case ExportTypeSimple:
+		case ExportType::Simple:
 			{
 				std::string name = getString(mData[offset], stringBase);
 				offset++;
@@ -276,7 +276,7 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types, unsigned int stri
 				break;
 			}
 
-		case ExportTypeProcedure:
+		case ExportType::Procedure:
 			{
 				Type *returnType = readType(offset, types, stringBase);
 				int numArguments = mData[offset];
@@ -289,7 +289,7 @@ Type *ExportInfo::readType(unsigned int &offset, Types *types, unsigned int stri
 				break;
 			}
 
-		case ExportTypeArray:
+		case ExportType::Array:
 			{
 				Type *baseType = readType(offset, types, stringBase);
 				type = new TypeArray(baseType);
@@ -306,13 +306,13 @@ void ExportInfo::bypassType(unsigned int &offset)
 	offset++;
 
 	switch(exportType) {
-		case ExportTypeSimple:
+		case ExportType::Simple:
 			{
 				offset++;
 				break;
 			}
 
-		case ExportTypeProcedure:
+		case ExportType::Procedure:
 			{
 				bypassType(offset);
 				int numArguments = mData[offset];
@@ -323,7 +323,7 @@ void ExportInfo::bypassType(unsigned int &offset)
 				break;
 			}
 
-		case ExportTypeArray:
+		case ExportType::Array:
 			{
 				bypassType(offset);
 				break;
@@ -333,18 +333,18 @@ void ExportInfo::bypassType(unsigned int &offset)
 
 void ExportInfo::writeType(Type *type)
 {
-	switch(type->type) {
-		case Type::TypeIntrinsic:
-		case Type::TypeStruct:
-		case Type::TypeClass:
-			mData.push_back((unsigned char)ExportTypeSimple);
+	switch(type->kind) {
+		case Type::Kind::Intrinsic:
+		case Type::Kind::Struct:
+		case Type::Kind::Class:
+			mData.push_back((unsigned char)ExportType::Simple);
 			mData.push_back(addString(type->name));
 			break;
 
-		case Type::TypeProcedure:
+		case Type::Kind::Procedure:
 			{
 				TypeProcedure *typeProcedure = (TypeProcedure*)type;
-				mData.push_back((unsigned char)ExportTypeProcedure);
+				mData.push_back((unsigned char)ExportType::Procedure);
 				writeType(typeProcedure->returnType);
 				mData.push_back((unsigned char)typeProcedure->argumentTypes.size());
 				for(Type *argumentType : typeProcedure->argumentTypes) {
@@ -353,10 +353,10 @@ void ExportInfo::writeType(Type *type)
 				break;
 			}
 
-		case Type::TypeArray:
+		case Type::Kind::Array:
 			{
 				TypeArray *typeArray = (TypeArray*)type;
-				mData.push_back((unsigned char)ExportTypeArray);
+				mData.push_back((unsigned char)ExportType::Array);
 				writeType(typeArray->baseType);
 				break;
 			}

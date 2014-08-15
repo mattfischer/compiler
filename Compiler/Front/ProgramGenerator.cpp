@@ -52,11 +52,11 @@ namespace Front {
 			// Iterate through the tree's procedure definitions
 			for(Node *node : mTree->children) {
 				switch(node->nodeType) {
-					case Node::NodeTypeProcedureDef:
+					case Node::Type::ProcedureDef:
 						addProcedure(node, program, program->scope, false);
 						break;
 
-					case Node::NodeTypeClassDef:
+					case Node::Type::ClassDef:
 						{
 							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
 							Node *members = node->children[node->children.size() - 1];
@@ -65,7 +65,7 @@ namespace Front {
 								Node *memberNode = child->children[1];
 								TypeStruct::Member *member = typeStruct->findMember(memberNode->lexVal.s);
 
-								if(memberNode->nodeType == Node::NodeTypeProcedureDef) {
+								if(memberNode->nodeType == Node::Type::ProcedureDef) {
 									if(member->qualifiers & TypeStruct::Member::QualifierNative) {
 										if(memberNode->children.size() == 3) {
 											throw TypeError(memberNode, "Native function cannot have body");
@@ -124,10 +124,10 @@ namespace Front {
 				   Type::equals(node->type, Types::intrinsic(Types::Int)) ||
 				   Type::equals(node->type, Types::intrinsic(Types::Char)))	{
 					valid = true;
-				} else if(node->type->type == Type::TypeArray && Type::equals(((Front::TypeArray*)node->type)->baseType, Types::intrinsic(Types::Char))) {
+				} else if(node->type->kind == Type::Kind::Array && Type::equals(((Front::TypeArray*)node->type)->baseType, Types::intrinsic(Types::Char))) {
 					valid = true;
 				}
-			} else if(type->type == Type::TypeClass && node->type->type == Type::TypeClass) {
+			} else if(type->kind == Type::Kind::Class && node->type->kind == Type::Kind::Class) {
 				TypeStruct *classType = (TypeStruct*)node->type;
 				while(classType) {
 					if(Type::equals(classType, type)) {
@@ -145,8 +145,8 @@ namespace Front {
 			}
 
 			Node *coerce = new Node();
-			coerce->nodeType = Node::NodeTypeCoerce;
-			coerce->nodeSubtype = Node::NodeSubtypeNone;
+			coerce->nodeType = Node::Type::Coerce;
+			coerce->nodeSubtype = Node::Subtype::None;
 			coerce->line = node->line;
 			coerce->type = type;
 			coerce->children.push_back(node);
@@ -240,7 +240,7 @@ namespace Front {
 	Type *ProgramGenerator::createType(Node *node, Types *types)
 	{
 		Type *type = 0;
-		if(node->nodeType == Node::NodeTypeArray) {
+		if(node->nodeType == Node::Type::Array) {
 			type = createType(node->children[0], types);
 			if(Type::equals(type, Types::intrinsic(Types::Void))) {
 				throw TypeError(node, "Cannot declare array of voids");
@@ -268,19 +268,19 @@ namespace Front {
 	void ProgramGenerator::checkType(Node *node, Context &context)
 	{
 		switch(node->nodeType) {
-			case Node::NodeTypeList:
+			case Node::Type::List:
 				checkChildren(node, context);
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
-			case Node::NodeTypeCall:
+			case Node::Type::Call:
 				{
 					// First, check all child nodes
 					checkChildren(node, context);
 
 					// Check that call target is a procedure type
 					Node *procedureNode = node->children[0];
-					if(procedureNode->type->type != Type::TypeProcedure) {
+					if(procedureNode->type->kind != Type::Kind::Procedure) {
 						throw TypeError(node, "Expression does not evaluate to a procedure");
 					}
 
@@ -304,7 +304,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeVarDecl:
+			case Node::Type::VarDecl:
 				{
 					// Add the declared variable to the current scope
 					Type *type = createType(node->children[0], context.types);
@@ -319,7 +319,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeAssign:
+			case Node::Type::Assign:
 				{
 					checkChildren(node, context);
 
@@ -328,16 +328,16 @@ namespace Front {
 					Node *lhs = node->children[0];
 					Node *rhs = node->children[1];
 					switch(lhs->nodeType) {
-						case Node::NodeTypeId:
-						case Node::NodeTypeVarDecl:
-						case Node::NodeTypeArray:
-						case Node::NodeTypeMember:
+						case Node::Type::Id:
+						case Node::Type::VarDecl:
+						case Node::Type::Array:
+						case Node::Type::Member:
 							break;
 						default:
 							throw TypeError(node, "Lvalue required");
 					}
 
-					if(lhs->nodeType == Node::NodeTypeArray && Type::equals(lhs->children[0]->type, Types::intrinsic(Types::String))) {
+					if(lhs->nodeType == Node::Type::Array && Type::equals(lhs->children[0]->type, Types::intrinsic(Types::String))) {
 						throw TypeError(node, "String elements cannot be assigned to");
 					}
 
@@ -345,7 +345,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeIf:
+			case Node::Type::If:
 				{
 					Context childContext = context;
 					childContext.scope = new Scope(context.scope);
@@ -359,7 +359,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeWhile:
+			case Node::Type::While:
 				{
 					Context childContext = context;
 					childContext.scope = new Scope(context.scope);
@@ -374,7 +374,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeFor:
+			case Node::Type::For:
 				{
 					Context childContext = context;
 					childContext.scope = new Scope(context.scope);
@@ -389,12 +389,12 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeCompare:
+			case Node::Type::Compare:
 				checkChildren(node, context);
 
 				switch(node->nodeSubtype) {
-					case Node::NodeSubtypeAnd:
-					case Node::NodeSubtypeOr:
+					case Node::Subtype::And:
+					case Node::Subtype::Or:
 						coerceChildren(node, Types::intrinsic(Types::Bool));
 						break;
 
@@ -421,14 +421,14 @@ namespace Front {
 				node->type = Types::intrinsic(Types::Bool);
 				break;
 
-			case Node::NodeTypeArith:
+			case Node::Type::Arith:
 				{
 					checkChildren(node, context);
 
-					if(node->nodeSubtype == Node::NodeSubtypeAdd && isChildOfType(node, Types::intrinsic(Types::String))) {
+					if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, Types::intrinsic(Types::String))) {
 						coerceChildren(node, Types::intrinsic(Types::String));
 						node->type = Types::intrinsic(Types::String);
-					} else if(node->nodeSubtype == Node::NodeSubtypeAdd && isChildOfType(node, Types::intrinsic(Types::Char)) && isChildOfType(node, Types::intrinsic(Types::Int))) {
+					} else if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, Types::intrinsic(Types::Char)) && isChildOfType(node, Types::intrinsic(Types::Int))) {
 						node->type = Types::intrinsic(Types::Char);
 					} else {
 						coerceChildren(node, Types::intrinsic(Types::Int));
@@ -437,7 +437,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeId:
+			case Node::Type::Id:
 				{
 					// Search for the named symbol in the current scope
 					std::string name = node->lexVal.s;
@@ -460,11 +460,11 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeConstant:
+			case Node::Type::Constant:
 				// Type provided by parser
 				break;
 
-			case Node::NodeTypeReturn:
+			case Node::Type::Return:
 				if(Type::equals(context.procedure->type->returnType, Types::intrinsic(Types::Void))) {
 					throw TypeError(node, "Return statement in void procedure");
 				}
@@ -476,7 +476,7 @@ namespace Front {
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
-			case Node::NodeTypeNew:
+			case Node::Type::New:
 				{
 					Node *typeNode = node->children[0];
 					typeNode->type = createType(typeNode, context.types);
@@ -488,7 +488,7 @@ namespace Front {
 					}
 
 					// Check array size argument
-					if(typeNode->nodeType == Node::NodeTypeArray && typeNode->children.size() > 1) {
+					if(typeNode->nodeType == Node::Type::Array && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], context);
 						if(!Type::equals(typeNode->children[1]->type, Types::intrinsic(Types::Int))) {
 							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
@@ -500,7 +500,7 @@ namespace Front {
 						Node *argsNode = node->children[1];
 						checkType(argsNode, context);
 
-						if(typeNode->type->type == Type::TypeClass) {
+						if(typeNode->type->kind == Type::Kind::Class) {
 							TypeStruct *typeStruct = (TypeStruct*)typeNode->type;
 
 							// First, check all child nodes
@@ -524,14 +524,14 @@ namespace Front {
 						} else {
 							throw TypeError(node->children[1], "Constuctor arguments passed to non-class type");
 						}
-					} else if(typeNode->type->type == Type::TypeClass) {
+					} else if(typeNode->type->kind == Type::Kind::Class) {
 						throw TypeError(node->children[1], "Missing constructor arguments");
 					}
 
 					break;
 				}
 
-			case Node::NodeTypeArray:
+			case Node::Type::Array:
 				{
 					checkChildren(node, context);
 					Node *baseNode = node->children[0];
@@ -545,7 +545,7 @@ namespace Front {
 					if(Type::equals(baseNode->type, Types::intrinsic(Types::String))) {
 						// Indexing a string produces a character
 						node->type = Types::intrinsic(Types::Char);
-					} else if(baseNode->type->type == Type::TypeArray) {
+					} else if(baseNode->type->kind == Type::Kind::Array) {
 						// Indexing an array produces its base type
 						TypeArray *typeArray = (TypeArray*)baseNode->type;
 						node->type = typeArray->baseType;
@@ -556,21 +556,21 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeBreak:
+			case Node::Type::Break:
 				if(!context.inLoop) {
 					throw TypeError(node, "Break statement outside of loop");
 				}
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
-			case Node::NodeTypeContinue:
+			case Node::Type::Continue:
 				if(!context.inLoop) {
 					throw TypeError(node, "Continue statement outside of loop");
 				}
 				node->type = Types::intrinsic(Types::Void);
 				break;
 
-			case Node::NodeTypeMember:
+			case Node::Type::Member:
 			{
 				Node *base = node->children[0];
 
@@ -584,7 +584,7 @@ namespace Front {
 					typeName = false;
 				}
 
-				if(base->type->type == Type::TypeStruct || base->type->type == Type::TypeClass) {
+				if(base->type->kind == Type::Kind::Struct || base->type->kind == Type::Kind::Class) {
 					// Check structure field
 					TypeStruct *typeStruct = (TypeStruct*)base->type;
 					TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);

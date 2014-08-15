@@ -56,7 +56,7 @@ namespace Analysis {
 
 		// Perform a forward data flow analysis using the gen/kill sets constructed above
 		DataFlow<IR::Entry*> dataFlow;
-		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::MeetTypeUnion, DataFlow<IR::Entry*>::DirectionForward);
+		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::Meet::Union, DataFlow<IR::Entry*>::Direction::Forward);
 		Util::log("opt.time") << "  ReachingDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 

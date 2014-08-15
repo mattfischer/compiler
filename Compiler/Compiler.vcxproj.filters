@@ -435,7 +435,7 @@
       <Filter>Header Files\Input</Filter>
     </ClInclude>
     <ClInclude Include="Input\Tokenizer.h">
-      <Filter>Header Files\Input</Filter>
+      <Filter>Header Files\VM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

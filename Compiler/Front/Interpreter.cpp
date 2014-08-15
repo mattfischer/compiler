@@ -26,20 +26,20 @@ namespace Front {
 	void Interpreter::evaluateStatement(Node *node)
 	{
 		switch(node->nodeType) {
-			case Node::NodeTypeList:
+			case Node::Type::List:
 				for(unsigned int i=0; i<node->children.size(); i++) {
 					evaluateStatement(node->children[i]);
 				}
 				break;
 
-			case Node::NodeTypeVarDecl:
+			case Node::Type::VarDecl:
 				{
 					Type *type = 0; // FIXME: Type::find(node->children[0]->lexVal.s);
 					addVariable(node->lexVal.s, type);
 					break;
 				}
 
-			case Node::NodeTypeAssign:
+			case Node::Type::Assign:
 				{
 					Variable *variable = findVariable(node->children[0]->lexVal.s);
 					evaluateExpression(node->children[1]);
@@ -48,7 +48,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeIf:
+			case Node::Type::If:
 				{
 					int a;
 					evaluateExpression(node->children[0]);
@@ -62,7 +62,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeWhile:
+			case Node::Type::While:
 				for(;;) {
 					int a;
 					evaluateExpression(node->children[0]);
@@ -81,18 +81,18 @@ namespace Front {
 	void Interpreter::evaluateExpression(Node *node)
 	{
 		switch(node->nodeType) {
-			case Node::NodeTypeConstant:
+			case Node::Type::Constant:
 				push(&node->lexVal.i, sizeof(int));
 				break;
 
-			case Node::NodeTypeId:
+			case Node::Type::Id:
 				{
 					Variable *variable = findVariable(node->lexVal.s);
 					push(variable->data, node->type->valueSize);
 					break;
 				}
 
-			case Node::NodeTypeCompare:
+			case Node::Type::Compare:
 				{
 					int a, b, c;
 
@@ -103,11 +103,11 @@ namespace Front {
 					pop(&b, sizeof(b));
 
 					switch(node->nodeSubtype) {
-						case Node::NodeSubtypeEqual:
+						case Node::Subtype::Equal:
 							c = (a == b) ? 1 : 0;
 							break;
 
-						case Node::NodeSubtypeNequal:
+						case Node::Subtype::Nequal:
 							c = (a != b) ? 1 : 0;
 							break;
 					}
@@ -116,7 +116,7 @@ namespace Front {
 					break;
 				}
 
-			case Node::NodeTypeArith:
+			case Node::Type::Arith:
 				{
 					int a, b, c;
 					evaluateExpression(node->children[0]);
@@ -126,11 +126,11 @@ namespace Front {
 					pop(&b, sizeof(b));
 
 					switch(node->nodeSubtype) {
-						case Node::NodeSubtypeAdd:
+						case Node::Subtype::Add:
 							c = a + b;
 							break;
 
-						case Node::NodeSubtypeMultiply:
+						case Node::Subtype::Multiply:
 							c = a * b;
 							break;
 					}

@@ -30,7 +30,7 @@ namespace Transform {
 
 		// Construct the set of all move entries in the procedure
 		for(IR::Entry *entry : procedure->entries()) {
-			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
+			if(entry->type == IR::Entry::Type::Move && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
 				// A move instruction generates that entry
@@ -55,7 +55,7 @@ namespace Transform {
 		// Perform forward data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
 		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionForward);
+		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Forward);
 
 		// Iterate through the procedure's entries
 		for(IR::Entry *entry : procedure->entries()) {
@@ -88,7 +88,7 @@ namespace Transform {
 
 		// Construct the set of all move entries in the procedure
 		for(IR::Entry *entry : procedure->entries()) {
-			if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1) {
+			if(entry->type == IR::Entry::Type::Move && ((IR::EntryThreeAddr*)entry)->rhs1) {
 				allLoads.insert(entry);
 
 				// A move entry generates that entry
@@ -111,7 +111,7 @@ namespace Transform {
 		// Perform backwards data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
 		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::MeetTypeIntersect, Analysis::DataFlow<IR::Entry*>::DirectionBackward);
+		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Backward);
 
 		IR::EntrySet deleted;
 

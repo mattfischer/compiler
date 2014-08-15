@@ -11,18 +11,18 @@ namespace Front {
 	 */
 	bool Type::equals(Type *a, Type *b)
 	{
-		if(a->type != b->type) {
+		if(a->kind != b->kind) {
 			return false;
 		}
 
-		switch(a->type) {
-			case TypeIntrinsic:
-			case TypeStruct:
-			case TypeClass:
-			case TypeDummy:
+		switch(a->kind) {
+			case Type::Kind::Intrinsic:
+			case Type::Kind::Struct:
+			case Type::Kind::Class:
+			case Type::Kind::Dummy:
 				return a == b;
 
-			case TypeProcedure:
+			case Type::Kind::Procedure:
 			{
 				Front::TypeProcedure *ap = (Front::TypeProcedure*)a;
 				Front::TypeProcedure *bp = (Front::TypeProcedure*)b;
@@ -43,7 +43,7 @@ namespace Front {
 				return true;
 			}
 
-			case TypeArray:
+			case Type::Kind::Array:
 				return Type::equals(((Front::TypeArray*)a)->baseType, ((Front::TypeArray*)b)->baseType);
 		}
 

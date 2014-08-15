@@ -23,42 +23,42 @@ namespace IR {
 		/*!
 		 * \brief Type of entry
 		 */
-		enum Type {
-			TypeNone, //!< Used for list internals
-			TypeMove, //!< Move one variable to another
-			TypeAdd, //!< Add two symbols together
-			TypeSubtract, //!< Subtract two symbols
-			TypeMult, //!< Multiply two symbols together
-			TypeDivide, //!< Divide two symbols
-			TypeModulo, //!< Take modulus of two symbols
-			TypeEqual, //!< Test two symbols for equality
-			TypeNequal, //!< Test two symbols for inequality
-			TypeLessThan, //!< Test two symbols for less-than
-			TypeLessThanE, //!< Test two symbols for less-than-equal
-			TypeGreaterThan, //!< Test two symbols for greater-than
-			TypeGreaterThanE, //!< Test two symbols for greater-than-equal
-			TypeAnd, //!< Boolean AND
-			TypeOr, //!< Boolean OR
-			TypeLabel, //!< A label, used as a jump target
-			TypeJump, //!< Jump to a specified label
-			TypeCJump, //!< Jump to one of two labels based on a symbol's value
-			TypePhi, //!< Phi function for SSA
-			TypeCall, //!< Call a procedure
-			TypeCallIndirect, //!< Call a procedure via an address in a symbol
-			TypeLoadRet, //!< Load a value from the return register
-			TypeStoreRet, //!< Store a value in the return register
-			TypeLoadArg, //!< Load a value from an argument register
-			TypeStoreArg, //!< Store a value in an argument register
-			TypeLoadStack, //!< Load a value from a stack location
-			TypeStoreStack, //!< Store a value to a stack location
-			TypeLoadAddress, //!< Load the address of a symbol
-			TypePrologue, //!< Function prologue
-			TypeEpilogue, //!< Function epilogue
-			TypeNew, //!< Allocate memory
-			TypeStoreMem, //!< Store to memory
-			TypeLoadMem, //!< Load from memory
-			TypeLoadString, //!< Load a string constant
-			TypeFunctionAddr, //!< Function address
+		enum class Type {
+			None, //!< Used for list internals
+			Move, //!< Move one variable to another
+			Add, //!< Add two symbols together
+			Subtract, //!< Subtract two symbols
+			Mult, //!< Multiply two symbols together
+			Divide, //!< Divide two symbols
+			Modulo, //!< Take modulus of two symbols
+			Equal, //!< Test two symbols for equality
+			Nequal, //!< Test two symbols for inequality
+			LessThan, //!< Test two symbols for less-than
+			LessThanE, //!< Test two symbols for less-than-equal
+			GreaterThan, //!< Test two symbols for greater-than
+			GreaterThanE, //!< Test two symbols for greater-than-equal
+			And, //!< Boolean AND
+			Or, //!< Boolean OR
+			Label, //!< A label, used as a jump target
+			Jump, //!< Jump to a specified label
+			CJump, //!< Jump to one of two labels based on a symbol's value
+			Phi, //!< Phi function for SSA
+			Call, //!< Call a procedure
+			CallIndirect, //!< Call a procedure via an address in a symbol
+			LoadRet, //!< Load a value from the return register
+			StoreRet, //!< Store a value in the return register
+			LoadArg, //!< Load a value from an argument register
+			StoreArg, //!< Store a value in an argument register
+			LoadStack, //!< Load a value from a stack location
+			StoreStack, //!< Store a value to a stack location
+			LoadAddress, //!< Load the address of a symbol
+			Prologue, //!< Function prologue
+			Epilogue, //!< Function epilogue
+			New, //!< Allocate memory
+			StoreMem, //!< Store to memory
+			LoadMem, //!< Load from memory
+			LoadString, //!< Load a string constant
+			FunctionAddr, //!< Function address
 		};
 
 		Type type; //!< Entry type

@@ -50,7 +50,7 @@ VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
 
 		if(program->exportInfo && program->exportInfo->data().size() > 0) {
 			exportInfoData.resize(exportInfoOffset + program->exportInfo->data().size() + 2);
-			exportInfoData[exportInfoOffset] = Front::ExportInfo::ExportItemStringBase;
+			exportInfoData[exportInfoOffset] = (unsigned char)Front::ExportInfo::ExportItem::StringBase;
 			exportInfoData[exportInfoOffset + 1] = exportInfoStringOffset;
 			std::memcpy(&exportInfoData[exportInfoOffset + 2], &program->exportInfo->data()[0], program->exportInfo->data().size());
 
@@ -65,14 +65,14 @@ VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
 			linked->relocations.push_back(relocations[i]);
 		} else {
 			switch(relocations[i].type) {
-				case VM::Program::Relocation::TypeAbsolute:
+				case VM::Program::Relocation::Type::Absolute:
 					{
 						unsigned long address = linked->symbols[relocations[i].symbol];
 						std::memcpy(&linked->instructions[relocations[i].offset], &address, 4);
 						break;
 					}
 
-				case VM::Program::Relocation::TypeCall:
+				case VM::Program::Relocation::Type::Call:
 					{
 						VM::Instruction instr;
 						std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);
@@ -82,7 +82,7 @@ VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
 						break;
 					}
 
-				case VM::Program::Relocation::TypeAddPCRel:
+				case VM::Program::Relocation::Type::AddPCRel:
 					{
 						VM::Instruction instr;
 						std::memcpy(&instr, &linked->instructions[relocations[i].offset], 4);

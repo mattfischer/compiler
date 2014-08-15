@@ -1,7 +1,7 @@
 #include "IR/EntryList.h"
 
 namespace IR {
-	EntryList::EntryList() : mHead(IR::Entry::TypeNone), mTail(IR::Entry::TypeNone) {
+	EntryList::EntryList() : mHead(IR::Entry::Type::None), mTail(IR::Entry::Type::None) {
 		mHead.next = &mTail;
 		mHead.prev = 0;
 		mTail.next = 0;

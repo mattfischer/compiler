@@ -15,6 +15,8 @@
 #include <map>
 #include <sstream>
 
+#undef LoadString
+
 namespace Back {
 	/*!
 	 * \brief Generate code for an IR program
@@ -74,7 +76,7 @@ namespace Back {
 
 		// If any calls are made in the procedure, LR must be saved as well
 		for(IR::Entry *entry : procedure->entries()) {
-			if(entry->type == IR::Entry::TypeCall || entry->type == IR::Entry::TypeCallIndirect) {
+			if(entry->type == IR::Entry::Type::Call || entry->type == IR::Entry::Type::CallIndirect) {
 				if(needComma) {
 					s << ", ";
 				}
@@ -89,7 +91,7 @@ namespace Back {
 		// Iterate through each entry, and emit the appropriate code depending on its type
 		for(IR::Entry *entry : procedure->entries()) {
 			switch(entry->type) {
-				case IR::Entry::TypeMove:
+				case IR::Entry::Type::Move:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    mov r" << regMap[threeAddr->lhs] << ", ";
@@ -102,7 +104,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeAdd:
+				case IR::Entry::Type::Add:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    add r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
@@ -115,7 +117,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeMult:
+				case IR::Entry::Type::Mult:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    mult r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
@@ -128,7 +130,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeDivide:
+				case IR::Entry::Type::Divide:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    div r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
@@ -141,7 +143,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeModulo:
+				case IR::Entry::Type::Modulo:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    mod r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", ";
@@ -154,77 +156,77 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeEqual:
+				case IR::Entry::Type::Equal:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    equ r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeNequal:
+				case IR::Entry::Type::Nequal:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    neq r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeLessThan:
+				case IR::Entry::Type::LessThan:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    lt r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeLessThanE:
+				case IR::Entry::Type::LessThanE:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    lte r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeGreaterThan:
+				case IR::Entry::Type::GreaterThan:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    gt r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeGreaterThanE:
+				case IR::Entry::Type::GreaterThanE:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    gte r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeOr:
+				case IR::Entry::Type::Or:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    or r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeAnd:
+				case IR::Entry::Type::And:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    and r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << ", r" << regMap[threeAddr->rhs2] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeLabel:
+				case IR::Entry::Type::Label:
 					{
 						IR::EntryLabel *label = (IR::EntryLabel*)entry;
 						stream << "  " << label->name << ":" << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeJump:
+				case IR::Entry::Type::Jump:
 					{
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						stream << "    jmp " << jump->target->name << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeCJump:
+				case IR::Entry::Type::CJump:
 					{
 						IR::EntryCJump *cjump = (IR::EntryCJump*)entry;
 						if(cjump->next == cjump->trueTarget) {
@@ -238,21 +240,21 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeCall:
+				case IR::Entry::Type::Call:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 						stream << "    call " << call->target << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeCallIndirect:
+				case IR::Entry::Type::CallIndirect:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    calli r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeLoadRet:
+				case IR::Entry::Type::LoadRet:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->lhs] != 0) {
@@ -261,7 +263,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeStoreRet:
+				case IR::Entry::Type::StoreRet:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(threeAddr->rhs1 && regMap[threeAddr->rhs1] != 0) {
@@ -270,7 +272,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeLoadArg:
+				case IR::Entry::Type::LoadArg:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->lhs] != threeAddr->imm) {
@@ -279,7 +281,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeStoreArg:
+				case IR::Entry::Type::StoreArg:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						if(regMap[threeAddr->rhs1] != threeAddr->imm) {
@@ -288,21 +290,21 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeLoadStack:
+				case IR::Entry::Type::LoadStack:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    ldr r" << regMap[threeAddr->lhs] << ", [sp, #" << threeAddr->imm << "]" << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeStoreStack:
+				case IR::Entry::Type::StoreStack:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    str r" << regMap[threeAddr->rhs1] << ", [sp, #" << threeAddr->imm << "]" << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypePrologue:
+				case IR::Entry::Type::Prologue:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						// Save all required registers for this function
@@ -317,7 +319,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeEpilogue:
+				case IR::Entry::Type::Epilogue:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
@@ -336,14 +338,14 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeNew:
+				case IR::Entry::Type::New:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						stream << "    new r" << regMap[threeAddr->lhs] << ", r" << regMap[threeAddr->rhs1] << std::endl;
 						break;
 					}
 
-				case IR::Entry::TypeLoadMem:
+				case IR::Entry::Type::LoadMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						std::string opcode;
@@ -366,7 +368,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeStoreMem:
+				case IR::Entry::Type::StoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 						std::string opcode;
@@ -388,7 +390,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeLoadString:
+				case IR::Entry::Type::LoadString:
 					{
 						IR::EntryString *string = (IR::EntryString*)entry;
 						std::stringstream s;
@@ -398,7 +400,7 @@ namespace Back {
 						break;
 					}
 
-				case IR::Entry::TypeLoadAddress:
+				case IR::Entry::Type::LoadAddress:
 					{
 						IR::EntryString *string = (IR::EntryString*)entry;
 						stream << "    lea r" << regMap[string->lhs] << ", " << string->string << std::endl;
@@ -430,7 +432,7 @@ namespace Back {
 		// Iterate through each entry, and emit the appropriate code depending on its type
 		for(IR::Entry *entry : data->entries()) {
 			switch(entry->type) {
-				case IR::Entry::TypeFunctionAddr:
+				case IR::Entry::Type::FunctionAddr:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 						stream << "    addr " << call->target << std::endl;

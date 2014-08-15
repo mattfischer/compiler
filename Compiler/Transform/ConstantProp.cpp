@@ -28,7 +28,7 @@ namespace Transform {
 	{
 		IR::Entry *entry = call->prev;
 		while(true) {
-			if(entry->type == IR::Entry::TypeStoreArg && ((IR::EntryThreeAddr*)entry)->imm == arg) {
+			if(entry->type == IR::Entry::Type::StoreArg && ((IR::EntryThreeAddr*)entry)->imm == arg) {
 				return (IR::EntryThreeAddr*)entry;
 			} else {
 				entry = entry->prev;
@@ -40,7 +40,7 @@ namespace Transform {
 	{
 		IR::Entry *entry = call->prev;
 		while(true) {
-			if(entry->type == IR::Entry::TypeLoadRet) {
+			if(entry->type == IR::Entry::Type::LoadRet) {
 				return (IR::EntryThreeAddr*)entry;
 			} else {
 				entry = entry->next;
@@ -51,7 +51,7 @@ namespace Transform {
 	void replaceCall(IR::EntryList &entries, IR::Entry *callEntry, IR::Entry *newEntry)
 	{
 		IR::Entry *entry = callEntry->prev;
-		while(entry->type == IR::Entry::TypeStoreArg) {
+		while(entry->type == IR::Entry::Type::StoreArg) {
 			IR::Entry *toDelete = entry;
 			entry = entry->prev;
 			entries.erase(toDelete);
@@ -59,7 +59,7 @@ namespace Transform {
 		}
 
 		entry = callEntry->next;
-		while(entry->type == IR::Entry::TypeLoadRet) {
+		while(entry->type == IR::Entry::Type::LoadRet) {
 			IR::Entry *toDelete = entry;
 			entry = entry->next;
 			entries.erase(toDelete);
@@ -92,20 +92,20 @@ namespace Transform {
 
 			// Examine the current entry
 			switch(entry->type) {
-				case IR::Entry::TypeAdd:
-				case IR::Entry::TypeSubtract:
-				case IR::Entry::TypeMult:
-				case IR::Entry::TypeDivide:
-				case IR::Entry::TypeModulo:
-				case IR::Entry::TypeMove:
-				case IR::Entry::TypeEqual:
-				case IR::Entry::TypeNequal:
-				case IR::Entry::TypeLessThan:
-				case IR::Entry::TypeLessThanE:
-				case IR::Entry::TypeGreaterThan:
-				case IR::Entry::TypeGreaterThanE:
-				case IR::Entry::TypeOr:
-				case IR::Entry::TypeAnd:
+				case IR::Entry::Type::Add:
+				case IR::Entry::Type::Subtract:
+				case IR::Entry::Type::Mult:
+				case IR::Entry::Type::Divide:
+				case IR::Entry::Type::Modulo:
+				case IR::Entry::Type::Move:
+				case IR::Entry::Type::Equal:
+				case IR::Entry::Type::Nequal:
+				case IR::Entry::Type::LessThan:
+				case IR::Entry::Type::LessThanE:
+				case IR::Entry::Type::GreaterThan:
+				case IR::Entry::Type::GreaterThanE:
+				case IR::Entry::Type::Or:
+				case IR::Entry::Type::And:
 					{
 						int rhs1;
 						int rhs2;
@@ -128,65 +128,65 @@ namespace Transform {
 							// Calculate the value of the entry
 							int value;
 							switch(entry->type) {
-								case IR::Entry::TypeAdd:
+								case IR::Entry::Type::Add:
 									value = rhs1 + rhs2;
 									break;
 
-								case IR::Entry::TypeSubtract:
+								case IR::Entry::Type::Subtract:
 									value = rhs1 - rhs2;
 									break;
 
-								case IR::Entry::TypeMult:
+								case IR::Entry::Type::Mult:
 									value = rhs1 * rhs2;
 									break;
 
-								case IR::Entry::TypeDivide:
+								case IR::Entry::Type::Divide:
 									value = rhs1 / rhs2;
 									break;
 
-								case IR::Entry::TypeModulo:
+								case IR::Entry::Type::Modulo:
 									value = rhs1 % rhs2;
 									break;
 
-								case IR::Entry::TypeMove:
+								case IR::Entry::Type::Move:
 									value = rhs1;
 									break;
 
-								case IR::Entry::TypeEqual:
+								case IR::Entry::Type::Equal:
 									value = rhs1 == rhs2;
 									break;
 
-								case IR::Entry::TypeNequal:
+								case IR::Entry::Type::Nequal:
 									value = rhs1 != rhs2;
 									break;
 
-								case IR::Entry::TypeLessThan:
+								case IR::Entry::Type::LessThan:
 									value = rhs1 < rhs2;
 									break;
 
-								case IR::Entry::TypeLessThanE:
+								case IR::Entry::Type::LessThanE:
 									value = rhs1 <= rhs2;
 									break;
 
-								case IR::Entry::TypeGreaterThan:
+								case IR::Entry::Type::GreaterThan:
 									value = rhs1 > rhs2;
 									break;
 
-								case IR::Entry::TypeGreaterThanE:
+								case IR::Entry::Type::GreaterThanE:
 									value = rhs1 >= rhs2;
 									break;
 
-								case IR::Entry::TypeOr:
+								case IR::Entry::Type::Or:
 									value = (rhs1 || rhs2);
 									break;
 
-								case IR::Entry::TypeAnd:
+								case IR::Entry::Type::And:
 									value = (rhs1 && rhs2);
 									break;
 							}
 
 							// Create a new immediate load entry with the calculated value
-							newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, 0, 0, value);
+							newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Move, threeAddr->lhs, 0, 0, value);
 						} else if(threeAddr->rhs2 && (rhs1Const || rhs2Const)) {
 							// If one argument is constant and the other is not, an entry can
 							// at least be turned into an Immediate entry
@@ -201,25 +201,25 @@ namespace Transform {
 							}
 
 							switch(threeAddr->type) {
-								case IR::Entry::TypeAdd:
+								case IR::Entry::Type::Add:
 									if(constant == 0) {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Move, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAdd, threeAddr->lhs, symbol, 0, constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Add, threeAddr->lhs, symbol, 0, constant);
 									}
 									break;
-								case IR::Entry::TypeSubtract:
+								case IR::Entry::Type::Subtract:
 									if(constant == 0) {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Move, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeAdd, threeAddr->lhs, symbol, 0, -constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Add, threeAddr->lhs, symbol, 0, -constant);
 									}
 									break;
-								case IR::Entry::TypeMult:
+								case IR::Entry::Type::Mult:
 									if(constant == 1) {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMove, threeAddr->lhs, symbol);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Move, threeAddr->lhs, symbol);
 									} else {
-										newEntry = new IR::EntryThreeAddr(IR::Entry::TypeMult, threeAddr->lhs, symbol, 0, constant);
+										newEntry = new IR::EntryThreeAddr(IR::Entry::Type::Mult, threeAddr->lhs, symbol, 0, constant);
 									}
 									break;
 							}
@@ -245,7 +245,7 @@ namespace Transform {
 						break;
 					}
 
-				case IR::Entry::TypeCall:
+				case IR::Entry::Type::Call:
 					{
 						IR::EntryCall *call = (IR::EntryCall*)entry;
 
@@ -263,7 +263,7 @@ namespace Transform {
 							rhs2 = constants->getStringValue(rhs2Entry, rhs2Entry->rhs1, rhs2Const);
 
 							if(rhs1Const && rhs2Const) {
-								IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, retEntry->lhs, rhs1 + rhs2);
+								IR::Entry *newEntry = new IR::EntryString(IR::Entry::Type::LoadString, retEntry->lhs, rhs1 + rhs2);
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
@@ -301,7 +301,7 @@ namespace Transform {
 									str = (char)rhs;
 								}
 
-								IR::Entry *newEntry = new IR::EntryString(IR::Entry::TypeLoadString, retEntry->lhs, str);
+								IR::Entry *newEntry = new IR::EntryString(IR::Entry::Type::LoadString, retEntry->lhs, str);
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
@@ -320,8 +320,8 @@ namespace Transform {
 						}
 					}
 
-				case IR::Entry::TypeLoadMem:
-				case IR::Entry::TypeStoreMem:
+				case IR::Entry::Type::LoadMem:
+				case IR::Entry::Type::StoreMem:
 					{
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
@@ -341,7 +341,7 @@ namespace Transform {
 							if(defs.size() == 1) {
 								IR::Entry *def = *(defs.begin());
 								IR::EntryThreeAddr *defThreeAddr = (IR::EntryThreeAddr*)def;
-								if(def->type == IR::Entry::TypeMult && !defThreeAddr->rhs2 && isPowerOfTwo(defThreeAddr->imm)) {
+								if(def->type == IR::Entry::Type::Mult && !defThreeAddr->rhs2 && isPowerOfTwo(defThreeAddr->imm)) {
 									analysis.replaceUse(threeAddr, threeAddr->rhs2, defThreeAddr->rhs1);
 									threeAddr->rhs2 = defThreeAddr->rhs1;
 									threeAddr->imm = log2(defThreeAddr->imm);
@@ -350,7 +350,7 @@ namespace Transform {
 						}
 						break;
 					}
-				case IR::Entry::TypeCJump:
+				case IR::Entry::Type::CJump:
 					{
 						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;

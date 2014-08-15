@@ -106,7 +106,7 @@ void AsmParser::parseProcedure(VM::Program *program)
 			std::memcpy(&program->instructions[offset], &value, sizeof(value));
 			VM::Program::Relocation relocation;
 			relocation.offset = offset;
-			relocation.type = VM::Program::Relocation::TypeAbsolute;
+			relocation.type = VM::Program::Relocation::Type::Absolute;
 			relocation.symbol = name;
 			program->relocations.push_back(relocation);
 		} else {
@@ -413,7 +413,7 @@ bool AsmParser::parseExternalRef(VM::Instruction &instr, int offset, std::vector
 		instr = VM::Instruction::makeOneAddr(VM::OneAddrCall, VM::RegPC, 0);
 		VM::Program::Relocation relocation;
 		relocation.offset = offset;
-		relocation.type = VM::Program::Relocation::TypeCall;
+		relocation.type = VM::Program::Relocation::Type::Call;
 		relocation.symbol = target;
 		relocations.push_back(relocation);
 		return true;
@@ -428,7 +428,7 @@ bool AsmParser::parseExternalRef(VM::Instruction &instr, int offset, std::vector
 		instr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, lhs, VM::RegPC, 0);
 		VM::Program::Relocation relocation;
 		relocation.offset = offset;
-		relocation.type = VM::Program::Relocation::TypeAddPCRel;
+		relocation.type = VM::Program::Relocation::Type::AddPCRel;
 		relocation.symbol = target;
 		relocations.push_back(relocation);
 		return true;

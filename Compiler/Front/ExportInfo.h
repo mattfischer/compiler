@@ -20,10 +20,10 @@ public:
 	const std::vector<unsigned char> &data() { return mData; }
 	const std::vector<unsigned char> &strings() { return mStrings; }
 
-	enum ExportItem {
-		ExportItemTypeDefinition,
-		ExportItemSymbol,
-		ExportItemStringBase
+	enum class ExportItem {
+		TypeDefinition,
+		Symbol,
+		StringBase
 	};
 
 private:

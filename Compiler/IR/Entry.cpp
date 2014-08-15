@@ -45,7 +45,7 @@ namespace IR {
 	static bool lhsAssign(Entry::Type type)
 	{
 		switch(type) {
-			case Entry::TypeStoreMem:
+			case Entry::Type::StoreMem:
 				return false;
 
 			default:
@@ -65,7 +65,7 @@ namespace IR {
 	void EntryThreeAddr::print(std::ostream &o) const
 	{
 		bool needComma = false;
-		o << "  " << names[type];
+		o << "  " << names[(int)type];
 
 		if(lhs) {
 			o << lhs->name;
@@ -120,7 +120,7 @@ namespace IR {
 	}
 
 	EntryLabel::EntryLabel(const std::string &_name)
-		: Entry(TypeLabel), name(_name)
+		: Entry(Type::Label), name(_name)
 	{
 	}
 
@@ -130,17 +130,17 @@ namespace IR {
 	}
 
 	EntryJump::EntryJump(EntryLabel *_target)
-		: Entry(TypeJump), target(_target)
+		: Entry(Type::Jump), target(_target)
 	{
 	}
 
 	void EntryJump::print(std::ostream &o) const
 	{
-		o << "  " << names[type] << target->name;
+		o << "  " << names[(int)type] << target->name;
 	}
 
 	EntryCJump::EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
-		: Entry(TypeCJump), pred(_pred), trueTarget(_trueTarget), falseTarget(_falseTarget)
+		: Entry(Type::CJump), pred(_pred), trueTarget(_trueTarget), falseTarget(_falseTarget)
 	{
 	}
 
@@ -150,7 +150,7 @@ namespace IR {
 
 	void EntryCJump::print(std::ostream &o) const
 	{
-		o << "  " << names[type] << pred->name << ", " << trueTarget->name << ", " << falseTarget->name;
+		o << "  " << names[(int)type] << pred->name << ", " << trueTarget->name << ", " << falseTarget->name;
 	}
 
 	bool EntryCJump::uses(Symbol *symbol)
@@ -164,7 +164,7 @@ namespace IR {
 	}
 
 	EntryPhi::EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs)
-		: Entry(TypePhi), base(_base), lhs(_lhs), numArgs(_numArgs)
+		: Entry(Type::Phi), base(_base), lhs(_lhs), numArgs(_numArgs)
 	{
 		args = new Symbol*[numArgs];
 		memset(args, 0, numArgs * sizeof(Symbol*));
@@ -236,7 +236,7 @@ namespace IR {
 
 	void EntryCall::print(std::ostream &o) const
 	{
-		o << "  " << names[type] << target;
+		o << "  " << names[(int)type] << target;
 	}
 
 	EntryString::EntryString(Type _type, Symbol *_lhs, const std::string &_string)
@@ -246,7 +246,7 @@ namespace IR {
 
 	void EntryString::print(std::ostream &o) const
 	{
-		o << "  " << names[type] << lhs->name << ", \"" << string << "\"";
+		o << "  " << names[(int)type] << lhs->name << ", \"" << string << "\"";
 	}
 
 	Symbol *EntryString::assign()

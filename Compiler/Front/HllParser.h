@@ -23,7 +23,7 @@ private:
 	std::vector<Node*> mNodes; //!< List of all nodes created so far
 	HllTokenizer &mHllTokenizer; //!< Reference to the tokenizer being used
 
-	Node *newNode(Node::NodeType nodeType, int line, Node::NodeSubtype nodeSubtype = Node::NodeSubtypeNone);
+	Node *newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtype = Node::Subtype::None);
 
 	Node *parseProgram();
 	Node *parseProcedure();

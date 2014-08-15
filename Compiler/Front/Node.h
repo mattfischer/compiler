@@ -15,65 +15,65 @@ namespace Front {
 		/*!
 		 * \brief Node type
 		 */
-		enum NodeType {
-			NodeTypeList, //!< Generic list of nodes
-			NodeTypeProcedureDef, //!< Procedure definition
-			NodeTypeVarDecl, //!< Variable declaration
-			NodeTypeStructDef, //!< Structure definition
-			NodeTypeClassDef, //!< Class definition
-			NodeTypeClassMember, //!< Class member
-			NodeTypeReturn, //!< Return statement
-			NodeTypeAssign, //!< Assignment operator
-			NodeTypeIf, //!< If statement
-			NodeTypeWhile, //!< While statement
-			NodeTypeFor, //!< For statement
-			NodeTypeCompare, //!< Comparison operators
-			NodeTypeArith, //!< Arithmetic operators
-			NodeTypeConstant, //!< Numeric constant
-			NodeTypeId, //!< Identifier
-			NodeTypeCall, //!< Procedure call
-			NodeTypeArray, //!< Array type
-			NodeTypeNew, //!< Allocate new object
-			NodeTypeBreak, //!< Break statement
-			NodeTypeContinue, //!< Continue statement
-			NodeTypeMember, //!< Structure member
-			NodeTypeCoerce, //!< Convert argument to different type
-			NodeTypeQualifier //!< Member qualifier
+		enum class Type {
+			List, //!< Generic list of nodes
+			ProcedureDef, //!< Procedure definition
+			VarDecl, //!< Variable declaration
+			StructDef, //!< Structure definition
+			ClassDef, //!< Class definition
+			ClassMember, //!< Class member
+			Return, //!< Return statement
+			Assign, //!< Assignment operator
+			If, //!< If statement
+			While, //!< While statement
+			For, //!< For statement
+			Compare, //!< Comparison operators
+			Arith, //!< Arithmetic operators
+			Constant, //!< Numeric constant
+			Id, //!< Identifier
+			Call, //!< Procedure call
+			Array, //!< Array type
+			New, //!< Allocate new object
+			Break, //!< Break statement
+			Continue, //!< Continue statement
+			Member, //!< Structure member
+			Coerce, //!< Convert argument to different type
+			Qualifier //!< Member qualifier
 		};
 
 		/*!
 		 * \brief Node subtype, for node types which require it
 		 */
-		enum NodeSubtype {
-			NodeSubtypeNone, //!< No subtype
+		enum Subtype {
+			None, //!< No subtype
 
-			NodeSubtypeAdd, //!< Addition operator
-			NodeSubtypeSubtract, //!< Subtraction operator
-			NodeSubtypeMultiply, //!< Multiplication operator
-			NodeSubtypeDivide, //!< Division operator
-			NodeSubtypeModulo, //!< Modulo operator
-			NodeSubtypeIncrement, //!< Increment operator
-			NodeSubtypeDecrement, //!< Decrement operator
+			Add, //!< Addition operator
+			Subtract, //!< Subtraction operator
+			Multiply, //!< Multiplication operator
+			Divide, //!< Division operator
+			Modulo, //!< Modulo operator
+			Increment, //!< Increment operator
+			Decrement, //!< Decrement operator
 
-			NodeSubtypeEqual, //!< Equality comparison
-			NodeSubtypeNequal, //!< Inequality comparison
-			NodeSubtypeLessThan, //!< Less-than comparison
-			NodeSubtypeLessThanEqual, //!< Less-than-equal comparison
-			NodeSubtypeGreaterThan, //!< Greater-than comparison
-			NodeSubtypeGreaterThanEqual, //!< Greater-than-equal comparison
-			NodeSubtypeOr, //!< Or comparison
-			NodeSubtypeAnd, //!< And comparison
+			Equal, //!< Equality comparison
+			Nequal, //!< Inequality comparison
+			LessThan, //!< Less-than comparison
+			LessThanEqual, //!< Less-than-equal comparison
+			GreaterThan, //!< Greater-than comparison
+			GreaterThanEqual, //!< Greater-than-equal comparison
+			Or, //!< Or comparison
+			And, //!< And comparison
 
-			NodeSubtypeVirtual, //!< Virtual function
-			NodeSubtypeNative, //!< Native function
-			NodeSubtypeStatic, //!< Static function
+			Virtual, //!< Virtual function
+			Native, //!< Native function
+			Static, //!< Static function
 		};
 
-		NodeType nodeType; //!< Node type
-		NodeSubtype nodeSubtype; //!< Node subtype
+		Node::Type nodeType; //!< Node type
+		Node::Subtype nodeSubtype; //!< Node subtype
 		int line; //!< Line in source file corresponding to node
 		std::vector<Node*> children; //!< Children of node
-		Type *type; //!< Assigned type of language element represented by node
+		Front::Type *type; //!< Assigned type of language element represented by node
 
 		/*!
 		 * \brief Structure containing various lexical types that can be associated with the node

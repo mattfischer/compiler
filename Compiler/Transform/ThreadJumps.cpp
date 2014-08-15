@@ -16,7 +16,7 @@ namespace Transform {
 		for(;;) {
 			IR::Entry *entry = label->next;
 			
-			if(entry->type != IR::Entry::TypeJump)
+			if(entry->type != IR::Entry::Type::Jump)
 				break;
 			
 			label = ((IR::EntryJump*)entry)->target;
@@ -32,7 +32,7 @@ namespace Transform {
 		// Iterate through the procedure's entries
 		for(IR::Entry *entry : proc->entries()) {
 			switch(entry->type) {
-				case IR::Entry::TypeJump:
+				case IR::Entry::Type::Jump:
 					{
 						// Find ultimate target of the jump
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
@@ -44,7 +44,7 @@ namespace Transform {
 						}
 						break;
 					}
-				case IR::Entry::TypeCJump:
+				case IR::Entry::Type::CJump:
 					{
 						IR::EntryCJump *jump = (IR::EntryCJump*)entry;
 

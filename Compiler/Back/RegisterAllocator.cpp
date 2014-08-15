@@ -99,7 +99,7 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
 		const IR::SymbolSet &variables = liveVariables.variables(entry);
 
 		switch(entry->type) {
-			case IR::Entry::TypeCall:
+			case IR::Entry::Type::Call:
 				// A call creates interferences between all caller-saved registers and
 				// all live variables
 				for(IR::Symbol *reg : callerSavedRegisters) {
@@ -107,25 +107,25 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
 				}
 				break;
 
-			case IR::Entry::TypeLoadRet:
+			case IR::Entry::Type::LoadRet:
 				// A return load creates interferences with the return register for all variables
 				// except the load's LHS
 				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->lhs);
 				break;
 
-			case IR::Entry::TypeStoreRet:
+			case IR::Entry::Type::StoreRet:
 				// A return store creates interferences with the return register for all variables
 				// except the store's RHS
 				addInterferences(graph, variables, callerSavedRegisters[0], threeAddr->rhs1);
 				break;
 
-			case IR::Entry::TypeLoadArg:
+			case IR::Entry::Type::LoadArg:
 				// An argument load creates interferences with the argument register for all variables
 				// except the load's LHS
 				addInterferences(graph, variables, callerSavedRegisters[threeAddr->imm], threeAddr->lhs);
 				break;
 
-			case IR::Entry::TypeStoreArg:
+			case IR::Entry::Type::StoreArg:
 				// An argument store creates interferences with the argument register for all variables
 				// except the load's RHS
 				addInterferences(graph, variables, callerSavedRegisters[threeAddr->imm], threeAddr->rhs1);
@@ -148,7 +148,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		switch(entry->type) {
-			case IR::Entry::TypeLoadRet:
+			case IR::Entry::Type::LoadRet:
 				// Set the preferred register for the LHS of a return load to the return register,
 				// or invalidate it if it had already been set to a different value
 				if(preferredRegisters.find(threeAddr->lhs) == preferredRegisters.end()) {
@@ -158,7 +158,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 				}
 				break;
 
-			case IR::Entry::TypeStoreRet:
+			case IR::Entry::Type::StoreRet:
 				// Set the preferred register for the RHS of a return store to the return register,
 				// or invalidate it if it had already been set to a different value
 				if(preferredRegisters.find(threeAddr->rhs1) == preferredRegisters.end()) {
@@ -168,7 +168,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 				}
 				break;
 
-			case IR::Entry::TypeLoadArg:
+			case IR::Entry::Type::LoadArg:
 				// Set the preferred register for the LHS of an argument load to the argument register,
 				// or invalidate it if it had already been set to a different value
 				if(preferredRegisters.find(threeAddr->lhs) == preferredRegisters.end()) {
@@ -178,7 +178,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
 				}
 				break;
 
-			case IR::Entry::TypeStoreArg:
+			case IR::Entry::Type::StoreArg:
 				// Set the preferred register for the RHS of an argument store to the argument register,
 				// or invalidate it if it had already been set to a different value
 				if(preferredRegisters.find(threeAddr->rhs1) == preferredRegisters.end()) {
@@ -222,10 +222,10 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			IR::Entry *def;
 			if(isConstant) {
 				// If the entry was constant, then just rematerialize the constant
-				def = new IR::EntryThreeAddr(IR::Entry::TypeMove, symbol, 0, 0, value);
+				def = new IR::EntryThreeAddr(IR::Entry::Type::Move, symbol, 0, 0, value);
 			} else {
 				// Otherwise, load it from its stack location
-				def = new IR::EntryThreeAddr(IR::Entry::TypeLoadStack, symbol, 0, 0, idx);
+				def = new IR::EntryThreeAddr(IR::Entry::Type::LoadStack, symbol, 0, 0, idx);
 				const IR::EntrySet &defs = useDefs->defines(entry, symbol);
 				neededDefs.insert(defs.begin(), defs.end());
 			}
@@ -245,7 +245,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			liveSet = liveVariables.variables(entry);
 		}
 
-		if(entry->type == IR::Entry::TypeLabel) {
+		if(entry->type == IR::Entry::Type::Label) {
 			// Liveness ceases when the current block ends
 			live = false;
 		} else if(live) {
@@ -272,7 +272,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			if(neededDefs.find(entry) != neededDefs.end()) {
 				// The definition is used.  It therefore has to be saved to the stack
 				entryIt++;
-				procedure->entries().insert(entryIt, new IR::EntryThreeAddr(IR::Entry::TypeStoreStack, 0, symbol, 0, idx));
+				procedure->entries().insert(entryIt, new IR::EntryThreeAddr(IR::Entry::Type::StoreStack, 0, symbol, 0, idx));
 				entryIt--;
 			} else if(spillLoads.find(entry) == spillLoads.end()) {
 				// All uses of this definition were rematerialized, so the definition is no
@@ -287,7 +287,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	// prologue and epilogue to the function
 	if(neededDefs.size() > 0) {
 		for(IR::Entry *entry : procedure->entries()) {
-			if(entry->type == IR::Entry::TypePrologue || entry->type == IR::Entry::TypeEpilogue) {
+			if(entry->type == IR::Entry::Type::Prologue || entry->type == IR::Entry::Type::Epilogue) {
 				IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 				idx = threeAddr->imm;
 				threeAddr->imm++;

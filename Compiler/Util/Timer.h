@@ -18,7 +18,7 @@ namespace Util {
 		}
 
 	private:
-		DWORD mStartCount;
+		unsigned int mStartCount;
 	};
 }
 #endif

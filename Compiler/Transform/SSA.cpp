@@ -59,7 +59,7 @@ namespace Transform {
 				for(Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
 					IR::Entry *head = *(frontier->entries.begin()++);
 
-					if(head->type != IR::Entry::TypePhi || ((IR::EntryPhi*)head)->lhs != symbol) {
+					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol) {
 						proc->entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
@@ -95,7 +95,7 @@ namespace Transform {
 				for(Analysis::FlowGraph::Block *succ : block->succ) {
 					IR::Entry *head = *(succ->entries.begin()++);
 
-					if(head->type == IR::Entry::TypePhi && ((IR::EntryPhi*)head)->base == symbol) {
+					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol) {
 						int l = 0;
 						for(Analysis::FlowGraph::Block *pred : succ->pred) {
 							if(pred == block) {

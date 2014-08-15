@@ -52,23 +52,23 @@ const char *subtypeNames[] = {
 namespace Front {
 	std::ostream &operator<<(std::ostream &o, Node *node)
 	{
-		o << typeNames[node->nodeType];
-		if(node->nodeSubtype != Node::NodeSubtypeNone) {
+		o << typeNames[(int)node->nodeType];
+		if(node->nodeSubtype != Node::Subtype::None) {
 			o << " | " << subtypeNames[node->nodeSubtype];
 		}
 
 		switch(node->nodeType) {
-			case Node::NodeTypeConstant:
+			case Node::Type::Constant:
 				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
 					o << " : '" << node->lexVal.s << "'";
 				} else {
 					o << " : " << node->lexVal.i;
 				}
 				break;
-			case Node::NodeTypeProcedureDef:
-			case Node::NodeTypeVarDecl:
-			case Node::NodeTypeId:
-			case Node::NodeTypeMember:
+			case Node::Type::ProcedureDef:
+			case Node::Type::VarDecl:
+			case Node::Type::Id:
+			case Node::Type::Member:
 				o << " : \'" << node->lexVal.s << "\'";
 				break;
 		}

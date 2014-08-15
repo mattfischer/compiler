@@ -54,7 +54,7 @@ namespace Transform {
 				}
 
 				// TODO: Non-constant invariants
-				if(entry->type == IR::Entry::TypeMove && ((IR::EntryThreeAddr*)entry)->rhs1 == 0) {
+				if(entry->type == IR::Entry::Type::Move && ((IR::EntryThreeAddr*)entry)->rhs1 == 0) {
 					// If a symbol is assigned to a constant, it is invariant
 					invariants.insert(entry);
 				}

@@ -53,11 +53,11 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 			std::stringstream s;
 
 			switch(node->nodeType) {
-				case Node::NodeTypeStructDef:
+				case Node::Type::StructDef:
 					addStruct(node);
 					break;
 
-				case Node::NodeTypeClassDef:
+				case Node::Type::ClassDef:
 					addClass(node);
 					break;
 			}
@@ -72,14 +72,14 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 		std::set<Type*> completeTypes;
 		for(Type *type : mTypes->types()) {
 			completeType(type);
-			if(type->type == Type::TypeClass) {
+			if(type->kind == Type::Kind::Class) {
 				constructScope((TypeStruct*)type, mScope);
 			}
 		}
 
 		// Iterate through the tree, and construct symbols for each procedure
 		for(Node *node : tree->children) {
-			if(node->nodeType == Node::NodeTypeProcedureDef) {
+			if(node->nodeType == Node::Type::ProcedureDef) {
 				Symbol *symbol = new Symbol(createType(node, false), node->lexVal.s);
 				mScope->addSymbol(symbol);
 			}
@@ -104,7 +104,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 void EnvironmentGenerator::addStruct(Node *node)
 {
 	// Create the type
-	TypeStruct *type = new TypeStruct(Type::TypeStruct, node->lexVal.s);
+	TypeStruct *type = new TypeStruct(Type::Kind::Struct, node->lexVal.s);
 	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of structure " << type->name;
@@ -131,7 +131,7 @@ void EnvironmentGenerator::addStruct(Node *node)
 void EnvironmentGenerator::addClass(Node *node)
 {
 	// Create the type
-	TypeStruct *type = new TypeStruct(Type::TypeClass, node->lexVal.s);
+	TypeStruct *type = new TypeStruct(Type::Kind::Class, node->lexVal.s);
 	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of class " << type->name;
@@ -156,27 +156,27 @@ void EnvironmentGenerator::addClass(Node *node)
 		Node *memberNode = child->children[1];
 
 		switch(memberNode->nodeType) {
-			case Node::NodeTypeVarDecl:
+			case Node::Type::VarDecl:
 			{
 				Type *memberType = createType(memberNode->children[0], true);
 				type->addMember(memberType, memberNode->lexVal.s, 0);
 				break;
 			}
 
-			case Node::NodeTypeProcedureDef:
+			case Node::Type::ProcedureDef:
 			{
 				unsigned int qualifiers = 0;
 				for(Node *qualifierNode : qualifiersNode->children) {
 					switch(qualifierNode->nodeSubtype) {
-						case Node::NodeSubtypeVirtual:
+						case Node::Subtype::Virtual:
 							qualifiers |= TypeStruct::Member::QualifierVirtual;
 							break;
 
-						case Node::NodeSubtypeNative:
+						case Node::Subtype::Native:
 							qualifiers |= TypeStruct::Member::QualifierNative;
 							break;
 
-						case Node::NodeSubtypeStatic:
+						case Node::Subtype::Static:
 							qualifiers |= TypeStruct::Member::QualifierStatic;
 							break;
 					}
@@ -208,7 +208,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 {
 	Type *type = 0;
 	switch(node->nodeType) {
-		case Node::NodeTypeArray:
+		case Node::Type::Array:
 			type = createType(node->children[0], dummy);
 			if(Type::equals(type, Types::intrinsic(Types::Void))) {
 				throw EnvironmentError(node, "Cannot declare array of voids");
@@ -216,7 +216,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 			type = new TypeArray(type);
 			break;
 
-		case Node::NodeTypeProcedureDef:
+		case Node::Type::ProcedureDef:
 			{
 				// Iterate the tree's argument items
 				Node *argumentList = node->children[1];
@@ -269,8 +269,8 @@ Type *EnvironmentGenerator::completeType(Type *type)
 
 	mCompletionStack.push_back(type);
 
-	switch(type->type) {
-		case Type::TypeProcedure:
+	switch(type->kind) {
+		case Type::Kind::Procedure:
 			{
 				// Complete the procedure's return and argument types
 				TypeProcedure *typeProcedure = (TypeProcedure*)type;
@@ -283,7 +283,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 				break;
 			}
 
-		case Type::TypeArray:
+		case Type::Kind::Array:
 			{
 				// Complete the array's base type
 				TypeArray *typeArray = (TypeArray*)type;
@@ -291,8 +291,8 @@ Type *EnvironmentGenerator::completeType(Type *type)
 				break;
 			}
 
-		case Type::TypeStruct:
-		case Type::TypeClass:
+		case Type::Kind::Struct:
+		case Type::Kind::Class:
 			{
 				TypeStruct *typeStruct = (TypeStruct*)type;
 				if(typeStruct->parent) {
@@ -322,7 +322,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 					// Complete member type
 					member.type = completeType(member.type);
 
-					if(member.type->type == Type::TypeProcedure) {
+					if(member.type->kind == Type::Kind::Procedure) {
 						// If the member is a procedure, check to see whether the parent class has an
 						// identically-named member
 						TypeStruct::Member *parentMember = 0;
@@ -357,7 +357,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 				break;
 			}
 
-		case Type::TypeDummy:
+		case Type::Kind::Dummy:
 			{
 				TypeDummy *typeDummy = (TypeDummy*)type;
 

@@ -45,7 +45,7 @@ namespace Analysis {
 		// Perform a backwards data flow analysis on the procedure, using the gen and kill sets
 		// constructed above.
 		DataFlow<IR::Symbol*> dataFlow;
-		mMap = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Symbol*>::MeetTypeUnion, DataFlow<IR::Symbol*>::DirectionBackward);
+		mMap = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Symbol*>::Meet::Union, DataFlow<IR::Symbol*>::Direction::Backward);
 
 		Util::log("opt.time") << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
 	}

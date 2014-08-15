@@ -25,7 +25,7 @@ namespace Transform {
 					itNext = itEntry;
 					itNext++;
 					IR::Entry *entry = *itEntry;
-					if(entry->type == IR::Entry::TypeLabel) {
+					if(entry->type == IR::Entry::Type::Label) {
 						continue;
 					}
 
@@ -44,7 +44,7 @@ namespace Transform {
 			itNext++;
 			IR::Entry *entry = *itEntry;
 			switch(entry->type) {
-				case IR::Entry::TypeMove:
+				case IR::Entry::Type::Move:
 					{
 						// If the move's LHS and RHS are the same, the move is unnecessary
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
@@ -56,13 +56,13 @@ namespace Transform {
 						}
 					}
 					// Fall-through
-				case IR::Entry::TypeAdd:
-				case IR::Entry::TypeMult:
-				case IR::Entry::TypeEqual:
-				case IR::Entry::TypeNequal:
-				case IR::Entry::TypeLoadRet:
-				case IR::Entry::TypeLoadArg:
-				case IR::Entry::TypeLoadString:
+				case IR::Entry::Type::Add:
+				case IR::Entry::Type::Mult:
+				case IR::Entry::Type::Equal:
+				case IR::Entry::Type::Nequal:
+				case IR::Entry::Type::LoadRet:
+				case IR::Entry::Type::LoadArg:
+				case IR::Entry::Type::LoadString:
 					{
 						// If an assignment has no uses, it is unnecessary
 						const IR::EntrySet &uses = useDefs->uses(entry);
@@ -74,13 +74,13 @@ namespace Transform {
 						}
 						break;
 					}
-				case IR::Entry::TypeJump:
+				case IR::Entry::Type::Jump:
 					{
 						// If a jump's target is the next instruction in the procedure, it is unnecessary
 						IR::EntryJump *jump = (IR::EntryJump*)entry;
 						for(IR::EntryList::iterator itLabel = ++(procedure->entries().find(entry)); itLabel != procedure->entries().end(); itLabel++) {
 							IR::Entry *label = *itLabel;
-							if(label->type != IR::Entry::TypeLabel) {
+							if(label->type != IR::Entry::Type::Label) {
 								break;
 							}
 

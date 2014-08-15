@@ -18,7 +18,7 @@ namespace Analysis {
 			IR::Entry *entry = *itEntry;
 
 			switch(entry->type) {
-				case IR::Entry::TypeLabel:
+				case IR::Entry::Type::Label:
 					// A label forces the start of a new block
 					if(block) {
 						// If a previous block was under construction, it is now complete.
@@ -34,8 +34,8 @@ namespace Analysis {
 					begin = itEntry;
 					break;
 
-				case IR::Entry::TypeJump:
-				case IR::Entry::TypeCJump:
+				case IR::Entry::Type::Jump:
+				case IR::Entry::Type::CJump:
 					// A jump instruction forces the end of the current block.  Construct
 					// its entry list now that we know its endpoint, and add it to the list.
 					end = itEntry;
@@ -86,7 +86,7 @@ namespace Analysis {
 		// Examine the back entry in the block to determine which blocks it links to
 		mBackMap[back] = block;
 		switch(back->type) {
-			case IR::Entry::TypeJump:
+			case IR::Entry::Type::Jump:
 				{
 					// Unconditional jump.  Link the block to the jump target
 					IR::EntryJump *jump = (IR::EntryJump*)back;
@@ -95,7 +95,7 @@ namespace Analysis {
 					target->pred.insert(block);
 					break;
 				}
-			case IR::Entry::TypeCJump:
+			case IR::Entry::Type::CJump:
 				{
 					// Conditional jump.  Link th block to the true and false jump targets
 					IR::EntryCJump *cJump = (IR::EntryCJump*)back;

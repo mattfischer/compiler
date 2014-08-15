@@ -57,7 +57,7 @@ namespace Middle {
 				bool foundRet = false;
 				for(IR::EntrySubList::reverse_iterator entryIt = block->entries.rbegin(); entryIt != block->entries.rend(); entryIt++) {
 					IR::Entry *entry = *entryIt;
-					if(entry->type == IR::Entry::TypeStoreRet) {
+					if(entry->type == IR::Entry::Type::StoreRet) {
 						// Found a StoreRet.  This block generates a return value
 						foundRet = true;
 						break;
