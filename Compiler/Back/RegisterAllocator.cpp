@@ -73,11 +73,11 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::Flo
  * \param symbol Symbol to add interferences to
  * \param excludeSymbol Symbol to exclude from the above symbol set, for convenience
  */
-void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &symbols, IR::Symbol *symbol, IR::Symbol *exclude)
+void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &symbols, IR::Symbol *target, IR::Symbol *exclude)
 {
 	for(IR::Symbol *symbol : symbols) {
 		if(symbol != exclude) {
-			graph.addEdge(symbol, symbol);
+			graph.addEdge(target, symbol);
 		}
 	}
 }

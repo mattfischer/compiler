@@ -62,10 +62,10 @@ namespace Transform {
 			// If a move entry survived to this point, any use of the move's LHS can be
 			// replaced with its RHS
 			for(IR::Entry *load : loads[entry]) {
-				IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)load;
-				if(entry->uses(load->lhs)) {
-					analysis.replaceUse(entry, load->lhs, load->rhs1);
-					entry->replaceUse(load->lhs, load->rhs1);
+				IR::EntryThreeAddr *loadEntry = (IR::EntryThreeAddr*)load;
+				if(entry->uses(loadEntry->lhs)) {
+					analysis.replaceUse(entry, loadEntry->lhs, loadEntry->rhs1);
+					entry->replaceUse(loadEntry->lhs, loadEntry->rhs1);
 					changed = true;
 				}
 			}
