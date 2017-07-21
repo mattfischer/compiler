@@ -4,89 +4,50 @@ namespace Analysis {
 	Analysis::Analysis(IR::Procedure *procedure)
 	{
 		mProcedure = procedure;
-
-		mFlowGraph = 0;
-		mReachingDefs = 0;
-		mUseDefs = 0;
-		mConstants = 0;
 	}
 
-	Analysis::~Analysis()
-	{
-		if(mConstants) {
-			delete mConstants;
-		}
-
-		if(mUseDefs) {
-			delete mUseDefs;
-		}
-
-		if(mReachingDefs) {
-			delete mReachingDefs;
-		}
-
-		if(mFlowGraph) {
-			delete mFlowGraph;
-		}
-	}
-
-	FlowGraph *Analysis::flowGraph()
+	FlowGraph &Analysis::flowGraph()
 	{
 		if(!mFlowGraph) {
-			mFlowGraph = new FlowGraph(mProcedure);
+			mFlowGraph = std::make_unique<FlowGraph>(mProcedure);
 		}
 
-		return mFlowGraph;
+		return *mFlowGraph;
 	}
 
-	ReachingDefs *Analysis::reachingDefs()
+	ReachingDefs &Analysis::reachingDefs()
 	{
 		if(!mReachingDefs) {
-			mReachingDefs = new ReachingDefs(mProcedure, flowGraph());
+			mReachingDefs = std::make_unique<ReachingDefs>(mProcedure, flowGraph());
 		}
 
-		return mReachingDefs;
+		return *mReachingDefs;
 	}
 
-	UseDefs *Analysis::useDefs()
+	UseDefs &Analysis::useDefs()
 	{
 		if(!mUseDefs) {
-			mUseDefs = new UseDefs(mProcedure, reachingDefs());
+			mUseDefs = std::make_unique<UseDefs>(mProcedure, reachingDefs());
 		}
 
-		return mUseDefs;
+		return *mUseDefs;
 	}
 
-	Constants *Analysis::constants()
+	Constants &Analysis::constants()
 	{
 		if(!mConstants) {
-			mConstants = new Constants(mProcedure, useDefs());
+			mConstants = std::make_unique<Constants>(mProcedure, useDefs());
 		}
 
-		return mConstants;
+		return *mConstants;
 	}
 
 	void Analysis::invalidate()
 	{
-		if(mConstants) {
-			delete mConstants;
-			mConstants = 0;
-		}
-
-		if(mUseDefs) {
-			delete mUseDefs;
-			mUseDefs = 0;
-		}
-
-		if(mReachingDefs) {
-			delete mReachingDefs;
-			mReachingDefs = 0;
-		}
-
-		if(mFlowGraph) {
-			delete mFlowGraph;
-			mFlowGraph = 0;
-		}
+		mConstants.reset();
+		mUseDefs.reset();
+		mReachingDefs.reset();
+		mFlowGraph.reset();
 	}
 
 	void Analysis::replace(IR::Entry *oldEntry, IR::Entry *newEntry)

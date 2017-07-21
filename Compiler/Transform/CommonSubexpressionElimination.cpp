@@ -53,7 +53,7 @@ namespace Transform {
 	bool CommonSubexpressionElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
 	{
 		Analysis::AvailableExpressions availableExpressions(procedure, analysis.flowGraph());
-		Analysis::UseDefs *useDefs = analysis.useDefs();
+		Analysis::UseDefs &useDefs = analysis.useDefs();
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
@@ -81,7 +81,7 @@ namespace Transform {
 
 				// Add all uses of the entry into the queue, it may now be possible
 				// to do further subexpression elimination on them
-				for(IR::Entry *entry : useDefs->uses(entry)) {
+				for(IR::Entry *entry : useDefs.uses(entry)) {
 					queue.push(entry);
 				}
 

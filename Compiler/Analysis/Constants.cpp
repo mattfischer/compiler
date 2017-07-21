@@ -1,7 +1,7 @@
 #include "Analysis/Constants.h"
 
 namespace Analysis {
-	Constants::Constants(IR::Procedure *procedure, UseDefs *useDefs)
+	Constants::Constants(IR::Procedure *procedure, UseDefs &useDefs)
 		: mUseDefs(useDefs)
 	{
 	}
@@ -19,7 +19,7 @@ namespace Analysis {
 		int ret = 0;
 
 		// Check each definition that reaches this entry
-		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
+		const IR::EntrySet &set = mUseDefs.defines(entry, symbol);
 		for(IR::Entry *def : set) {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
 
@@ -59,7 +59,7 @@ namespace Analysis {
 		std::string ret;
 
 		// Check each definition that reaches this entry
-		const IR::EntrySet &set = mUseDefs->defines(entry, symbol);
+		const IR::EntrySet &set = mUseDefs.defines(entry, symbol);
 		for(IR::Entry *def : set) {
 			IR::EntryString *string = (IR::EntryString*)def;
 

@@ -18,7 +18,7 @@ namespace Transform {
  * \param newSymbol Symbol to rename to
  * \param useDefs Use-def chains for the procedure
  */
-void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs *useDefs)
+void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs &useDefs)
 {
 	std::queue<IR::Entry*> entries;
 
@@ -34,7 +34,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry assigns to the symbol, rename it and add all uses of the assignment
 			// to the queue for further processing
 			entry->replaceAssign(symbol, newSymbol);
-			for(IR::Entry *use : useDefs->uses(entry)) {
+			for(IR::Entry *use : useDefs.uses(entry)) {
 				entries.push(use);
 			}
 		}
@@ -43,7 +43,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry uses the symbol, rename it and add all definitions of the symbol
 			// to the queue for further processing
 			entry->replaceUse(symbol, newSymbol);
-			for(IR::Entry *def : useDefs->defines(entry, symbol)) {
+			for(IR::Entry *def : useDefs.defines(entry, symbol)) {
 				entries.push(def);
 			}
 		}
@@ -57,7 +57,7 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &
 	std::vector<IR::Symbol*> newSymbols;
 
 	// Construct use-def chains for the procedure
-	Analysis::UseDefs *useDefs = analysis.useDefs();
+	Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Iterate through each symbol in the procedure
 	for(IR::Symbol *symbol : procedure->symbols()) {

@@ -75,8 +75,8 @@ namespace Transform {
 	{
 		bool changed = false;
 		bool invalidate = false;
-		Analysis::UseDefs *useDefs = analysis.useDefs();
-		Analysis::Constants *constants = analysis.constants();
+		Analysis::UseDefs &useDefs = analysis.useDefs();
+		Analysis::Constants &constants = analysis.constants();
 
 		Util::UniqueQueue<IR::Entry*> queue;
 
@@ -114,9 +114,9 @@ namespace Transform {
 
 						// Examine the right hand side arguments and determine if they are constant
 						IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
-						rhs1 = constants->getIntValue(threeAddr, threeAddr->rhs1, rhs1Const);
+						rhs1 = constants.getIntValue(threeAddr, threeAddr->rhs1, rhs1Const);
 						if(threeAddr->rhs2) {
-							rhs2 = constants->getIntValue(threeAddr, threeAddr->rhs2, rhs2Const);
+							rhs2 = constants.getIntValue(threeAddr, threeAddr->rhs2, rhs2Const);
 						} else {
 							rhs2 = threeAddr->imm;
 							rhs2Const = true;
@@ -229,7 +229,7 @@ namespace Transform {
 						if(newEntry) {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them
-							for(IR::Entry *entry : useDefs->uses(entry)) {
+							for(IR::Entry *entry : useDefs.uses(entry)) {
 								queue.push(entry);
 							}
 
@@ -259,15 +259,15 @@ namespace Transform {
 							bool rhs1Const;
 							bool rhs2Const;
 
-							rhs1 = constants->getStringValue(rhs1Entry, rhs1Entry->rhs1, rhs1Const);
-							rhs2 = constants->getStringValue(rhs2Entry, rhs2Entry->rhs1, rhs2Const);
+							rhs1 = constants.getStringValue(rhs1Entry, rhs1Entry->rhs1, rhs1Const);
+							rhs2 = constants.getStringValue(rhs2Entry, rhs2Entry->rhs1, rhs2Const);
 
 							if(rhs1Const && rhs2Const) {
 								IR::Entry *newEntry = new IR::EntryString(IR::Entry::Type::LoadString, retEntry->lhs, rhs1 + rhs2);
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								for(IR::Entry *entry : useDefs->uses(call)) {
+								for(IR::Entry *entry : useDefs.uses(call)) {
 									queue.push(entry);
 								}
 
@@ -287,7 +287,7 @@ namespace Transform {
 							int rhs;
 							bool rhsConst;
 
-							rhs = constants->getIntValue(rhsEntry, rhsEntry->rhs1, rhsConst);
+							rhs = constants.getIntValue(rhsEntry, rhsEntry->rhs1, rhsConst);
 
 							if(rhsConst) {
 								std::string str;
@@ -305,7 +305,7 @@ namespace Transform {
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								for(IR::Entry *entry : useDefs->uses(call)) {
+								for(IR::Entry *entry : useDefs.uses(call)) {
 									queue.push(entry);
 								}
 
@@ -330,14 +330,14 @@ namespace Transform {
 						}
 
 						bool isConstant;
-						int value = constants->getIntValue(threeAddr, threeAddr->rhs2, isConstant);
+						int value = constants.getIntValue(threeAddr, threeAddr->rhs2, isConstant);
 						if(isConstant) {
 							analysis.replaceUse(threeAddr, threeAddr->rhs2, 0);
 							threeAddr->rhs2 = 0;
 							threeAddr->imm = value;
 							changed = true;
 						} else {
-							const IR::EntrySet &defs = useDefs->defines(entry, threeAddr->rhs2);
+							const IR::EntrySet &defs = useDefs.defines(entry, threeAddr->rhs2);
 							if(defs.size() == 1) {
 								IR::Entry *def = *(defs.begin());
 								IR::EntryThreeAddr *defThreeAddr = (IR::EntryThreeAddr*)def;
@@ -355,7 +355,7 @@ namespace Transform {
 						// Check if the predicate of the conditional jump is constant
 						IR::EntryCJump *cJump = (IR::EntryCJump*)entry;
 						bool isConstant;
-						int value = constants->getIntValue(cJump, cJump->pred, isConstant);
+						int value = constants.getIntValue(cJump, cJump->pred, isConstant);
 						if(!isConstant) {
 							continue;
 						}

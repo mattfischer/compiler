@@ -17,10 +17,10 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph *flowGraph)
+	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph)
+		: mFlowGraph(flowGraph)
 	{
 		mProcedure = procedure;
-		mFlowGraph = flowGraph;
 
 		Util::Timer timer;
 		timer.start();

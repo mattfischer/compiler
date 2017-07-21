@@ -54,7 +54,7 @@ namespace Transform {
 
 		// Perform forward data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
+		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Forward);
 
 		// Iterate through the procedure's entries
@@ -110,7 +110,7 @@ namespace Transform {
 
 		// Perform backwards data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
-		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
+		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Backward);
 
 		IR::EntrySet deleted;

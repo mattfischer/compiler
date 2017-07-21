@@ -7,21 +7,21 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	Loops::Loops(IR::Procedure *procedure, FlowGraph *flowGraph)
+	Loops::Loops(IR::Procedure *procedure, FlowGraph &flowGraph)
 	{
 		// Construct a dominator tree for the procedure
 		DominatorTree dominatorTree(procedure, flowGraph);
 
 		// Construct the root loop
 		mRootLoop.parent = &mRootLoop;
-		mRootLoop.header = flowGraph->start();
-		for(FlowGraph::Block *block : flowGraph->blocks()) {
+		mRootLoop.header = flowGraph.start();
+		for(FlowGraph::Block *block : flowGraph.blocks()) {
 			mRootLoop.blocks.insert(block);
 		}
 		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		// Iterate through the graph, looking for loops
-		for(FlowGraph::Block *block : flowGraph->blocks()) {
+		for(FlowGraph::Block *block : flowGraph.blocks()) {
 			for(FlowGraph::Block *succ : block->succ) {
 				// If a block's successor dominates the block, then the successor is the head of a loop
 				if(dominatorTree.dominates(block, succ)) {

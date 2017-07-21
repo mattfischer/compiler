@@ -10,7 +10,7 @@ namespace Analysis {
 	 * \param procedure Procedure to analyze
 	 * \param flowGraph Flow graph for procedure
 	 */
-	DominatorTree::DominatorTree(IR::Procedure *procedure, FlowGraph *flowGraph)
+	DominatorTree::DominatorTree(IR::Procedure *procedure, FlowGraph &flowGraph)
 	{
 		// Assign an order to the blocks
 		BlockSort sort(flowGraph);

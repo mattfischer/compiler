@@ -28,7 +28,7 @@ static const int CallerSavedRegisters = 4;
  * \param procedure Procedure to analyze
  * \return Map from symbol to its spill cost
  */
-std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::FlowGraph *flowGraph)
+std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::FlowGraph &flowGraph)
 {
 	std::map<IR::Symbol*, int> costs;
 
@@ -208,8 +208,8 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	IR::EntrySet neededDefs;
 	IR::EntrySet spillLoads;
 
-	Analysis::UseDefs *useDefs = analysis.useDefs();
-	Analysis::Constants *constants = analysis.constants();
+	Analysis::UseDefs &useDefs = analysis.useDefs();
+	Analysis::Constants &constants = analysis.constants();
 
 	// Iterate through the entries in the procedure
 	for(IR::Entry *entry : procedure->entries()) {
@@ -217,7 +217,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
 			bool isConstant;
-			int value = constants->getIntValue(entry, symbol, isConstant);
+			int value = constants.getIntValue(entry, symbol, isConstant);
 
 			IR::Entry *def;
 			if(isConstant) {
@@ -226,7 +226,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryThreeAddr(IR::Entry::Type::LoadStack, symbol, 0, 0, idx);
-				const IR::EntrySet &defs = useDefs->defines(entry, symbol);
+				const IR::EntrySet &defs = useDefs.defines(entry, symbol);
 				neededDefs.insert(defs.begin(), defs.end());
 			}
 
@@ -337,7 +337,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedu
 	// Construct an interference graph, live variable list, and use-def chains for the procedure
 	Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
 	Analysis::InterferenceGraph graph(procedure, &liveVariables);
-	Analysis::UseDefs *useDefs = analysis.useDefs();
+	Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Construct artificial graph nodes for each register which is not preserved across procedure calls
 	std::vector<IR::Symbol*> callerSavedRegisters;

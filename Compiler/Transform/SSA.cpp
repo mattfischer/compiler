@@ -34,7 +34,7 @@ namespace Transform {
 		std::vector<IR::Symbol*> newSymbols;
 
 		// Perform flow graph and dominance analysis on the procedure
-		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
+		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
@@ -43,7 +43,7 @@ namespace Transform {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
+			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
 				for(IR::Entry *entry : block->entries) {
 					if(entry->assign() == symbol) {
 						blocks.push(block);
@@ -69,9 +69,9 @@ namespace Transform {
 			// Rename variables
 			int nextVersion = 0;
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
-			activeList[flowGraph->start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
-			newSymbols.push_back(activeList[flowGraph->start()]);
-			for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
+			activeList[flowGraph.start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
+			newSymbols.push_back(activeList[flowGraph.start()]);
+			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[dominatorTree.idom(block)];
 				IR::Symbol *active = activeList[block];

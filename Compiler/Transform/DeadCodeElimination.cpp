@@ -13,13 +13,13 @@ namespace Transform {
 		bool changed = false;
 
 		// Construct a flow graph and use-def chains for the procedure
-		Analysis::FlowGraph *flowGraph = analysis.flowGraph();
-		Analysis::UseDefs *useDefs = analysis.useDefs();
+		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
+		Analysis::UseDefs &useDefs = analysis.useDefs();
 
 		// Iterate through the blocks of the graph
-		for(Analysis::FlowGraph::Block *block : flowGraph->blocks()) {
+		for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
-			if(block->pred.size() == 0 && block != flowGraph->start()) {
+			if(block->pred.size() == 0 && block != flowGraph.start()) {
 				IR::EntryList::iterator itNext;
 				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
 					itNext = itEntry;
@@ -65,7 +65,7 @@ namespace Transform {
 				case IR::Entry::Type::LoadString:
 					{
 						// If an assignment has no uses, it is unnecessary
-						const IR::EntrySet &uses = useDefs->uses(entry);
+						const IR::EntrySet &uses = useDefs.uses(entry);
 						if(uses.empty()) {
 							procedure->entries().erase(entry);
 							analysis.remove(entry);

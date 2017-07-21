@@ -10,7 +10,7 @@ namespace Analysis {
 	 * \param procedure Procedure to analyze
 	 * \param flowGraph Flow graph of procedure
 	 */
-	AvailableExpressions::AvailableExpressions(IR::Procedure *procedure, FlowGraph *flowGraph)
+	AvailableExpressions::AvailableExpressions(IR::Procedure *procedure, FlowGraph &flowGraph)
 	{
 		mProcedure = procedure;
 

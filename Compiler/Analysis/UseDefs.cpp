@@ -16,7 +16,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedur to analyze
 	 */
-	UseDefs::UseDefs(IR::Procedure *procedure, ReachingDefs *reachingDefs)
+	UseDefs::UseDefs(IR::Procedure *procedure, ReachingDefs &reachingDefs)
 	: mProcedure(procedure), mReachingDefs(reachingDefs)
 	{
 		Util::Timer timer;
@@ -25,7 +25,7 @@ namespace Analysis {
 		// Iterate through the procedure, examining the reaching definition information at each entry
 		for(IR::Entry *entry : mProcedure->entries()) {
 			// Iterate through the definitions which reach this entry
-			const IR::EntrySet &defs = mReachingDefs->defs(entry);
+			const IR::EntrySet &defs = mReachingDefs.defs(entry);
 			for(IR::Entry *defEntry : defs) {
 				IR::Symbol *symbol = defEntry->assign();
 				if(entry->uses(symbol)) {
@@ -95,7 +95,7 @@ namespace Analysis {
 		mDefines.erase(oldEntry);
 
 		// Construct new def-use information for the new entry from the reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs->defs(oldEntry);
+		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
 		for(IR::Entry *def : newDefs) {
 			IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
@@ -168,7 +168,7 @@ namespace Analysis {
 		mDefines[entry].erase(oldSymbol);
 
 		// Construct new use-def and def-use information from the underlying reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs->defsForSymbol(entry, newSymbol);
+		const IR::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
 		for(IR::Entry *def : newDefs) {
 			mUses[def].insert(entry);
 		}

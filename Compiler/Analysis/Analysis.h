@@ -8,16 +8,17 @@
 
 #include "IR/Procedure.h"
 
+#include <memory>
+
 namespace Analysis {
 	class Analysis {
 	public:
 		Analysis(IR::Procedure *procedure);
-		~Analysis();
 
-		FlowGraph *flowGraph();
-		ReachingDefs *reachingDefs();
-		UseDefs *useDefs();
-		Constants *constants();
+		FlowGraph &flowGraph();
+		ReachingDefs &reachingDefs();
+		UseDefs &useDefs();
+		Constants &constants();
 
 		void invalidate();
 
@@ -26,10 +27,10 @@ namespace Analysis {
 		void remove(IR::Entry *entry);
 
 	private:
-		FlowGraph *mFlowGraph;
-		ReachingDefs *mReachingDefs;
-		UseDefs *mUseDefs;
-		Constants *mConstants;
+		std::unique_ptr<FlowGraph> mFlowGraph;
+		std::unique_ptr<ReachingDefs> mReachingDefs;
+		std::unique_ptr<UseDefs> mUseDefs;
+		std::unique_ptr<Constants> mConstants;
 
 		IR::Procedure *mProcedure;
 	};
