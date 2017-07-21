@@ -76,15 +76,12 @@ namespace Analysis {
 			std::map<FlowGraph::Block*, ItemSet> killBlock;
 
 			// Aggregate the gen/kill sets from each entry into gen/kill sets for each block
-			for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-				FlowGraph::Block *block = *it;
-
+			for(FlowGraph::Block *block : graph.blocks()) {
 				ItemSet g;
 				ItemSet k;
 				switch(direction) {
 					case Direction::Forward:
-						for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-							IR::Entry *entry = *itEntry;
+						for(IR::Entry *entry : block->entries) {
 							g = transfer(g, gen[entry], kill[entry]);
 							k = transfer(k, kill[entry], gen[entry]);
 						}
@@ -112,8 +109,7 @@ namespace Analysis {
 			Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
 			// Populate the initial states of each block, based on meet type
-			for(FlowGraph::BlockSet::const_iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-				FlowGraph::Block *block = *it;
+			for(FlowGraph::Block *block : graph.blocks()) {
 				blockQueue.push(block);
 
 				switch(meetType) {
@@ -152,16 +148,14 @@ namespace Analysis {
 				// current block's state
 				switch(direction) {
 					case Direction::Forward:
-						for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-							FlowGraph::Block *pred = *it;
+						for(FlowGraph::Block *pred : block->pred) {
 							ItemSet &out = states[pred].out;
 							states[block].in = meet(states[block].in, states[pred].out, meetType);
 						}
 						break;
 
 					case Direction::Backward:
-						for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-							FlowGraph::Block *succ = *it;
+						for(FlowGraph::Block *succ : block->succ) {
 							ItemSet &out = states[succ].out;
 							states[block].in = meet(states[block].in, states[succ].out, meetType);
 						}
@@ -178,15 +172,13 @@ namespace Analysis {
 					states[block].out = out;
 					switch(direction) {
 						case Direction::Forward:
-							for(FlowGraph::BlockSet::iterator it = block->succ.begin(); it != block->succ.end(); it++) {
-								FlowGraph::Block *succ = *it;
+							for(FlowGraph::Block *succ : block->succ) {
 								blockQueue.push(succ);
 							}
 							break;
 
 						case Direction::Backward:
-							for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-								FlowGraph::Block *pred = *it;
+							for(FlowGraph::Block *pred : block->pred) {
 								blockQueue.push(pred);
 							}
 							break;
@@ -197,13 +189,11 @@ namespace Analysis {
 			// The core algorithm is now complete--each block has information about its starting set
 			// of items.  Now proceed through each block, using the state information and the gen/kill
 			// sets to assign an item set to each entry within the block
-			for(FlowGraph::BlockSet::iterator it = graph.blocks().begin(); it != graph.blocks().end(); it++) {
-				FlowGraph::Block *block = *it;
+			for(FlowGraph::Block *block : graph.blocks()) {
 				ItemSet set = states[block].in;
 				switch(direction) {
 					case Direction::Forward:
-						for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry++) {
-							IR::Entry *entry = *itEntry;
+						for(IR::Entry *entry : block->entries) {
 							map[entry] = set;
 							set = transfer(set, gen[entry], kill[entry]);
 						}
@@ -264,8 +254,7 @@ namespace Analysis {
 					break;
 
 				case Meet::Intersect:
-					for(ItemSet::iterator it = a.begin(); it != a.end(); it++) {
-						Item item = *it;
+					for(Item item : a) {
 						if(b.find(item) != b.end()) {
 							out.insert(item);
 						}

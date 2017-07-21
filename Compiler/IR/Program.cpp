@@ -26,8 +26,7 @@ namespace IR {
 	 */
 	Procedure *Program::findProcedure(const std::string &name)
 	{
-		for(ProcedureList::iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
-			Procedure* procedure = *it;
+		for(Procedure* procedure : mProcedures) {
 			if(procedure->name() == name) {
 				return procedure;
 			}
@@ -50,14 +49,12 @@ namespace IR {
 	 */
 	void Program::print(std::ostream &o) const
 	{
-		for(ProcedureList::const_iterator it = mProcedures.begin(); it != mProcedures.end(); it++) {
-			Procedure *procedure = *it;
+		for(Procedure *procedure : mProcedures) {
 			o << "<" << procedure->name() << ">" << std::endl;
 			procedure->print(o, "  ");
 		}
 
-		for(DataList::const_iterator it = mData.begin(); it != mData.end(); it++) {
-			Data *data = *it;
+		for(Data *data : mData) {
 			o << "<" << data->name() << ">" << std::endl;
 			data->print(o, "  ");
 		}

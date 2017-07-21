@@ -24,9 +24,7 @@ namespace Analysis {
 			for(unsigned int i=1; i<mBlocks.size(); i++) {
 				FlowGraph::Block *block = mBlocks[i];
 				FlowGraph::Block *newDom = 0;
-				for(FlowGraph::BlockSet::iterator it = block->pred.begin(); it != block->pred.end(); it++) {
-					FlowGraph::Block *pred = *it;
-
+				for(FlowGraph::Block *pred : block->pred) {
 					if(mIDoms[pred] == 0) {
 						continue;
 					}
