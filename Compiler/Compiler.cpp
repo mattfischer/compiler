@@ -74,7 +74,7 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 	}
 
 	Front::ProgramGenerator programGenerator(node, environmentGenerator.types(), environmentGenerator.scope());
-	Front::Program *program = programGenerator.generate();
+	std::unique_ptr<Front::Program> program = programGenerator.generate();
 	if(!program) {
 		std::stringstream s;
 		s << "line " << programGenerator.errorLine() << ": " << programGenerator.errorMessage() << std::endl;
@@ -87,7 +87,7 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 	Util::log("parse") << std::endl;
 
 	Front::IRGenerator generator;
-	IR::Program *irProgram = generator.generate(program);
+	std::unique_ptr<IR::Program> irProgram = generator.generate(*program);
 	if(!irProgram) {
 		return 0;
 	}
@@ -97,21 +97,21 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 	Util::log("ir") << std::endl;
 
 	Middle::ErrorCheck errorCheck;
-	if(!errorCheck.check(irProgram)) {
+	if(!errorCheck.check(*irProgram)) {
 		std::stringstream s;
 		s << "procedure " << errorCheck.errorProcedure()->name() << ": " << errorCheck.errorMessage() << std::endl;
 		setError(s.str());
 		return 0;
 	}
 
-	Middle::Optimizer::optimize(irProgram);
+	Middle::Optimizer::optimize(*irProgram);
 
 	Util::log("ir") << "*** IR (after optimization) ***" << std::endl;
 	irProgram->print(Util::log("ir"));
 	Util::log("ir") << std::endl;
 
 	std::stringstream buffer;
-	Back::CodeGenerator::generate(irProgram, buffer);
+	Back::CodeGenerator::generate(*irProgram, buffer);
 
 	Util::log("asm") << "*** Assembly ***" << std::endl;
 	Util::log("asm") << buffer.str() << std::endl;

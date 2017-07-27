@@ -12,7 +12,7 @@ namespace Middle {
 	 */
 	class ErrorCheck {
 	public:
-		bool check(IR::Program *program);
+		bool check(const IR::Program &program);
 
 		IR::Procedure *errorProcedure() { return mErrorProcedure; } //!< Procedure which contains error
 		const std::string &errorMessage() { return mErrorMessage; } //!< Error message, if any

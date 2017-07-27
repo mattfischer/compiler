@@ -17,7 +17,7 @@ namespace Back {
 	 */
 	class CodeGenerator {
 	public:
-		static void generate(IR::Program *irProgram, std::ostream &stream);
+		static void generate(IR::Program &irProgram, std::ostream &stream);
 
 	private:
 		static void generateProcedure(IR::Procedure &procedure, std::ostream &stream);

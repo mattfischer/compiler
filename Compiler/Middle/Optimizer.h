@@ -14,7 +14,7 @@ namespace Middle {
 	 */
 	class Optimizer {
 	public:
-		static void optimize(IR::Program *program);
+		static void optimize(IR::Program &program);
 	};
 }
 #endif

@@ -16,12 +16,12 @@ namespace Front {
 	 * \param tree Syntax tree to process
 	 * \return Generated IR program
 	 */
-	IR::Program *IRGenerator::generate(Program *program)
+	std::unique_ptr<IR::Program> IRGenerator::generate(const Program &program)
 	{
-		IR::Program *irProgram = new IR::Program;
+		std::unique_ptr<IR::Program> irProgram = std::make_unique<IR::Program>();
 
 		// Create an IR procedure for each procedure definition node
-		for(Procedure *procedure : program->procedures) {
+		for(Procedure *procedure : program.procedures) {
 			std::unique_ptr<IR::Procedure> irProcedure = std::make_unique<IR::Procedure>(procedure->name);
 
 			// Emit procedure prologue
@@ -90,8 +90,8 @@ namespace Front {
 			irProgram->addProcedure(std::move(irProcedure));
 		}
 
-		for(unsigned int i=0; i<program->types->types().size(); i++) {
-			const Type *type = program->types->types()[i];
+		for(unsigned int i=0; i<program.types->types().size(); i++) {
+			const Type *type = program.types->types()[i];
 			if(type->kind == Type::Kind::Class && ((TypeStruct*)type)->vtableSize > 0) {
 				TypeStruct *typeStruct = (TypeStruct*)type;
 				std::string name = typeStruct->name + "$$vtable";

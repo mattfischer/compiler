@@ -17,10 +17,10 @@ namespace Middle {
 	 * \brief Check the program for errors
 	 * \return True if program is valid
 	 */
-	bool ErrorCheck::check(IR::Program *program)
+	bool ErrorCheck::check(const IR::Program &program)
 	{
 		// Check each procedure of program
-		for(const std::unique_ptr<IR::Procedure> &procedure : program->procedures()) {
+		for(const std::unique_ptr<IR::Procedure> &procedure : program.procedures()) {
 			// *** Check for variables which are used before they are defined ***
 
 			Analysis::Analysis analysis(*procedure);

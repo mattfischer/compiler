@@ -17,6 +17,7 @@ namespace IR {
 		Program();
 
 		std::vector<std::unique_ptr<Procedure>> &procedures() { return mProcedures; } //!< List of all procedures
+		const std::vector<std::unique_ptr<Procedure>> &procedures() const { return mProcedures; } //!< List of all procedures
 		std::vector<std::unique_ptr<Data>> &data() { return mData; }
 
 		void addProcedure(std::unique_ptr<Procedure> procedure);

@@ -23,16 +23,16 @@ namespace Back {
 	 * \param irProgram IR program input
 	 * \return Final code for the program
 	 */
-	void CodeGenerator::generate(IR::Program *irProgram, std::ostream &stream)
+	void CodeGenerator::generate(IR::Program &irProgram, std::ostream &stream)
 	{
 		// Iterate through the procedures, generating each in turn
-		for(std::unique_ptr<IR::Procedure> &irProcedure : irProgram->procedures()) {
+		for(std::unique_ptr<IR::Procedure> &irProcedure : irProgram.procedures()) {
 			// Generate code for the procedure
 			generateProcedure(*irProcedure, stream);
 		}
 
 		// Iterate through the data sections, generating each in turn
-		for(std::unique_ptr<IR::Data> &irData : irProgram->data()) {
+		for(std::unique_ptr<IR::Data> &irData : irProgram.data()) {
 			// Generate code for the data
 			generateData(*irData, stream);
 			stream << std::endl;

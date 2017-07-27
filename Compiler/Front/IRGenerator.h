@@ -16,7 +16,7 @@ namespace Front {
 	 */
 	class IRGenerator {
 	public:
-		IR::Program *generate(Program *program);
+		std::unique_ptr<IR::Program> generate(const Program &program);
 
 	private:
 		struct Context {

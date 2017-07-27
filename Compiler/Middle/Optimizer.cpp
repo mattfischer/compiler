@@ -25,7 +25,7 @@ namespace Middle {
 	 * \brief Optimize a program
 	 * \param program Program to optimize
 	 */
-	void Optimizer::optimize(IR::Program *program)
+	void Optimizer::optimize(IR::Program &program)
 	{
 		typedef std::vector<Transform::Transform*> TransformVector;
 		typedef std::map<Transform::Transform*, TransformVector> TransformToTransformVectorMap;
@@ -54,7 +54,7 @@ namespace Middle {
 		transformMap[Transform::CommonSubexpressionElimination::instance()].push_back(Transform::CopyProp::instance());
 
 		// Optimize each procedure in turn
-		for(std::unique_ptr<IR::Procedure> &procedure : program->procedures()) {
+		for(std::unique_ptr<IR::Procedure> &procedure : program.procedures()) {
 			Analysis::Analysis analysis(*procedure);
 
 			// Queue of transformations to run

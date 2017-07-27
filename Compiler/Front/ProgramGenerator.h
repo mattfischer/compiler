@@ -4,6 +4,8 @@
 #include "Front/Node.h"
 #include "Front/Program.h"
 
+#include <memory>
+
 namespace Front {
 	/*!
 	 * \brief Generate a program from an abstract syntax tree
@@ -13,7 +15,7 @@ namespace Front {
 	public:
 		ProgramGenerator(Node *tree, Types *types, Scope *scope);
 
-		Program *generate();
+		std::unique_ptr<Program> generate();
 
 		std::string errorMessage() { return mErrorMessage; } //!< Error message
 		int errorLine() { return mErrorLine; } //!< Error line
@@ -36,10 +38,10 @@ namespace Front {
 		void checkType(Node *node, Context &context);
 		void checkChildren(Node *node, Context &context);
 		Type *createType(Node *node, Types *types);
-		void addProcedure(Node *node, Program *program, Scope *scope, bool instanceMethod);
-		void addStruct(Node *node, Program *program);
-		void addClass(Node *node, Program *program);
-		void addClasses(std::vector<Node*> nodes, Program *program);
+		void addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod);
+		void addStruct(Node *node, Program &program);
+		void addClass(Node *node, Program &program);
+		void addClasses(std::vector<Node*> nodes, Program &program);
 	};
 }
 #endif

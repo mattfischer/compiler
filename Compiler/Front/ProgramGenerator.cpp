@@ -41,11 +41,11 @@ namespace Front {
 	 * \brief Generate a program
 	 * \return Program structure
 	 */
-	Program *ProgramGenerator::generate()
+	std::unique_ptr<Program> ProgramGenerator::generate()
 	{
 		try {
 			// Create the root program object
-			Program *program = new Program;
+			std::unique_ptr<Program> program = std::make_unique<Program>();
 			program->types = mTypes;
 			program->scope = mScope;
 
@@ -53,7 +53,7 @@ namespace Front {
 			for(Node *node : mTree->children) {
 				switch(node->nodeType) {
 					case Node::Type::ProcedureDef:
-						addProcedure(node, program, program->scope, false);
+						addProcedure(node, *program, program->scope, false);
 						break;
 
 					case Node::Type::ClassDef:
@@ -75,7 +75,7 @@ namespace Front {
 											throw TypeError(memberNode, "Non-native function requires a body");
 										} else {
 											bool instanceMethod = !(member->qualifiers & TypeStruct::Member::QualifierStatic);
-											addProcedure(memberNode, program, typeStruct->scope, instanceMethod);
+											addProcedure(memberNode, *program, typeStruct->scope, instanceMethod);
 										}
 									}
 								}
@@ -192,7 +192,7 @@ namespace Front {
 	 * \param scope Parent scope of procedure
 	 * \return New procedure
 	 */
-	void ProgramGenerator::addProcedure(Node *node, Program *program, Scope *scope, bool instanceMethod)
+	void ProgramGenerator::addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod)
 	{
 		// Construct a procedure object
 		Procedure *procedure = new Procedure;
@@ -229,7 +229,7 @@ namespace Front {
 		node->type = Types::intrinsic(Types::Void);
 
 		// Add the procedure to the program's procedure list
-		program->procedures.push_back(procedure);
+		program.procedures.push_back(procedure);
 	}
 
 	/*!
