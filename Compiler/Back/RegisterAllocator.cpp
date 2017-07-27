@@ -28,7 +28,7 @@ static const int CallerSavedRegisters = 4;
  * \param procedure Procedure to analyze
  * \return Map from symbol to its spill cost
  */
-std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::FlowGraph &flowGraph)
+std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysis::FlowGraph &flowGraph)
 {
 	std::map<IR::Symbol*, int> costs;
 
@@ -49,7 +49,7 @@ std::map<IR::Symbol*, int> getSpillCosts(IR::Procedure *procedure, Analysis::Flo
 		// Iterate through the block's entries
 		for(IR::Entry *entry : block->entries) {
 			// Iterate through the symbols in the procedure
-			for(IR::Symbol *symbol : procedure->symbols()) {
+			for(IR::Symbol *symbol : procedure.symbols()) {
 				// Any assignment to the variable adds to its cost
 				if(entry->assign() == symbol) {
 					costs[symbol] += cost;
@@ -89,10 +89,10 @@ void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &s
  * \param procedure Procedure being analyzed
  * \param liveVariables Live variables in current procedure
  */
-void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std::vector<IR::Symbol*> callerSavedRegisters, IR::Procedure *procedure, Analysis::LiveVariables &liveVariables)
+void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std::vector<IR::Symbol*> callerSavedRegisters, IR::Procedure &procedure, Analysis::LiveVariables &liveVariables)
 {
 	// Iterate through the procedure's entries
-	for(IR::Entry *entry : procedure->entries()) {
+	for(IR::Entry *entry : procedure.entries()) {
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		// Determine variables which are live in this entry
@@ -139,12 +139,12 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
  * \param procedure Procedure to analyze
  * \return Map from symbol to preferred register number
  */
-std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
+std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure &procedure)
 {
 	std::map<IR::Symbol*, int> preferredRegisters;
 
 	// Iterate through the procedure's entries
-	for(IR::Entry *entry : procedure->entries()) {
+	for(IR::Entry *entry : procedure.entries()) {
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		switch(entry->type) {
@@ -200,7 +200,7 @@ std::map<IR::Symbol*, int> getPreferredRegisters(IR::Procedure *procedure)
  * \param liveVariables Live variables in procedure
  * \param useDefs Use-def chains in procedure
  */
-void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables, Analysis::Analysis &analysis)
+void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveVariables &liveVariables, Analysis::Analysis &analysis)
 {
 	int idx = 0;
 	bool live = false;
@@ -212,7 +212,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	Analysis::Constants &constants = analysis.constants();
 
 	// Iterate through the entries in the procedure
-	for(IR::Entry *entry : procedure->entries()) {
+	for(IR::Entry *entry : procedure.entries()) {
 		// If the entry uses the symbol and the symbol was not already live, the symbol must be
 		// loaded from the stack
 		if(entry->uses(symbol) && !live) {
@@ -231,7 +231,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			}
 
 			// Insert the new instruction
-			procedure->entries().insert(entry, def);
+			procedure.entries().insert(entry, def);
 			spillLoads.insert(def);
 
 			// The variable is now live
@@ -264,7 +264,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	}
 
 	// Now iterate through the procedure again
-	for(IR::EntryList::iterator entryIt = procedure->entries().begin(); entryIt != procedure->entries().end(); entryIt++) {
+	for(IR::EntryList::iterator entryIt = procedure.entries().begin(); entryIt != procedure.entries().end(); entryIt++) {
 		IR::Entry *entry = *entryIt;
 
 		if(entry->assign() == symbol) {
@@ -272,13 +272,13 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 			if(neededDefs.find(entry) != neededDefs.end()) {
 				// The definition is used.  It therefore has to be saved to the stack
 				entryIt++;
-				procedure->entries().insert(entryIt, new IR::EntryThreeAddr(IR::Entry::Type::StoreStack, 0, symbol, 0, idx));
+				procedure.entries().insert(entryIt, new IR::EntryThreeAddr(IR::Entry::Type::StoreStack, 0, symbol, 0, idx));
 				entryIt--;
 			} else if(spillLoads.find(entry) == spillLoads.end()) {
 				// All uses of this definition were rematerialized, so the definition is no
 				// longer necessary at all
 				entryIt--;
-				procedure->entries().erase(entry);
+				procedure.entries().erase(entry);
 			}
 		}
 	}
@@ -286,7 +286,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
 	// If a spill to the stack was necessary, increase the size of the stack frame in the
 	// prologue and epilogue to the function
 	if(neededDefs.size() > 0) {
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			if(entry->type == IR::Entry::Type::Prologue || entry->type == IR::Entry::Type::Epilogue) {
 				IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 				idx = threeAddr->imm;
@@ -301,7 +301,7 @@ void spillVariable(IR::Procedure *procedure, IR::Symbol *symbol, Analysis::LiveV
  * \param procedure Procedure to analyze
  * \return Map from symbol to register number for each symbol in the procedure
  */
-std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
+std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure &procedure)
 {
 	std::map<IR::Symbol*, int> registers;
 	bool success;
@@ -316,7 +316,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
 
 		if(!success) {
 			Util::log("ir") << "*** IR (after spilling) ***" << std::endl;
-			procedure->print(Util::log("ir"));
+			procedure.print(Util::log("ir"));
 			Util::log("ir") << std::endl;
 		}
 	} while(!success);
@@ -330,7 +330,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::allocate(IR::Procedure *procedure)
  * \param success [out] True if allocation was successful
  * \return Map from symbol to register number
  */
-std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure *procedure, bool &success, Analysis::Analysis &analysis)
+std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedure, bool &success, Analysis::Analysis &analysis)
 {
 	std::map<IR::Symbol*, int> registers;
 

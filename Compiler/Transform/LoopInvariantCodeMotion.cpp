@@ -6,7 +6,7 @@
 #include "IR/Procedure.h"
 
 namespace Transform {
-	bool LoopInvariantCodeMotion::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool LoopInvariantCodeMotion::transform(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		// Perform loop analysis on the procedure
 		Analysis::Loops loops(procedure, analysis.flowGraph());
@@ -27,7 +27,7 @@ namespace Transform {
 	 * \param procedure Procedure that contains the loop
 	 * \param loops Loop analysis of the procedure
 	 */
-	bool LoopInvariantCodeMotion::processLoop(Analysis::Loops::Loop *loop, IR::Procedure *procedure, Analysis::Loops &loops)
+	bool LoopInvariantCodeMotion::processLoop(Analysis::Loops::Loop *loop, IR::Procedure &procedure, Analysis::Loops &loops)
 	{
 		bool changed = false;
 
@@ -69,8 +69,8 @@ namespace Transform {
 			}
 
 			// Move the entry into the loop's preheader
-			procedure->entries().erase(entry);
-			procedure->entries().insert(*loop->preheader->entries.end(), entry);
+			procedure.entries().erase(entry);
+			procedure.entries().insert(*loop->preheader->entries.end(), entry);
 			changed = true;
 		}
 

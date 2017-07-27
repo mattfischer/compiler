@@ -13,7 +13,7 @@
 namespace Analysis {
 	class Analysis {
 	public:
-		Analysis(IR::Procedure *procedure);
+		Analysis(const IR::Procedure &procedure);
 
 		FlowGraph &flowGraph();
 		ReachingDefs &reachingDefs();
@@ -32,7 +32,7 @@ namespace Analysis {
 		std::unique_ptr<UseDefs> mUseDefs;
 		std::unique_ptr<Constants> mConstants;
 
-		IR::Procedure *mProcedure;
+		const IR::Procedure &mProcedure;
 	};
 }
 

@@ -22,7 +22,7 @@ namespace Analysis {
 	class UseDefs
 	{
 	public:
-		UseDefs(IR::Procedure *procedure, ReachingDefs &reachingDefs);
+		UseDefs(const IR::Procedure &procedure, ReachingDefs &reachingDefs);
 
 		const IR::EntrySet &uses(IR::Entry *def) const;
 		const IR::EntrySet &defines(IR::Entry *use, IR::Symbol *symbol) const;
@@ -38,7 +38,7 @@ namespace Analysis {
 
 		std::map<IR::Entry*, IR::EntrySet> mUses; //!< List of all uses
 		std::map<IR::Entry*, SymbolToEntrySetMap> mDefines; //!< List of all defines
-		IR::Procedure *mProcedure; //!< Procedure being analyzed
+		const IR::Procedure &mProcedure; //!< Procedure being analyzed
 		ReachingDefs &mReachingDefs; //!< Reaching def information for the procedure
 	};
 }

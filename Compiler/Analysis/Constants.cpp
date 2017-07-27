@@ -1,7 +1,7 @@
 #include "Analysis/Constants.h"
 
 namespace Analysis {
-	Constants::Constants(IR::Procedure *procedure, UseDefs &useDefs)
+	Constants::Constants(const IR::Procedure &procedure, UseDefs &useDefs)
 		: mUseDefs(useDefs)
 	{
 	}

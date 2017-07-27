@@ -18,7 +18,7 @@ namespace Transform {
 		 * \param procedure Procedure to transform
 		 * \return True if the transform modified the procedure, false otherwise
 		 */
-		virtual bool transform(IR::Procedure *procedure, Analysis::Analysis &analysis) = 0;
+		virtual bool transform(IR::Procedure &procedure, Analysis::Analysis &analysis) = 0;
 
 		/*!
 		 * \brief Transformation name

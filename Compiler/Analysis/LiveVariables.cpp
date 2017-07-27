@@ -13,19 +13,19 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	LiveVariables::LiveVariables(IR::Procedure *procedure, FlowGraph &flowGraph)
+	LiveVariables::LiveVariables(const IR::Procedure &procedure, FlowGraph &flowGraph)
 		: mProcedure(procedure)
 	{
 		Util::Timer timer;
 		timer.start();
 
 		// Construct the set of all variables in the procedure
-		IR::SymbolSet all(procedure->symbols().begin(), procedure->symbols().end());
+		IR::SymbolSet all(mProcedure.symbols().begin(), mProcedure.symbols().end());
 
 		// Construct gen/kill sets for data flow analysis.
 		std::map<IR::Entry*, IR::SymbolSet> gen;
 		std::map<IR::Entry*, IR::SymbolSet> kill;
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			for(IR::Symbol *symbol : all) {
 				IR::SymbolSet &g = gen[entry];
 				if(entry->uses(symbol)) {
@@ -47,7 +47,7 @@ namespace Analysis {
 		DataFlow<IR::Symbol*> dataFlow;
 		mMap = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Symbol*>::Meet::Union, DataFlow<IR::Symbol*>::Direction::Backward);
 
-		Util::log("opt.time") << "  LiveVariables(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  LiveVariables(" << mProcedure.name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -66,7 +66,7 @@ namespace Analysis {
 	void LiveVariables::print(std::ostream &o)
 	{
 		// Loop through the procedure, printing out each entry along with the variables live at that point
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			o << *entry << " | ";
 			IR::SymbolSet &symbols = variables(entry);
 			for(IR::Symbol *symbol : symbols) {

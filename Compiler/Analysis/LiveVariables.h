@@ -22,14 +22,14 @@ namespace Analysis {
 	 */
 	class LiveVariables {
 	public:
-		LiveVariables(IR::Procedure *procedure, FlowGraph &flowGraph);
+		LiveVariables(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
 		IR::SymbolSet &variables(IR::Entry *entry);
 		void print(std::ostream &o);
 
 	private:
 		std::map<IR::Entry*, IR::SymbolSet> mMap; //!< Map of live ranges
-		IR::Procedure *mProcedure; //!< Procedure under analysis
+		const IR::Procedure &mProcedure; //!< Procedure under analysis
 	};
 }
 

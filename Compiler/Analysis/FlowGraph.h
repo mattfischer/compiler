@@ -36,7 +36,7 @@ namespace Analysis {
 			IR::EntrySubList entries; //!< Entries in the block
 		};
 
-		FlowGraph(IR::Procedure *procedure);
+		FlowGraph(const IR::Procedure &procedure);
 		~FlowGraph();
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);

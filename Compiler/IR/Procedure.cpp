@@ -27,9 +27,9 @@ namespace IR {
 	 * \brief Print procedure
 	 * \param prefix Prefix to put before each line of output
 	 */
-	void Procedure::print(std::ostream &o, const std::string &prefix)
+	void Procedure::print(std::ostream &o, const std::string &prefix) const
 	{
-		for(Entry *entry : mEntries) {
+		for(Entry *entry : const_cast<EntryList&>(mEntries)) {
 			o << prefix << *entry << std::endl;
 		}
 		o << prefix << std::endl;

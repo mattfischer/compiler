@@ -50,7 +50,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 	}
 }
 
-bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+bool LiveRangeRenaming::transform(IR::Procedure &procedure, Analysis::Analysis &analysis)
 {
 	bool changed = false;
 
@@ -60,11 +60,11 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &
 	Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Iterate through each symbol in the procedure
-	for(IR::Symbol *symbol : procedure->symbols()) {
+	for(IR::Symbol *symbol : procedure.symbols()) {
 		int idx = 0;
 
 		// Iterate through each entry in the procedure
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			// If the given symbol is assigned or used in this entry, rename all uses of the variable
 			// that are connected to this one by def-use or use-def chains
 			if(entry->assign() == symbol || entry->uses(symbol)) {
@@ -92,8 +92,8 @@ bool LiveRangeRenaming::transform(IR::Procedure *procedure, Analysis::Analysis &
 		}
 	}
 
-	procedure->symbols().clear();
-	procedure->symbols().insert(procedure->symbols().begin(), newSymbols.begin(), newSymbols.end());
+	procedure.symbols().clear();
+	procedure.symbols().insert(procedure.symbols().begin(), newSymbols.begin(), newSymbols.end());
 
 	if(changed) {
 		analysis.invalidate();

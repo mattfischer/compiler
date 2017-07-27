@@ -8,7 +8,7 @@
 namespace Analysis {
 	class Constants {
 	public:
-		Constants(IR::Procedure *procedure, UseDefs &useDefs);
+		Constants(const IR::Procedure &procedure, UseDefs &useDefs);
 
 		int getIntValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);
 		std::string getStringValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant);

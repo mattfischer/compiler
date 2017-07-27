@@ -25,12 +25,12 @@ namespace Transform {
 		return label;
 	}
 
-	bool ThreadJumps::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
+	bool ThreadJumps::transform(IR::Procedure &proc, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 
 		// Iterate through the procedure's entries
-		for(IR::Entry *entry : proc->entries()) {
+		for(IR::Entry *entry : proc.entries()) {
 			switch(entry->type) {
 				case IR::Entry::Type::Jump:
 					{

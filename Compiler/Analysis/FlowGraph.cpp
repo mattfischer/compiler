@@ -7,14 +7,14 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	FlowGraph::FlowGraph(IR::Procedure *procedure)
+	FlowGraph::FlowGraph(const IR::Procedure &procedure)
 	{
 		Block *block = 0;
 		IR::EntrySubList::iterator begin;
 		IR::EntrySubList::iterator end;
 
 		// First, break up the procedure into blocks
-		for(IR::EntryList::iterator itEntry = procedure->entries().begin(); itEntry != procedure->entries().end(); itEntry++) {
+		for(IR::EntryList::iterator itEntry = const_cast<IR::Procedure&>(procedure).entries().begin(); itEntry != const_cast<IR::Procedure&>(procedure).entries().end(); itEntry++) {
 			IR::Entry *entry = *itEntry;
 
 			switch(entry->type) {
@@ -50,15 +50,15 @@ namespace Analysis {
 
 		// Add the final block, if present
 		if(block) {
-			end = procedure->entries().end();
+			end = const_cast<IR::Procedure&>(procedure).entries().end();
 			block->entries = IR::EntrySubList(begin, end);
 			mBlockSet.insert(block);
 			mFrontMap[block->entries.front()] = block;
 		}
 
 		// Save off the start and end pointers
-		mStart = mFrontMap[procedure->start()];
-		mEnd = mFrontMap[procedure->end()];
+		mStart = mFrontMap[procedure.start()];
+		mEnd = mFrontMap[procedure.end()];
 
 		// Now loop through the blocks and construct the links between them
 		for(Block *block : mBlockSet) {

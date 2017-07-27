@@ -4,7 +4,8 @@
 #include "IR/Procedure.h"
 #include "IR/Data.h"
 
-#include <list>
+#include <vector>
+#include <memory>
 #include <iostream>
 
 namespace IR {
@@ -15,18 +16,16 @@ namespace IR {
 	public:
 		Program();
 
-		ProcedureList &procedures() { return mProcedures; } //!< List of all procedures
+		std::vector<std::unique_ptr<Procedure>> &procedures() { return mProcedures; } //!< List of all procedures
 		DataList &data() { return mData; }
 
-		void addProcedure(Procedure *procedure);
-		Procedure *findProcedure(const std::string &name);
-
+		void addProcedure(std::unique_ptr<Procedure> procedure);
 		void addData(Data *data);
 
 		void print(std::ostream &o) const;
 
 	private:
-		ProcedureList mProcedures;
+		std::vector<std::unique_ptr<Procedure>> mProcedures;
 		DataList mData;
 	};
 }

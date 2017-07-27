@@ -34,7 +34,7 @@ namespace Analysis {
 			LoopSet children; //!< Loops inside of this loop
 		};
 
-		Loops(IR::Procedure *procedure, FlowGraph &flowGraph);
+		Loops(const IR::Procedure &procedure, FlowGraph &flowGraph);
 		~Loops();
 
 		LoopList &loops();

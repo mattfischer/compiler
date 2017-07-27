@@ -54,8 +54,8 @@ namespace Middle {
 		transformMap[Transform::CommonSubexpressionElimination::instance()].push_back(Transform::CopyProp::instance());
 
 		// Optimize each procedure in turn
-		for(IR::Procedure *procedure : program->procedures()) {
-			Analysis::Analysis analysis(procedure);
+		for(std::unique_ptr<IR::Procedure> &procedure : program->procedures()) {
+			Analysis::Analysis analysis(*procedure);
 
 			// Queue of transformations to run
 			Util::UniqueQueue<Transform::Transform*> transforms;
@@ -75,7 +75,7 @@ namespace Middle {
 				// Run the transform
 				Util::Timer timer;
 				timer.start();
-				bool changed = transform->transform(procedure, analysis);
+				bool changed = transform->transform(*procedure, analysis);
 				Util::log("opt.time") << transform->name() << ": " << timer.stop() << "ms" << std::endl;
 
 				if(changed) {

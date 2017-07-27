@@ -18,13 +18,15 @@ namespace IR {
 	public:
 		Procedure(const std::string &name);
 
-		void print(std::ostream &o, const std::string &prefix = "");
+		void print(std::ostream &o, const std::string &prefix = "") const;
 		
 		EntryLabel *start() const { return mStart; } //!< Start label
 		EntryLabel *end() const { return mEnd; } //!< End label
 		const std::string &name() const { return mName; } //!< Procedure name
 		EntryList &entries() { return mEntries; } //!< Body of procedure
+		const EntryList &entries() const { return mEntries; }
 		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
+		const SymbolList &symbols() const { return mSymbols; }
 		Symbol *newTemp(int size);
 		void addSymbol(Symbol *symbol);
 		Symbol *findSymbol(Front::Symbol *symbol);
@@ -44,8 +46,6 @@ namespace IR {
 		EntryList mEntries; //!< Entry list
 		bool mReturnsValue; //!< Whether the procedure returns a value
 	};
-
-	typedef std::list<Procedure*> ProcedureList;
 }
 
 #endif

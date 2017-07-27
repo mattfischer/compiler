@@ -17,17 +17,16 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	ReachingDefs::ReachingDefs(IR::Procedure *procedure, FlowGraph &flowGraph)
-		: mFlowGraph(flowGraph)
+	ReachingDefs::ReachingDefs(const IR::Procedure &procedure, FlowGraph &flowGraph)
+		: mFlowGraph(flowGraph),
+		mProcedure(procedure)
 	{
-		mProcedure = procedure;
-
 		Util::Timer timer;
 		timer.start();
 
 		// Find all definitions in the procedure
 		IR::EntrySet allDefs;
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			if(entry->assign()) {
 				allDefs.insert(entry);
 			}
@@ -36,7 +35,7 @@ namespace Analysis {
 		// Construct gen and kill sets for data flow analysis
 		EntryToEntrySetMap gen;
 		EntryToEntrySetMap kill;
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			if(!entry->assign()) {
 				continue;
 			}
@@ -57,7 +56,7 @@ namespace Analysis {
 		// Perform a forward data flow analysis using the gen/kill sets constructed above
 		DataFlow<IR::Entry*> dataFlow;
 		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::Meet::Union, DataFlow<IR::Entry*>::Direction::Forward);
-		Util::log("opt.time") << "  ReachingDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  ReachingDefs(" << procedure.name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -143,12 +142,12 @@ namespace Analysis {
 		std::map<IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet d = defs(entry);
 			for(IR::Entry *e : d) {

@@ -7,7 +7,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	Loops::Loops(IR::Procedure *procedure, FlowGraph &flowGraph)
+	Loops::Loops(const IR::Procedure &procedure, FlowGraph &flowGraph)
 	{
 		// Construct a dominator tree for the procedure
 		DominatorTree dominatorTree(procedure, flowGraph);

@@ -10,12 +10,11 @@ namespace Analysis {
 	 * \param procedure Procedure to analyze
 	 * \param flowGraph Flow graph of procedure
 	 */
-	AvailableExpressions::AvailableExpressions(IR::Procedure *procedure, FlowGraph &flowGraph)
+	AvailableExpressions::AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph)
+		: mProcedure(const_cast<IR::Procedure&>(procedure))
 	{
-		mProcedure = procedure;
-
 		IR::EntrySet all;
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : mProcedure.entries()) {
 			if(isExpression(entry)) {
 				all.insert(entry);
 			}
@@ -24,7 +23,7 @@ namespace Analysis {
 		EntryToEntrySetMap gen;
 		EntryToEntrySetMap kill;
 
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : mProcedure.entries()) {
 			if(all.find(entry) == all.end()) {
 				continue;
 			}
@@ -88,12 +87,12 @@ namespace Analysis {
 		std::map<IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : mProcedure.entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : mProcedure.entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
 			IR::EntrySet exps = expressions(entry);
 			for(IR::Entry *e : exps) {

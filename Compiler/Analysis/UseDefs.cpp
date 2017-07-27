@@ -16,14 +16,14 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedur to analyze
 	 */
-	UseDefs::UseDefs(IR::Procedure *procedure, ReachingDefs &reachingDefs)
+	UseDefs::UseDefs(const IR::Procedure &procedure, ReachingDefs &reachingDefs)
 	: mProcedure(procedure), mReachingDefs(reachingDefs)
 	{
 		Util::Timer timer;
 		timer.start();
 
 		// Iterate through the procedure, examining the reaching definition information at each entry
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			// Iterate through the definitions which reach this entry
 			const IR::EntrySet &defs = mReachingDefs.defs(entry);
 			for(IR::Entry *defEntry : defs) {
@@ -36,7 +36,7 @@ namespace Analysis {
 				}
 			}
 		}
-		Util::log("opt.time") << "  UseDefs(" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "  UseDefs(" << procedure.name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
 	/*!
@@ -183,13 +183,13 @@ namespace Analysis {
 		// Assign a line number to each entry
 		int line = 1;
 		std::map<IR::Entry*, int> lineMap;
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			lineMap[entry] = line;
 			line++;
 		}
 
 		// Iterate through the procedure, printing out each entry along with def-use and use-def information
-		for(IR::Entry *entry : mProcedure->entries()) {
+		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			o << lineMap[entry] << ": " << *entry;
 
 			// Print use information

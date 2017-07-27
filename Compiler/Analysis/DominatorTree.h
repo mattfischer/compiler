@@ -17,7 +17,7 @@ namespace Analysis {
 	 */
 	class DominatorTree {
 	public:
-		DominatorTree(IR::Procedure *procedure, FlowGraph &flowGraph);
+		DominatorTree(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
 		const FlowGraph::BlockVector &blocks() const;
 		FlowGraph::Block *idom(FlowGraph::Block *block);

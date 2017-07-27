@@ -20,11 +20,11 @@ namespace Middle {
 	bool ErrorCheck::check(IR::Program *program)
 	{
 		// Check each procedure of program
-		for(IR::Procedure *procedure : program->procedures()) {
+		for(const std::unique_ptr<IR::Procedure> &procedure : program->procedures()) {
 			// *** Check for variables which are used before they are defined ***
 
-			Analysis::Analysis analysis(procedure);
-			Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
+			Analysis::Analysis analysis(*procedure);
+			Analysis::LiveVariables liveVariables(*procedure, analysis.flowGraph());
 
 			// Any variable which is live at the beginning of the function has no initial definition
 			IR::SymbolSet symbols = liveVariables.variables(procedure->entries().front());
@@ -34,13 +34,13 @@ namespace Middle {
 				std::stringstream s;
 				s << "Use of undefined variable " << symbol->symbol->name;
 				mErrorMessage = s.str();
-				mErrorProcedure = procedure;
+				mErrorProcedure = procedure.get();
 				return false;
 			}
 
 			// *** Check for control paths which do not return a value ***
 
-			Analysis::FlowGraph flowGraph(procedure);
+			Analysis::FlowGraph flowGraph(*procedure);
 			Analysis::FlowGraph::BlockList blockList;
 			Analysis::FlowGraph::BlockSet seenBlocks;
 			Analysis::FlowGraph::Block *end = flowGraph.end();
@@ -78,7 +78,7 @@ namespace Middle {
 					std::stringstream s;
 					s << "Control reaches end of procedure without return";
 					mErrorMessage = s.str();
-					mErrorProcedure = procedure;
+					mErrorProcedure = procedure.get();
 					return false;
 				}
 

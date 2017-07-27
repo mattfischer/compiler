@@ -1,9 +1,9 @@
 #include "Analysis/Analysis.h"
 
 namespace Analysis {
-	Analysis::Analysis(IR::Procedure *procedure)
+	Analysis::Analysis(const IR::Procedure &procedure)
+		: mProcedure(procedure)
 	{
-		mProcedure = procedure;
 	}
 
 	FlowGraph &Analysis::flowGraph()

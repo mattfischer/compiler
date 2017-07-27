@@ -14,25 +14,9 @@ namespace IR {
 	 * \brief Add a procedure to the program
 	 * \param procedure Procedure to add
 	 */
-	void Program::addProcedure(Procedure *procedure)
+	void Program::addProcedure(std::unique_ptr<Procedure> procedure)
 	{
-		mProcedures.push_back(procedure);
-	}
-
-	/*!
-	 * \brief Find a procedure by name
-	 * \param name Name of procedure
-	 * \return Procedure if found, or 0
-	 */
-	Procedure *Program::findProcedure(const std::string &name)
-	{
-		for(Procedure* procedure : mProcedures) {
-			if(procedure->name() == name) {
-				return procedure;
-			}
-		}
-
-		return 0;
+		mProcedures.push_back(std::move(procedure));
 	}
 
 	/*!
@@ -49,7 +33,7 @@ namespace IR {
 	 */
 	void Program::print(std::ostream &o) const
 	{
-		for(Procedure *procedure : mProcedures) {
+		for(const std::unique_ptr<Procedure> &procedure : mProcedures) {
 			o << "<" << procedure->name() << ">" << std::endl;
 			procedure->print(o, "  ");
 		}

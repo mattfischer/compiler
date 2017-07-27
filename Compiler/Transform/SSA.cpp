@@ -29,7 +29,7 @@ namespace Transform {
 		return ss.str();
 	}
 
-	bool SSA::transform(IR::Procedure *proc, Analysis::Analysis &analysis)
+	bool SSA::transform(IR::Procedure &proc, Analysis::Analysis &analysis)
 	{
 		std::vector<IR::Symbol*> newSymbols;
 
@@ -39,7 +39,7 @@ namespace Transform {
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
 		// Iterate through the list of symbols in the procedure
-		for(IR::Symbol *symbol : proc->symbols()) {
+		for(IR::Symbol *symbol : proc.symbols()) {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
@@ -60,7 +60,7 @@ namespace Transform {
 					IR::Entry *head = *(frontier->entries.begin()++);
 
 					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						proc->entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+						proc.entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -111,7 +111,7 @@ namespace Transform {
 
 		// Add newly-created symbols into symbol table
 		for(IR::Symbol *symbol : newSymbols) {
-			proc->addSymbol(symbol);
+			proc.addSymbol(symbol);
 		}
 
 		analysis.invalidate();

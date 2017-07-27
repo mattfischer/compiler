@@ -20,7 +20,7 @@ namespace Back {
 		static void generate(IR::Program *irProgram, std::ostream &stream);
 
 	private:
-		static void generateProcedure(IR::Procedure *procedure, std::ostream &stream);
+		static void generateProcedure(IR::Procedure &procedure, std::ostream &stream);
 		static void generateData(IR::Data *data, std::ostream &stream);
 	};
 }

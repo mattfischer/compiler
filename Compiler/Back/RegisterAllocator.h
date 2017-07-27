@@ -22,10 +22,10 @@ namespace Back {
  */
 class RegisterAllocator {
 public:
-	std::map<IR::Symbol*, int> allocate(IR::Procedure *procedure);
+	std::map<IR::Symbol*, int> allocate(IR::Procedure &procedure);
 
 private:
-	std::map<IR::Symbol*, int> tryAllocate(IR::Procedure *procedure, bool &success, Analysis::Analysis &analysis);
+	std::map<IR::Symbol*, int> tryAllocate(IR::Procedure &procedure, bool &success, Analysis::Analysis &analysis);
 };
 
 }

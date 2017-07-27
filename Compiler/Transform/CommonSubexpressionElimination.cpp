@@ -50,7 +50,7 @@ namespace Transform {
 		return 0;
 	}
 
-	bool CommonSubexpressionElimination::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool CommonSubexpressionElimination::transform(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		Analysis::AvailableExpressions availableExpressions(procedure, analysis.flowGraph());
 		Analysis::UseDefs &useDefs = analysis.useDefs();
@@ -58,7 +58,7 @@ namespace Transform {
 		Util::UniqueQueue<IR::Entry*> queue;
 
 		// Start by iterating through the entire procedure
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			queue.push(entry);
 		}
 
@@ -89,8 +89,8 @@ namespace Transform {
 				analysis.replace(entry, newEntry);
 
 				// Substitute the new entry into the procedure
-				procedure->entries().insert(entry, newEntry);
-				procedure->entries().erase(entry);
+				procedure.entries().insert(entry, newEntry);
+				procedure.entries().erase(entry);
 				delete entry;
 				changed = true;
 			}

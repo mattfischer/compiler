@@ -26,9 +26,9 @@ namespace Back {
 	void CodeGenerator::generate(IR::Program *irProgram, std::ostream &stream)
 	{
 		// Iterate through the procedures, generating each in turn
-		for(IR::Procedure *irProcedure : irProgram->procedures()) {
+		for(std::unique_ptr<IR::Procedure> &irProcedure : irProgram->procedures()) {
 			// Generate code for the procedure
-			generateProcedure(irProcedure, stream);
+			generateProcedure(*irProcedure, stream);
 		}
 
 		// Iterate through the data sections, generating each in turn
@@ -46,7 +46,7 @@ namespace Back {
 	 * \param procedure Procedure to generate code for
 	 * \param stream Stream to output assembly to
 	 */
-	void CodeGenerator::generateProcedure(IR::Procedure *procedure, std::ostream &stream)
+	void CodeGenerator::generateProcedure(IR::Procedure &procedure, std::ostream &stream)
 	{
 		std::map<IR::Symbol*, int> regMap;
 		std::map<std::string, std::string> strings;
@@ -58,7 +58,7 @@ namespace Back {
 		RegisterAllocator allocator;
 		regMap = allocator.allocate(procedure);
 
-		Util::log("opt.time") << "Register allocation (" << procedure->name() << "): " << timer.stop() << "ms" << std::endl;
+		Util::log("opt.time") << "Register allocation (" << procedure.name() << "): " << timer.stop() << "ms" << std::endl;
 
 		// Determine the set of registers that need to be saved/restored in the prologue/epilogue
 		std::stringstream s;
@@ -75,7 +75,7 @@ namespace Back {
 		}
 
 		// If any calls are made in the procedure, LR must be saved as well
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			if(entry->type == IR::Entry::Type::Call || entry->type == IR::Entry::Type::CallIndirect) {
 				if(needComma) {
 					s << ", ";
@@ -87,10 +87,10 @@ namespace Back {
 		s << "}";
 		savedRegs = s.str();
 
-		stream << "defproc " << procedure->name() << std::endl;
+		stream << "defproc " << procedure.name() << std::endl;
 
 		// Iterate through each entry, and emit the appropriate code depending on its type
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			switch(entry->type) {
 				case IR::Entry::Type::Move:
 					{
@@ -397,7 +397,7 @@ namespace Back {
 						std::stringstream s;
 						s << "str" << strings.size();
 						strings[s.str()] = string->string;
-						stream << "    lea r" << regMap[string->lhs] << ", " << procedure->name() << "$$" << s.str() << std::endl;
+						stream << "    lea r" << regMap[string->lhs] << ", " << procedure.name() << "$$" << s.str() << std::endl;
 						break;
 					}
 
@@ -415,7 +415,7 @@ namespace Back {
 		for(auto &string : strings) {
 			const std::string &name = string.first;
 			const std::string &value = string.second;
-			stream << "defdata " << procedure->name() << "$$" << name << std::endl;
+			stream << "defdata " << procedure.name() << "$$" << name << std::endl;
 			stream << "    string \"" << value << "\"" << std::endl;
 			stream << std::endl;
 		}

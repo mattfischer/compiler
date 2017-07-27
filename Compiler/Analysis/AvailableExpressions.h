@@ -19,7 +19,7 @@ namespace Analysis {
 	 */
 	class AvailableExpressions {
 	public:
-		AvailableExpressions(IR::Procedure *procedure, FlowGraph &flowGraph);
+		AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
 		const IR::EntrySet &expressions(IR::Entry *entry) const;
 
@@ -28,7 +28,7 @@ namespace Analysis {
 		static bool isExpression(IR::Entry *entry);
 
 	private:
-		IR::Procedure *mProcedure;
+		IR::Procedure &mProcedure;
 
 		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
 		EntryToEntrySetMap mExpressions;

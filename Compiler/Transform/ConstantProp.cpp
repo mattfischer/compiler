@@ -71,7 +71,7 @@ namespace Transform {
 		delete callEntry;
 	}
 
-	bool ConstantProp::transform(IR::Procedure *procedure, Analysis::Analysis &analysis)
+	bool ConstantProp::transform(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
 		bool invalidate = false;
@@ -81,7 +81,7 @@ namespace Transform {
 		Util::UniqueQueue<IR::Entry*> queue;
 
 		// Start by iterating through the entire procedure
-		for(IR::Entry *entry : procedure->entries()) {
+		for(IR::Entry *entry : procedure.entries()) {
 			queue.push(entry);
 		}
 
@@ -237,8 +237,8 @@ namespace Transform {
 							analysis.replace(threeAddr, newEntry);
 
 							// Substitute the new entry into the procedure
-							procedure->entries().insert(threeAddr, newEntry);
-							procedure->entries().erase(threeAddr);
+							procedure.entries().insert(threeAddr, newEntry);
+							procedure.entries().erase(threeAddr);
 							delete threeAddr;
 							changed = true;
 						}
@@ -276,7 +276,7 @@ namespace Transform {
 								analysis.remove(rhs2Entry);
 								analysis.replace(retEntry, newEntry);
 
-								replaceCall(procedure->entries(), call, newEntry);
+								replaceCall(procedure.entries(), call, newEntry);
 								changed = true;
 							}
 							break;
@@ -313,7 +313,7 @@ namespace Transform {
 								analysis.remove(rhsEntry);
 								analysis.replace(retEntry, newEntry);
 
-								replaceCall(procedure->entries(), call, newEntry);
+								replaceCall(procedure.entries(), call, newEntry);
 								changed = true;
 							}
 							break;
@@ -372,8 +372,8 @@ namespace Transform {
 
 						// Update the useDef chains and the procedure itself
 						analysis.replace(cJump, jump);
-						procedure->entries().insert(cJump, jump);
-						procedure->entries().erase(cJump);
+						procedure.entries().insert(cJump, jump);
+						procedure.entries().erase(cJump);
 						delete cJump;
 						changed = true;
 						invalidate = true;
