@@ -86,13 +86,9 @@ namespace Front {
 			}
 
 			// Now that all procedures have been declared, type check the procedure bodies
-			for(Procedure *procedure : program->procedures) {
+			for(std::unique_ptr<Procedure> &procedure : program->procedures) {
 				// Create a context for the procedure
-				Context context;
-				context.procedure = procedure;
-				context.types = program->types;
-				context.scope = procedure->scope;
-				context.inLoop = false;
+				Context context{ *procedure, program->types, procedure->scope, false };
 
 				// Type check the body of the procedure
 				checkType(procedure->body, context);
@@ -195,7 +191,7 @@ namespace Front {
 	void ProgramGenerator::addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod)
 	{
 		// Construct a procedure object
-		Procedure *procedure = new Procedure;
+		std::unique_ptr<Procedure> procedure = std::make_unique<Procedure>();
 		Symbol *symbol = scope->findSymbol(node->lexVal.s);
 		procedure->type = (TypeProcedure*)symbol->type;
 
@@ -229,7 +225,7 @@ namespace Front {
 		node->type = Types::intrinsic(Types::Void);
 
 		// Add the procedure to the program's procedure list
-		program.procedures.push_back(procedure);
+		program.procedures.push_back(std::move(procedure));
 	}
 
 	/*!
@@ -448,7 +444,7 @@ namespace Front {
 						throw TypeError(node, s.str());
 					}
 
-					if(symbol->scope->classType() && !context.procedure->object) {
+					if(symbol->scope->classType() && !context.procedure.object) {
 						TypeStruct::Member *member = symbol->scope->classType()->findMember(name);
 						if(!(member->qualifiers & TypeStruct::Member::QualifierStatic)) {
 							throw TypeError(node, "Cannot access class member from a static method");
@@ -465,14 +461,14 @@ namespace Front {
 				break;
 
 			case Node::Type::Return:
-				if(Type::equals(context.procedure->type->returnType, Types::intrinsic(Types::Void))) {
+				if(Type::equals(context.procedure.type->returnType, Types::intrinsic(Types::Void))) {
 					throw TypeError(node, "Return statement in void procedure");
 				}
 
 				checkType(node->children[0], context);
 
 				// Coerce the return argument to the procedure's return type
-				node->children[0] = coerce(node->children[0], context.procedure->type->returnType);
+				node->children[0] = coerce(node->children[0], context.procedure.type->returnType);
 				node->type = Types::intrinsic(Types::Void);
 				break;
 

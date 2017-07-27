@@ -65,7 +65,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 
 		// Read types from imported binary files
 		for(ExportInfo *info : imports) {
-			info->read(mTypes, mScope);
+			info->read(*mTypes, *mScope);
 		}
 
 		// Complete each type, and construct scopes for class types

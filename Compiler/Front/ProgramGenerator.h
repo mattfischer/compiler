@@ -29,7 +29,7 @@ namespace Front {
 		int mErrorLine; //!< Error line
 
 		struct Context {
-			Procedure *procedure;
+			Procedure &procedure;
 			Types *types;
 			Scope *scope;
 			bool inLoop;
@@ -39,9 +39,6 @@ namespace Front {
 		void checkChildren(Node *node, Context &context);
 		Type *createType(Node *node, Types *types);
 		void addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod);
-		void addStruct(Node *node, Program &program);
-		void addClass(Node *node, Program &program);
-		void addClasses(std::vector<Node*> nodes, Program &program);
 	};
 }
 #endif

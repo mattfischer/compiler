@@ -123,7 +123,7 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 		return 0;
 	}
 
-	vmProgram->exportInfo = new Front::ExportInfo(program->types, program->scope);
+	vmProgram->exportInfo = new Front::ExportInfo(*program->types, *program->scope);
 
 	return vmProgram;
 }

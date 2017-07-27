@@ -19,9 +19,9 @@ enum ExportMember {
 	Static
 };
 
-ExportInfo::ExportInfo(Types *types, Scope *scope)
+ExportInfo::ExportInfo(Types &types, Scope &scope)
 {
-	for(Type *type : types->types()) {
+	for(Type *type : types.types()) {
 		switch(type->kind) {
 			case Type::Kind::Struct:
 				{
@@ -66,7 +66,7 @@ ExportInfo::ExportInfo(Types *types, Scope *scope)
 		}
 	}
 
-	for(Symbol *symbol : scope->symbols()) {
+	for(Symbol *symbol : scope.symbols()) {
 		mData.push_back((unsigned char)ExportItem::Symbol);
 		writeType(symbol->type);
 		mData.push_back(addString(symbol->name));
@@ -78,7 +78,7 @@ ExportInfo::ExportInfo(const std::vector<unsigned char> &data, const std::vector
 {
 }
 
-void ExportInfo::read(Types *types, Scope *scope)
+void ExportInfo::read(Types &types, Scope &scope)
 {
 	unsigned int offset = 0;
 	unsigned int stringBase = 0;
@@ -151,7 +151,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 								break;
 							}
 					}
-					types->registerType(type);
+					types.registerType(type);
 					break;
 				}
 
@@ -160,7 +160,7 @@ void ExportInfo::read(Types *types, Scope *scope)
 					Type *type = readType(offset, types, stringBase);
 					std::string name = getString(mData[offset], stringBase);
 					offset++;
-					scope->addSymbol(new Symbol(type, name));
+					scope.addSymbol(new Symbol(type, name));
 					break;
 				}
 
@@ -261,7 +261,7 @@ std::string ExportInfo::getString(unsigned int offset, unsigned int stringBase)
 	return std::string((char*)&mStrings[stringBase + offset]);
 }
 
-Type *ExportInfo::readType(unsigned int &offset, Types *types, unsigned int stringBase)
+Type *ExportInfo::readType(unsigned int &offset, Types &types, unsigned int stringBase)
 {
 	ExportType exportType = (ExportType)mData[offset];
 	offset++;
@@ -363,9 +363,9 @@ void ExportInfo::writeType(Type *type)
 	}
 }
 
-Type *ExportInfo::getType(const std::string &name, Types *types)
+Type *ExportInfo::getType(const std::string &name, Types &types)
 {
-	Type *type = types->findType(name);
+	Type *type = types.findType(name);
 	if(!type) {
 		type = new TypeDummy(name, "");
 	}

@@ -11,10 +11,10 @@ namespace Front {
 
 class ExportInfo {
 public:
-	ExportInfo(Types *types, Scope *scope);
+	ExportInfo(Types &types, Scope &scope);
 	ExportInfo(const std::vector<unsigned char> &data, const std::vector<unsigned char> &strings);
 
-	void read(Types *types, Scope *scope);
+	void read(Types &types, Scope &scope);
 	std::vector<std::string> typeNames();
 
 	const std::vector<unsigned char> &data() { return mData; }
@@ -35,11 +35,11 @@ private:
 	std::string getString(unsigned int offset, unsigned int stringBase);
 	unsigned char addString(const std::string &str);
 
-	Type *readType(unsigned int &offset, Types *types, unsigned int stringBase);
+	Type *readType(unsigned int &offset, Types &types, unsigned int stringBase);
 	void bypassType(unsigned int &offset);
 	void writeType(Type *type);
 
-	Type *getType(const std::string &name, Types *types);
+	Type *getType(const std::string &name, Types &types);
 };
 
 }

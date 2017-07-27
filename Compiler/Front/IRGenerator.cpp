@@ -21,7 +21,7 @@ namespace Front {
 		std::unique_ptr<IR::Program> irProgram = std::make_unique<IR::Program>();
 
 		// Create an IR procedure for each procedure definition node
-		for(Procedure *procedure : program.procedures) {
+		for(const std::unique_ptr<Procedure> &procedure : program.procedures) {
 			std::unique_ptr<IR::Procedure> irProcedure = std::make_unique<IR::Procedure>(procedure->name);
 
 			// Emit procedure prologue

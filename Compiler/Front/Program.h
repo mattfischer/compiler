@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
+
 namespace Front {
 	/*!
 	 * \brief A parsed and type-checked program
@@ -14,7 +16,7 @@ namespace Front {
 	struct Program {
 		Scope *scope; //!< Global variables
 		Types *types; //!< Type list
-		std::vector<Procedure*> procedures; //!< List of procedures
+		std::vector<std::unique_ptr<Procedure>> procedures; //!< List of procedures
 
 		void print(std::ostream &o);
 	};
