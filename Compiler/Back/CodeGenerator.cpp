@@ -32,9 +32,9 @@ namespace Back {
 		}
 
 		// Iterate through the data sections, generating each in turn
-		for(IR::Data *irData : irProgram->data()) {
+		for(std::unique_ptr<IR::Data> &irData : irProgram->data()) {
 			// Generate code for the data
-			generateData(irData, stream);
+			generateData(*irData, stream);
 			stream << std::endl;
 		}
 
@@ -426,12 +426,12 @@ namespace Back {
 	 * \param data Data to generate code for
 	 * \param stream Stream to output assembly to
 	 */
-	void CodeGenerator::generateData(IR::Data *data, std::ostream &stream)
+	void CodeGenerator::generateData(IR::Data &data, std::ostream &stream)
 	{
-		stream << "defdata " << data->name() << std::endl;
+		stream << "defdata " << data.name() << std::endl;
 
 		// Iterate through each entry, and emit the appropriate code depending on its type
-		for(IR::Entry *entry : data->entries()) {
+		for(IR::Entry *entry : data.entries()) {
 			switch(entry->type) {
 				case IR::Entry::Type::FunctionAddr:
 					{

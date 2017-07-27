@@ -23,9 +23,9 @@ namespace IR {
 	 * \brief Add a data section to the program
 	 * \param data Data to add
 	 */
-	void Program::addData(Data *data)
+	void Program::addData(std::unique_ptr<Data> data)
 	{
-		mData.push_back(data);
+		mData.push_back(std::move(data));
 	}
 
 	/*!
@@ -38,7 +38,7 @@ namespace IR {
 			procedure->print(o, "  ");
 		}
 
-		for(Data *data : mData) {
+		for(const std::unique_ptr<Data> &data : mData) {
 			o << "<" << data->name() << ">" << std::endl;
 			data->print(o, "  ");
 		}

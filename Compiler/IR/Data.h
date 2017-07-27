@@ -25,8 +25,6 @@ namespace IR {
 		std::string mName; //!< Data section name
 		EntryList mEntries; //!< Entry list
 	};
-
-	typedef std::list<Data*> DataList;
 }
 
 #endif

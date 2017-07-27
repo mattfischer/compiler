@@ -105,11 +105,11 @@ namespace Front {
 					typeStruct = typeStruct->parent;
 				}
 
-				IR::Data *irData = new IR::Data(name);
+				std::unique_ptr<IR::Data> irData = std::make_unique<IR::Data>(name);
 				for(std::string &target : vtable) {
 					irData->entries().push_back(new IR::EntryCall(IR::Entry::Type::FunctionAddr, target));
 				}
-				irProgram->addData(irData);
+				irProgram->addData(std::move(irData));
 			}
 		}
 
