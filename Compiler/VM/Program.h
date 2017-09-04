@@ -33,7 +33,7 @@ namespace VM {
 		};
 		std::vector<Relocation> relocations;
 
-		Front::ExportInfo *exportInfo;
+		std::unique_ptr<Front::ExportInfo> exportInfo;
 
 		Program();
 		Program(const OrcFile &file);

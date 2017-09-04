@@ -95,7 +95,7 @@ VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
 		}
 	}
 
-	linked->exportInfo = new Front::ExportInfo(exportInfoData, exportInfoStringData);
+	linked->exportInfo = std::make_unique<Front::ExportInfo>(exportInfoData, exportInfoStringData);
 
 	return linked;
 }

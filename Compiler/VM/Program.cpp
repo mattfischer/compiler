@@ -14,18 +14,15 @@ struct OrcSymbol {
 
 Program::Program()
 {
-	exportInfo = 0;
 }
 
 Program::Program(const OrcFile &file)
 {
-	exportInfo = 0;
 	read(file);
 }
 
 Program::Program(const std::string &filename)
 {
-	exportInfo = 0;
 	OrcFile file(filename);
 	read(file);
 }
@@ -46,7 +43,7 @@ void Program::read(const OrcFile &file)
 
 	const OrcFile::Section *exportInfoSection = file.section("export_info");
 	const OrcFile::Section *exportInfoStringsSection = file.section("export_info.strings");
-	exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
+	exportInfo = std::make_unique<Front::ExportInfo>(exportInfoSection->data, exportInfoStringsSection->data);
 }
 
 void Program::write(OrcFile &file)
