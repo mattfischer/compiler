@@ -34,19 +34,12 @@ OrcFile::OrcFile(const std::string &filename)
 
 OrcFile::OrcFile()
 {
-	Section *nameSection = new Section;
-	nameSection->name = addString(nameSection, "$strings");
+	std::unique_ptr<Section> nameSection = std::make_unique<Section>();
+	nameSection->name = addString(*nameSection, "$strings");
 	mNameSection = 0;
 
-	mSectionList.push_back(nameSection);
-	mSectionMap["$strings"] = nameSection;
-}
-
-OrcFile::~OrcFile()
-{
-	for(Section *section : mSectionList) {
-		delete section;
-	}
+	mSectionMap["$strings"] = nameSection.get();
+	mSectionList.push_back(std::move(nameSection));
 }
 
 void OrcFile::write(std::ostream &stream)
@@ -59,7 +52,7 @@ void OrcFile::write(std::ostream &stream)
 	stream.write((char*)&header, sizeof(header));
 
 	unsigned int offset = (unsigned int)(sizeof(OrcHeader) + mSectionList.size() * sizeof(OrcSectionHeader));
-	for(Section *section : mSectionList) {
+	for (const std::unique_ptr<Section> &section : mSectionList) {
 		OrcSectionHeader sectionHeader;
 		sectionHeader.name = section->name;
 		sectionHeader.offset = offset;
@@ -69,7 +62,7 @@ void OrcFile::write(std::ostream &stream)
 		stream.write((char*)&sectionHeader, sizeof(sectionHeader));
 	}
 
-	for(Section *section : mSectionList) {
+	for(const std::unique_ptr<Section> &section : mSectionList) {
 		stream.write((char*)&section->data[0], (std::streamsize)section->data.size());
 	}
 }
@@ -100,28 +93,29 @@ OrcFile::Section *OrcFile::section(const std::string &name)
 	}
 }
 
-unsigned int OrcFile::addString(Section *stringTable, const std::string &str)
+unsigned int OrcFile::addString(Section &stringTable, const std::string &str)
 {
-	unsigned int offset = (unsigned int)stringTable->data.size();
-	stringTable->data.resize(offset + str.size() + 1);
-	std::memcpy(&stringTable->data[offset], str.c_str(), str.size());
-	stringTable->data[offset + str.size()] = '\0';
+	unsigned int offset = (unsigned int)stringTable.data.size();
+	stringTable.data.resize(offset + str.size() + 1);
+	std::memcpy(&stringTable.data[offset], str.c_str(), str.size());
+	stringTable.data[offset + str.size()] = '\0';
 	return offset;
 }
 
-std::string OrcFile::getString(const Section *stringTable, unsigned int offset)
+std::string OrcFile::getString(const Section &stringTable, unsigned int offset)
 {
-	return std::string((char*)&stringTable->data[offset]);
+	return std::string((char*)&stringTable.data[offset]);
 }
 
-OrcFile::Section *OrcFile::addSection(const std::string &name)
+OrcFile::Section &OrcFile::addSection(const std::string &name)
 {
-	Section *section = new Section;
-	section->name = addString(mSectionList[mNameSection], name);
-	mSectionList.push_back(section);
-	mSectionMap[name] = section;
+	std::unique_ptr<Section> section = std::make_unique<Section>();
+	section->name = addString(*mSectionList[mNameSection], name);
+	Section &ret = *section;
+	mSectionMap[name] = section.get();
+	mSectionList.push_back(std::move(section));
 
-	return section;
+	return ret;
 }
 
 void OrcFile::read(std::istream &stream)
@@ -136,16 +130,16 @@ void OrcFile::read(std::istream &stream)
 	stream.read((char*)sectionHeaders, sizeof(OrcSectionHeader) * header.numSections);
 
 	for(unsigned int i=0; i<header.numSections; i++) {
-		Section *section = new Section;
+		std::unique_ptr<Section> section = std::make_unique<Section>();
 		section->data.resize(sectionHeaders[i].size);
 		stream.seekg(sectionHeaders[i].offset);
 		stream.read((char*)&section->data[0], sectionHeaders[i].size);
 		section->name = sectionHeaders[i].name;
-		mSectionList.push_back(section);
+		mSectionList.push_back(std::move(section));
 	}
 
-	for(Section *section : mSectionList) {
-		mSectionMap[getString(mSectionList[mNameSection], section->name)] = section;
+	for(const std::unique_ptr<Section> &section : mSectionList) {
+		mSectionMap[getString(*mSectionList[mNameSection], section->name)] = section.get();
 	}
 }
 

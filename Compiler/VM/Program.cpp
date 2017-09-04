@@ -40,7 +40,7 @@ void Program::read(const OrcFile &file)
 	const OrcFile::Section *symbolStringsSection = file.section("symbols.strings");
 	for(unsigned int i=0; i<symbolsSection->data.size() / sizeof(OrcSymbol); i++) {
 		const OrcSymbol *symbol = (OrcSymbol*)&symbolsSection->data[0] + i;
-		std::string name = file.getString(symbolStringsSection, symbol->name);
+		std::string name = file.getString(*symbolStringsSection, symbol->name);
 		symbols[name] = symbol->offset;
 	}
 
@@ -51,27 +51,27 @@ void Program::read(const OrcFile &file)
 
 void Program::write(OrcFile &file)
 {
-	OrcFile::Section *codeSection = file.addSection("code");
-	codeSection->data = instructions;
+	OrcFile::Section &codeSection = file.addSection("code");
+	codeSection.data = instructions;
 
-	OrcFile::Section *symbolStringsSection = file.addSection("symbols.strings");
-	OrcFile::Section *symbolsSection = file.addSection("symbols");
+	OrcFile::Section &symbolStringsSection = file.addSection("symbols.strings");
+	OrcFile::Section &symbolsSection = file.addSection("symbols");
 
-	symbolsSection->data.resize(symbols.size() * sizeof(OrcSymbol));
+	symbolsSection.data.resize(symbols.size() * sizeof(OrcSymbol));
 	unsigned int s=0;
 	for(auto &symbolEntry : symbols) {
-		OrcSymbol *symbol = (OrcSymbol*)&symbolsSection->data[0] + s;
+		OrcSymbol *symbol = (OrcSymbol*)&symbolsSection.data[0] + s;
 		s++;
 		symbol->name = file.addString(symbolStringsSection, symbolEntry.first);
 		symbol->offset = symbolEntry.second;
 	}
 
 	if(exportInfo) {
-		OrcFile::Section *exportInfoSection = file.addSection("export_info");
-		OrcFile::Section *exportInfoStringsSection = file.addSection("export_info.strings");
+		OrcFile::Section &exportInfoSection = file.addSection("export_info");
+		OrcFile::Section &exportInfoStringsSection = file.addSection("export_info.strings");
 
-		exportInfoSection->data = exportInfo->data();
-		exportInfoStringsSection->data = exportInfo->strings();
+		exportInfoSection.data = exportInfo->data();
+		exportInfoStringsSection.data = exportInfo->strings();
 	}
 }
 
