@@ -34,7 +34,7 @@ namespace VM {
 	 * \brief Run a VM program
 	 * \param program Program to run
 	 */
-	void Interp::run(const Program *program, std::ostream &o)
+	void Interp::run(const Program &program, std::ostream &o)
 	{
 		int regs[16];
 		int curPC;
@@ -45,7 +45,7 @@ namespace VM {
 		Heap heap(addressSpace, HeapStart, HeapSize);
 		GarbageCollector collector(heap);
 
-		if(program->symbols.find("main") == program->symbols.end()) {
+		if(program.symbols.find("main") == program.symbols.end()) {
 			std::cerr << "Error: Undefined reference to main" << std::endl;
 			return;
 		}
@@ -64,9 +64,9 @@ namespace VM {
 
 		Linker linker;
 		std::vector<const Program*> programs;
-		programs.push_back(program);
+		programs.push_back(&program);
 		programs.push_back(nativeSymbols);
-		Program *linked = linker.link(programs);
+		std::unique_ptr<Program> linked = linker.link(programs);
 
 		if(linked->relocations.size() > 0) {
 			std::cerr << "Error: Program has unresolved relocations" << std::endl;

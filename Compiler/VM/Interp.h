@@ -12,7 +12,7 @@ namespace VM {
 	 */
 	class Interp {
 	public:
-		static void run(const VM::Program *program, std::ostream &o);
+		static void run(const VM::Program &program, std::ostream &o);
 	};
 }
 #endif

@@ -15,9 +15,9 @@ Linker::Linker()
  * \param programs List of programs
  * \return Linked program
  */
-VM::Program *Linker::link(const std::vector<const VM::Program*> &programs)
+std::unique_ptr<VM::Program> Linker::link(const std::vector<const VM::Program*> &programs)
 {
-	VM::Program *linked = new VM::Program;
+	std::unique_ptr<VM::Program> linked = std::make_unique<VM::Program>();
 	std::vector<VM::Program::Relocation> relocations;
 
 	std::vector<unsigned char> exportInfoData;

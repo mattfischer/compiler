@@ -26,18 +26,20 @@ bool compileRuntime(const std::string &runtimeFilename)
 		sourceFilenames.push_back("System.lang");
 
 		Compiler compiler;
-		std::vector<const VM::Program*> programs;
+		std::vector<std::unique_ptr<VM::Program>> programs;
+		std::vector<const VM::Program*> programList;
 		for(unsigned int i=0; i<sourceFilenames.size(); i++) {
-			VM::Program *program = compiler.compile(sourceFilenames[i], importFilenames);
+			std::unique_ptr<VM::Program> program = compiler.compile(sourceFilenames[i], importFilenames);
 			if(!program) {
 				std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 				return false;
 			}
-			programs.push_back(program);
+			programList.push_back(program.get());
+			programs.push_back(std::move(program));
 		}
 
 		Linker linker;
-		VM::Program *linked = linker.link(programs);
+		std::unique_ptr<VM::Program> linked = linker.link(programList);
 		if(!linked) {
 			std::cerr << "Error: " << linker.errorMessage() << std::endl;
 			return false;
@@ -60,7 +62,7 @@ int main(int arg, char *argv[])
 	Compiler compiler;
 	std::vector<std::string> importFilenames;
 	importFilenames.push_back(runtimeFilename);
-	VM::Program *vmProgram = compiler.compile("input.lang", importFilenames);
+	std::unique_ptr<VM::Program> vmProgram = compiler.compile("input.lang", importFilenames);
 	if(!vmProgram) {
 		std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 		return 1;
@@ -72,10 +74,10 @@ int main(int arg, char *argv[])
 	// Link runtime library into program
 	std::vector<const VM::Program*> programs;
 	programs.push_back(runtime);
-	programs.push_back(vmProgram);
+	programs.push_back(vmProgram.get());
 
 	Linker linker;
-	VM::Program *linked = linker.link(programs);
+	std::unique_ptr<VM::Program> linked = linker.link(programs);
 	if(!linked) {
 		std::cerr << "Error: " << linker.errorMessage() << std::endl;
 		return 1;
@@ -88,7 +90,7 @@ int main(int arg, char *argv[])
 
 	// Run the program
 	Util::log("output") << "*** Output ***" << std::endl;
-	VM::Interp::run(linked, Util::log("output"));
+	VM::Interp::run(*linked, Util::log("output"));
 
 	return 0;
 }

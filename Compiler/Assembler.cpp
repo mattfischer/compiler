@@ -29,12 +29,12 @@ void Assembler::setError(const std::string &message)
  * \param input Input stream
  * \return Assembled program, or 0 if error
  */
-VM::Program *Assembler::assemble(std::istream &input)
+std::unique_ptr<VM::Program> Assembler::assemble(std::istream &input)
 {
 	Back::AsmTokenizer asmTokenizer(input);
 	Back::AsmParser asmParser(asmTokenizer);
 
-	VM::Program *vmProgram = asmParser.parse();
+	std::unique_ptr<VM::Program> vmProgram = asmParser.parse();
 	if(!vmProgram) {
 		std::stringstream s;
 		s << "line " << asmParser.errorLine() << " column " << asmParser.errorColumn() << ": " << asmParser.errorMessage() << std::endl;
@@ -50,7 +50,7 @@ VM::Program *Assembler::assemble(std::istream &input)
  * \param input Input file
  * \return Assembled program, or 0 if error
  */
-VM::Program *Assembler::assemble(const std::string &filename)
+std::unique_ptr<VM::Program> Assembler::assemble(const std::string &filename)
 {
 	std::ifstream input(filename.c_str());
 	return assemble(input);

@@ -8,6 +8,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 namespace Back {
 
@@ -20,11 +21,11 @@ class AsmParser : public Input::Parser {
 public:
 	AsmParser(AsmTokenizer &tokenizer);
 
-	VM::Program *parse();
+	std::unique_ptr<VM::Program> parse();
 
 private:
-	VM::Program *parseProgram();
-	void parseProcedure(VM::Program *program);
+	std::unique_ptr<VM::Program> parseProgram();
+	void parseProcedure(VM::Program &program);
 
 	bool parseStdInstr(VM::Instruction &instr);
 	bool parseIndInstr(VM::Instruction &instr);

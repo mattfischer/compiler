@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "VM/Program.h"
 
@@ -13,8 +14,8 @@ class Assembler {
 public:
 	Assembler();
 
-	VM::Program *assemble(std::istream &input);
-	VM::Program *assemble(const std::string &filename);
+	std::unique_ptr<VM::Program> assemble(std::istream &input);
+	std::unique_ptr<VM::Program> assemble(const std::string &filename);
 
 	bool error() { return mError; }
 	const std::string &errorMessage() { return mErrorMessage; }

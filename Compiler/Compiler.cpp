@@ -42,7 +42,7 @@ void Compiler::setError(const std::string &message)
  * \param filename Input filename
  * \return Compiled program
  */
-VM::Program *Compiler::compile(const std::string &filename, const std::vector<std::string> &importFilenames)
+std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, const std::vector<std::string> &importFilenames)
 {
 	std::ifstream hllIn(filename.c_str());
 	Front::HllTokenizer tokenizer(hllIn);
@@ -56,16 +56,18 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 		return 0;
 	}
 
-	std::vector<Front::ExportInfo*> imports;
+	std::vector<std::unique_ptr<Front::ExportInfo>> imports;
+	std::vector<Front::ExportInfo*> importList;
 	for(unsigned int i=0; i<importFilenames.size(); i++) {
 		VM::OrcFile importFile(importFilenames[i]);
 		const VM::OrcFile::Section *exportInfoSection = importFile.section("export_info");
 		const VM::OrcFile::Section *exportInfoStringsSection = importFile.section("export_info.strings");
-		Front::ExportInfo *exportInfo = new Front::ExportInfo(exportInfoSection->data, exportInfoStringsSection->data);
-		imports.push_back(exportInfo);
+		std::unique_ptr<Front::ExportInfo> exportInfo = std::make_unique<Front::ExportInfo>(exportInfoSection->data, exportInfoStringsSection->data);
+		importList.push_back(exportInfo.get());
+		imports.push_back(std::move(exportInfo));
 	}
 
-	Front::EnvironmentGenerator environmentGenerator(node, imports);
+	Front::EnvironmentGenerator environmentGenerator(node, importList);
 	if(!environmentGenerator.types() || !environmentGenerator.scope()) {
 		std::stringstream s;
 		s << environmentGenerator.errorLocation() << ": " << environmentGenerator.errorMessage() << std::endl;
@@ -117,7 +119,7 @@ VM::Program *Compiler::compile(const std::string &filename, const std::vector<st
 	Util::log("asm") << buffer.str() << std::endl;
 
 	Assembler assembler;
-	VM::Program *vmProgram = assembler.assemble(buffer);
+	std::unique_ptr<VM::Program> vmProgram = assembler.assemble(buffer);
 	if(assembler.error()) {
 		setError(assembler.errorMessage());
 		return 0;
