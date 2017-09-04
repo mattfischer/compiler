@@ -57,13 +57,13 @@ std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, cons
 	}
 
 	std::vector<std::unique_ptr<Front::ExportInfo>> imports;
-	std::vector<Front::ExportInfo*> importList;
+	std::vector<std::reference_wrapper<Front::ExportInfo>> importList;
 	for(unsigned int i=0; i<importFilenames.size(); i++) {
 		VM::OrcFile importFile(importFilenames[i]);
 		const VM::OrcFile::Section *exportInfoSection = importFile.section("export_info");
 		const VM::OrcFile::Section *exportInfoStringsSection = importFile.section("export_info.strings");
 		std::unique_ptr<Front::ExportInfo> exportInfo = std::make_unique<Front::ExportInfo>(exportInfoSection->data, exportInfoStringsSection->data);
-		importList.push_back(exportInfo.get());
+		importList.push_back(*exportInfo);
 		imports.push_back(std::move(exportInfo));
 	}
 

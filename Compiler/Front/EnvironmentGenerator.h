@@ -15,7 +15,7 @@ namespace Front {
  */
 class EnvironmentGenerator {
 public:
-	EnvironmentGenerator(Node *tree, const std::vector<ExportInfo*> &imports);
+	EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports);
 
 	Types *types() { return mTypes; } //!< Types in environment
 	Scope *scope() { return mScope; } //!< Global scope of environment

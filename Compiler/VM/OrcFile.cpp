@@ -38,7 +38,7 @@ OrcFile::OrcFile()
 	nameSection->name = addString(*nameSection, "$strings");
 	mNameSection = 0;
 
-	mSectionMap["$strings"] = nameSection.get();
+	mSectionMap.insert(std::pair<std::string, std::reference_wrapper<Section>>("$strings", *nameSection));
 	mSectionList.push_back(std::move(nameSection));
 }
 
@@ -75,9 +75,10 @@ void OrcFile::write(const std::string &filename)
 
 const OrcFile::Section *OrcFile::section(const std::string &name) const
 {
-	std::map<std::string, Section*>::const_iterator it = mSectionMap.find(name);
+	std::map<std::string, std::reference_wrapper<Section>>::const_iterator it = mSectionMap.find(name);
 	if(it != mSectionMap.end()) {
-		return it->second;
+		const Section &section = it->second;
+		return &section;
 	} else {
 		return 0;
 	}
@@ -85,9 +86,10 @@ const OrcFile::Section *OrcFile::section(const std::string &name) const
 
 OrcFile::Section *OrcFile::section(const std::string &name)
 {
-	std::map<std::string, Section*>::iterator it = mSectionMap.find(name);
+	std::map<std::string, std::reference_wrapper<Section>>::iterator it = mSectionMap.find(name);
 	if(it != mSectionMap.end()) {
-		return it->second;
+		Section &section = it->second;
+		return &section;
 	} else {
 		return 0;
 	}
@@ -112,7 +114,7 @@ OrcFile::Section &OrcFile::addSection(const std::string &name)
 	std::unique_ptr<Section> section = std::make_unique<Section>();
 	section->name = addString(*mSectionList[mNameSection], name);
 	Section &ret = *section;
-	mSectionMap[name] = section.get();
+	mSectionMap.insert(std::pair<std::string, std::reference_wrapper<Section>>(name, *section));
 	mSectionList.push_back(std::move(section));
 
 	return ret;
@@ -139,7 +141,7 @@ void OrcFile::read(std::istream &stream)
 	}
 
 	for(const std::unique_ptr<Section> &section : mSectionList) {
-		mSectionMap[getString(*mSectionList[mNameSection], section->name)] = section.get();
+		mSectionMap.insert(std::pair<std::string, std::reference_wrapper<Section>>(getString(*mSectionList[mNameSection], section->name), *section));
 	}
 }
 

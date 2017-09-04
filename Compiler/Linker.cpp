@@ -15,7 +15,7 @@ Linker::Linker()
  * \param programs List of programs
  * \return Linked program
  */
-std::unique_ptr<VM::Program> Linker::link(const std::vector<const VM::Program*> &programs)
+std::unique_ptr<VM::Program> Linker::link(const std::vector<std::reference_wrapper<const VM::Program>> &programs)
 {
 	std::unique_ptr<VM::Program> linked = std::make_unique<VM::Program>();
 	std::vector<VM::Program::Relocation> relocations;
@@ -26,36 +26,36 @@ std::unique_ptr<VM::Program> Linker::link(const std::vector<const VM::Program*> 
 	// Concatenate programs together into linked program
 	int offset = 0;
 	for(unsigned int i=0; i<programs.size(); i++) {
-		const VM::Program *program = programs[i];
+		const VM::Program &program = programs[i];
 
-		if(program->instructions.size() > 0) {
-			linked->instructions.resize(linked->instructions.size() + programs[i]->instructions.size());
-			std::memcpy(&linked->instructions[offset], &program->instructions[0], program->instructions.size());
+		if(program.instructions.size() > 0) {
+			linked->instructions.resize(linked->instructions.size() + program.instructions.size());
+			std::memcpy(&linked->instructions[offset], &program.instructions[0], program.instructions.size());
 		}
 
-		for(std::map<std::string, int>::const_iterator it = program->symbols.begin(); it != program->symbols.end(); it++) {
+		for(std::map<std::string, int>::const_iterator it = program.symbols.begin(); it != program.symbols.end(); it++) {
 			linked->symbols[it->first] = it->second + offset;
 		}
 
-		for(unsigned int j=0; j<program->relocations.size(); j++) {
-			VM::Program::Relocation relocation = program->relocations[j];
+		for(unsigned int j=0; j<program.relocations.size(); j++) {
+			VM::Program::Relocation relocation = program.relocations[j];
 			relocation.offset += offset;
 			relocations.push_back(relocation);
 		}
 
-		offset += (int)program->instructions.size();
+		offset += (int)program.instructions.size();
 
 		unsigned int exportInfoOffset = (unsigned int)exportInfoData.size();
 		unsigned int exportInfoStringOffset = (unsigned int)exportInfoStringData.size();
 
-		if(program->exportInfo && program->exportInfo->data().size() > 0) {
-			exportInfoData.resize(exportInfoOffset + program->exportInfo->data().size() + 2);
+		if(program.exportInfo && program.exportInfo->data().size() > 0) {
+			exportInfoData.resize(exportInfoOffset + program.exportInfo->data().size() + 2);
 			exportInfoData[exportInfoOffset] = (unsigned char)Front::ExportInfo::ExportItem::StringBase;
 			exportInfoData[exportInfoOffset + 1] = exportInfoStringOffset;
-			std::memcpy(&exportInfoData[exportInfoOffset + 2], &program->exportInfo->data()[0], program->exportInfo->data().size());
+			std::memcpy(&exportInfoData[exportInfoOffset + 2], &program.exportInfo->data()[0], program.exportInfo->data().size());
 
-			exportInfoStringData.resize(exportInfoStringOffset + program->exportInfo->strings().size());
-			std::memcpy(&exportInfoStringData[exportInfoStringOffset], &program->exportInfo->strings()[0], program->exportInfo->strings().size());
+			exportInfoStringData.resize(exportInfoStringOffset + program.exportInfo->strings().size());
+			std::memcpy(&exportInfoStringData[exportInfoStringOffset], &program.exportInfo->strings()[0], program.exportInfo->strings().size());
 		}
 	}
 

@@ -33,7 +33,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Section>> mSectionList;
-	std::map<std::string, Section*> mSectionMap;
+	std::map<std::string, std::reference_wrapper<Section>> mSectionMap;
 	unsigned int mNameSection;
 
 	void read(std::istream &stream);

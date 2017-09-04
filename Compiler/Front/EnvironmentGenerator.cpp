@@ -42,7 +42,7 @@ private:
  * \brief Constructor
  * \param tree Parse tree
  */
-EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportInfo*> &imports)
+EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports)
 {
 	try {
 		mTypes = new Types;
@@ -64,8 +64,8 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<ExportI
 		}
 
 		// Read types from imported binary files
-		for(ExportInfo *info : imports) {
-			info->read(*mTypes, *mScope);
+		for(ExportInfo &info : imports) {
+			info.read(*mTypes, *mScope);
 		}
 
 		// Complete each type, and construct scopes for class types

@@ -27,14 +27,14 @@ bool compileRuntime(const std::string &runtimeFilename)
 
 		Compiler compiler;
 		std::vector<std::unique_ptr<VM::Program>> programs;
-		std::vector<const VM::Program*> programList;
+		std::vector<std::reference_wrapper<const VM::Program>> programList;
 		for(unsigned int i=0; i<sourceFilenames.size(); i++) {
 			std::unique_ptr<VM::Program> program = compiler.compile(sourceFilenames[i], importFilenames);
 			if(!program) {
 				std::cerr << "Error: " << compiler.errorMessage() << std::endl;
 				return false;
 			}
-			programList.push_back(program.get());
+			programList.push_back(*program);
 			programs.push_back(std::move(program));
 		}
 
@@ -69,12 +69,12 @@ int main(int arg, char *argv[])
 	}
 
 	// Load the runtime binary
-	VM::Program *runtime = new VM::Program(runtimeFilename);
+	std::unique_ptr<VM::Program> runtime = std::make_unique<VM::Program>(runtimeFilename);
 
 	// Link runtime library into program
-	std::vector<const VM::Program*> programs;
-	programs.push_back(runtime);
-	programs.push_back(vmProgram.get());
+	std::vector<std::reference_wrapper<const VM::Program>> programs;
+	programs.push_back(*runtime);
+	programs.push_back(*vmProgram);
 
 	Linker linker;
 	std::unique_ptr<VM::Program> linked = linker.link(programs);

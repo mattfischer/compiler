@@ -63,9 +63,9 @@ namespace VM {
 		}
 
 		Linker linker;
-		std::vector<const Program*> programs;
-		programs.push_back(&program);
-		programs.push_back(nativeSymbols);
+		std::vector<std::reference_wrapper<const Program>> programs;
+		programs.push_back(program);
+		programs.push_back(*nativeSymbols);
 		std::unique_ptr<Program> linked = linker.link(programs);
 
 		if(linked->relocations.size() > 0) {
