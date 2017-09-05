@@ -4,6 +4,7 @@
 #include "Front/Symbol.h"
 
 #include <vector>
+#include <memory>
 
 namespace Front {
 	/*!
@@ -19,12 +20,12 @@ namespace Front {
 		std::vector<Symbol*> allSymbols();
 		std::vector<Symbol*> &symbols() { return mSymbols; }
 
-		void addChild(Scope *child);
+		void addChild(std::unique_ptr<Scope> child);
 		TypeStruct *classType() { return mClassType; }
 
 	private:
 		Scope *mParent; //!< Parent scope
-		std::vector<Scope*> mChildren; //!< Child scopes
+		std::vector<std::unique_ptr<Scope>> mChildren; //!< Child scopes
 		std::vector<Symbol*> mSymbols; //!< Collection of symbols
 		TypeStruct *mClassType;
 	};

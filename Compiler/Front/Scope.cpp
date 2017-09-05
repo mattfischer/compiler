@@ -12,7 +12,7 @@ namespace Front {
 		mClassType = classType;
 
 		if(mParent) {
-			mParent->addChild(this);
+			mParent->addChild(std::unique_ptr<Scope>(this));
 		}
 	}
 
@@ -52,9 +52,9 @@ namespace Front {
 	 * \brief Add child scope
 	 * \param child Child scope
 	 */
-	void Scope::addChild(Scope *child)
+	void Scope::addChild(std::unique_ptr<Scope> child)
 	{
-		mChildren.push_back(child);
+		mChildren.push_back(std::move(child));
 	}
 
 	/*!
@@ -64,7 +64,7 @@ namespace Front {
 	std::vector<Symbol*> Scope::allSymbols()
 	{
 		std::vector<Symbol*> result = mSymbols;
-		for(Scope *child : mChildren) {
+		for(const std::unique_ptr<Scope> &child : mChildren) {
 			std::vector<Symbol*> childSymbols = child->allSymbols();
 			result.insert(result.end(), childSymbols.begin(), childSymbols.end());
 		}

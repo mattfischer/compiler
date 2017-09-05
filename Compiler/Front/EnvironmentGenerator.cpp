@@ -45,8 +45,8 @@ private:
 EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports)
 {
 	try {
-		mTypes = new Types;
-		mScope = new Scope;
+		mTypes = std::make_unique<Types>();
+		mScope = std::make_unique<Scope>();
 
 		// Loop through the tree and pre-populate all declared type names
 		for(Node *node : tree->children) {
@@ -73,7 +73,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 		for(Type *type : mTypes->types()) {
 			completeType(type);
 			if(type->kind == Type::Kind::Class) {
-				constructScope((TypeStruct*)type, mScope);
+				constructScope((TypeStruct*)type, mScope.get());
 			}
 		}
 
@@ -85,12 +85,6 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 			}
 		}
 	} catch(EnvironmentError error) {
-		delete mTypes;
-		mTypes = 0;
-
-		delete mScope;
-		mScope = 0;
-
 		// Collect the error message and line from the exception
 		mErrorLocation = error.location();
 		mErrorMessage = error.message();
