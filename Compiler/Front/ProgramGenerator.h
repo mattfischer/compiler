@@ -13,7 +13,7 @@ namespace Front {
 	class ProgramGenerator
 	{
 	public:
-		ProgramGenerator(Node *tree, Types *types, Scope *scope);
+		ProgramGenerator(Node *tree, std::unique_ptr<Types> types, std::unique_ptr<Scope> scope);
 
 		std::unique_ptr<Program> generate();
 
@@ -22,8 +22,8 @@ namespace Front {
 
 	private:
 		Node *mTree; //!< Abstract syntax tree
-		Types *mTypes;
-		Scope *mScope;
+		std::unique_ptr<Types> mTypes;
+		std::unique_ptr<Scope> mScope;
 
 		std::string mErrorMessage; //!< Error message
 		int mErrorLine; //!< Error line

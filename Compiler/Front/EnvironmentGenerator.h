@@ -18,8 +18,11 @@ class EnvironmentGenerator {
 public:
 	EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports);
 
-	Types *types() { return mTypes.get(); } //!< Types in environment
-	Scope *scope() { return mScope.get(); } //!< Global scope of environment
+	Types &types() { return *mTypes; } //!< Types in environment
+	Scope &scope() { return *mScope; } //!< Global scope of environment
+
+	std::unique_ptr<Types> releaseTypes() { return std::move(mTypes); }
+	std::unique_ptr<Scope> releaseScope() { return std::move(mScope); }
 
 	const std::string &errorMessage() { return mErrorMessage; } //!< Error message
 	const std::string &errorLocation() { return mErrorLocation; } //!< Error line

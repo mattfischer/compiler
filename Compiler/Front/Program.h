@@ -14,8 +14,8 @@ namespace Front {
 	 * \brief A parsed and type-checked program
 	 */
 	struct Program {
-		Scope *scope; //!< Global variables
-		Types *types; //!< Type list
+		std::unique_ptr<Scope> scope; //!< Global variables
+		std::unique_ptr<Types> types; //!< Type list
 		std::vector<std::unique_ptr<Procedure>> procedures; //!< List of procedures
 
 		void print(std::ostream &o);

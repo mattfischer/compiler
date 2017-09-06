@@ -94,11 +94,11 @@ void ExportInfo::read(Types &types, Scope &scope)
 					std::string name = getString(mData[offset], stringBase);
 					offset++;
 
-					Type *type;
+					std::unique_ptr<Type> type;
 					switch(exportDefinition) {
 						case ExportDefinition::Class:
 							{
-								TypeStruct *typeStruct = new TypeStruct(Type::Kind::Class, name);
+								std::unique_ptr<TypeStruct> typeStruct = std::make_unique<TypeStruct>(Type::Kind::Class, name);
 								if(mData[offset] == 0xff) {
 									typeStruct->parent = 0;
 								} else {
@@ -131,13 +131,13 @@ void ExportInfo::read(Types &types, Scope &scope)
 										typeStruct->constructor = (TypeProcedure*)memberType;
 									}
 								}
-								type = typeStruct;
+								type = std::move(typeStruct);
 								break;
 							}
 
 						case ExportDefinition::Struct:
 							{
-								TypeStruct *typeStruct = new TypeStruct(Type::Kind::Struct, name);
+								std::unique_ptr<TypeStruct> typeStruct = std::make_unique<TypeStruct>(Type::Kind::Struct, name);
 								typeStruct->constructor = 0;
 								int numMembers = mData[offset];
 								offset++;
@@ -147,11 +147,11 @@ void ExportInfo::read(Types &types, Scope &scope)
 									offset++;
 									typeStruct->addMember(memberType, memberName, false);
 								}
-								type = typeStruct;
+								type = std::move(typeStruct);
 								break;
 							}
 					}
-					types.registerType(type);
+					types.registerType(std::move(type));
 					break;
 				}
 

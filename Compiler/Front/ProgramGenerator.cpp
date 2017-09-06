@@ -30,11 +30,11 @@ namespace Front {
 	 * \brief Constructor
 	 * \param tree Abstract syntax tree
 	 */
-	ProgramGenerator::ProgramGenerator(Node *tree, Types *types, Scope *scope)
+	ProgramGenerator::ProgramGenerator(Node *tree, std::unique_ptr<Types> types, std::unique_ptr<Scope> scope)
 	{
 		mTree = tree;
-		mTypes = types;
-		mScope = scope;
+		mTypes = std::move(types);
+		mScope = std::move(scope);
 	}
 
 	/*!
@@ -46,14 +46,14 @@ namespace Front {
 		try {
 			// Create the root program object
 			std::unique_ptr<Program> program = std::make_unique<Program>();
-			program->types = mTypes;
-			program->scope = mScope;
+			program->types = std::move(mTypes);
+			program->scope = std::move(mScope);
 
 			// Iterate through the tree's procedure definitions
 			for(Node *node : mTree->children) {
 				switch(node->nodeType) {
 					case Node::Type::ProcedureDef:
-						addProcedure(node, *program, program->scope, false);
+						addProcedure(node, *program, program->scope.get(), false);
 						break;
 
 					case Node::Type::ClassDef:
@@ -88,7 +88,7 @@ namespace Front {
 			// Now that all procedures have been declared, type check the procedure bodies
 			for(std::unique_ptr<Procedure> &procedure : program->procedures) {
 				// Create a context for the procedure
-				Context context{ *procedure, program->types, procedure->scope, false };
+				Context context{ *procedure, program->types.get(), procedure->scope, false };
 
 				// Type check the body of the procedure
 				checkType(procedure->body, context);

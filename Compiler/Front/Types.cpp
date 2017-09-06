@@ -21,13 +21,14 @@ namespace Front {
 	 * \param type Type to register
 	 * \return True if success
 	 */
-	bool Types::registerType(Type *type)
+	bool Types::registerType(std::unique_ptr<Type> type)
 	{
 		if(findType(type->name)) {
 			return false;
 		}
 
-		mTypes.push_back(type);
+		mTypes.push_back(type.get());
+		mOwnedTypes.push_back(std::move(type));
 
 		return true;
 	}

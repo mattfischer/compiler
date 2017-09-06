@@ -98,8 +98,9 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 void EnvironmentGenerator::addStruct(Node *node)
 {
 	// Create the type
-	TypeStruct *type = new TypeStruct(Type::Kind::Struct, node->lexVal.s);
-	if(!mTypes->registerType(type)) {
+	std::unique_ptr<TypeStruct> typePtr = std::make_unique<TypeStruct>(Type::Kind::Struct, node->lexVal.s);
+	TypeStruct *type = typePtr.get();
+	if(!mTypes->registerType(std::move(typePtr))) {
 		std::stringstream s;
 		s << "Redefinition of structure " << type->name;
 
@@ -125,8 +126,9 @@ void EnvironmentGenerator::addStruct(Node *node)
 void EnvironmentGenerator::addClass(Node *node)
 {
 	// Create the type
-	TypeStruct *type = new TypeStruct(Type::Kind::Class, node->lexVal.s);
-	if(!mTypes->registerType(type)) {
+	std::unique_ptr<TypeStruct> typePtr = std::make_unique<TypeStruct>(Type::Kind::Class, node->lexVal.s);
+	TypeStruct *type = typePtr.get();
+	if(!mTypes->registerType(std::move(typePtr))) {
 		std::stringstream s;
 		s << "Redefinition of class " << type->name;
 		throw EnvironmentError(node, s.str());

@@ -4,6 +4,7 @@
 #include "Front/Type.h"
 
 #include <vector>
+#include <memory>
 
 namespace Front {
 	/*!
@@ -14,7 +15,7 @@ namespace Front {
 		Types();
 		~Types();
 
-		bool registerType(Type *type);
+		bool registerType(std::unique_ptr<Type> type);
 		Type *findType(const std::string &name);
 
 		const std::vector<Type*> &types() { return mTypes; }
@@ -31,6 +32,7 @@ namespace Front {
 
 	private:
 		std::vector<Type*> mTypes;
+		std::vector<std::unique_ptr<Type>> mOwnedTypes;
 	};
 }
 #endif

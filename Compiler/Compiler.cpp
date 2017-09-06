@@ -68,14 +68,14 @@ std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, cons
 	}
 
 	Front::EnvironmentGenerator environmentGenerator(node, importList);
-	if(!environmentGenerator.types() || !environmentGenerator.scope()) {
+	if(environmentGenerator.errorMessage() != "") {
 		std::stringstream s;
 		s << environmentGenerator.errorLocation() << ": " << environmentGenerator.errorMessage() << std::endl;
 		setError(s.str());
 		return 0;
 	}
 
-	Front::ProgramGenerator programGenerator(node, environmentGenerator.types(), environmentGenerator.scope());
+	Front::ProgramGenerator programGenerator(node, environmentGenerator.releaseTypes(), environmentGenerator.releaseScope());
 	std::unique_ptr<Front::Program> program = programGenerator.generate();
 	if(!program) {
 		std::stringstream s;
