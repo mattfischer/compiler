@@ -95,9 +95,6 @@
     <ClCompile Include="Front\HllTokenizer.cpp">
       <Filter>Source Files\Front</Filter>
     </ClCompile>
-    <ClCompile Include="Front\Interpreter.cpp">
-      <Filter>Source Files\Front</Filter>
-    </ClCompile>
     <ClCompile Include="Front\IRGenerator.cpp">
       <Filter>Source Files\Front</Filter>
     </ClCompile>
@@ -275,9 +272,6 @@
       <Filter>Source Files\Front</Filter>
     </ClInclude>
     <ClInclude Include="Front\HllTokenizer.h">
-      <Filter>Source Files\Front</Filter>
-    </ClInclude>
-    <ClInclude Include="Front\Interpreter.h">
       <Filter>Source Files\Front</Filter>
     </ClInclude>
     <ClInclude Include="Front\IRGenerator.h">

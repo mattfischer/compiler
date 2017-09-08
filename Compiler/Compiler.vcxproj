@@ -108,7 +108,6 @@
     <ClCompile Include="Front\ExportInfo.cpp" />
     <ClCompile Include="Front\HllParser.cpp" />
     <ClCompile Include="Front\HllTokenizer.cpp" />
-    <ClCompile Include="Front\Interpreter.cpp" />
     <ClCompile Include="Front\IRGenerator.cpp" />
     <ClCompile Include="Front\Node.cpp" />
     <ClCompile Include="Front\Procedure.cpp">
@@ -194,7 +193,6 @@
     <ClInclude Include="Front\ExportInfo.h" />
     <ClInclude Include="Front\HllParser.h" />
     <ClInclude Include="Front\HllTokenizer.h" />
-    <ClInclude Include="Front\Interpreter.h" />
     <ClInclude Include="Front\IRGenerator.h" />
     <ClInclude Include="Front\Node.h" />
     <ClInclude Include="Front\Procedure.h" />
