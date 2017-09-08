@@ -2,13 +2,11 @@
 #define VM_ADDRESS_SPACE_H
 
 #include <vector>
+#include <memory>
 
 namespace VM {
 class AddressSpace {
 public:
-	AddressSpace();
-	~AddressSpace();
-
 	void addRegion(unsigned int start, unsigned int size);
 
 	unsigned char *at(unsigned int address);
@@ -16,11 +14,10 @@ public:
 private:
 	struct Region {
 		unsigned int start;
-		unsigned int size;
-		unsigned char *data;
+		std::vector<unsigned char> data;
 	};
 
-	std::vector<Region> mRegions;
+	std::vector<std::unique_ptr<Region>> mRegions;
 };
 }
 
