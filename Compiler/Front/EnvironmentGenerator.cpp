@@ -80,8 +80,8 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 		// Iterate through the tree, and construct symbols for each procedure
 		for(Node *node : tree->children) {
 			if(node->nodeType == Node::Type::ProcedureDef) {
-				Symbol *symbol = new Symbol(createType(node, false), node->lexVal.s);
-				mScope->addSymbol(symbol);
+				std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(createType(node, false), node->lexVal.s);
+				mScope->addSymbol(std::move(symbol));
 			}
 		}
 	} catch(EnvironmentError error) {
@@ -398,8 +398,8 @@ void EnvironmentGenerator::constructScope(TypeStruct *typeStruct, Scope *globalS
 
 	// Add symbols for each member of the class
 	for(TypeStruct::Member &member : typeStruct->members) {
-		Symbol *symbol = new Symbol(member.type, member.name);
-		typeStruct->scope->addSymbol(symbol);
+		std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(member.type, member.name);
+		typeStruct->scope->addSymbol(std::move(symbol));
 	}
 }
 

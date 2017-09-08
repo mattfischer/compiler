@@ -15,10 +15,10 @@ namespace Front {
 		Scope(Scope *parent = 0, TypeStruct *classType = 0);
 
 		Scope *parent() { return mParent; }
-		bool addSymbol(Symbol *symbol);
+		bool addSymbol(std::unique_ptr<Symbol> symbol);
 		Symbol *findSymbol(const std::string &name);
 		std::vector<Symbol*> allSymbols();
-		std::vector<Symbol*> &symbols() { return mSymbols; }
+		std::vector<std::unique_ptr<Symbol>> &symbols() { return mSymbols; }
 
 		void addChild(std::unique_ptr<Scope> child);
 		TypeStruct *classType() { return mClassType; }
@@ -26,7 +26,7 @@ namespace Front {
 	private:
 		Scope *mParent; //!< Parent scope
 		std::vector<std::unique_ptr<Scope>> mChildren; //!< Child scopes
-		std::vector<Symbol*> mSymbols; //!< Collection of symbols
+		std::vector<std::unique_ptr<Symbol>> mSymbols; //!< Collection of symbols
 		TypeStruct *mClassType;
 	};
 }

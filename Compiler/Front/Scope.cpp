@@ -20,10 +20,10 @@ namespace Front {
 	 * \brief Add an already-created symbol to the scope
 	 * \param symbol Symbol to add
 	 */
-	bool Scope::addSymbol(Symbol *symbol)
+	bool Scope::addSymbol(std::unique_ptr<Symbol> symbol)
 	{
 		symbol->scope = this;
-		mSymbols.push_back(symbol);
+		mSymbols.push_back(std::move(symbol));
 		return true;
 	}
 
@@ -34,9 +34,9 @@ namespace Front {
 	 */
 	Symbol *Scope::findSymbol(const std::string &name)
 	{
-		for(Symbol *symbol : mSymbols) {
+		for(std::unique_ptr<Symbol> &symbol : mSymbols) {
 			if(symbol->name == name) {
-				return symbol;
+				return symbol.get();
 			}
 		}
 
@@ -63,7 +63,11 @@ namespace Front {
 	 */
 	std::vector<Symbol*> Scope::allSymbols()
 	{
-		std::vector<Symbol*> result = mSymbols;
+		std::vector<Symbol*> result;
+		for (std::unique_ptr<Symbol> &symbol : mSymbols) {
+			result.push_back(symbol.get());
+		}
+
 		for(const std::unique_ptr<Scope> &child : mChildren) {
 			std::vector<Symbol*> childSymbols = child->allSymbols();
 			result.insert(result.end(), childSymbols.begin(), childSymbols.end());

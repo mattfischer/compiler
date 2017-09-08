@@ -66,7 +66,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 		}
 	}
 
-	for(Symbol *symbol : scope.symbols()) {
+	for(std::unique_ptr<Symbol> &symbol : scope.symbols()) {
 		mData.push_back((unsigned char)ExportItem::Symbol);
 		writeType(symbol->type);
 		mData.push_back(addString(symbol->name));
@@ -160,7 +160,7 @@ void ExportInfo::read(Types &types, Scope &scope)
 					Type *type = readType(offset, types, stringBase);
 					std::string name = getString(mData[offset], stringBase);
 					offset++;
-					scope.addSymbol(new Symbol(type, name));
+					scope.addSymbol(std::make_unique<Symbol>(type, name));
 					break;
 				}
 

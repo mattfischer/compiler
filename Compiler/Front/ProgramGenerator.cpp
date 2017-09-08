@@ -206,8 +206,9 @@ namespace Front {
 		procedure->scope = new Scope(scope);
 
 		if(instanceMethod) {
-			procedure->object = new Symbol(scope->classType(), "this");
-			procedure->scope->addSymbol(procedure->object);
+			std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(scope->classType(), "this");
+			procedure->object = symbol.get();
+			procedure->scope->addSymbol(std::move(symbol));
 		} else {
 			procedure->object = 0;
 		}
@@ -216,9 +217,9 @@ namespace Front {
 		Node *argumentList = node->children[1];
 		for(unsigned int i=0; i<argumentList->children.size(); i++) {
 			// Construct a symbol for the argument, and add it to the procedure's scope and argument list
-			Symbol *argument = new Symbol(procedure->type->argumentTypes[i], argumentList->children[i]->lexVal.s);
-			procedure->scope->addSymbol(argument);
-			procedure->arguments.push_back(argument);
+			std::unique_ptr<Symbol> argument = std::make_unique<Symbol>(procedure->type->argumentTypes[i], argumentList->children[i]->lexVal.s);
+			procedure->arguments.push_back(argument.get());
+			procedure->scope->addSymbol(std::move(argument));
 		}
 
 		procedure->body = node->children[2];
@@ -308,10 +309,10 @@ namespace Front {
 						throw TypeError(node, "Cannot declare variable of void type");
 					}
 
-					Symbol *symbol = new Symbol(type, node->lexVal.s);
-					context.scope->addSymbol(symbol);
+					std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(type, node->lexVal.s);
 					node->type = type;
-					node->symbol = symbol;
+					node->symbol = symbol.get();
+					context.scope->addSymbol(std::move(symbol));
 					break;
 				}
 
