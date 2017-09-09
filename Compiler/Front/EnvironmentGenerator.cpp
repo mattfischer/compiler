@@ -73,7 +73,7 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 		for(std::shared_ptr<Type> &type : mTypes->types()) {
 			completeType(type);
 			if(type->kind == Type::Kind::Class) {
-				constructScope(std::static_pointer_cast<TypeStruct>(type), mScope.get());
+				constructScope(std::static_pointer_cast<TypeStruct>(type), *mScope);
 			}
 		}
 
@@ -378,7 +378,7 @@ std::shared_ptr<Type> EnvironmentGenerator::completeType(std::shared_ptr<Type> t
  * \param typeStruct Class to construct scope for
  * \param globalScope Scope containing globals
  */
-void EnvironmentGenerator::constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope *globalScope)
+void EnvironmentGenerator::constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope &globalScope)
 {
 	if(typeStruct->parent) {
 		// Ensure the parent scope has been constructed
@@ -387,10 +387,14 @@ void EnvironmentGenerator::constructScope(std::shared_ptr<TypeStruct> &typeStruc
 		}
 
 		// Construct a new scope based on the parent's scope
-		typeStruct->scope = new Scope(typeStruct->parent->scope, typeStruct);
+		std::unique_ptr<Scope> scope = std::make_unique<Scope>(typeStruct);
+		typeStruct->scope = scope.get();
+		typeStruct->parent->scope->addChild(std::move(scope));
 	} else {
 		// Construct a new scope based on the global scope
-		typeStruct->scope = new Scope(globalScope, typeStruct);
+		std::unique_ptr<Scope> scope = std::make_unique<Scope>(typeStruct);
+		typeStruct->scope = scope.get();
+		globalScope.addChild(std::move(scope));
 	}
 
 	// Add symbols for each member of the class

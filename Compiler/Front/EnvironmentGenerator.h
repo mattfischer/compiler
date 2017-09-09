@@ -40,7 +40,7 @@ private:
 	std::shared_ptr<Type> createType(Node *node, bool dummy);
 	std::shared_ptr<Type> completeType(std::shared_ptr<Type> type);
 	void completeTypes();
-	void constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope *scope);
+	void constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope &scope);
 };
 
 }

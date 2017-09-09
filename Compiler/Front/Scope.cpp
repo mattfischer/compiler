@@ -6,13 +6,9 @@ namespace Front {
 	* \param parent Parent scope
 	* \param procedure Procedure containing scope
 	*/
-	Scope::Scope(Scope *parent)
+	Scope::Scope()
+		: mParent(0)
 	{
-		mParent = parent;
-
-		if (mParent) {
-			mParent->addChild(std::unique_ptr<Scope>(this));
-		}
 	}
 
 	/*!
@@ -20,14 +16,10 @@ namespace Front {
 	* \param parent Parent scope
 	* \param procedure Procedure containing scope
 	*/
-	Scope::Scope(Scope *parent, std::shared_ptr<TypeStruct> &classType)
+	Scope::Scope(std::shared_ptr<TypeStruct> &classType)
+		: mParent(0)
 	{
-		mParent = parent;
 		mClassType = classType;
-
-		if(mParent) {
-			mParent->addChild(std::unique_ptr<Scope>(this));
-		}
 	}
 
 	/*!
@@ -68,6 +60,7 @@ namespace Front {
 	 */
 	void Scope::addChild(std::unique_ptr<Scope> child)
 	{
+		child->mParent = this;
 		mChildren.push_back(std::move(child));
 	}
 

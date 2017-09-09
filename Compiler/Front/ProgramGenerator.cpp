@@ -203,7 +203,9 @@ namespace Front {
 		} else {
 			procedure->name = node->lexVal.s;
 		}
-		procedure->scope = new Scope(scope);
+		std::unique_ptr<Scope> newScope = std::make_unique<Scope>();		
+		procedure->scope = newScope.get();
+		scope->addChild(std::move(newScope));
 
 		if(instanceMethod) {
 			std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(scope->classType(), "this");
@@ -345,7 +347,9 @@ namespace Front {
 			case Node::Type::If:
 				{
 					Context childContext = context;
-					childContext.scope = new Scope(context.scope);
+					std::unique_ptr<Scope> scope = std::make_unique<Scope>();
+					childContext.scope = scope.get();
+					context.scope->addChild(std::move(scope));
 
 					checkChildren(node, childContext);
 					if(!Type::equals(*node->children[0]->type, *Types::intrinsic(Types::Bool))) {
@@ -359,7 +363,9 @@ namespace Front {
 			case Node::Type::While:
 				{
 					Context childContext = context;
-					childContext.scope = new Scope(context.scope);
+					std::unique_ptr<Scope> scope = std::make_unique<Scope>();
+					childContext.scope = scope.get();
+					context.scope->addChild(std::move(scope));
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
@@ -374,7 +380,9 @@ namespace Front {
 			case Node::Type::For:
 				{
 					Context childContext = context;
-					childContext.scope = new Scope(context.scope);
+					std::unique_ptr<Scope> scope = std::make_unique<Scope>();
+					childContext.scope = scope.get();
+					context.scope->addChild(std::move(scope));
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);

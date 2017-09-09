@@ -12,8 +12,8 @@ namespace Front {
 	 */
 	class Scope {
 	public:
-		Scope(Scope *parent = 0);
-		Scope(Scope *parent, std::shared_ptr<TypeStruct> &classType);
+		Scope();
+		Scope(std::shared_ptr<TypeStruct> &classType);
 
 		Scope *parent() { return mParent; }
 		bool addSymbol(std::unique_ptr<Symbol> symbol);
