@@ -16,7 +16,7 @@ namespace Front {
 		std::string name; //!< Procedure name
 		Scope *scope; //!< Local variables
 		std::vector<Symbol*> arguments; //!< List of arguments
-		TypeProcedure *type; //!< Procedure type
+		std::shared_ptr<TypeProcedure> type; //!< Procedure type
 		Node *body; //!< Body of procedure
 		Symbol *object; //!< Object symbol if procedure is a member function, or 0
 

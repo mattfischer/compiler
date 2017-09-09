@@ -30,17 +30,17 @@ public:
 private:
 	std::unique_ptr<Types> mTypes; //!< Types in environment
 	std::unique_ptr<Scope> mScope; //!< Global scope of environment
-	std::set<Type*> mCompleteTypes; //!< List of known-complete types
-	std::vector<Type*> mCompletionStack; //!< List of types currently being completed
+	std::set<std::shared_ptr<Type>> mCompleteTypes; //!< List of known-complete types
+	std::vector<std::shared_ptr<Type>> mCompletionStack; //!< List of types currently being completed
 	std::string mErrorMessage; //!< Error message
 	std::string mErrorLocation; //!< Error location
 
 	void addStruct(Node *node);
 	void addClass(Node *node);
-	Type *createType(Node *node, bool dummy);
-	Type *completeType(Type *type);
+	std::shared_ptr<Type> createType(Node *node, bool dummy);
+	std::shared_ptr<Type> completeType(std::shared_ptr<Type> type);
 	void completeTypes();
-	void constructScope(TypeStruct *typeStruct, Scope *scope);
+	void constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope *scope);
 };
 
 }

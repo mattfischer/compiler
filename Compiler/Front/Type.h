@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Front {
 	class Scope;
@@ -34,10 +35,7 @@ namespace Front {
 		int valueSize;
 		int allocSize;
 
-		static bool equals(Type *a, Type *b);
-
-	private:
-		static std::vector<Type*> sTypes;
+		static bool equals(Type &a, Type &b);
 	};
 
 	/*!
@@ -56,15 +54,15 @@ namespace Front {
 	 */
 	class TypeProcedure : public Type {
 	public:
-		Type *returnType;
-		std::vector<Type*> argumentTypes;
+		std::shared_ptr<Type> returnType;
+		std::vector<std::shared_ptr<Type>> argumentTypes;
 
-		TypeProcedure(Type *_returnType, std::vector<Type*> _argumentTypes)
+		TypeProcedure(std::shared_ptr<Type> &_returnType, std::vector<std::shared_ptr<Type>> _argumentTypes)
 			: Type(Kind::Procedure, getTypeName(_returnType, _argumentTypes), 0, 0), returnType(_returnType), argumentTypes(_argumentTypes)
 		{}
 
 	private:
-		std::string getTypeName(Type *returnType, std::vector<Type*> argumentTypes);
+		std::string getTypeName(std::shared_ptr<Type> &returnType, std::vector<std::shared_ptr<Type>> &argumentTypes);
 	};
 
 	/*!
@@ -72,9 +70,9 @@ namespace Front {
 	 */
 	class TypeArray : public Type {
 	public:
-		Type *baseType;
+		std::shared_ptr<Type> baseType;
 
-		TypeArray(Type *_baseType)
+		TypeArray(std::shared_ptr<Type> &_baseType)
 			: Type(Kind::Array, _baseType->name + "[]", 4, 0), baseType(_baseType)
 		{}
 	};
@@ -90,16 +88,16 @@ namespace Front {
 				QualifierNative = 0x2,
 				QualifierStatic = 0x4
 			};
-			Type *type;
+			std::shared_ptr<Type> type;
 			std::string name;
 			unsigned int qualifiers;
 			int offset;
 		};
 
 		std::vector<Member> members;
-		Front::TypeProcedure *constructor;
+		std::shared_ptr<Front::TypeProcedure> constructor;
 		Scope *scope;
-		TypeStruct *parent;
+		std::shared_ptr<TypeStruct> parent;
 		int vtableSize;
 		int vtableOffset;
 
@@ -107,7 +105,7 @@ namespace Front {
 			: Type(_kind, _name, 4, 0)
 		{}
 
-		void addMember(Type *type, const std::string &name, unsigned int qualifiers);
+		void addMember(std::shared_ptr<Type> type, const std::string &name, unsigned int qualifiers);
 		Member *findMember(const std::string &name);
 	};
 

@@ -15,10 +15,10 @@ namespace Front {
 		Types();
 		~Types();
 
-		bool registerType(std::unique_ptr<Type> type);
-		Type *findType(const std::string &name);
+		bool registerType(std::shared_ptr<Type> type);
+		std::shared_ptr<Type> findType(const std::string &name);
 
-		const std::vector<Type*> &types() { return mTypes; }
+		std::vector<std::shared_ptr<Type>> &types() { return mTypes; }
 
 		enum Intrinsic {
 			Bool,
@@ -28,11 +28,10 @@ namespace Front {
 			Char,
 			NumIntrinsics
 		};
-		static Type *intrinsic(Intrinsic intrinsic);
+		static std::shared_ptr<Type> &intrinsic(Intrinsic intrinsic);
 
 	private:
-		std::vector<Type*> mTypes;
-		std::vector<std::unique_ptr<Type>> mOwnedTypes;
+		std::vector<std::shared_ptr<Type>> mTypes;
 	};
 }
 #endif

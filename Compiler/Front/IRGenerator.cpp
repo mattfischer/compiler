@@ -65,7 +65,7 @@ namespace Front {
 			if(procedure->object) {
 				context.object = irProcedure->findSymbol(procedure->object);
 				irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadArg, context.object, 0, 0, 0));
-				TypeStruct *classType = procedure->scope->parent()->classType();
+				std::shared_ptr<TypeStruct> classType = procedure->scope->parent()->classType();
 				if(procedure->name == classType->name + "." + classType->name && classType->vtableSize > 0) {
 					IR::Symbol *vtable = irProcedure->newTemp(4);
 					irProcedure->emit(new IR::EntryString(IR::Entry::Type::LoadAddress, vtable, classType->name + "$$vtable"));
@@ -79,7 +79,7 @@ namespace Front {
 			processNode(procedure->body, context);
 
 			// If the procedure's return type is void, emit an return statement 
-			if(Type::equals(procedure->type->returnType, Types::intrinsic(Types::Void))) {
+			if(Type::equals(*procedure->type->returnType, *Types::intrinsic(Types::Void))) {
 				irProcedure->entries().insert(irProcedure->entries().end(), new IR::EntryThreeAddr(IR::Entry::Type::StoreRet, 0, 0));
 			}
 
@@ -91,9 +91,9 @@ namespace Front {
 		}
 
 		for(unsigned int i=0; i<program.types->types().size(); i++) {
-			const Type *type = program.types->types()[i];
-			if(type->kind == Type::Kind::Class && ((TypeStruct*)type)->vtableSize > 0) {
-				TypeStruct *typeStruct = (TypeStruct*)type;
+			std::shared_ptr<Type> type = program.types->types()[i];
+			if(type->kind == Type::Kind::Class && (std::static_pointer_cast<TypeStruct>(type))->vtableSize > 0) {
+				std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(type);
 				std::string name = typeStruct->name + "$$vtable";
 				std::vector<std::string> vtable(typeStruct->vtableSize);
 				while(typeStruct) {
@@ -280,7 +280,7 @@ namespace Front {
 			case Node::Type::Constant:
 				// Construct a temporary to contain the new value
 				result = procedure.newTemp(node->type->valueSize);
-				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+				if(Type::equals(*node->type, *Types::intrinsic(Types::String))) {
 					procedure.emit(new IR::EntryString(IR::Entry::Type::LoadString, result, node->lexVal.s));
 				} else {
 					procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, 0, 0, node->lexVal.i));
@@ -339,7 +339,7 @@ namespace Front {
 					} else if(lhs->nodeType == Node::Type::Member) {
 						a = processRValue(lhs->children[0], context);
 
-						Front::TypeStruct *typeStruct = (Front::TypeStruct*)lhs->children[0]->type;
+						std::shared_ptr<Front::TypeStruct> typeStruct = std::static_pointer_cast<Front::TypeStruct>(lhs->children[0]->type);
 						Front::TypeStruct::Member *member = typeStruct->findMember(lhs->lexVal.s);
 						procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreMem, b, a, 0, member->offset));
 					}
@@ -352,7 +352,7 @@ namespace Front {
 			case Node::Type::Call:
 				{
 					Node *target = node->children[0];
-					Front::TypeStruct *classType;
+					std::shared_ptr<Front::TypeStruct> classType;
 					IR::Symbol *object;
 					std::string name;
 					IR::Entry *callEntry;
@@ -370,7 +370,7 @@ namespace Front {
 						case Node::Type::Member:
 							{
 								Node *base = target->children[0];
-								classType = (TypeStruct*)base->type;
+								classType = std::static_pointer_cast<TypeStruct>(base->type);
 								name = target->lexVal.s;
 
 								if(base->symbol) {
@@ -421,7 +421,7 @@ namespace Front {
 					// Emit procedure call
 					procedure.emit(callEntry);
 
-					if(!Type::equals(node->type, Types::intrinsic(Types::Void))) {
+					if(!Type::equals(*node->type, *Types::intrinsic(Types::Void))) {
 						// Assign return value to a new temporary
 						result = procedure.newTemp(node->type->valueSize);
 						procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
@@ -445,7 +445,7 @@ namespace Front {
 					// Emit the appropriate type of arithmetic operation
 					switch(node->nodeSubtype) {
 					case Node::Subtype::Add:
-							if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+							if(Type::equals(*node->type, *Types::intrinsic(Types::String))) {
 								procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arguments[0], 0, 0));
 								procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, arguments[1], 0, 1));
 								procedure.emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_concat"));
@@ -538,18 +538,18 @@ namespace Front {
 					IR::Symbol *size = procedure.newTemp(4);
 					if(arg->nodeType == Node::Type::Array && arg->children.size() == 2) {
 						// Array allocation: total size is typeSize * count
-						Type *type = arg->children[0]->type;
+						std::shared_ptr<Type> &type = arg->children[0]->type;
 						IR::Symbol *typeSize = procedure.newTemp(4);
 						procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, typeSize, 0, 0, type->valueSize));
 
 						IR::Symbol *count = processRValue(arg->children[1], context);
 						procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, size, typeSize, count));
-					} else if(Type::equals(arg->type, Types::intrinsic(Types::String))) {
+					} else if(Type::equals(*arg->type, *Types::intrinsic(Types::String))) {
 						// String allocation: total size is constructor argument value
 						size = processRValue(node->children[1]->children[0], context);
 					} else {
 						// Single allocation: total size is type's allocSize
-						Type *type = arg->type;
+						std::shared_ptr<Type> &type = arg->type;
 						procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, size, 0, 0, type->allocSize));
 					}
 
@@ -557,7 +557,7 @@ namespace Front {
 					procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::New, result, size));
 
 					// If the type is a class with a constructor, emit a call to it
-					if(arg->type->kind == Type::Kind::Class && ((TypeStruct*)arg->type)->constructor) {
+					if(arg->type->kind == Type::Kind::Class && std::static_pointer_cast<TypeStruct>(arg->type)->constructor) {
 						std::vector<IR::Symbol*> args;
 
 						// First argument is the object
@@ -612,7 +612,7 @@ namespace Front {
 
 					IR::Symbol *base = processRValue(node->children[0], context);
 
-					Front::TypeStruct *typeStruct = (Front::TypeStruct*)node->children[0]->type;
+					std::shared_ptr<Front::TypeStruct> typeStruct = std::static_pointer_cast<Front::TypeStruct>(node->children[0]->type);
 					Front::TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
 
 					// Emit the load from the calculated memory location
@@ -625,23 +625,23 @@ namespace Front {
 					IR::Symbol *source = processRValue(node->children[0], context);
 
 					// Emit the appropriate entry for the type of conversion taking place
-					if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+					if(Type::equals(*node->type, *Types::intrinsic(Types::String))) {
 						result = procedure.newTemp(node->type->valueSize);
 
-						Type *sourceType = node->children[0]->type;
-						if(Type::equals(sourceType, Types::intrinsic(Types::Bool))) {
+						std::shared_ptr<Type> &sourceType = node->children[0]->type;
+						if(Type::equals(*sourceType, *Types::intrinsic(Types::Bool))) {
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
 							procedure.emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_bool"));
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
-						} else if(Type::equals(sourceType, Types::intrinsic(Types::Int))) {
+						} else if(Type::equals(*sourceType, *Types::intrinsic(Types::Int))) {
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
 							procedure.emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_int"));
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
-						} else if(Type::equals(sourceType, Types::intrinsic(Types::Char))) {
+						} else if(Type::equals(*sourceType, *Types::intrinsic(Types::Char))) {
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::StoreArg, 0, source, 0, 0));
 							procedure.emit(new IR::EntryCall(IR::Entry::Type::Call, "__string_char"));
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadRet, result));
-						} else if(sourceType->kind == Type::Kind::Array && Type::equals(((Front::TypeArray*)sourceType)->baseType, Types::intrinsic(Types::Char))) {
+						} else if(sourceType->kind == Type::Kind::Array && Type::equals(*std::static_pointer_cast<Front::TypeArray>(sourceType)->baseType, *Types::intrinsic(Types::Char))) {
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, source));
 						}
 					} else {

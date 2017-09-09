@@ -59,7 +59,7 @@ namespace Front {
 
 		switch(node->nodeType) {
 			case Node::Type::Constant:
-				if(Type::equals(node->type, Types::intrinsic(Types::String))) {
+				if(Type::equals(*node->type, *Types::intrinsic(Types::String))) {
 					o << " : '" << node->lexVal.s << "'";
 				} else {
 					o << " : " << node->lexVal.i;

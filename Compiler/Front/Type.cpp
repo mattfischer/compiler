@@ -9,33 +9,33 @@ namespace Front {
 	 * \param b Second type
 	 * \return True if types are equal
 	 */
-	bool Type::equals(Type *a, Type *b)
+	bool Type::equals(Type &a, Type &b)
 	{
-		if(a->kind != b->kind) {
+		if(a.kind != b.kind) {
 			return false;
 		}
 
-		switch(a->kind) {
+		switch(a.kind) {
 			case Type::Kind::Intrinsic:
 			case Type::Kind::Struct:
 			case Type::Kind::Class:
 			case Type::Kind::Dummy:
-				return a == b;
+				return &a == &b;
 
 			case Type::Kind::Procedure:
 			{
-				Front::TypeProcedure *ap = (Front::TypeProcedure*)a;
-				Front::TypeProcedure *bp = (Front::TypeProcedure*)b;
-				if(!equals(ap->returnType, bp->returnType)) {
+				Front::TypeProcedure &ap = (Front::TypeProcedure&)a;
+				Front::TypeProcedure &bp = (Front::TypeProcedure&)b;
+				if(!equals(*ap.returnType, *bp.returnType)) {
 					return false;
 				}
 
-				if(ap->argumentTypes.size() != bp->argumentTypes.size()) {
+				if(ap.argumentTypes.size() != bp.argumentTypes.size()) {
 					return false;
 				}
 
-				for(unsigned int i=0; i<ap->argumentTypes.size(); i++) {
-					if(!equals(ap->argumentTypes[i], bp->argumentTypes[i])) {
+				for(unsigned int i=0; i<ap.argumentTypes.size(); i++) {
+					if(!equals(*ap.argumentTypes[i], *bp.argumentTypes[i])) {
 						return false;
 					}
 				}
@@ -44,7 +44,7 @@ namespace Front {
 			}
 
 			case Type::Kind::Array:
-				return Type::equals(((Front::TypeArray*)a)->baseType, ((Front::TypeArray*)b)->baseType);
+				return Type::equals(*((Front::TypeArray&)a).baseType, *((Front::TypeArray&)b).baseType);
 		}
 
 		return false;
@@ -56,7 +56,7 @@ namespace Front {
 	 * \param argumentTypes Argument types
 	 * \return Type name
 	 */
-	std::string TypeProcedure::getTypeName(Type *returnType, std::vector<Type*> argumentTypes)
+	std::string TypeProcedure::getTypeName(std::shared_ptr<Type> &returnType, std::vector<std::shared_ptr<Type>> &argumentTypes)
 	{
 		std::stringstream s;
 		s << returnType->name << "(";
@@ -75,7 +75,7 @@ namespace Front {
 	 * \param type Type of member
 	 * \param name Member name
 	 */
-	void TypeStruct::addMember(Type *type, const std::string &name, unsigned int qualifiers)
+	void TypeStruct::addMember(std::shared_ptr<Type> type, const std::string &name, unsigned int qualifiers)
 	{
 		Member member;
 		member.name = name;

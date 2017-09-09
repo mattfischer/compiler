@@ -58,7 +58,7 @@ namespace Front {
 
 					case Node::Type::ClassDef:
 						{
-							TypeStruct *typeStruct = (TypeStruct*)program->types->findType(node->lexVal.s);
+							std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(program->types->findType(node->lexVal.s));
 							Node *members = node->children[node->children.size() - 1];
 							for(Node *child : members->children) {
 								Node *qualifiersNode = child->children[0];
@@ -109,24 +109,24 @@ namespace Front {
 	 * \param type Desired type
 	 * \return New node
 	 */
-	Node *coerce(Node *node, Type *type)
+	Node *coerce(Node *node, std::shared_ptr<Type> &type)
 	{
 		// If node is already of the given type, do nothing
-		if(!Type::equals(node->type, type)) {
+		if(!Type::equals(*node->type, *type)) {
 			bool valid = false;
 
-			if(Type::equals(type, Types::intrinsic(Types::String))) {
-				if(Type::equals(node->type, Types::intrinsic(Types::Bool)) ||
-				   Type::equals(node->type, Types::intrinsic(Types::Int)) ||
-				   Type::equals(node->type, Types::intrinsic(Types::Char)))	{
+			if(Type::equals(*type, *Types::intrinsic(Types::String))) {
+				if(Type::equals(*node->type, *Types::intrinsic(Types::Bool)) ||
+				   Type::equals(*node->type, *Types::intrinsic(Types::Int)) ||
+				   Type::equals(*node->type, *Types::intrinsic(Types::Char)))	{
 					valid = true;
-				} else if(node->type->kind == Type::Kind::Array && Type::equals(((Front::TypeArray*)node->type)->baseType, Types::intrinsic(Types::Char))) {
+				} else if(node->type->kind == Type::Kind::Array && Type::equals(*(std::static_pointer_cast<Front::TypeArray>(node->type)->baseType), *Types::intrinsic(Types::Char))) {
 					valid = true;
 				}
 			} else if(type->kind == Type::Kind::Class && node->type->kind == Type::Kind::Class) {
-				TypeStruct *classType = (TypeStruct*)node->type;
+				std::shared_ptr<TypeStruct> classType = std::static_pointer_cast<TypeStruct>(node->type);
 				while(classType) {
-					if(Type::equals(classType, type)) {
+					if(Type::equals(*classType, *type)) {
 						valid = true;
 						break;
 					}
@@ -157,7 +157,7 @@ namespace Front {
 	 * \param node Node to process
 	 * \param type Type to coerce to
 	 */
-	void coerceChildren(Node *node, Type *type)
+	void coerceChildren(Node *node, std::shared_ptr<Type> &type)
 	{
 		for(unsigned int i=0; i<node->children.size(); i++) {
 			node->children[i] = coerce(node->children[i], type);
@@ -170,10 +170,10 @@ namespace Front {
 	 * \param type Type to test for
 	 * \return True if there is a child of the given type
 	 */
-	bool isChildOfType(Node *node, Type *type)
+	bool isChildOfType(Node *node, Type &type)
 	{
 		for(Node *child : node->children) {
-			if(Type::equals(child->type, type)) {
+			if(Type::equals(*child->type, type)) {
 				return true;
 			}
 		}
@@ -193,7 +193,7 @@ namespace Front {
 		// Construct a procedure object
 		std::unique_ptr<Procedure> procedure = std::make_unique<Procedure>();
 		Symbol *symbol = scope->findSymbol(node->lexVal.s);
-		procedure->type = (TypeProcedure*)symbol->type;
+		procedure->type = std::static_pointer_cast<TypeProcedure>(symbol->type);
 
 		// Begin populating the procedure object
 		if(scope->classType()) {
@@ -234,15 +234,15 @@ namespace Front {
 	 * \param node Node describing type
 	 * \return Type
 	 */
-	Type *ProgramGenerator::createType(Node *node, Types *types)
+	std::shared_ptr<Type> ProgramGenerator::createType(Node *node, Types *types)
 	{
-		Type *type = 0;
+		std::shared_ptr<Type> type;
 		if(node->nodeType == Node::Type::Array) {
 			type = createType(node->children[0], types);
-			if(Type::equals(type, Types::intrinsic(Types::Void))) {
+			if(Type::equals(*type, *Types::intrinsic(Types::Void))) {
 				throw TypeError(node, "Cannot declare array of voids");
 			}
-			type = new TypeArray(type);
+			type = std::make_shared<TypeArray>(type);
 		} else {
 			std::string name = node->lexVal.s;
 			type = types->findType(name);
@@ -281,7 +281,7 @@ namespace Front {
 						throw TypeError(node, "Expression does not evaluate to a procedure");
 					}
 
-					TypeProcedure *procedureType = (TypeProcedure*)procedureNode->type;
+					std::shared_ptr<TypeProcedure> procedureType = std::static_pointer_cast<TypeProcedure>(procedureNode->type);
 					Node *argumentsNode = node->children[1];
 
 					// Check call target has correct number of parameters
@@ -304,8 +304,8 @@ namespace Front {
 			case Node::Type::VarDecl:
 				{
 					// Add the declared variable to the current scope
-					Type *type = createType(node->children[0], context.types);
-					if(Type::equals(type, Types::intrinsic(Types::Void))) {
+					std::shared_ptr<Type> type = createType(node->children[0], context.types);
+					if(Type::equals(*type, *Types::intrinsic(Types::Void))) {
 						throw TypeError(node, "Cannot declare variable of void type");
 					}
 
@@ -334,7 +334,7 @@ namespace Front {
 							throw TypeError(node, "Lvalue required");
 					}
 
-					if(lhs->nodeType == Node::Type::Array && Type::equals(lhs->children[0]->type, Types::intrinsic(Types::String))) {
+					if(lhs->nodeType == Node::Type::Array && Type::equals(*lhs->children[0]->type, *Types::intrinsic(Types::String))) {
 						throw TypeError(node, "String elements cannot be assigned to");
 					}
 
@@ -348,7 +348,7 @@ namespace Front {
 					childContext.scope = new Scope(context.scope);
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+					if(!Type::equals(*node->children[0]->type, *Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
@@ -363,7 +363,7 @@ namespace Front {
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[0]->type, Types::intrinsic(Types::Bool))) {
+					if(!Type::equals(*node->children[0]->type, *Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
@@ -378,7 +378,7 @@ namespace Front {
 					childContext.inLoop = true;
 
 					checkChildren(node, childContext);
-					if(!Type::equals(node->children[1]->type, Types::intrinsic(Types::Bool))) {
+					if(!Type::equals(*node->children[1]->type, *Types::intrinsic(Types::Bool))) {
 						throw TypeError(node, "Type mismatch");
 					}
 
@@ -400,8 +400,8 @@ namespace Front {
 							Types::Intrinsic intrinsics[] = { Types::Int, Types::Bool, Types::Char };
 							bool found = false;
 							for(Types::Intrinsic &intrinsic : intrinsics) {
-								Type *type = Types::intrinsic(intrinsic);
-								if(isChildOfType(node, type)) {
+								std::shared_ptr<Type> type = Types::intrinsic(intrinsic);
+								if(isChildOfType(node, *type)) {
 									coerceChildren(node, type);
 									found = true;
 									break;
@@ -422,10 +422,10 @@ namespace Front {
 				{
 					checkChildren(node, context);
 
-					if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, Types::intrinsic(Types::String))) {
+					if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, *Types::intrinsic(Types::String))) {
 						coerceChildren(node, Types::intrinsic(Types::String));
 						node->type = Types::intrinsic(Types::String);
-					} else if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, Types::intrinsic(Types::Char)) && isChildOfType(node, Types::intrinsic(Types::Int))) {
+					} else if(node->nodeSubtype == Node::Subtype::Add && isChildOfType(node, *Types::intrinsic(Types::Char)) && isChildOfType(node, *Types::intrinsic(Types::Int))) {
 						node->type = Types::intrinsic(Types::Char);
 					} else {
 						coerceChildren(node, Types::intrinsic(Types::Int));
@@ -462,7 +462,7 @@ namespace Front {
 				break;
 
 			case Node::Type::Return:
-				if(Type::equals(context.procedure.type->returnType, Types::intrinsic(Types::Void))) {
+				if(Type::equals(*context.procedure.type->returnType, *Types::intrinsic(Types::Void))) {
 					throw TypeError(node, "Return statement in void procedure");
 				}
 
@@ -480,14 +480,14 @@ namespace Front {
 					node->type = typeNode->type;
 
 					// Strings can't be allocated, only created from literals or coerced from char[]
-					if(Type::equals(typeNode->type, Types::intrinsic(Types::String))) {
+					if(Type::equals(*typeNode->type, *Types::intrinsic(Types::String))) {
 						throw TypeError(typeNode, "Cannot allocate string type");
 					}
 
 					// Check array size argument
 					if(typeNode->nodeType == Node::Type::Array && typeNode->children.size() > 1) {
 						checkType(typeNode->children[1], context);
-						if(!Type::equals(typeNode->children[1]->type, Types::intrinsic(Types::Int))) {
+						if(!Type::equals(*typeNode->children[1]->type, *Types::intrinsic(Types::Int))) {
 							throw TypeError(typeNode->children[1], "Non-integral type used for array size");
 						}
 					}
@@ -498,7 +498,7 @@ namespace Front {
 						checkType(argsNode, context);
 
 						if(typeNode->type->kind == Type::Kind::Class) {
-							TypeStruct *typeStruct = (TypeStruct*)typeNode->type;
+							std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(typeNode->type);
 
 							// First, check all child nodes
 							checkChildren(argsNode, context);
@@ -535,16 +535,16 @@ namespace Front {
 					Node *subscriptNode = node->children[1];
 
 					// Check array subscript
-					if(!Type::equals(subscriptNode->type, Types::intrinsic(Types::Int))) {
+					if(!Type::equals(*subscriptNode->type, *Types::intrinsic(Types::Int))) {
 						throw TypeError(subscriptNode, "Non-integral subscript");
 					}
 
-					if(Type::equals(baseNode->type, Types::intrinsic(Types::String))) {
+					if(Type::equals(*baseNode->type, *Types::intrinsic(Types::String))) {
 						// Indexing a string produces a character
 						node->type = Types::intrinsic(Types::Char);
 					} else if(baseNode->type->kind == Type::Kind::Array) {
 						// Indexing an array produces its base type
-						TypeArray *typeArray = (TypeArray*)baseNode->type;
+						std::shared_ptr<TypeArray> typeArray = std::static_pointer_cast<TypeArray>(baseNode->type);
 						node->type = typeArray->baseType;
 					} else {
 						throw TypeError(baseNode, "Attempt to take subscript of illegal object");
@@ -572,7 +572,7 @@ namespace Front {
 				Node *base = node->children[0];
 
 				bool typeName;
-				TypeStruct *baseType = (TypeStruct*)context.types->findType(base->lexVal.s);
+				std::shared_ptr<TypeStruct> baseType = std::static_pointer_cast<TypeStruct>(context.types->findType(base->lexVal.s));
 				if(baseType) {
 					base->type = baseType;
 					typeName = true;
@@ -583,7 +583,7 @@ namespace Front {
 
 				if(base->type->kind == Type::Kind::Struct || base->type->kind == Type::Kind::Class) {
 					// Check structure field
-					TypeStruct *typeStruct = (TypeStruct*)base->type;
+					std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(base->type);
 					TypeStruct::Member *member = typeStruct->findMember(node->lexVal.s);
 					if(member) {
 						if(typeName && !(member->qualifiers & TypeStruct::Member::QualifierStatic)) {

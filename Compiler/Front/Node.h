@@ -73,7 +73,7 @@ namespace Front {
 		Node::Subtype nodeSubtype; //!< Node subtype
 		int line; //!< Line in source file corresponding to node
 		std::vector<Node*> children; //!< Children of node
-		Front::Type *type; //!< Assigned type of language element represented by node
+		std::shared_ptr<Front::Type> type; //!< Assigned type of language element represented by node
 
 		/*!
 		 * \brief Structure containing various lexical types that can be associated with the node

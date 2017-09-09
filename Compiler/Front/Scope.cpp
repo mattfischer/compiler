@@ -6,7 +6,21 @@ namespace Front {
 	* \param parent Parent scope
 	* \param procedure Procedure containing scope
 	*/
-	Scope::Scope(Scope *parent, TypeStruct *classType)
+	Scope::Scope(Scope *parent)
+	{
+		mParent = parent;
+
+		if (mParent) {
+			mParent->addChild(std::unique_ptr<Scope>(this));
+		}
+	}
+
+	/*!
+	* \brief Constructor
+	* \param parent Parent scope
+	* \param procedure Procedure containing scope
+	*/
+	Scope::Scope(Scope *parent, std::shared_ptr<TypeStruct> &classType)
 	{
 		mParent = parent;
 		mClassType = classType;

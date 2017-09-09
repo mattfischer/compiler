@@ -21,14 +21,13 @@ namespace Front {
 	 * \param type Type to register
 	 * \return True if success
 	 */
-	bool Types::registerType(std::unique_ptr<Type> type)
+	bool Types::registerType(std::shared_ptr<Type> type)
 	{
 		if(findType(type->name)) {
 			return false;
 		}
 
-		mTypes.push_back(type.get());
-		mOwnedTypes.push_back(std::move(type));
+		mTypes.push_back(type);
 
 		return true;
 	}
@@ -38,9 +37,9 @@ namespace Front {
 	 * \param name Type name
 	 * \return Type if found, or 0
 	 */
-	Type *Types::findType(const std::string &name)
+	std::shared_ptr<Type> Types::findType(const std::string &name)
 	{
-		for(Type *type : mTypes) {
+		for(std::shared_ptr<Type> &type : mTypes) {
 			if(type->name == name) {
 				return type;
 			}
@@ -54,18 +53,18 @@ namespace Front {
 	 * \param intrinsic Intrinsic type number
 	 * \return Intrinsic type
 	 */
-	Type *Types::intrinsic(Intrinsic intrinsic)
+	std::shared_ptr<Type> &Types::intrinsic(Intrinsic intrinsic)
 	{
-		static std::vector<Type*> intrinsics;
+		static std::vector<std::shared_ptr<Type>> intrinsics;
 
 		if(intrinsics.size() == 0) {
 			// Register all the intrinsics on first access
 			intrinsics.resize(NumIntrinsics);
-			intrinsics[Bool] = new TypeIntrinsic("bool", 4);
-			intrinsics[Int] = new TypeIntrinsic("int", 4);
-			intrinsics[Void] = new TypeIntrinsic("void", 0);
-			intrinsics[Char] = new TypeIntrinsic("char", 1);
-			intrinsics[String] = new TypeIntrinsic("string", 4);
+			intrinsics[Bool] = std::make_shared<TypeIntrinsic>("bool", 4);
+			intrinsics[Int] = std::make_shared<TypeIntrinsic>("int", 4);
+			intrinsics[Void] = std::make_shared<TypeIntrinsic>("void", 0);
+			intrinsics[Char] = std::make_shared<TypeIntrinsic>("char", 1);
+			intrinsics[String] = std::make_shared<TypeIntrinsic>("string", 4);
 		}
 
 		return intrinsics[intrinsic];

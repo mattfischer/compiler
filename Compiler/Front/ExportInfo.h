@@ -35,11 +35,11 @@ private:
 	std::string getString(unsigned int offset, unsigned int stringBase);
 	unsigned char addString(const std::string &str);
 
-	Type *readType(unsigned int &offset, Types &types, unsigned int stringBase);
+	std::shared_ptr<Type> readType(unsigned int &offset, Types &types, unsigned int stringBase);
 	void bypassType(unsigned int &offset);
-	void writeType(Type *type);
+	void writeType(Type &type);
 
-	Type *getType(const std::string &name, Types &types);
+	std::shared_ptr<Type> getType(const std::string &name, Types &types);
 };
 
 }

@@ -70,10 +70,10 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 
 		// Complete each type, and construct scopes for class types
 		std::set<Type*> completeTypes;
-		for(Type *type : mTypes->types()) {
+		for(std::shared_ptr<Type> &type : mTypes->types()) {
 			completeType(type);
 			if(type->kind == Type::Kind::Class) {
-				constructScope((TypeStruct*)type, mScope.get());
+				constructScope(std::static_pointer_cast<TypeStruct>(type), mScope.get());
 			}
 		}
 
@@ -98,9 +98,8 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 void EnvironmentGenerator::addStruct(Node *node)
 {
 	// Create the type
-	std::unique_ptr<TypeStruct> typePtr = std::make_unique<TypeStruct>(Type::Kind::Struct, node->lexVal.s);
-	TypeStruct *type = typePtr.get();
-	if(!mTypes->registerType(std::move(typePtr))) {
+	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Struct, node->lexVal.s);
+	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of structure " << type->name;
 
@@ -113,7 +112,7 @@ void EnvironmentGenerator::addStruct(Node *node)
 
 	// Iterate through the member nodes, and create type members for each
 	for(Node *memberNode : node->children[0]->children) {
-		Type *memberType = createType(memberNode->children[0], true);
+		std::shared_ptr<Type> memberType = createType(memberNode->children[0], true);
 		type->addMember(memberType, memberNode->lexVal.s, false);
 	}
 }
@@ -126,9 +125,8 @@ void EnvironmentGenerator::addStruct(Node *node)
 void EnvironmentGenerator::addClass(Node *node)
 {
 	// Create the type
-	std::unique_ptr<TypeStruct> typePtr = std::make_unique<TypeStruct>(Type::Kind::Class, node->lexVal.s);
-	TypeStruct *type = typePtr.get();
-	if(!mTypes->registerType(std::move(typePtr))) {
+	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Class, node->lexVal.s);
+	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of class " << type->name;
 		throw EnvironmentError(node, s.str());
@@ -140,7 +138,7 @@ void EnvironmentGenerator::addClass(Node *node)
 	if(node->children.size() == 2) {
 		std::stringstream s;
 		s << "Line " << node->line;
-		type->parent = (Front::TypeStruct*)new TypeDummy(node->children[0]->lexVal.s, s.str());
+		type->parent = std::static_pointer_cast<TypeStruct>(std::static_pointer_cast<Type>(std::make_shared<TypeDummy>(node->children[0]->lexVal.s, s.str())));
 	} else {
 		type->parent = 0;
 	}
@@ -154,7 +152,7 @@ void EnvironmentGenerator::addClass(Node *node)
 		switch(memberNode->nodeType) {
 			case Node::Type::VarDecl:
 			{
-				Type *memberType = createType(memberNode->children[0], true);
+				std::shared_ptr<Type> memberType = createType(memberNode->children[0], true);
 				type->addMember(memberType, memberNode->lexVal.s, 0);
 				break;
 			}
@@ -182,7 +180,7 @@ void EnvironmentGenerator::addClass(Node *node)
 					throw EnvironmentError(memberNode, "Virtual function cannot be static");
 				}
 
-				TypeProcedure *procedureType = (TypeProcedure*)createType(memberNode, true);
+				std::shared_ptr<TypeProcedure> procedureType = std::static_pointer_cast<TypeProcedure>(createType(memberNode, true));
 				type->addMember(procedureType, memberNode->lexVal.s, qualifiers);
 				if(memberNode->lexVal.s == type->name) {
 					type->constructor = procedureType;
@@ -200,35 +198,35 @@ void EnvironmentGenerator::addClass(Node *node)
  * \param dummy Whether to create a dummy type if not found
  * \return Type
  */
-Type *EnvironmentGenerator::createType(Node *node, bool dummy)
+std::shared_ptr<Type> EnvironmentGenerator::createType(Node *node, bool dummy)
 {
-	Type *type = 0;
+	std::shared_ptr<Type> type;
 	switch(node->nodeType) {
 		case Node::Type::Array:
 			type = createType(node->children[0], dummy);
-			if(Type::equals(type, Types::intrinsic(Types::Void))) {
+			if(Type::equals(*type, *Types::intrinsic(Types::Void))) {
 				throw EnvironmentError(node, "Cannot declare array of voids");
 			}
-			type = new TypeArray(type);
+			type = std::make_shared<TypeArray>(type);
 			break;
 
 		case Node::Type::ProcedureDef:
 			{
 				// Iterate the tree's argument items
 				Node *argumentList = node->children[1];
-				std::vector<Type*> argumentTypes;
+				std::vector<std::shared_ptr<Type>> argumentTypes;
 				for(Node *argumentNode : argumentList->children) {
 					// Construct the argument type, and add it to the list of types
-					Type *argumentType = createType(argumentNode->children[0], dummy);
-					if(Type::equals(argumentType, Types::intrinsic(Types::Void))) {
+					std::shared_ptr<Type> argumentType = createType(argumentNode->children[0], dummy);
+					if(Type::equals(*argumentType, *Types::intrinsic(Types::Void))) {
 						throw EnvironmentError(argumentNode, "Cannot declare procedure argument of type void");
 					}
 					argumentTypes.push_back(argumentType);
 				}
 
 				// Construct the procedure type
-				Type *returnType = node->children[0] ? createType(node->children[0], dummy) : Types::intrinsic(Types::Void);
-				type = new TypeProcedure(returnType, argumentTypes);
+				std::shared_ptr<Type> returnType = node->children[0] ? createType(node->children[0], dummy) : Types::intrinsic(Types::Void);
+				type = std::make_shared<TypeProcedure>(returnType, argumentTypes);
 				break;
 			}
 
@@ -238,7 +236,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
 				if(dummy) {
 					std::stringstream s;
 					s << "Line " << node->line;
-					type = new TypeDummy(node->lexVal.s, s.str());
+					type = std::make_shared<TypeDummy>(node->lexVal.s, s.str());
 				} else {
 					std::stringstream s;
 					s << "Type '" << node->lexVal.s << "' not found";
@@ -256,7 +254,7 @@ Type *EnvironmentGenerator::createType(Node *node, bool dummy)
  * \param type Type to complete
  * \return Resulting type, possibly different than parameter if it is a dummy type
  */
-Type *EnvironmentGenerator::completeType(Type *type)
+std::shared_ptr<Type> EnvironmentGenerator::completeType(std::shared_ptr<Type> type)
 {
 	// Bail out early if the type is known to be complete
 	if(mCompleteTypes.find(type) != mCompleteTypes.end()) {
@@ -269,7 +267,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 		case Type::Kind::Procedure:
 			{
 				// Complete the procedure's return and argument types
-				TypeProcedure *typeProcedure = (TypeProcedure*)type;
+				std::shared_ptr<TypeProcedure> typeProcedure = std::static_pointer_cast<TypeProcedure>(type);
 
 				typeProcedure->returnType = completeType(typeProcedure->returnType);
 
@@ -282,7 +280,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 		case Type::Kind::Array:
 			{
 				// Complete the array's base type
-				TypeArray *typeArray = (TypeArray*)type;
+				std::shared_ptr<TypeArray> typeArray = std::static_pointer_cast<TypeArray>(type);
 				typeArray->baseType = completeType(typeArray->baseType);
 				break;
 			}
@@ -290,9 +288,9 @@ Type *EnvironmentGenerator::completeType(Type *type)
 		case Type::Kind::Struct:
 		case Type::Kind::Class:
 			{
-				TypeStruct *typeStruct = (TypeStruct*)type;
+				std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(type);
 				if(typeStruct->parent) {
-					for(Type *completionType : mCompletionStack) {
+					for(std::shared_ptr<Type> &completionType : mCompletionStack) {
 						if(completionType->name == typeStruct->parent->name) {
 							std::stringstream s;
 							s << "Class " << typeStruct->name;
@@ -303,7 +301,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 					}
 
 					// Complete parent type
-					typeStruct->parent = (TypeStruct*)completeType(typeStruct->parent);
+					typeStruct->parent = std::static_pointer_cast<TypeStruct>(completeType(typeStruct->parent));
 
 					// Now that parent is complete, populate sizes and offsets
 					typeStruct->vtableOffset = typeStruct->parent->vtableOffset;
@@ -344,7 +342,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
 
 				if(typeStruct->constructor) {
 					// Complete the constructor type
-					typeStruct->constructor = (TypeProcedure*)completeType(typeStruct->constructor);
+					typeStruct->constructor = std::static_pointer_cast<TypeProcedure>(completeType(typeStruct->constructor));
 				}
 
 				// Mark this type as complete
@@ -355,16 +353,15 @@ Type *EnvironmentGenerator::completeType(Type *type)
 
 		case Type::Kind::Dummy:
 			{
-				TypeDummy *typeDummy = (TypeDummy*)type;
+				std::shared_ptr<TypeDummy> typeDummy = std::static_pointer_cast<TypeDummy>(type);
 
 				// Locate the actual (non-dummy) version of the type
-				Type *realType = mTypes->findType(type->name);
+				std::shared_ptr<Type> realType = mTypes->findType(type->name);
 				if(!realType) {
 					std::stringstream s;
 					s << "Type '" << type->name << "' not found.";
 					throw EnvironmentError(typeDummy->origin, s.str());
 				}
-				delete type;
 
 				// Complete the type
 				type = completeType(realType);
@@ -381,7 +378,7 @@ Type *EnvironmentGenerator::completeType(Type *type)
  * \param typeStruct Class to construct scope for
  * \param globalScope Scope containing globals
  */
-void EnvironmentGenerator::constructScope(TypeStruct *typeStruct, Scope *globalScope)
+void EnvironmentGenerator::constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope *globalScope)
 {
 	if(typeStruct->parent) {
 		// Ensure the parent scope has been constructed

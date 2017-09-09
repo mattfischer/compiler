@@ -12,7 +12,8 @@ namespace Front {
 	 */
 	class Scope {
 	public:
-		Scope(Scope *parent = 0, TypeStruct *classType = 0);
+		Scope(Scope *parent = 0);
+		Scope(Scope *parent, std::shared_ptr<TypeStruct> &classType);
 
 		Scope *parent() { return mParent; }
 		bool addSymbol(std::unique_ptr<Symbol> symbol);
@@ -21,13 +22,13 @@ namespace Front {
 		std::vector<std::unique_ptr<Symbol>> &symbols() { return mSymbols; }
 
 		void addChild(std::unique_ptr<Scope> child);
-		TypeStruct *classType() { return mClassType; }
+		std::shared_ptr<TypeStruct> classType() { return mClassType; }
 
 	private:
 		Scope *mParent; //!< Parent scope
 		std::vector<std::unique_ptr<Scope>> mChildren; //!< Child scopes
 		std::vector<std::unique_ptr<Symbol>> mSymbols; //!< Collection of symbols
-		TypeStruct *mClassType;
+		std::shared_ptr<TypeStruct> mClassType;
 	};
 }
 

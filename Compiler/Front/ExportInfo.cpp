@@ -21,17 +21,17 @@ enum ExportMember {
 
 ExportInfo::ExportInfo(Types &types, Scope &scope)
 {
-	for(Type *type : types.types()) {
+	for(std::shared_ptr<Type> &type : types.types()) {
 		switch(type->kind) {
 			case Type::Kind::Struct:
 				{
-					TypeStruct *typeStruct = (TypeStruct*)type;
+					TypeStruct *typeStruct = (TypeStruct*)type.get();
 					mData.push_back((unsigned char)ExportItem::TypeDefinition);
 					mData.push_back((unsigned char)ExportDefinition::Struct);
 					mData.push_back(addString(type->name));
 					mData.push_back((unsigned char)typeStruct->members.size());
 					for(TypeStruct::Member &member : typeStruct->members) {
-						writeType(member.type);
+						writeType(*member.type);
 						mData.push_back(addString(member.name));
 					}
 					break;
@@ -39,7 +39,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 
 			case Type::Kind::Class:
 				{
-					TypeStruct *typeStruct = (TypeStruct*)type;
+					TypeStruct *typeStruct = (TypeStruct*)type.get();
 					mData.push_back((unsigned char)ExportItem::TypeDefinition);
 					mData.push_back((unsigned char)ExportDefinition::Class);
 					mData.push_back(addString(type->name));
@@ -58,7 +58,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 							mData.push_back((unsigned char)ExportMember::Normal);
 						}
 
-						writeType(member.type);
+						writeType(*member.type);
 						mData.push_back(addString(member.name));
 					}
 					break;
@@ -68,7 +68,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 
 	for(std::unique_ptr<Symbol> &symbol : scope.symbols()) {
 		mData.push_back((unsigned char)ExportItem::Symbol);
-		writeType(symbol->type);
+		writeType(*symbol->type);
 		mData.push_back(addString(symbol->name));
 	}
 }
@@ -94,15 +94,15 @@ void ExportInfo::read(Types &types, Scope &scope)
 					std::string name = getString(mData[offset], stringBase);
 					offset++;
 
-					std::unique_ptr<Type> type;
+					std::shared_ptr<Type> type;
 					switch(exportDefinition) {
 						case ExportDefinition::Class:
 							{
-								std::unique_ptr<TypeStruct> typeStruct = std::make_unique<TypeStruct>(Type::Kind::Class, name);
+								std::shared_ptr<TypeStruct> typeStruct = std::make_shared<TypeStruct>(Type::Kind::Class, name);
 								if(mData[offset] == 0xff) {
 									typeStruct->parent = 0;
 								} else {
-									typeStruct->parent = (TypeStruct*)getType(getString(mData[offset], stringBase), types);
+									typeStruct->parent = std::static_pointer_cast<TypeStruct>(getType(getString(mData[offset], stringBase), types));
 								}
 								typeStruct->constructor = 0;
 								offset++;
@@ -112,7 +112,7 @@ void ExportInfo::read(Types &types, Scope &scope)
 								for(int i=0; i<numMembers; i++) {
 									ExportMember exportMember = (ExportMember)mData[offset];
 									offset++;
-									Type *memberType = readType(offset, types, stringBase);
+									std::shared_ptr<Type> memberType = readType(offset, types, stringBase);
 									std::string memberName = getString(mData[offset], stringBase);
 									offset++;
 									unsigned int qualifiers = 0;
@@ -128,7 +128,7 @@ void ExportInfo::read(Types &types, Scope &scope)
 									typeStruct->addMember(memberType, memberName, qualifiers);
 
 									if(memberName == typeStruct->name) {
-										typeStruct->constructor = (TypeProcedure*)memberType;
+										typeStruct->constructor = std::static_pointer_cast<TypeProcedure>(memberType);
 									}
 								}
 								type = std::move(typeStruct);
@@ -137,12 +137,12 @@ void ExportInfo::read(Types &types, Scope &scope)
 
 						case ExportDefinition::Struct:
 							{
-								std::unique_ptr<TypeStruct> typeStruct = std::make_unique<TypeStruct>(Type::Kind::Struct, name);
+								std::shared_ptr<TypeStruct> typeStruct = std::make_shared<TypeStruct>(Type::Kind::Struct, name);
 								typeStruct->constructor = 0;
 								int numMembers = mData[offset];
 								offset++;
 								for(int i=0; i<numMembers; i++) {
-									Type *memberType = readType(offset, types, stringBase);
+									std::shared_ptr<Type> memberType = readType(offset, types, stringBase);
 									std::string memberName = getString(mData[offset], stringBase);
 									offset++;
 									typeStruct->addMember(memberType, memberName, false);
@@ -151,13 +151,13 @@ void ExportInfo::read(Types &types, Scope &scope)
 								break;
 							}
 					}
-					types.registerType(std::move(type));
+					types.registerType(type);
 					break;
 				}
 
 			case ExportItem::Symbol:
 				{
-					Type *type = readType(offset, types, stringBase);
+					std::shared_ptr<Type> type = readType(offset, types, stringBase);
 					std::string name = getString(mData[offset], stringBase);
 					offset++;
 					scope.addSymbol(std::make_unique<Symbol>(type, name));
@@ -261,12 +261,12 @@ std::string ExportInfo::getString(unsigned int offset, unsigned int stringBase)
 	return std::string((char*)&mStrings[stringBase + offset]);
 }
 
-Type *ExportInfo::readType(unsigned int &offset, Types &types, unsigned int stringBase)
+std::shared_ptr<Type> ExportInfo::readType(unsigned int &offset, Types &types, unsigned int stringBase)
 {
 	ExportType exportType = (ExportType)mData[offset];
 	offset++;
 
-	Type *type;
+	std::shared_ptr<Type> type;
 	switch(exportType) {
 		case ExportType::Simple:
 			{
@@ -278,21 +278,21 @@ Type *ExportInfo::readType(unsigned int &offset, Types &types, unsigned int stri
 
 		case ExportType::Procedure:
 			{
-				Type *returnType = readType(offset, types, stringBase);
+				std::shared_ptr<Type> returnType = readType(offset, types, stringBase);
 				int numArguments = mData[offset];
 				offset++;
-				std::vector<Type*> argumentTypes;
+				std::vector<std::shared_ptr<Type>> argumentTypes;
 				for(int i=0; i<numArguments; i++) {
 					argumentTypes.push_back(readType(offset, types, stringBase));
 				}
-				type = new TypeProcedure(returnType, argumentTypes);
+				type = std::make_shared<TypeProcedure>(returnType, argumentTypes);
 				break;
 			}
 
 		case ExportType::Array:
 			{
-				Type *baseType = readType(offset, types, stringBase);
-				type = new TypeArray(baseType);
+				std::shared_ptr<Type> baseType = readType(offset, types, stringBase);
+				type = std::make_shared<TypeArray>(baseType);
 				break;
 			}
 	}
@@ -331,43 +331,43 @@ void ExportInfo::bypassType(unsigned int &offset)
 	}
 }
 
-void ExportInfo::writeType(Type *type)
+void ExportInfo::writeType(Type &type)
 {
-	switch(type->kind) {
+	switch(type.kind) {
 		case Type::Kind::Intrinsic:
 		case Type::Kind::Struct:
 		case Type::Kind::Class:
 			mData.push_back((unsigned char)ExportType::Simple);
-			mData.push_back(addString(type->name));
+			mData.push_back(addString(type.name));
 			break;
 
 		case Type::Kind::Procedure:
 			{
-				TypeProcedure *typeProcedure = (TypeProcedure*)type;
+				TypeProcedure &typeProcedure = (TypeProcedure&)type;
 				mData.push_back((unsigned char)ExportType::Procedure);
-				writeType(typeProcedure->returnType);
-				mData.push_back((unsigned char)typeProcedure->argumentTypes.size());
-				for(Type *argumentType : typeProcedure->argumentTypes) {
-					writeType(argumentType);
+				writeType(*typeProcedure.returnType);
+				mData.push_back((unsigned char)typeProcedure.argumentTypes.size());
+				for(std::shared_ptr<Type> &argumentType : typeProcedure.argumentTypes) {
+					writeType(*argumentType);
 				}
 				break;
 			}
 
 		case Type::Kind::Array:
 			{
-				TypeArray *typeArray = (TypeArray*)type;
+				TypeArray &typeArray = (TypeArray&)type;
 				mData.push_back((unsigned char)ExportType::Array);
-				writeType(typeArray->baseType);
+				writeType(*typeArray.baseType);
 				break;
 			}
 	}
 }
 
-Type *ExportInfo::getType(const std::string &name, Types &types)
+std::shared_ptr<Type> ExportInfo::getType(const std::string &name, Types &types)
 {
-	Type *type = types.findType(name);
+	std::shared_ptr<Type> type = types.findType(name);
 	if(!type) {
-		type = new TypeDummy(name, "");
+		type = std::make_shared<TypeDummy>(name, "");
 	}
 
 	return type;

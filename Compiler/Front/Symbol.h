@@ -13,7 +13,7 @@ namespace Front {
 	 * \brief A symbol in the program
 	 */
 	struct Symbol {
-		Type *type; //!< Type of variable
+		std::shared_ptr<Type> type; //!< Type of variable
 		std::string name; //!< Variable name
 		Scope *scope; //!< Containing scope
 
@@ -22,7 +22,7 @@ namespace Front {
 		 * \param _type Symbol type
 		 * \param _name Symbol name
 		 */
-		Symbol(Type *_type, const std::string &_name) : type(_type), name(_name), scope(0) {}
+		Symbol(std::shared_ptr<Type> _type, const std::string &_name) : type(_type), name(_name), scope(0) {}
 
 		/*!
 		 * \brief Copy constructor
