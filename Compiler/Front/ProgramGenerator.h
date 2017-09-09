@@ -38,7 +38,7 @@ namespace Front {
 		void checkType(Node *node, Context &context);
 		void checkChildren(Node *node, Context &context);
 		std::shared_ptr<Type> createType(Node *node, Types *types);
-		void addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod);
+		void addProcedure(Node *node, Program &program, Scope &scope, bool instanceMethod);
 	};
 }
 #endif

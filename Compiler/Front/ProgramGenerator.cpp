@@ -53,7 +53,7 @@ namespace Front {
 			for(Node *node : mTree->children) {
 				switch(node->nodeType) {
 					case Node::Type::ProcedureDef:
-						addProcedure(node, *program, program->scope.get(), false);
+						addProcedure(node, *program, *program->scope, false);
 						break;
 
 					case Node::Type::ClassDef:
@@ -75,7 +75,7 @@ namespace Front {
 											throw TypeError(memberNode, "Non-native function requires a body");
 										} else {
 											bool instanceMethod = !(member->qualifiers & TypeStruct::Member::QualifierStatic);
-											addProcedure(memberNode, *program, typeStruct->scope, instanceMethod);
+											addProcedure(memberNode, *program, *typeStruct->scope, instanceMethod);
 										}
 									}
 								}
@@ -188,27 +188,27 @@ namespace Front {
 	 * \param scope Parent scope of procedure
 	 * \return New procedure
 	 */
-	void ProgramGenerator::addProcedure(Node *node, Program &program, Scope *scope, bool instanceMethod)
+	void ProgramGenerator::addProcedure(Node *node, Program &program, Scope &scope, bool instanceMethod)
 	{
 		// Construct a procedure object
 		std::unique_ptr<Procedure> procedure = std::make_unique<Procedure>();
-		Symbol *symbol = scope->findSymbol(node->lexVal.s);
+		Symbol *symbol = scope.findSymbol(node->lexVal.s);
 		procedure->type = std::static_pointer_cast<TypeProcedure>(symbol->type);
 
 		// Begin populating the procedure object
-		if(scope->classType()) {
+		if(scope.classType()) {
 			std::stringstream s;
-			s << scope->classType()->name << "." << node->lexVal.s;
+			s << scope.classType()->name << "." << node->lexVal.s;
 			procedure->name = s.str();
 		} else {
 			procedure->name = node->lexVal.s;
 		}
 		std::unique_ptr<Scope> newScope = std::make_unique<Scope>();		
 		procedure->scope = newScope.get();
-		scope->addChild(std::move(newScope));
+		scope.addChild(std::move(newScope));
 
 		if(instanceMethod) {
-			std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(scope->classType(), "this");
+			std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(scope.classType(), "this");
 			procedure->object = symbol.get();
 			procedure->scope->addSymbol(std::move(symbol));
 		} else {

@@ -25,7 +25,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 		switch(type->kind) {
 			case Type::Kind::Struct:
 				{
-					TypeStruct *typeStruct = (TypeStruct*)type.get();
+					std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(type);
 					mData.push_back((unsigned char)ExportItem::TypeDefinition);
 					mData.push_back((unsigned char)ExportDefinition::Struct);
 					mData.push_back(addString(type->name));
@@ -39,7 +39,7 @@ ExportInfo::ExportInfo(Types &types, Scope &scope)
 
 			case Type::Kind::Class:
 				{
-					TypeStruct *typeStruct = (TypeStruct*)type.get();
+					std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(type);
 					mData.push_back((unsigned char)ExportItem::TypeDefinition);
 					mData.push_back((unsigned char)ExportDefinition::Class);
 					mData.push_back(addString(type->name));
