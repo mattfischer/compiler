@@ -54,20 +54,20 @@ bool LiveRangeRenaming::transform(IR::Procedure &procedure, Analysis::Analysis &
 {
 	bool changed = false;
 
-	std::vector<IR::Symbol*> newSymbols;
+	std::vector<std::unique_ptr<IR::Symbol>> newSymbols;
 
 	// Construct use-def chains for the procedure
 	Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Iterate through each symbol in the procedure
-	for(IR::Symbol *symbol : procedure.symbols()) {
+	for(std::unique_ptr<IR::Symbol> &symbol : procedure.symbols()) {
 		int idx = 0;
 
 		// Iterate through each entry in the procedure
 		for(IR::Entry *entry : procedure.entries()) {
 			// If the given symbol is assigned or used in this entry, rename all uses of the variable
 			// that are connected to this one by def-use or use-def chains
-			if(entry->assign() == symbol || entry->uses(symbol)) {
+			if(entry->assign() == symbol.get() || entry->uses(symbol.get())) {
 				std::string newName;
 				if(idx == 0) {
 					// Preserve the same name for the first live range
@@ -81,9 +81,9 @@ bool LiveRangeRenaming::transform(IR::Procedure &procedure, Analysis::Analysis &
 				idx++;
 
 				// Rename the symbol
-				IR::Symbol *newSymbol = new IR::Symbol(newName, symbol->size, symbol->symbol);
-				newSymbols.push_back(newSymbol);
-				renameSymbol(entry, symbol, newSymbol, useDefs);
+				std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newName, symbol->size, symbol->symbol);
+				renameSymbol(entry, symbol.get(), newSymbol.get(), useDefs);
+				newSymbols.push_back(std::move(newSymbol));
 			}
 		}
 
@@ -93,7 +93,9 @@ bool LiveRangeRenaming::transform(IR::Procedure &procedure, Analysis::Analysis &
 	}
 
 	procedure.symbols().clear();
-	procedure.symbols().insert(procedure.symbols().begin(), newSymbols.begin(), newSymbols.end());
+	for (std::unique_ptr<IR::Symbol> &symbol : newSymbols) {
+		procedure.addSymbol(std::move(symbol));
+	}
 
 	if(changed) {
 		analysis.invalidate();

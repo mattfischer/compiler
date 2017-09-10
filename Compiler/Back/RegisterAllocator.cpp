@@ -49,15 +49,15 @@ std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysi
 		// Iterate through the block's entries
 		for(IR::Entry *entry : block->entries) {
 			// Iterate through the symbols in the procedure
-			for(IR::Symbol *symbol : procedure.symbols()) {
+			for(const std::unique_ptr<IR::Symbol> &symbol : procedure.symbols()) {
 				// Any assignment to the variable adds to its cost
-				if(entry->assign() == symbol) {
-					costs[symbol] += cost;
+				if(entry->assign() == symbol.get()) {
+					costs[symbol.get()] += cost;
 				}
 
 				// Any use of the variable also adds to its cost
-				if(entry->uses(symbol)) {
-					costs[symbol] += cost;
+				if(entry->uses(symbol.get())) {
+					costs[symbol.get()] += cost;
 				}
 			}
 		}
@@ -73,7 +73,7 @@ std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysi
  * \param symbol Symbol to add interferences to
  * \param excludeSymbol Symbol to exclude from the above symbol set, for convenience
  */
-void addInterferences(Analysis::InterferenceGraph &graph, const IR::SymbolSet &symbols, IR::Symbol *target, IR::Symbol *exclude)
+void addInterferences(Analysis::InterferenceGraph &graph, const std::set<IR::Symbol*> &symbols, IR::Symbol *target, IR::Symbol *exclude)
 {
 	for(IR::Symbol *symbol : symbols) {
 		if(symbol != exclude) {
@@ -96,7 +96,7 @@ void addProcedureCallInterferences(Analysis::InterferenceGraph &graph, const std
 		IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)entry;
 
 		// Determine variables which are live in this entry
-		const IR::SymbolSet &variables = liveVariables.variables(entry);
+		const std::set<IR::Symbol*> &variables = liveVariables.variables(entry);
 
 		switch(entry->type) {
 			case IR::Entry::Type::Call:
@@ -204,7 +204,7 @@ void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveV
 {
 	int idx = 0;
 	bool live = false;
-	IR::SymbolSet liveSet;
+	std::set<IR::Symbol*> liveSet;
 	IR::EntrySet neededDefs;
 	IR::EntrySet spillLoads;
 
@@ -252,7 +252,7 @@ void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveV
 			// Liveness of the symbol must also cease if any variable goes dead.  If it did not
 			// cease at that point, then spilling the variable would not be effective in reducing
 			// register pressure
-			IR::SymbolSet &currentVariables = liveVariables.variables(entry);
+			std::set<IR::Symbol*> &currentVariables = liveVariables.variables(entry);
 			for(IR::Symbol *s : liveSet) {
 				if(currentVariables.find(s) == currentVariables.end()) {
 					live = false;
@@ -374,7 +374,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedu
 			}
 
 			// Check the set of interferences for this symbol
-			const IR::SymbolSet &set = simplifiedGraph.interferences(symbol);
+			const std::set<IR::Symbol*> &set = simplifiedGraph.interferences(symbol);
 			if(set.size() < MaxRegisters) {
 				// If the symbol has less than MaxRegister interferences, then it can be safely
 				// removed from the graph, since there will always be a register available to
@@ -411,7 +411,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedu
 		stack.pop_back();
 
 		// Find the set of interfering symbols for this one
-		const IR::SymbolSet &set = graph.interferences(symbol);
+		const std::set<IR::Symbol*> &set = graph.interferences(symbol);
 
 		// Find a register which is not used by any of the interfering symbols.  This is
 		// guaranteed to be possible by the way that the stack was constructed above.

@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 namespace IR {
 	/*!
@@ -25,10 +26,10 @@ namespace IR {
 		const std::string &name() const { return mName; } //!< Procedure name
 		EntryList &entries() { return mEntries; } //!< Body of procedure
 		const EntryList &entries() const { return mEntries; }
-		SymbolList &symbols() { return mSymbols; } //!< Symbols in procedure
-		const SymbolList &symbols() const { return mSymbols; }
+		std::vector<std::unique_ptr<Symbol>> &symbols() { return mSymbols; } //!< Symbols in procedure
+		const std::vector<std::unique_ptr<Symbol>> &symbols() const { return mSymbols; }
 		Symbol *newTemp(int size);
-		void addSymbol(Symbol *symbol);
+		void addSymbol(std::unique_ptr<Symbol> symbol);
 		Symbol *findSymbol(Front::Symbol *symbol);
 		EntryLabel *newLabel();
 		void setPosition(Entry *entry);
@@ -37,7 +38,7 @@ namespace IR {
 
 	private:
 		std::string mName; //!< Procedure name
-		SymbolList mSymbols; //!< Symbol list
+		std::vector<std::unique_ptr<Symbol>> mSymbols; //!< Symbol list
 		EntryLabel *mStart; //!< Start label
 		EntryLabel *mEnd; //!< End label
 

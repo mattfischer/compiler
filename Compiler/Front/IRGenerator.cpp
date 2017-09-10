@@ -43,8 +43,7 @@ namespace Front {
 						break;
 					}
 				}
-				IR::Symbol *irSymbol = new IR::Symbol(name, local->type->valueSize, local);
-				irProcedure->addSymbol(irSymbol);
+				std::unique_ptr<IR::Symbol> irSymbol = std::make_unique<IR::Symbol>(name, local->type->valueSize, local);
 
 				int arg = 0;
 				if(procedure->object) {
@@ -54,10 +53,11 @@ namespace Front {
 				for(Symbol *argument : procedure->arguments) {
 					if(argument == local) {
 						// If this symbol is an argument, emit an argument load instruction
-						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadArg, irSymbol, 0, 0, arg));
+						irProcedure->emit(new IR::EntryThreeAddr(IR::Entry::Type::LoadArg, irSymbol.get(), 0, 0, arg));
 					}
 					arg++;
 				}
+				irProcedure->addSymbol(std::move(irSymbol));
 			}
 
 			// Construct context

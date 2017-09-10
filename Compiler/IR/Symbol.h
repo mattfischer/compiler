@@ -26,8 +26,5 @@ namespace IR {
 		 */
 		Symbol(const std::string &_name, int _size, Front::Symbol *_symbol) : name(_name), size(_size), symbol(_symbol) {}
 	};
-
-	typedef std::set<Symbol*> SymbolSet; //!< Convenience typedef
-	typedef std::list<Symbol*> SymbolList; //!< Convenience typedef
 }
 #endif

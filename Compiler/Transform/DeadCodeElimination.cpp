@@ -107,13 +107,13 @@ namespace Transform {
 		}
 
 		// Iterate through the procedure's symbols
-		IR::SymbolList::iterator itSymbolNext;
-		for(IR::SymbolList::iterator itSymbol = procedure.symbols().begin(); itSymbol != procedure.symbols().end(); itSymbol = itSymbolNext) {
-			IR::Symbol *symbol = *itSymbol;
+		std::vector<std::unique_ptr<IR::Symbol>>::iterator itSymbolNext;
+		for(std::vector<std::unique_ptr<IR::Symbol>>::iterator itSymbol = procedure.symbols().begin(); itSymbol != procedure.symbols().end(); itSymbol = itSymbolNext) {
+			std::unique_ptr<IR::Symbol> &symbol = *itSymbol;
 			itSymbolNext = itSymbol;
 			itSymbolNext++;
 
-			if(symbolCount[symbol] == 0) {
+			if(symbolCount[symbol.get()] == 0) {
 				// If there are no assignments to the symbol, it can be removed from the procedure
 				procedure.symbols().erase(itSymbol);
 				changed = true;

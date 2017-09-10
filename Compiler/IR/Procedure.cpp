@@ -46,19 +46,20 @@ namespace IR {
 		ss << mNextTemp++;
 		std::string name = "temp" + ss.str();
 
-		Symbol *symbol = new Symbol(name, size, 0);
-		addSymbol(symbol);
+		std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(name, size, nullptr);
+		Symbol *ret = symbol.get();
+		addSymbol(std::move(symbol));
 
-		return symbol;
+		return ret;
 	}
 
 	/*!
 	 * \brief Add an existing symbol to the procedure symbol table
 	 * \param symbol Symbol to add
 	 */
-	void Procedure::addSymbol(Symbol *symbol)
+	void Procedure::addSymbol(std::unique_ptr<Symbol> symbol)
 	{
-		mSymbols.push_back(symbol);
+		mSymbols.push_back(std::move(symbol));
 	}
 
 	/*!
@@ -68,9 +69,9 @@ namespace IR {
 	 */
 	Symbol *Procedure::findSymbol(Front::Symbol *symbol)
 	{
-		for(Symbol *irSymbol : mSymbols) {
+		for(std::unique_ptr<Symbol> &irSymbol : mSymbols) {
 			if(irSymbol->symbol == symbol) {
-				return irSymbol;
+				return irSymbol.get();
 			}
 		}
 

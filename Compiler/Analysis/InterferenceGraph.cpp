@@ -7,7 +7,7 @@
 
 namespace Analysis {
 
-IR::SymbolSet emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
+std::set<IR::Symbol*> emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
 
 /*!
  * \brief Constructor
@@ -16,19 +16,19 @@ IR::SymbolSet emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
 InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariables *liveVariables)
 {
 	// Collect the set of all symbols in the procedure
-	for(IR::Symbol *symbol : procedure.symbols()) {
-		addSymbol(symbol);
+	for(const std::unique_ptr<IR::Symbol> &symbol : procedure.symbols()) {
+		addSymbol(symbol.get());
 	}
 
 	// Walk through the procedure.  For each entry, add graph edges between all variables live at that point
 	for(IR::Entry *entry : const_cast<IR::Procedure&>(procedure).entries()) {
-		IR::SymbolSet &symbols = liveVariables->variables(entry);
+		std::set<IR::Symbol*> &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges
-		for(IR::SymbolSet::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
+		for(std::set<IR::Symbol*>::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
 			IR::Symbol *symbol1 = *symbolIt1;
 
-			for(IR::SymbolSet::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
+			for(std::set<IR::Symbol*>::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
 				IR::Symbol *symbol2 = *symbolIt2;
 
 				addEdge(symbol1, symbol2);
@@ -85,7 +85,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
 
 	// Loop through the rest of the symbol sets, removing the symbol from any which contain it
 	for(auto &edge : mGraph) {
-		IR::SymbolSet &set = edge.second;
+		std::set<IR::Symbol*> &set = edge.second;
 		if(set.find(symbol) != set.end()) {
 			set.erase(set.find(symbol));
 		}
@@ -97,7 +97,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
  * \param symbol Symbol to examine
  * \return Set of interfering symbols
  */
-const IR::SymbolSet &InterferenceGraph::interferences(IR::Symbol *symbol)
+const std::set<IR::Symbol*> &InterferenceGraph::interferences(IR::Symbol *symbol)
 {
 	SymbolToSymbolSetMap::const_iterator it = mGraph.find(symbol);
 
@@ -112,7 +112,7 @@ const IR::SymbolSet &InterferenceGraph::interferences(IR::Symbol *symbol)
  * \brief Return the set of symbols in use in the graph
  * \return Symbols
  */
-const IR::SymbolSet &InterferenceGraph::symbols()
+const std::set<IR::Symbol*> &InterferenceGraph::symbols()
 {
 	return mSymbols;
 }

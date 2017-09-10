@@ -31,7 +31,7 @@ namespace Transform {
 
 	bool SSA::transform(IR::Procedure &proc, Analysis::Analysis &analysis)
 	{
-		std::vector<IR::Symbol*> newSymbols;
+		std::vector<std::unique_ptr<IR::Symbol>> newSymbols;
 
 		// Perform flow graph and dominance analysis on the procedure
 		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
@@ -39,13 +39,13 @@ namespace Transform {
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
 		// Iterate through the list of symbols in the procedure
-		for(IR::Symbol *symbol : proc.symbols()) {
+		for(std::unique_ptr<IR::Symbol> &symbol : proc.symbols()) {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
 			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
 				for(IR::Entry *entry : block->entries) {
-					if(entry->assign() == symbol) {
+					if(entry->assign() == symbol.get()) {
 						blocks.push(block);
 					}
 				}
@@ -59,8 +59,8 @@ namespace Transform {
 				for(Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
 					IR::Entry *head = *(frontier->entries.begin()++);
 
-					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol) {
-						proc.entries().insert(head, new IR::EntryPhi(symbol, symbol, (int)frontier->pred.size()));
+					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol.get()) {
+						proc.entries().insert(head, new IR::EntryPhi(symbol.get(), symbol.get(), (int)frontier->pred.size()));
 						blocks.push(frontier);
 					}
 				}
@@ -69,25 +69,26 @@ namespace Transform {
 			// Rename variables
 			int nextVersion = 0;
 			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
-			activeList[flowGraph.start()] = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
-			newSymbols.push_back(activeList[flowGraph.start()]);
+			std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newSymbolName(symbol.get(), nextVersion++), symbol->size, symbol->symbol);
+			activeList[flowGraph.start()] = newSymbol.get();
+			newSymbols.push_back(std::move(newSymbol));
 			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
 				if(activeList.find(block) == activeList.end())
 					activeList[block] = activeList[dominatorTree.idom(block)];
 				IR::Symbol *active = activeList[block];
 
 				for(IR::Entry *entry : block->entries) {
-					if(entry->uses(symbol)) {
-						entry->replaceUse(symbol, active);
+					if(entry->uses(symbol.get())) {
+						entry->replaceUse(symbol.get(), active);
 					}
 
 					// Create a new version of the variable for each assignment
-					if(entry->assign() == symbol) {
-						IR::Symbol *newSymbol = new IR::Symbol(newSymbolName(symbol, nextVersion++), symbol->size, symbol->symbol);
-						newSymbols.push_back(newSymbol);
-						entry->replaceAssign(active, newSymbol);
-						active = newSymbol;
+					if(entry->assign() == symbol.get()) {
+						std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newSymbolName(symbol.get(), nextVersion++), symbol->size, symbol->symbol);
+						entry->replaceAssign(active, newSymbol.get());
+						active = newSymbol.get();
 						activeList[block] = active;
+						newSymbols.push_back(std::move(newSymbol));
 					}
 				}
 
@@ -95,7 +96,7 @@ namespace Transform {
 				for(Analysis::FlowGraph::Block *succ : block->succ) {
 					IR::Entry *head = *(succ->entries.begin()++);
 
-					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol) {
+					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol.get()) {
 						int l = 0;
 						for(Analysis::FlowGraph::Block *pred : succ->pred) {
 							if(pred == block) {
@@ -110,8 +111,8 @@ namespace Transform {
 		}
 
 		// Add newly-created symbols into symbol table
-		for(IR::Symbol *symbol : newSymbols) {
-			proc.addSymbol(symbol);
+		for(std::unique_ptr<IR::Symbol> &symbol : newSymbols) {
+			proc.addSymbol(std::move(symbol));
 		}
 
 		analysis.invalidate();

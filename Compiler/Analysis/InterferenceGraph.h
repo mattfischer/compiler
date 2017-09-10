@@ -25,14 +25,14 @@ public:
 	void addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2);
 	void removeSymbol(IR::Symbol *symbol);
 
-	const IR::SymbolSet &interferences(IR::Symbol *symbol);
-	const IR::SymbolSet &symbols();
+	const std::set<IR::Symbol*> &interferences(IR::Symbol *symbol);
+	const std::set<IR::Symbol*> &symbols();
 
 private:
-	typedef std::map<IR::Symbol*, IR::SymbolSet> SymbolToSymbolSetMap;
+	typedef std::map<IR::Symbol*, std::set<IR::Symbol*>> SymbolToSymbolSetMap;
 
 	SymbolToSymbolSetMap mGraph; //!< Map of graph edges
-	IR::SymbolSet mSymbols; //!< Set of symbols in the graph
+	std::set<IR::Symbol*> mSymbols; //!< Set of symbols in the graph
 };
 
 }

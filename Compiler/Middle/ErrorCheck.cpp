@@ -27,7 +27,7 @@ namespace Middle {
 			Analysis::LiveVariables liveVariables(*procedure, analysis.flowGraph());
 
 			// Any variable which is live at the beginning of the function has no initial definition
-			IR::SymbolSet symbols = liveVariables.variables(procedure->entries().front());
+			std::set<IR::Symbol*> symbols = liveVariables.variables(procedure->entries().front());
 			if(symbols.size() != 0) {
 				// Return an error
 				IR::Symbol *symbol = *symbols.begin();
