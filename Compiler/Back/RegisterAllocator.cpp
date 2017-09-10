@@ -40,7 +40,7 @@ std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysi
 	for(Analysis::FlowGraph::Block *block : rootLoop->blocks) {
 		// Determine the cost of a variable use in this block, based on its loop depth.
 		int cost = 1;
-		for(Analysis::Loops::Loop *loop : loops.loops()) {
+		for(std::unique_ptr<Analysis::Loops::Loop> &loop : loops.loops()) {
 			if(loop->blocks.find(block) != loop->blocks.end()) {
 				cost *= 10;
 			}
@@ -344,9 +344,10 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedu
 	for(int i=0; i<CallerSavedRegisters; i++) {
 		std::stringstream s;
 		s << "arg" << i;
-		IR::Symbol *symbol = new IR::Symbol(s.str(), 4, 0);
-		registers[symbol] = i;
-		callerSavedRegisters.push_back(symbol);
+		std::unique_ptr<IR::Symbol> symbol = std::make_unique<IR::Symbol>(s.str(), 4, nullptr);
+		registers[symbol.get()] = i;
+		callerSavedRegisters.push_back(symbol.get());
+		procedure.addSymbol(std::move(symbol));
 	}
 
 	// Add graph edges for all variables live across procedure calls

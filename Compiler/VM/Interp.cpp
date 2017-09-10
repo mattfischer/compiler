@@ -52,7 +52,7 @@ namespace VM {
 
 		std::map<std::string, NativeCallback> nativeCallbacks;
 		nativeCallbacks["System.print"] = SystemPrint;
-		Program *nativeSymbols = new Program;
+		std::unique_ptr<Program> nativeSymbols = std::make_unique<Program>();
 		unsigned int offset = 0;
 		std::map<unsigned int, NativeCallback> callbackAddrs;
 		nativeSymbols->symbols["$$nativeStart"] = 0;

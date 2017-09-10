@@ -20,8 +20,6 @@ namespace Analysis {
 	class Loops {
 	public:
 		struct Loop;
-		typedef std::list<Loop*> LoopList;
-		typedef std::set<Loop*> LoopSet;
 
 		/*!
 		 * \brief Represents a single loop
@@ -31,24 +29,23 @@ namespace Analysis {
 			FlowGraph::Block *preheader; //!< Block preceeding the first block in the loop
 			FlowGraph::BlockSet blocks; //!< Set of blocks in the loop
 			Loop *parent; //!< Loop which contains this loop
-			LoopSet children; //!< Loops inside of this loop
+			std::set<Loop*> children; //!< Loops inside of this loop
 		};
 
 		Loops(const IR::Procedure &procedure, FlowGraph &flowGraph);
-		~Loops();
 
-		LoopList &loops();
+		std::list<std::unique_ptr<Loop>> &loops();
 		Loop *rootLoop() { return &mRootLoop; } //!< Loop representing the entire procedure
 
 		void print(std::ostream &o);
 
 	private:
 		bool isDominator(FlowGraph::Block *block, FlowGraph::Block *test, DominatorTree &doms);
-		Loop *buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header);
+		std::unique_ptr<Loop> buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header);
 		void findParents(DominatorTree &doms);
-		FlowGraph::Block *findPreheader(Loop *loop);
+		FlowGraph::Block *findPreheader(Loop &loop);
 
-		LoopList mLoops; //!< List of all loops
+		std::list<std::unique_ptr<Loop>> mLoops; //!< List of all loops
 		typedef std::map<FlowGraph::Block*, Loop*> BlockToLoopMap;
 		BlockToLoopMap mLoopMap; //!< Map from blocks to the loop they are the header of
 		Loop mRootLoop; //!< Root loop of the procedure

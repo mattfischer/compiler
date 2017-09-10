@@ -128,8 +128,9 @@ void OrcFile::read(std::istream &stream)
 
 	mNameSection = header.nameSection;
 
-	OrcSectionHeader *sectionHeaders = new OrcSectionHeader[header.numSections];
-	stream.read((char*)sectionHeaders, sizeof(OrcSectionHeader) * header.numSections);
+	std::vector<OrcSectionHeader> sectionHeaders;
+	sectionHeaders.resize(header.numSections);
+	stream.read((char*)&sectionHeaders[0], sizeof(OrcSectionHeader) * header.numSections);
 
 	for(unsigned int i=0; i<header.numSections; i++) {
 		std::unique_ptr<Section> section = std::make_unique<Section>();

@@ -20,7 +20,7 @@ namespace Transform {
 		static LoopInvariantCodeMotion *instance();
 
 	private:
-		bool processLoop(Analysis::Loops::Loop *loop, IR::Procedure &procedure, Analysis::Loops &loops);
+		bool processLoop(Analysis::Loops::Loop &loop, IR::Procedure &procedure, Analysis::Loops &loops);
 	};
 }
 #endif

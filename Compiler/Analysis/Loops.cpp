@@ -28,9 +28,9 @@ namespace Analysis {
 					// Build a new loop out of the blocks found
 					FlowGraph::Block *header = succ;
 					FlowGraph::Block *bottom = block;
-					Loop *loop = buildLoop(bottom, header);
-					mLoops.push_back(loop);
-					mLoopMap[header] = loop;
+					std::unique_ptr<Loop> loop = buildLoop(bottom, header);
+					mLoopMap[header] = loop.get();
+					mLoops.push_back(std::move(loop));
 				}
 			}
 		}
@@ -40,20 +40,10 @@ namespace Analysis {
 	}
 
 	/*!
-	 * \brief Destructor
-	 */
-	Loops::~Loops()
-	{
-		for(Loop *loop : mLoops) {
-			delete loop;
-		}
-	}
-
-	/*!
 	 * \brief Return list of all loops
 	 * \return Loop list
 	 */
-	Loops::LoopList &Loops::loops()
+	std::list<std::unique_ptr<Loops::Loop>> &Loops::loops()
 	{
 		return mLoops;
 	}
@@ -64,10 +54,10 @@ namespace Analysis {
 	 * \param header Top block in the loop
 	 * \return Newly-constructed loop
 	 */
-	Loops::Loop *Loops::buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header)
+	std::unique_ptr<Loops::Loop> Loops::buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header)
 	{
 		// Construct the new loop
-		Loop *loop = new Loop;
+		std::unique_ptr<Loop> loop = std::make_unique<Loop>();
 		loop->header = header;
 		loop->parent = 0;
 
@@ -96,7 +86,7 @@ namespace Analysis {
 		loop->blocks.insert(header);
 
 		// Find the loop's preheader
-		loop->preheader = findPreheader(loop);
+		loop->preheader = findPreheader(*loop);
 
 		return loop;
 	}
@@ -108,7 +98,7 @@ namespace Analysis {
 	void Loops::findParents(DominatorTree &doms)
 	{
 		// Iterate through the list of loops
-		for(Loop *loop : mLoops) {
+		for(std::unique_ptr<Loop> &loop : mLoops) {
 			FlowGraph::Block *block = loop->header;
 			FlowGraph::Block *idom = doms.idom(block);
 
@@ -122,7 +112,7 @@ namespace Analysis {
 				if(itMap != mLoopMap.end()) {
 					// If this block is the header of a loop, then that loop is the parent of this one
 					loop->parent = itMap->second;
-					loop->parent->children.insert(loop);
+					loop->parent->children.insert(loop.get());
 					break;
 				}
 			}
@@ -134,13 +124,13 @@ namespace Analysis {
 	 * \param loop Loop to examine
 	 * \return Loop preheader, or 0 if there is no unique preheader block
 	 */
-	FlowGraph::Block *Loops::findPreheader(Loop *loop)
+	FlowGraph::Block *Loops::findPreheader(Loop &loop)
 	{
 		FlowGraph::Block *preheader = 0;
 
 		// Search through the predecessors of the header block
-		for(FlowGraph::Block *block : loop->header->pred) {
-			if(loop->blocks.find(block) != loop->blocks.end()) {
+		for(FlowGraph::Block *block : loop.header->pred) {
+			if(loop.blocks.find(block) != loop.blocks.end()) {
 				// This block is still in the loop, so it can't be the preheader
 				continue;
 			}
@@ -172,12 +162,12 @@ namespace Analysis {
 	{
 		std::map<Loop *, int> loopMap;
 		int num = 1;
-		for(Loop *loop : mLoops) {
-			loopMap[loop] = num++;
+		for(std::unique_ptr<Loop> &loop : mLoops) {
+			loopMap[loop.get()] = num++;
 		}
 
-		for(Loop *loop : mLoops) {
-			o << loopMap[loop] << ": ";
+		for(std::unique_ptr<Loop> &loop : mLoops) {
+			o << loopMap[loop.get()] << ": ";
 			if(loop->parent != &mRootLoop) {
 				o << "parent: " << loopMap[loop->parent] << " | ";
 			}

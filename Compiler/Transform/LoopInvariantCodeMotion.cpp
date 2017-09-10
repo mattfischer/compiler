@@ -12,7 +12,7 @@ namespace Transform {
 		Analysis::Loops loops(procedure, analysis.flowGraph());
 
 		// Recursively process the root loop of the procedure
-		bool changed = processLoop(loops.rootLoop(), procedure, loops);
+		bool changed = processLoop(*loops.rootLoop(), procedure, loops);
 
 		if(changed) {
 			analysis.invalidate();
@@ -27,17 +27,17 @@ namespace Transform {
 	 * \param procedure Procedure that contains the loop
 	 * \param loops Loop analysis of the procedure
 	 */
-	bool LoopInvariantCodeMotion::processLoop(Analysis::Loops::Loop *loop, IR::Procedure &procedure, Analysis::Loops &loops)
+	bool LoopInvariantCodeMotion::processLoop(Analysis::Loops::Loop &loop, IR::Procedure &procedure, Analysis::Loops &loops)
 	{
 		bool changed = false;
 
 		// Process all child loops recursively
-		for(Analysis::Loops::Loop *child : loop->children) {
-			changed |= processLoop(child, procedure, loops);
+		for(Analysis::Loops::Loop *child : loop.children) {
+			changed |= processLoop(*child, procedure, loops);
 		}
 
 		// There is no point in processing the root loop, since there is nowhere to move code to
-		if(loop == loops.rootLoop()) {
+		if(&loop == loops.rootLoop()) {
 			return changed;
 		}
 
@@ -46,7 +46,7 @@ namespace Transform {
 		typedef std::map<IR::Symbol *, IR::EntrySet> SymbolToEntrySetMap;
 		SymbolToEntrySetMap defs;
 
-		for(Analysis::FlowGraph::Block *block : loop->blocks) {
+		for(Analysis::FlowGraph::Block *block : loop.blocks) {
 			for(IR::Entry *entry : block->entries) {
 				if(entry->assign()) {
 					// Record all definitions which take place inside of the loop
@@ -70,7 +70,7 @@ namespace Transform {
 
 			// Move the entry into the loop's preheader
 			procedure.entries().erase(entry);
-			procedure.entries().insert(*loop->preheader->entries.end(), entry);
+			procedure.entries().insert(*loop.preheader->entries.end(), entry);
 			changed = true;
 		}
 
