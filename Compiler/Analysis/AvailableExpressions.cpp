@@ -50,7 +50,7 @@ namespace Analysis {
 	 */
 	const std::set<IR::Entry*> &AvailableExpressions::expressions(IR::Entry *entry) const
 	{
-		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mExpressions.find(entry);
+		auto it = mExpressions.find(entry);
 		if(it != mExpressions.end()) {
 			return it->second;
 		} else {

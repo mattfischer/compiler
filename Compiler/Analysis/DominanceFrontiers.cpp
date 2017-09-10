@@ -31,7 +31,7 @@ namespace Analysis {
 	 */
 	const std::set<FlowGraph::Block*> &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
 	{
-		std::map<FlowGraph::Block*, std::set<FlowGraph::Block*>>::const_iterator it = mFrontiers.find(block);
+		auto it = mFrontiers.find(block);
 		if(it != mFrontiers.end()) {
 			return it->second;
 		} else {

@@ -432,7 +432,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedu
 
 			// Loop through the interfering symbols, and see if any of them use the current register number
 			for(IR::Symbol *otherSymbol : set) {
-				std::map<IR::Symbol*, int>::iterator regIt = registers.find(otherSymbol);
+				auto regIt = registers.find(otherSymbol);
 				if(regIt != registers.end() && regIt->second == reg) {
 					found = true;
 					break;

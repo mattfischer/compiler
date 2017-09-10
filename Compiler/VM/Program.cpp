@@ -90,7 +90,7 @@ void Program::print(std::ostream &o)
 
 	for(unsigned int i = 0; i < instructions.size(); i+=4) {
 		VM::Instruction instr;
-		for(std::map<std::string, int>::iterator it=symbols.begin(); it != symbols.end(); it++) {
+		for(auto it=symbols.begin(); it != symbols.end(); it++) {
 			if(i == it->second) {
 				o << it->first << ":" << std::endl;
 				break;

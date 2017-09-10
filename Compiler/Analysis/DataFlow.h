@@ -84,7 +84,7 @@ namespace Analysis {
 						break;
 
 					case Direction::Backward:
-						for(IR::EntryList::reverse_iterator itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
+						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
 							IR::Entry *entry = *itEntry;
 							g = transfer(g, gen[entry], kill[entry]);
 							k = transfer(k, kill[entry], gen[entry]);
@@ -196,7 +196,7 @@ namespace Analysis {
 						break;
 
 					case Direction::Backward:
-						for(IR::EntryList::reverse_iterator itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
+						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
 							IR::Entry *entry = *itEntry;
 							map[entry] = set;
 							set = transfer(set, gen[entry], kill[entry]);
@@ -222,10 +222,9 @@ namespace Analysis {
 			std::set<T> out(gen.begin(), gen.end());
 
 			// Add any entry from the input set which is not in the kill set
-			for(std::set<T>::const_iterator itIn = in.begin(); itIn != in.end(); itIn++) {
-				T T = *itIn;
-				if(kill.find(T) == kill.end()) {
-					out.insert(T);
+			for(const T &t : in) {
+				if(kill.find(t) == kill.end()) {
+					out.insert(t);
 				}
 			}
 

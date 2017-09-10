@@ -241,9 +241,7 @@ std::vector<std::string> ExportInfo::typeNames()
 
 unsigned char ExportInfo::addString(const std::string &str)
 {
-	std::map<std::string, unsigned char>::iterator it;
-
-	it = mStringMap.find(str);
+	auto it = mStringMap.find(str);
 	if(it == mStringMap.end()) {
 		unsigned char offset = (unsigned char)mStrings.size();
 		mStrings.resize(offset + str.size() + 1);

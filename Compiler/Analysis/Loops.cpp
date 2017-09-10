@@ -108,7 +108,7 @@ namespace Analysis {
 				block = idom;
 				idom = doms.idom(block);
 
-				std::map<FlowGraph::Block*, Loop*>::iterator itMap = mLoopMap.find(block);
+				auto itMap = mLoopMap.find(block);
 				if(itMap != mLoopMap.end()) {
 					// If this block is the header of a loop, then that loop is the parent of this one
 					loop->parent = itMap->second;

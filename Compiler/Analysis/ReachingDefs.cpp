@@ -66,7 +66,7 @@ namespace Analysis {
 	 */
 	const std::set<IR::Entry*> &ReachingDefs::defs(IR::Entry *entry) const
 	{
-		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mDefs.find(entry);
+		auto it = mDefs.find(entry);
 		if(it != mDefs.end()) {
 			return it->second;
 		} else {
@@ -108,7 +108,7 @@ namespace Analysis {
 		// Search through all reaching definitions, and replace the old entry with the new one
 		for(auto &def : mDefs) {
 			std::set<IR::Entry*> &set = def.second;
-			std::set<IR::Entry*>::iterator setIt = set.find(oldEntry);
+			auto setIt = set.find(oldEntry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 				set.insert(newEntry);
@@ -125,7 +125,7 @@ namespace Analysis {
 		// Remove all references to the given entry
 		for(auto &def : mDefs) {
 			std::set<IR::Entry*> &set = def.second;
-			std::set<IR::Entry*>::iterator setIt = set.find(entry);
+			auto setIt = set.find(entry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 			}

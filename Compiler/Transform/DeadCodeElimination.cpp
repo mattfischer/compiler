@@ -108,7 +108,7 @@ namespace Transform {
 
 		// Iterate through the procedure's symbols
 		std::vector<std::unique_ptr<IR::Symbol>>::iterator itSymbolNext;
-		for(std::vector<std::unique_ptr<IR::Symbol>>::iterator itSymbol = procedure.symbols().begin(); itSymbol != procedure.symbols().end(); itSymbol = itSymbolNext) {
+		for(auto itSymbol = procedure.symbols().begin(); itSymbol != procedure.symbols().end(); itSymbol = itSymbolNext) {
 			std::unique_ptr<IR::Symbol> &symbol = *itSymbol;
 			itSymbolNext = itSymbol;
 			itSymbolNext++;

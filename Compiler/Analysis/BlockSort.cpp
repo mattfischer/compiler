@@ -63,7 +63,7 @@ namespace Analysis {
 	 */
 	int BlockSort::position(FlowGraph::Block *block) const
 	{
-		std::map<FlowGraph::Block*, int>::const_iterator it = mOrder.find(block);
+		auto it = mOrder.find(block);
 		if(it != mOrder.end()) {
 			return it->second;
 		} else {

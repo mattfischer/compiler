@@ -33,7 +33,7 @@ std::unique_ptr<VM::Program> Linker::link(const std::vector<std::reference_wrapp
 			std::memcpy(&linked->instructions[offset], &program.instructions[0], program.instructions.size());
 		}
 
-		for(std::map<std::string, int>::const_iterator it = program.symbols.begin(); it != program.symbols.end(); it++) {
+		for(auto it = program.symbols.begin(); it != program.symbols.end(); it++) {
 			linked->symbols[it->first] = it->second + offset;
 		}
 

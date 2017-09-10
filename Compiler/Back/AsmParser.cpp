@@ -119,7 +119,7 @@ void AsmParser::parseProcedure(VM::Program &program)
 	}
 
 	// Patch up label references
-	for(std::map<int, std::string>::iterator it = labelRefs.begin(); it != labelRefs.end(); it++) {
+	for(auto it = labelRefs.begin(); it != labelRefs.end(); it++) {
 		int offset = it->first;
 		const std::string &target = it->second;
 

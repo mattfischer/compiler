@@ -75,7 +75,7 @@ void OrcFile::write(const std::string &filename)
 
 const OrcFile::Section *OrcFile::section(const std::string &name) const
 {
-	std::map<std::string, std::reference_wrapper<Section>>::const_iterator it = mSectionMap.find(name);
+	auto it = mSectionMap.find(name);
 	if(it != mSectionMap.end()) {
 		const Section &section = it->second;
 		return &section;
@@ -86,7 +86,7 @@ const OrcFile::Section *OrcFile::section(const std::string &name) const
 
 OrcFile::Section *OrcFile::section(const std::string &name)
 {
-	std::map<std::string, std::reference_wrapper<Section>>::iterator it = mSectionMap.find(name);
+	auto it = mSectionMap.find(name);
 	if(it != mSectionMap.end()) {
 		Section &section = it->second;
 		return &section;

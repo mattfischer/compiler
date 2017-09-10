@@ -46,7 +46,7 @@ namespace Analysis {
 	 */
 	const std::set<IR::Entry*> &UseDefs::uses(IR::Entry *define) const
 	{
-		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mUses.find(define);
+		auto it = mUses.find(define);
 		if(it != mUses.end()) {
 			return it->second;
 		} else {
@@ -62,10 +62,10 @@ namespace Analysis {
 	 */
 	const std::set<IR::Entry*> &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
 	{
-		std::map<IR::Entry*, std::map<IR::Symbol*, std::set<IR::Entry*>>>::const_iterator it = mDefines.find(use);
+		auto it = mDefines.find(use);
 		if(it != mDefines.end()) {
 			const std::map<IR::Symbol*, std::set<IR::Entry*>> &map = it->second;
-			std::map<IR::Symbol*, std::set<IR::Entry*>>::const_iterator it2 = map.find(symbol);
+			auto it2 = map.find(symbol);
 			if(it2 != map.end()) {
 				return it2->second;
 			} else {
@@ -195,7 +195,7 @@ namespace Analysis {
 			// Print use information
 			bool printedOpen = false;
 			{
-				std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mUses.find(entry);
+				auto it = mUses.find(entry);
 				if(it != mUses.end()) {
 					const std::set<IR::Entry*> &u = it->second;
 					if(!u.empty()) {
@@ -210,7 +210,7 @@ namespace Analysis {
 
 			// Print def information
 			{
-				std::map<IR::Entry*, std::map<IR::Symbol*, std::set<IR::Entry*>>>::const_iterator it = mDefines.find(entry);
+				auto it = mDefines.find(entry);
 				if(it != mDefines.end()) {
 					const std::map<IR::Symbol*, std::set<IR::Entry*>> &defs = it->second;
 					for(auto &def : defs) {

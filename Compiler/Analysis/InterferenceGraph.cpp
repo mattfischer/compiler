@@ -25,10 +25,10 @@ InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariabl
 		std::set<IR::Symbol*> &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges
-		for(std::set<IR::Symbol*>::iterator symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
+		for(auto symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
 			IR::Symbol *symbol1 = *symbolIt1;
 
-			for(std::set<IR::Symbol*>::iterator symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
+			for(auto symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
 				IR::Symbol *symbol2 = *symbolIt2;
 
 				addEdge(symbol1, symbol2);
@@ -57,10 +57,8 @@ void InterferenceGraph::addSymbol(IR::Symbol *symbol)
 void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
 {
 	if(symbol1 != symbol2) {
-		std::map<IR::Symbol*, std::set<IR::Symbol*>>::iterator it;
-
 		// Add symbol1 -> symbol2
-		it = mGraph.find(symbol1);
+		auto it = mGraph.find(symbol1);
 		if(it != mGraph.end()) {
 			it->second.insert(symbol2);
 		}
@@ -99,7 +97,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
  */
 const std::set<IR::Symbol*> &InterferenceGraph::interferences(IR::Symbol *symbol)
 {
-	std::map<IR::Symbol*, std::set<IR::Symbol*>>::const_iterator it = mGraph.find(symbol);
+	auto it = mGraph.find(symbol);
 
 	if(it != mGraph.end()) {
 		return it->second;
