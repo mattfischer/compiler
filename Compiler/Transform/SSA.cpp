@@ -43,10 +43,10 @@ namespace Transform {
 			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
+			for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 				for(IR::Entry *entry : block->entries) {
 					if(entry->assign() == symbol.get()) {
-						blocks.push(block);
+						blocks.push(block.get());
 					}
 				}
 			}
@@ -72,10 +72,10 @@ namespace Transform {
 			std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newSymbolName(symbol.get(), nextVersion++), symbol->size, symbol->symbol);
 			activeList[flowGraph.start()] = newSymbol.get();
 			newSymbols.push_back(std::move(newSymbol));
-			for(Analysis::FlowGraph::Block *block : flowGraph.blocks()) {
-				if(activeList.find(block) == activeList.end())
-					activeList[block] = activeList[dominatorTree.idom(block)];
-				IR::Symbol *active = activeList[block];
+			for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
+				if(activeList.find(block.get()) == activeList.end())
+					activeList[block.get()] = activeList[dominatorTree.idom(block.get())];
+				IR::Symbol *active = activeList[block.get()];
 
 				for(IR::Entry *entry : block->entries) {
 					if(entry->uses(symbol.get())) {
@@ -87,7 +87,7 @@ namespace Transform {
 						std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newSymbolName(symbol.get(), nextVersion++), symbol->size, symbol->symbol);
 						entry->replaceAssign(active, newSymbol.get());
 						active = newSymbol.get();
-						activeList[block] = active;
+						activeList[block.get()] = active;
 						newSymbols.push_back(std::move(newSymbol));
 					}
 				}
@@ -99,7 +99,7 @@ namespace Transform {
 					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol.get()) {
 						int l = 0;
 						for(Analysis::FlowGraph::Block *pred : succ->pred) {
-							if(pred == block) {
+							if(pred == block.get()) {
 								((IR::EntryPhi*)head)->setArg(l, active);
 								break;
 							}

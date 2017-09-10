@@ -36,8 +36,8 @@ namespace Analysis {
 		FlowGraph::BlockSet seenBlocks;
 
 		// Add each block into the list in sequence
-		for(FlowGraph::Block *block : flowGraph.blocks()) {
-			sortRecurse(block, mSorted, seenBlocks);
+		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
+			sortRecurse(block.get(), mSorted, seenBlocks);
 		}
 
 		// Now reverse the list so that earlier block occur earlier in the list

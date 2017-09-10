@@ -37,20 +37,19 @@ namespace Analysis {
 		};
 
 		FlowGraph(const IR::Procedure &procedure);
-		~FlowGraph();
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 
 		Block *start() const { return mStart; } //!< Start block
 		Block *end() const { return mEnd; } //!< End block
 
-		BlockSet &blocks() { return mBlockSet; } //!< Set of all blocks
+		std::vector<std::unique_ptr<Block>> &blocks() { return mBlocks; } //!< Set of all blocks
 
 	private:
 		void linkBlock(Block *block, IR::Entry *back);
 
 		typedef std::map<IR::Entry*, Block*> EntryToBlockMap;
-		BlockSet mBlockSet; //!< Set of all blocks
+		std::vector<std::unique_ptr<Block>> mBlocks; //!< Set of all blocks
 		EntryToBlockMap mFrontMap; //!< Map of entries to the block that they are the front of
 		EntryToBlockMap mBackMap; //!< Map of entries to the block that they are the back of
 		Block *mStart; //!< Start block

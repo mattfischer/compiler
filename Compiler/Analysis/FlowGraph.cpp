@@ -9,7 +9,7 @@ namespace Analysis {
 	 */
 	FlowGraph::FlowGraph(const IR::Procedure &procedure)
 	{
-		Block *block = 0;
+		std::unique_ptr<Block> block;
 		IR::EntrySubList::iterator begin;
 		IR::EntrySubList::iterator end;
 
@@ -26,11 +26,11 @@ namespace Analysis {
 						// it to the list.
 						end = itEntry;
 						block->entries = IR::EntrySubList(begin, end);
-						mBlockSet.insert(block);
-						mFrontMap[block->entries.front()] = block;
+						mFrontMap[block->entries.front()] = block.get();
+						mBlocks.push_back(std::move(block));
 					}
 					// Start a new block, beginning with the label just encountered
-					block = new Block;
+					block = std::make_unique<Block>();
 					begin = itEntry;
 					break;
 
@@ -41,8 +41,8 @@ namespace Analysis {
 					end = itEntry;
 					end++;
 					block->entries = IR::EntrySubList(begin, end);
-					mBlockSet.insert(block);
-					mFrontMap[block->entries.front()] = block;
+					mFrontMap[block->entries.front()] = block.get();
+					mBlocks.push_back(std::move(block));
 					block = 0;
 					break;
 			}
@@ -52,8 +52,8 @@ namespace Analysis {
 		if(block) {
 			end = const_cast<IR::Procedure&>(procedure).entries().end();
 			block->entries = IR::EntrySubList(begin, end);
-			mBlockSet.insert(block);
-			mFrontMap[block->entries.front()] = block;
+			mFrontMap[block->entries.front()] = block.get();
+			mBlocks.push_back(std::move(block));
 		}
 
 		// Save off the start and end pointers
@@ -61,18 +61,8 @@ namespace Analysis {
 		mEnd = mFrontMap[procedure.end()];
 
 		// Now loop through the blocks and construct the links between them
-		for(Block *block : mBlockSet) {
-			linkBlock(block, block->entries.back());
-		}
-	}
-
-	/*!
-	 * \brief Destructor
-	 */
-	FlowGraph::~FlowGraph()
-	{
-		for(Block *block : mBlockSet) {
-			delete block;
+		for(std::unique_ptr<Block> &block : mBlocks) {
+			linkBlock(block.get(), block->entries.back());
 		}
 	}
 

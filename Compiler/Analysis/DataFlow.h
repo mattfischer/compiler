@@ -76,7 +76,7 @@ namespace Analysis {
 			std::map<FlowGraph::Block*, ItemSet> killBlock;
 
 			// Aggregate the gen/kill sets from each entry into gen/kill sets for each block
-			for(FlowGraph::Block *block : graph.blocks()) {
+			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
 				ItemSet g;
 				ItemSet k;
 				switch(direction) {
@@ -96,8 +96,8 @@ namespace Analysis {
 						break;
 				}
 
-				genBlock[block] = g;
-				killBlock[block] = k;
+				genBlock[block.get()] = g;
+				killBlock[block.get()] = k;
 			}
 
 			struct InOut {
@@ -109,16 +109,16 @@ namespace Analysis {
 			Util::UniqueQueue<FlowGraph::Block*> blockQueue;
 
 			// Populate the initial states of each block, based on meet type
-			for(FlowGraph::Block *block : graph.blocks()) {
-				blockQueue.push(block);
+			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
+				blockQueue.push(block.get());
 
 				switch(meetType) {
 					case Meet::Union:
-						states[block].out.clear();
+						states[block.get()].out.clear();
 						break;
 
 					case Meet::Intersect:
-						states[block].out = all;
+						states[block.get()].out = all;
 						break;
 				}
 			}
@@ -189,8 +189,8 @@ namespace Analysis {
 			// The core algorithm is now complete--each block has information about its starting set
 			// of items.  Now proceed through each block, using the state information and the gen/kill
 			// sets to assign an item set to each entry within the block
-			for(FlowGraph::Block *block : graph.blocks()) {
-				ItemSet set = states[block].in;
+			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
+				ItemSet set = states[block.get()].in;
 				switch(direction) {
 					case Direction::Forward:
 						for(IR::Entry *entry : block->entries) {

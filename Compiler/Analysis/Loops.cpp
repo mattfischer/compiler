@@ -15,19 +15,19 @@ namespace Analysis {
 		// Construct the root loop
 		mRootLoop.parent = &mRootLoop;
 		mRootLoop.header = flowGraph.start();
-		for(FlowGraph::Block *block : flowGraph.blocks()) {
-			mRootLoop.blocks.insert(block);
+		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
+			mRootLoop.blocks.insert(block.get());
 		}
 		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		// Iterate through the graph, looking for loops
-		for(FlowGraph::Block *block : flowGraph.blocks()) {
+		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
 			for(FlowGraph::Block *succ : block->succ) {
 				// If a block's successor dominates the block, then the successor is the head of a loop
-				if(dominatorTree.dominates(block, succ)) {
+				if(dominatorTree.dominates(block.get(), succ)) {
 					// Build a new loop out of the blocks found
 					FlowGraph::Block *header = succ;
-					FlowGraph::Block *bottom = block;
+					FlowGraph::Block *bottom = block.get();
 					std::unique_ptr<Loop> loop = buildLoop(bottom, header);
 					mLoopMap[header] = loop.get();
 					mLoops.push_back(std::move(loop));
