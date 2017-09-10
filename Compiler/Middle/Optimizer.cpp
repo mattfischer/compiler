@@ -27,10 +27,8 @@ namespace Middle {
 	 */
 	void Optimizer::optimize(IR::Program &program)
 	{
-		typedef std::vector<Transform::Transform*> TransformVector;
-		typedef std::map<Transform::Transform*, TransformVector> TransformToTransformVectorMap;
-		TransformVector startingTransforms;
-		TransformToTransformVectorMap transformMap;
+		std::vector<Transform::Transform*> startingTransforms;
+		std::map<Transform::Transform*, std::vector<Transform::Transform*>> transformMap;
 
 		// Build the list of all transforms
 		startingTransforms.push_back(Transform::CopyProp::instance());
@@ -83,7 +81,7 @@ namespace Middle {
 					Util::log("opt.ir") << std::endl;
 
 					// If the transform changed the IR, add its follow-up transformations to the queue
-					TransformVector &newTransforms = transformMap[transform];
+					std::vector<Transform::Transform*> &newTransforms = transformMap[transform];
 					for(Transform::Transform *newTransform : newTransforms) {
 						transforms.push(newTransform);
 					}

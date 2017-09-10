@@ -42,9 +42,8 @@ namespace Transform {
 		}
 
 		// Construct a set of entries which are invariant in the loop
-		IR::EntrySet invariants;
-		typedef std::map<IR::Symbol *, IR::EntrySet> SymbolToEntrySetMap;
-		SymbolToEntrySetMap defs;
+		std::set<IR::Entry*> invariants;
+		std::map<IR::Symbol *, std::set<IR::Entry*>> defs;
 
 		for(Analysis::FlowGraph::Block *block : loop.blocks) {
 			for(IR::Entry *entry : block->entries) {

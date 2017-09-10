@@ -29,9 +29,7 @@ public:
 	const std::set<IR::Symbol*> &symbols();
 
 private:
-	typedef std::map<IR::Symbol*, std::set<IR::Symbol*>> SymbolToSymbolSetMap;
-
-	SymbolToSymbolSetMap mGraph; //!< Map of graph edges
+	std::map<IR::Symbol*, std::set<IR::Symbol*>> mGraph; //!< Map of graph edges
 	std::set<IR::Symbol*> mSymbols; //!< Set of symbols in the graph
 };
 

@@ -27,7 +27,7 @@ namespace Analysis {
 		struct Loop {
 			FlowGraph::Block *header; //!< First block in the loop
 			FlowGraph::Block *preheader; //!< Block preceeding the first block in the loop
-			FlowGraph::BlockSet blocks; //!< Set of blocks in the loop
+			std::set<FlowGraph::Block*> blocks; //!< Set of blocks in the loop
 			Loop *parent; //!< Loop which contains this loop
 			std::set<Loop*> children; //!< Loops inside of this loop
 		};
@@ -46,8 +46,7 @@ namespace Analysis {
 		FlowGraph::Block *findPreheader(Loop &loop);
 
 		std::list<std::unique_ptr<Loop>> mLoops; //!< List of all loops
-		typedef std::map<FlowGraph::Block*, Loop*> BlockToLoopMap;
-		BlockToLoopMap mLoopMap; //!< Map from blocks to the loop they are the header of
+		std::map<FlowGraph::Block*, Loop*> mLoopMap; //!< Map from blocks to the loop they are the header of
 		Loop mRootLoop; //!< Root loop of the procedure
 	};
 }

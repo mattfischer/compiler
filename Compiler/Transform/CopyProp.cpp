@@ -24,9 +24,9 @@ namespace Transform {
 	bool CopyProp::forward(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
-		IR::EntrySet allLoads;
-		std::map<IR::Entry*, IR::EntrySet> gen;
-		std::map<IR::Entry*, IR::EntrySet> kill;
+		std::set<IR::Entry*> allLoads;
+		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
+		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
 
 		// Construct the set of all move entries in the procedure
 		for(IR::Entry *entry : procedure.entries()) {
@@ -55,7 +55,7 @@ namespace Transform {
 		// Perform forward data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
 		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Forward);
+		std::map<IR::Entry*, std::set<IR::Entry*>> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Forward);
 
 		// Iterate through the procedure's entries
 		for(IR::Entry *entry : procedure.entries()) {
@@ -82,9 +82,9 @@ namespace Transform {
 	bool CopyProp::backward(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		bool changed = false;
-		IR::EntrySet allLoads;
-		std::map<IR::Entry*, IR::EntrySet> gen;
-		std::map<IR::Entry*, IR::EntrySet> kill;
+		std::set<IR::Entry*> allLoads;
+		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
+		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
 
 		// Construct the set of all move entries in the procedure
 		for(IR::Entry *entry : procedure.entries()) {
@@ -111,9 +111,9 @@ namespace Transform {
 		// Perform backwards data flow analysis with the gen/kill sets constructed above
 		Analysis::DataFlow<IR::Entry*> dataFlow;
 		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
-		std::map<IR::Entry*, IR::EntrySet> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Backward);
+		std::map<IR::Entry*, std::set<IR::Entry*>> loads = dataFlow.analyze(flowGraph, gen, kill, allLoads, Analysis::DataFlow<IR::Entry*>::Meet::Intersect, Analysis::DataFlow<IR::Entry*>::Direction::Backward);
 
-		IR::EntrySet deleted;
+		std::set<IR::Entry*> deleted;
 
 		// Iterate backwards through the procedure's entries
 		for(IR::Entry *entry : procedure.entries()) {

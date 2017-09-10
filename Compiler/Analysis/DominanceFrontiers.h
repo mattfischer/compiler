@@ -18,10 +18,10 @@ namespace Analysis {
 	public:
 		DominanceFrontiers(DominatorTree &tree);
 
-		const FlowGraph::BlockSet &frontiers(FlowGraph::Block *block) const;
+		const std::set<FlowGraph::Block*> &frontiers(FlowGraph::Block *block) const;
 
 	private:
-		std::map<FlowGraph::Block*, FlowGraph::BlockSet> mFrontiers; //!< List of frontiers
+		std::map<FlowGraph::Block*, std::set<FlowGraph::Block*>> mFrontiers; //!< List of frontiers
 	};
 }
 #endif

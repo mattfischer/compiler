@@ -18,31 +18,27 @@ namespace Analysis {
 	 * control flow graph.  It can be used for many different analyses, such as reaching
 	 * definitions, live variable analysis, etc.
 	 *
-	 * A data flow analysis works with Items, which is a generic term for some type of data
+	 * A data flow analysis works with Ts, which is a generic term for some type of data
 	 * that can be associated with an IR entry.  The output of the analysis is the list of
-	 * items associated with each entry in the procedure.
+	 * Ts associated with each entry in the procedure.
 	 *
 	 * The components of a data flow analysis are:
 	 *
-	 * gen - The set of items created by each entry in the procedure.  The items are then
+	 * gen - The set of Ts created by each entry in the procedure.  The Ts are then
 	 *       propagated forward (or backward, depending on direction) through the graph, and
 	 *       into successor (or predecessor) nodes in the control flow graph
-	 * kill - The set of items removed by each entry from the current item set.
-	 * direction - Whether items flow forward or backward through the graph
-	 * meet - How the item sets from the outputs of multiple blocks are combined to form the
+	 * kill - The set of Ts removed by each entry from the current T set.
+	 * direction - Whether Ts flow forward or backward through the graph
+	 * meet - How the T sets from the outputs of multiple blocks are combined to form the
 	 *        input of a block which they all feed into.  The meet operation can be either
 	 *        set union, or set intersection.
 	 *
-	 * The data flow algorithm takes in these parameters, and propagates items around the control
+	 * The data flow algorithm takes in these parameters, and propagates Ts around the control
 	 * flow graph until no more changes are made.
 	 */
 	template<typename T>
 	class DataFlow {
 	public:
-		typedef T Item;
-		typedef std::set<Item> ItemSet;
-		typedef std::map<IR::Entry*, ItemSet> EntryToItemSetMap;
-
 		/*!
 		 * \brief Which operation to use when meeting blocks
 		 */
@@ -52,11 +48,11 @@ namespace Analysis {
 		};
 
 		/*!
-		 * \brief Direction that items flow through the graph
+		 * \brief Direction that Ts flow through the graph
 		 */
 		enum class Direction {
-			Forward, //!< Items flow forward
-			Backward //!< Items flow backward
+			Forward, //!< Ts flow forward
+			Backward //!< Ts flow backward
 		};
 
 		/*!
@@ -64,21 +60,21 @@ namespace Analysis {
 		 * \param graph Graph to analyze
 		 * \param gen Gen sets
 		 * \param kill Kill sets
-		 * \param all All items that can occur in the output sets
+		 * \param all All Ts that can occur in the output sets
 		 * \param meetType Operation to use when meeting edges
 		 * \param direction Direction of data flow
-		 * \return Set of items attached to each entry of the graph
+		 * \return Set of Ts attached to each entry of the graph
 		 */
-		EntryToItemSetMap analyze(FlowGraph &graph, EntryToItemSetMap &gen, EntryToItemSetMap &kill, ItemSet &all, Meet meetType, Direction direction)
+		std::map<IR::Entry*, std::set<T>> analyze(FlowGraph &graph, std::map<IR::Entry*, std::set<T>> &gen, std::map<IR::Entry*, std::set<T>> &kill, std::set<T> &all, Meet meetType, Direction direction)
 		{
-			EntryToItemSetMap map;
-			std::map<FlowGraph::Block*, ItemSet> genBlock;
-			std::map<FlowGraph::Block*, ItemSet> killBlock;
+			std::map<IR::Entry*, std::set<T>> map;
+			std::map<FlowGraph::Block*, std::set<T>> genBlock;
+			std::map<FlowGraph::Block*, std::set<T>> killBlock;
 
 			// Aggregate the gen/kill sets from each entry into gen/kill sets for each block
 			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
-				ItemSet g;
-				ItemSet k;
+				std::set<T> g;
+				std::set<T> k;
 				switch(direction) {
 					case Direction::Forward:
 						for(IR::Entry *entry : block->entries) {
@@ -101,8 +97,8 @@ namespace Analysis {
 			}
 
 			struct InOut {
-				ItemSet in;
-				ItemSet out;
+				std::set<T> in;
+				std::set<T> out;
 			};
 
 			std::map<FlowGraph::Block*, InOut> states;
@@ -149,14 +145,14 @@ namespace Analysis {
 				switch(direction) {
 					case Direction::Forward:
 						for(FlowGraph::Block *pred : block->pred) {
-							ItemSet &out = states[pred].out;
+							std::set<T> &out = states[pred].out;
 							states[block].in = meet(states[block].in, states[pred].out, meetType);
 						}
 						break;
 
 					case Direction::Backward:
 						for(FlowGraph::Block *succ : block->succ) {
-							ItemSet &out = states[succ].out;
+							std::set<T> &out = states[succ].out;
 							states[block].in = meet(states[block].in, states[succ].out, meetType);
 						}
 						break;
@@ -164,7 +160,7 @@ namespace Analysis {
 
 				// Now that the block's input state has been calculated, apply the gen/kill sets
 				// to determine the block's output state
-				ItemSet out = transfer(states[block].in, genBlock[block], killBlock[block]);
+				std::set<T> out = transfer(states[block].in, genBlock[block], killBlock[block]);
 
 				// If any changes were made to the block's state, add all of its predecessors/successors
 				// to the queue for further processing
@@ -187,10 +183,10 @@ namespace Analysis {
 			}
 
 			// The core algorithm is now complete--each block has information about its starting set
-			// of items.  Now proceed through each block, using the state information and the gen/kill
-			// sets to assign an item set to each entry within the block
+			// of Ts.  Now proceed through each block, using the state information and the gen/kill
+			// sets to assign an T set to each entry within the block
 			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
-				ItemSet set = states[block.get()].in;
+				std::set<T> set = states[block.get()].in;
 				switch(direction) {
 					case Direction::Forward:
 						for(IR::Entry *entry : block->entries) {
@@ -220,16 +216,16 @@ namespace Analysis {
 		 * \param kill Kill set
 		 * \return Output set
 		 */
-		ItemSet transfer(const ItemSet &in, const ItemSet &gen, const ItemSet &kill)
+		std::set<T> transfer(const std::set<T> &in, const std::set<T> &gen, const std::set<T> &kill)
 		{
 			// Out set begins with all gen entries
-			ItemSet out(gen.begin(), gen.end());
+			std::set<T> out(gen.begin(), gen.end());
 
 			// Add any entry from the input set which is not in the kill set
-			for(ItemSet::const_iterator itIn = in.begin(); itIn != in.end(); itIn++) {
-				Item item = *itIn;
-				if(kill.find(item) == kill.end()) {
-					out.insert(item);
+			for(std::set<T>::const_iterator itIn = in.begin(); itIn != in.end(); itIn++) {
+				T T = *itIn;
+				if(kill.find(T) == kill.end()) {
+					out.insert(T);
 				}
 			}
 
@@ -243,9 +239,9 @@ namespace Analysis {
 		 * \param meetType Type of meet algorithm to use
 		 * \return Results of meet operation
 		 */
-		ItemSet meet(ItemSet &a, ItemSet &b, Meet meetType)
+		std::set<T> meet(std::set<T> &a, std::set<T> &b, Meet meetType)
 		{
-			ItemSet out;
+			std::set<T> out;
 
 			switch(meetType) {
 				case Meet::Union:
@@ -254,9 +250,9 @@ namespace Analysis {
 					break;
 
 				case Meet::Intersect:
-					for(Item item : a) {
-						if(b.find(item) != b.end()) {
-							out.insert(item);
+					for(T T : a) {
+						if(b.find(T) != b.end()) {
+							out.insert(T);
 						}
 					}
 					break;

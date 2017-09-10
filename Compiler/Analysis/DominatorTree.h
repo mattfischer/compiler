@@ -19,16 +19,16 @@ namespace Analysis {
 	public:
 		DominatorTree(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
-		const FlowGraph::BlockVector &blocks() const;
+		const std::vector<FlowGraph::Block*> &blocks() const;
 		FlowGraph::Block *idom(FlowGraph::Block *block);
 		bool dominates(FlowGraph::Block *block, FlowGraph::Block *dominator);
 
 	private:
-		void topoSortRecurse(FlowGraph::Block *block, FlowGraph::BlockVector &blocks, FlowGraph::BlockSet &seenBlocks);
-		FlowGraph::BlockVector topologicalSort(FlowGraph::BlockVector &blocks);
+		void topoSortRecurse(FlowGraph::Block *block, std::vector<FlowGraph::Block*> &blocks, std::set<FlowGraph::Block*> &seenBlocks);
+		std::vector<FlowGraph::Block*> topologicalSort(std::vector<FlowGraph::Block*> &blocks);
 
 		FlowGraph *mFlowGraph; //!< Flow graph
-		FlowGraph::BlockVector mBlocks; //!< List of blocks
+		std::vector<FlowGraph::Block*> mBlocks; //!< List of blocks
 		std::map<FlowGraph::Block*, FlowGraph::Block*> mIDoms; //!< List of immediate dominators
 	};
 }

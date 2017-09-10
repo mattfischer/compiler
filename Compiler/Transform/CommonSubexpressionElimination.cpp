@@ -11,7 +11,7 @@ namespace Transform {
 	 * \param exps Expressions
 	 * \return Symbol containing entry's value
 	 */
-	IR::Symbol *findMatch(IR::Entry *entry, const IR::EntrySet &exps) {
+	IR::Symbol *findMatch(IR::Entry *entry, const std::set<IR::Entry*> &exps) {
 		for(IR::Entry *exp : exps) {
 			// Reject the expression if it is of a different type than the entry, with the
 			// special exception that a memory store expression can be used to satisfy a
@@ -73,7 +73,7 @@ namespace Transform {
 			}
 
 			// Search through all available expressions, looking for a match
-			const IR::EntrySet &exps = availableExpressions.expressions(entry);
+			const std::set<IR::Entry*> &exps = availableExpressions.expressions(entry);
 			IR::Symbol *expTarget = findMatch(entry, exps);
 			if(expTarget) {
 				// Replace the expression with a direct assignment to the available expression's target

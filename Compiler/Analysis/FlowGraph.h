@@ -23,16 +23,13 @@ namespace Analysis {
 	class FlowGraph {
 	public:
 		struct Block;
-		typedef std::set<Block*> BlockSet;
-		typedef std::vector<Block*> BlockVector;
-		typedef std::list<Block*> BlockList;
 
 		/*!
 		 * \brief Block structure
 		 */
 		struct Block {
-			BlockSet pred; //!< Predecessor blocks
-			BlockSet succ; //!< Successor blocks
+			std::set<Block*> pred; //!< Predecessor blocks
+			std::set<Block*> succ; //!< Successor blocks
 			IR::EntrySubList entries; //!< Entries in the block
 		};
 
@@ -48,10 +45,9 @@ namespace Analysis {
 	private:
 		void linkBlock(Block *block, IR::Entry *back);
 
-		typedef std::map<IR::Entry*, Block*> EntryToBlockMap;
 		std::vector<std::unique_ptr<Block>> mBlocks; //!< Set of all blocks
-		EntryToBlockMap mFrontMap; //!< Map of entries to the block that they are the front of
-		EntryToBlockMap mBackMap; //!< Map of entries to the block that they are the back of
+		std::map<IR::Entry*, Block*> mFrontMap; //!< Map of entries to the block that they are the front of
+		std::map<IR::Entry*, Block*> mBackMap; //!< Map of entries to the block that they are the back of
 		Block *mStart; //!< Start block
 		Block *mEnd; //!< End block
 	};

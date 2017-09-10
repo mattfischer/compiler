@@ -3,7 +3,7 @@
 #include "Analysis/DataFlow.h"
 
 namespace Analysis {
-	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
+	static std::set<IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -13,15 +13,15 @@ namespace Analysis {
 	AvailableExpressions::AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph)
 		: mProcedure(const_cast<IR::Procedure&>(procedure))
 	{
-		IR::EntrySet all;
+		std::set<IR::Entry*> all;
 		for(IR::Entry *entry : mProcedure.entries()) {
 			if(isExpression(entry)) {
 				all.insert(entry);
 			}
 		}
 
-		EntryToEntrySetMap gen;
-		EntryToEntrySetMap kill;
+		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
+		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
 
 		for(IR::Entry *entry : mProcedure.entries()) {
 			if(all.find(entry) == all.end()) {
@@ -48,9 +48,9 @@ namespace Analysis {
 	 * \param entry Entry in procedure
 	 * \return List of available expressions
 	 */
-	const IR::EntrySet &AvailableExpressions::expressions(IR::Entry *entry) const
+	const std::set<IR::Entry*> &AvailableExpressions::expressions(IR::Entry *entry) const
 	{
-		EntryToEntrySetMap::const_iterator it = mExpressions.find(entry);
+		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mExpressions.find(entry);
 		if(it != mExpressions.end()) {
 			return it->second;
 		} else {
@@ -94,7 +94,7 @@ namespace Analysis {
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
 		for(IR::Entry *entry : mProcedure.entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
-			IR::EntrySet exps = expressions(entry);
+			std::set<IR::Entry*> exps = expressions(entry);
 			for(IR::Entry *e : exps) {
 				o << lineMap[e] << " ";
 			}

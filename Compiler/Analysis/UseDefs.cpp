@@ -10,7 +10,7 @@
 #include "Util/Log.h"
 
 namespace Analysis {
-	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when entry lookup fails
+	static std::set<IR::Entry*> emptyEntrySet; //!< Empty entry set, used when entry lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -25,7 +25,7 @@ namespace Analysis {
 		// Iterate through the procedure, examining the reaching definition information at each entry
 		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			// Iterate through the definitions which reach this entry
-			const IR::EntrySet &defs = mReachingDefs.defs(entry);
+			const std::set<IR::Entry*> &defs = mReachingDefs.defs(entry);
 			for(IR::Entry *defEntry : defs) {
 				IR::Symbol *symbol = defEntry->assign();
 				if(entry->uses(symbol)) {
@@ -44,9 +44,9 @@ namespace Analysis {
 	 * \param define Entry to search for uses of
 	 * \return All entries which use the given definition
 	 */
-	const IR::EntrySet &UseDefs::uses(IR::Entry *define) const
+	const std::set<IR::Entry*> &UseDefs::uses(IR::Entry *define) const
 	{
-		std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(define);
+		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mUses.find(define);
 		if(it != mUses.end()) {
 			return it->second;
 		} else {
@@ -60,12 +60,12 @@ namespace Analysis {
 	 * \param symbol Symbol to search for definitions of
 	 * \return All definitions of the given symbol which reach the given entry
 	 */
-	const IR::EntrySet &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
+	const std::set<IR::Entry*> &UseDefs::defines(IR::Entry *use, IR::Symbol *symbol) const
 	{
-		std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(use);
+		std::map<IR::Entry*, std::map<IR::Symbol*, std::set<IR::Entry*>>>::const_iterator it = mDefines.find(use);
 		if(it != mDefines.end()) {
-			const SymbolToEntrySetMap &map = it->second;
-			SymbolToEntrySetMap::const_iterator it2 = map.find(symbol);
+			const std::map<IR::Symbol*, std::set<IR::Entry*>> &map = it->second;
+			std::map<IR::Symbol*, std::set<IR::Entry*>>::const_iterator it2 = map.find(symbol);
 			if(it2 != map.end()) {
 				return it2->second;
 			} else {
@@ -84,9 +84,9 @@ namespace Analysis {
 	void UseDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
 	{
 		// Remove oldEntry from the def-use chains
-		SymbolToEntrySetMap &map = mDefines[oldEntry];
+		std::map<IR::Symbol*, std::set<IR::Entry*>> &map = mDefines[oldEntry];
 		for(auto &def : map) {
-			IR::EntrySet &defs = def.second;
+			std::set<IR::Entry*> &defs = def.second;
 			for(IR::Entry *use : defs) {
 				mUses[use].erase(oldEntry);
 			}
@@ -95,7 +95,7 @@ namespace Analysis {
 		mDefines.erase(oldEntry);
 
 		// Construct new def-use information for the new entry from the reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs.defs(oldEntry);
+		const std::set<IR::Entry*> &newDefs = mReachingDefs.defs(oldEntry);
 		for(IR::Entry *def : newDefs) {
 			IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
@@ -107,9 +107,9 @@ namespace Analysis {
 		// Transfer use-def information from the old entry into the new entry
 		mUses[newEntry] = mUses[oldEntry];
 		mUses.erase(oldEntry);
-		IR::EntrySet &uses = mUses[newEntry];
+		std::set<IR::Entry*> &uses = mUses[newEntry];
 		for(IR::Entry *use : uses) {
-			IR::EntrySet &defs = mDefines[use][newEntry->assign()];
+			std::set<IR::Entry*> &defs = mDefines[use][newEntry->assign()];
 			defs.erase(oldEntry);
 			defs.insert(newEntry);
 		}
@@ -125,8 +125,8 @@ namespace Analysis {
 		// needs to be propagated downward from the entry's own use-def chains
 		if(entry->uses(entry->assign())) {
 			IR::Symbol *symbol = entry->assign();
-			IR::EntrySet &defs = mDefines[entry][symbol];
-			IR::EntrySet &uses = mUses[entry];
+			std::set<IR::Entry*> &defs = mDefines[entry][symbol];
+			std::set<IR::Entry*> &uses = mUses[entry];
 			for(IR::Entry *use : uses) {
 				for(IR::Entry *def : defs) {
 					mDefines[use][symbol].insert(def);
@@ -136,7 +136,7 @@ namespace Analysis {
 		}
 
 		// Remove the entry from the use-def chains
-		SymbolToEntrySetMap &map = mDefines[entry];
+		std::map<IR::Symbol*, std::set<IR::Entry*>> &map = mDefines[entry];
 		for(auto &defs : map) {
 			for(IR::Entry *def : defs.second) {
 				mUses[def].erase(entry);
@@ -145,7 +145,7 @@ namespace Analysis {
 
 		// Remove the entry from the def-use chains
 		mDefines.erase(entry);
-		IR::EntrySet &uses = mUses[entry];
+		std::set<IR::Entry*> &uses = mUses[entry];
 		for(IR::Entry *use : uses) {
 			mDefines[use][entry->assign()].erase(entry);
 		}
@@ -161,14 +161,14 @@ namespace Analysis {
 	void UseDefs::replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol)
 	{
 		// Remove the existing def-use and use-def information
-		IR::EntrySet &oldDefs = mDefines[entry][oldSymbol];
+		std::set<IR::Entry*> &oldDefs = mDefines[entry][oldSymbol];
 		for(IR::Entry *def : oldDefs) {
 			mUses[def].erase(entry);
 		}
 		mDefines[entry].erase(oldSymbol);
 
 		// Construct new use-def and def-use information from the underlying reaching def information
-		const IR::EntrySet &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
+		const std::set<IR::Entry*> &newDefs = mReachingDefs.defsForSymbol(entry, newSymbol);
 		for(IR::Entry *def : newDefs) {
 			mUses[def].insert(entry);
 		}
@@ -195,9 +195,9 @@ namespace Analysis {
 			// Print use information
 			bool printedOpen = false;
 			{
-				std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mUses.find(entry);
+				std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mUses.find(entry);
 				if(it != mUses.end()) {
-					const IR::EntrySet &u = it->second;
+					const std::set<IR::Entry*> &u = it->second;
 					if(!u.empty()) {
 						o << " [ Uses: ";
 						printedOpen = true;
@@ -210,9 +210,9 @@ namespace Analysis {
 
 			// Print def information
 			{
-				std::map<IR::Entry*, SymbolToEntrySetMap>::const_iterator it = mDefines.find(entry);
+				std::map<IR::Entry*, std::map<IR::Symbol*, std::set<IR::Entry*>>>::const_iterator it = mDefines.find(entry);
 				if(it != mDefines.end()) {
-					const SymbolToEntrySetMap &defs = it->second;
+					const std::map<IR::Symbol*, std::set<IR::Entry*>> &defs = it->second;
 					for(auto &def : defs) {
 						if(printedOpen) {
 							o << "| ";

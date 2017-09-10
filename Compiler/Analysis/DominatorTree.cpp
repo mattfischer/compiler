@@ -66,7 +66,7 @@ namespace Analysis {
 	 * \brief Return list of all blocks
 	 * \return List of blocks
 	 */
-	const FlowGraph::BlockVector &DominatorTree::blocks() const
+	const std::vector<FlowGraph::Block*> &DominatorTree::blocks() const
 	{
 		return mBlocks;
 	}

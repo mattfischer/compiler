@@ -21,7 +21,7 @@ namespace Analysis {
 	public:
 		AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
-		const IR::EntrySet &expressions(IR::Entry *entry) const;
+		const std::set<IR::Entry*> &expressions(IR::Entry *entry) const;
 
 		void print(std::ostream &o) const;
 
@@ -30,8 +30,7 @@ namespace Analysis {
 	private:
 		IR::Procedure &mProcedure;
 
-		typedef std::map<IR::Entry*, IR::EntrySet> EntryToEntrySetMap;
-		EntryToEntrySetMap mExpressions;
+		std::map<IR::Entry*, std::set<IR::Entry*>> mExpressions;
 	};
 }
 

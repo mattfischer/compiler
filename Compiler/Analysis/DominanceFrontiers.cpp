@@ -3,7 +3,7 @@
 #include "Analysis/DominatorTree.h"
 
 namespace Analysis {
-	static FlowGraph::BlockSet emptyBlockSet; //!< Empty block set, used when block lookup fails
+	static std::set<FlowGraph::Block*> emptyBlockSet; //!< Empty block set, used when block lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -29,9 +29,9 @@ namespace Analysis {
 	 * \param block Block to analyze
 	 * \return Dominance frontiers for block
 	 */
-	const FlowGraph::BlockSet &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
+	const std::set<FlowGraph::Block*> &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
 	{
-		std::map<FlowGraph::Block*, FlowGraph::BlockSet>::const_iterator it = mFrontiers.find(block);
+		std::map<FlowGraph::Block*, std::set<FlowGraph::Block*>>::const_iterator it = mFrontiers.find(block);
 		if(it != mFrontiers.end()) {
 			return it->second;
 		} else {

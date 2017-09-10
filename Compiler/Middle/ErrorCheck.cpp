@@ -41,8 +41,8 @@ namespace Middle {
 			// *** Check for control paths which do not return a value ***
 
 			Analysis::FlowGraph flowGraph(*procedure);
-			Analysis::FlowGraph::BlockList blockList;
-			Analysis::FlowGraph::BlockSet seenBlocks;
+			std::list<Analysis::FlowGraph::Block*> blockList;
+			std::set<Analysis::FlowGraph::Block*> seenBlocks;
 			Analysis::FlowGraph::Block *end = flowGraph.end();
 
 			// Iterate backwards through the procedure, looking for any path which reaches the start label

@@ -258,8 +258,6 @@ namespace IR {
 	};
 
 	std::ostream &operator<<(std::ostream &o, const Entry &entry);
-
-	typedef std::set<Entry*> EntrySet; //!< Convenience typedef
 }
 
 #endif

@@ -11,7 +11,7 @@
 #include "Util/Log.h"
 
 namespace Analysis {
-	static IR::EntrySet emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
+	static std::set<IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -25,7 +25,7 @@ namespace Analysis {
 		timer.start();
 
 		// Find all definitions in the procedure
-		IR::EntrySet allDefs;
+		std::set<IR::Entry*> allDefs;
 		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			if(entry->assign()) {
 				allDefs.insert(entry);
@@ -33,8 +33,8 @@ namespace Analysis {
 		}
 
 		// Construct gen and kill sets for data flow analysis
-		EntryToEntrySetMap gen;
-		EntryToEntrySetMap kill;
+		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
+		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
 		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			if(!entry->assign()) {
 				continue;
@@ -64,9 +64,9 @@ namespace Analysis {
 	 * \param entry Entry to examine
 	 * \return Reaching definitions for that entry
 	 */
-	const IR::EntrySet &ReachingDefs::defs(IR::Entry *entry) const
+	const std::set<IR::Entry*> &ReachingDefs::defs(IR::Entry *entry) const
 	{
-		std::map<IR::Entry*, IR::EntrySet>::const_iterator it = mDefs.find(entry);
+		std::map<IR::Entry*, std::set<IR::Entry*>>::const_iterator it = mDefs.find(entry);
 		if(it != mDefs.end()) {
 			return it->second;
 		} else {
@@ -80,10 +80,10 @@ namespace Analysis {
 	 * \param symbol Symbol to search for
 	 * \return All reaching definitions which assign to the given symbol
 	 */
-	const IR::EntrySet ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
+	const std::set<IR::Entry*> ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
 	{
-		IR::EntrySet result;
-		const IR::EntrySet &all = defs(entry);
+		std::set<IR::Entry*> result;
+		const std::set<IR::Entry*> &all = defs(entry);
 		for(IR::Entry *def : all) {
 			if(def->assign() == symbol) {
 				result.insert(def);
@@ -107,8 +107,8 @@ namespace Analysis {
 
 		// Search through all reaching definitions, and replace the old entry with the new one
 		for(auto &def : mDefs) {
-			IR::EntrySet &set = def.second;
-			IR::EntrySet::iterator setIt = set.find(oldEntry);
+			std::set<IR::Entry*> &set = def.second;
+			std::set<IR::Entry*>::iterator setIt = set.find(oldEntry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 				set.insert(newEntry);
@@ -124,8 +124,8 @@ namespace Analysis {
 	{
 		// Remove all references to the given entry
 		for(auto &def : mDefs) {
-			IR::EntrySet &set = def.second;
-			IR::EntrySet::iterator setIt = set.find(entry);
+			std::set<IR::Entry*> &set = def.second;
+			std::set<IR::Entry*>::iterator setIt = set.find(entry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
 			}
@@ -149,7 +149,7 @@ namespace Analysis {
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
 		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
-			IR::EntrySet d = defs(entry);
+			std::set<IR::Entry*> d = defs(entry);
 			for(IR::Entry *e : d) {
 				o << lineMap[e] << " ";
 			}

@@ -337,7 +337,7 @@ namespace Transform {
 							threeAddr->imm = value;
 							changed = true;
 						} else {
-							const IR::EntrySet &defs = useDefs.defines(entry, threeAddr->rhs2);
+							const std::set<IR::Entry*> &defs = useDefs.defines(entry, threeAddr->rhs2);
 							if(defs.size() == 1) {
 								IR::Entry *def = *(defs.begin());
 								IR::EntryThreeAddr *defThreeAddr = (IR::EntryThreeAddr*)def;

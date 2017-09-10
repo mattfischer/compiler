@@ -57,7 +57,7 @@ void InterferenceGraph::addSymbol(IR::Symbol *symbol)
 void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
 {
 	if(symbol1 != symbol2) {
-		SymbolToSymbolSetMap::iterator it;
+		std::map<IR::Symbol*, std::set<IR::Symbol*>>::iterator it;
 
 		// Add symbol1 -> symbol2
 		it = mGraph.find(symbol1);
@@ -99,7 +99,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
  */
 const std::set<IR::Symbol*> &InterferenceGraph::interferences(IR::Symbol *symbol)
 {
-	SymbolToSymbolSetMap::const_iterator it = mGraph.find(symbol);
+	std::map<IR::Symbol*, std::set<IR::Symbol*>>::const_iterator it = mGraph.find(symbol);
 
 	if(it != mGraph.end()) {
 		return it->second;
