@@ -13,7 +13,7 @@ std::set<const IR::Symbol*> emptySymbolSet; //!< Empty set, to use when a symbol
  * \brief Constructor
  * \param procedure Procedure to analyze
  */
-InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariables *liveVariables)
+InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, const LiveVariables &liveVariables)
 {
 	// Collect the set of all symbols in the procedure
 	for(const std::unique_ptr<IR::Symbol> &symbol : procedure.symbols()) {
@@ -22,7 +22,7 @@ InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariabl
 
 	// Walk through the procedure.  For each entry, add graph edges between all variables live at that point
 	for(const IR::Entry *entry : procedure.entries()) {
-		std::set<const IR::Symbol*> &symbols = liveVariables->variables(entry);
+		const std::set<const IR::Symbol*> &symbols = liveVariables.variables(entry);
 
 		// Loop through the symbol set, adding edges
 		for(auto symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {

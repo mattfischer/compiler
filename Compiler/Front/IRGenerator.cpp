@@ -29,7 +29,7 @@ namespace Front {
 
 			// Add local variables to the procedure
 			std::set<std::string> names;
-			for(Symbol *local : procedure->scope->allSymbols()) {
+			for(const Symbol *local : procedure->scope->allSymbols()) {
 				std::string name;
 				for(int idx=0;; idx++) {
 					std::stringstream s;

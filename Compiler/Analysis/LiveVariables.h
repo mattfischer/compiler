@@ -24,8 +24,8 @@ namespace Analysis {
 	public:
 		LiveVariables(const IR::Procedure &procedure, const FlowGraph &flowGraph);
 
-		std::set<const IR::Symbol*> &variables(const IR::Entry *entry);
-		void print(std::ostream &o);
+		const std::set<const IR::Symbol*> &variables(const IR::Entry *entry) const;
+		void print(std::ostream &o) const;
 
 	private:
 		std::map<const IR::Entry*, std::set<const IR::Symbol*>> mMap; //!< Map of live ranges

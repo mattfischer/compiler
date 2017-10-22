@@ -252,7 +252,7 @@ void spillVariable(IR::Procedure &procedure, const IR::Symbol *symbol, Analysis:
 			// Liveness of the symbol must also cease if any variable goes dead.  If it did not
 			// cease at that point, then spilling the variable would not be effective in reducing
 			// register pressure
-			std::set<const IR::Symbol*> &currentVariables = liveVariables.variables(entry);
+			const std::set<const IR::Symbol*> &currentVariables = liveVariables.variables(entry);
 			for(const IR::Symbol *s : liveSet) {
 				if(currentVariables.find(s) == currentVariables.end()) {
 					live = false;
@@ -336,7 +336,7 @@ std::map<const IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &p
 
 	// Construct an interference graph, live variable list, and use-def chains for the procedure
 	Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
-	Analysis::InterferenceGraph graph(procedure, &liveVariables);
+	Analysis::InterferenceGraph graph(procedure, liveVariables);
 	const Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Construct artificial graph nodes for each register which is not preserved across procedure calls

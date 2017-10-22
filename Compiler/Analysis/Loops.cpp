@@ -95,7 +95,7 @@ namespace Analysis {
 	 * \brief Construct the tree structure of the loops
 	 * \param doms Dominator tree for the control flow graph
 	 */
-	void Loops::findParents(DominatorTree &doms)
+	void Loops::findParents(const DominatorTree &doms)
 	{
 		// Iterate through the list of loops
 		for(std::unique_ptr<Loop> &loop : mLoops) {

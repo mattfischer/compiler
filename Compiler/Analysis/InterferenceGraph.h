@@ -19,7 +19,7 @@ namespace Analysis {
  */
 class InterferenceGraph {
 public:
-	InterferenceGraph(const IR::Procedure &procedure, LiveVariables *liveVariables);
+	InterferenceGraph(const IR::Procedure &procedure, const LiveVariables &liveVariables);
 
 	void addSymbol(const IR::Symbol *symbol);
 	void addEdge(const IR::Symbol *symbol1, const IR::Symbol *symbol2);

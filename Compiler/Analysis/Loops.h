@@ -42,7 +42,7 @@ namespace Analysis {
 	private:
 		bool isDominator(const FlowGraph::Block *block, const FlowGraph::Block *test, const DominatorTree &doms);
 		std::unique_ptr<Loop> buildLoop(const FlowGraph::Block *bottom, const FlowGraph::Block *header);
-		void findParents(DominatorTree &doms);
+		void findParents(const DominatorTree &doms);
 		const FlowGraph::Block *findPreheader(Loop &loop);
 
 		std::list<std::unique_ptr<Loop>> mLoops; //!< List of all loops

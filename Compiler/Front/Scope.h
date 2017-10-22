@@ -18,7 +18,7 @@ namespace Front {
 		Scope *parent() { return mParent; }
 		bool addSymbol(std::unique_ptr<Symbol> symbol);
 		Symbol *findSymbol(const std::string &name);
-		std::vector<Symbol*> allSymbols();
+		std::vector<const Symbol*> allSymbols();
 		std::vector<std::unique_ptr<Symbol>> &symbols() { return mSymbols; }
 
 		void addChild(std::unique_ptr<Scope> child);

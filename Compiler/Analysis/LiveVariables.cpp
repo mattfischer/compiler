@@ -9,6 +9,8 @@
 #include "Util/Log.h"
 
 namespace Analysis {
+	static std::set<const IR::Symbol*> emptySymbolSet;
+
 	/*!
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
@@ -58,20 +60,26 @@ namespace Analysis {
 	 * \param entry Entry to return information for
 	 * \return Set of live symbols
 	 */
-	std::set<const IR::Symbol*> &LiveVariables::variables(const IR::Entry *entry)
+	const std::set<const IR::Symbol*> &LiveVariables::variables(const IR::Entry *entry) const
 	{
-		return mMap[entry];
+		auto it = mMap.find(entry);
+		if (it == mMap.end()) {
+			return emptySymbolSet;
+		}
+		else {
+			return it->second;
+		}
 	}
 
 	/*!
 	 * \brief Print out live variable information
 	 */
-	void LiveVariables::print(std::ostream &o)
+	void LiveVariables::print(std::ostream &o) const
 	{
 		// Loop through the procedure, printing out each entry along with the variables live at that point
 		for(const IR::Entry *entry : mProcedure.entries()) {
 			o << *entry << " | ";
-			std::set<const IR::Symbol*> &symbols = variables(entry);
+			const std::set<const IR::Symbol*> &symbols = variables(entry);
 			for(const IR::Symbol *symbol : symbols) {
 				o << symbol->name << " ";
 			}

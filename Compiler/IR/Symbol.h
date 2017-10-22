@@ -17,14 +17,14 @@ namespace IR {
 	public:
 		std::string name; //!< Symbol name
 		int size; //!< Symbol data size
-		Front::Symbol *symbol; //!< Front-end symbol that this one corresponds to
+		const Front::Symbol *symbol; //!< Front-end symbol that this one corresponds to
 
 		/*!
 		 * \brief Constructor
 		 * \param _name Symbol name
 		 * \param _symbol Front-end symbol
 		 */
-		Symbol(const std::string &_name, int _size, Front::Symbol *_symbol) : name(_name), size(_size), symbol(_symbol) {}
+		Symbol(const std::string &_name, int _size, const Front::Symbol *_symbol) : name(_name), size(_size), symbol(_symbol) {}
 	};
 }
 #endif

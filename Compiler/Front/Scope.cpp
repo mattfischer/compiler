@@ -68,15 +68,15 @@ namespace Front {
 	 * \brief Return all symbols in scope and children
 	 * \return Symbols
 	 */
-	std::vector<Symbol*> Scope::allSymbols()
+	std::vector<const Symbol*> Scope::allSymbols()
 	{
-		std::vector<Symbol*> result;
+		std::vector<const Symbol*> result;
 		for (std::unique_ptr<Symbol> &symbol : mSymbols) {
 			result.push_back(symbol.get());
 		}
 
 		for(const std::unique_ptr<Scope> &child : mChildren) {
-			std::vector<Symbol*> childSymbols = child->allSymbols();
+			std::vector<const Symbol*> childSymbols = child->allSymbols();
 			result.insert(result.end(), childSymbols.begin(), childSymbols.end());
 		}
 
