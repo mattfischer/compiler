@@ -27,10 +27,10 @@ namespace Middle {
 			Analysis::LiveVariables liveVariables(*procedure, analysis.flowGraph());
 
 			// Any variable which is live at the beginning of the function has no initial definition
-			std::set<IR::Symbol*> symbols = liveVariables.variables(procedure->entries().front());
+			std::set<const IR::Symbol*> symbols = liveVariables.variables(procedure->entries().front());
 			if(symbols.size() != 0) {
 				// Return an error
-				IR::Symbol *symbol = *symbols.begin();
+				const IR::Symbol *symbol = *symbols.begin();
 				std::stringstream s;
 				s << "Use of undefined variable " << symbol->symbol->name;
 				mErrorMessage = s.str();

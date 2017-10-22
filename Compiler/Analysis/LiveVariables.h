@@ -24,11 +24,11 @@ namespace Analysis {
 	public:
 		LiveVariables(const IR::Procedure &procedure, const FlowGraph &flowGraph);
 
-		std::set<IR::Symbol*> &variables(const IR::Entry *entry);
+		std::set<const IR::Symbol*> &variables(const IR::Entry *entry);
 		void print(std::ostream &o);
 
 	private:
-		std::map<const IR::Entry*, std::set<IR::Symbol*>> mMap; //!< Map of live ranges
+		std::map<const IR::Entry*, std::set<const IR::Symbol*>> mMap; //!< Map of live ranges
 		const IR::Procedure &mProcedure; //!< Procedure under analysis
 	};
 }

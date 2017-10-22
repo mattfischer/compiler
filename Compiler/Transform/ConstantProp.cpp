@@ -191,7 +191,7 @@ namespace Transform {
 							// If one argument is constant and the other is not, an entry can
 							// at least be turned into an Immediate entry
 							int constant;
-							IR::Symbol *symbol;
+							const IR::Symbol *symbol;
 							if(rhs1Const) {
 								constant = rhs1;
 								symbol = threeAddr->rhs2;

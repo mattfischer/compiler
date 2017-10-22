@@ -61,7 +61,7 @@ namespace Analysis {
 		}
 	}
 
-	void Analysis::replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol)
+	void Analysis::replaceUse(IR::Entry *entry, const IR::Symbol *oldSymbol, const IR::Symbol *newSymbol)
 	{
 		if(mUseDefs) {
 			mUseDefs->replaceUse(entry, oldSymbol, newSymbol);

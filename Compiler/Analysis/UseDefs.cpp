@@ -27,7 +27,7 @@ namespace Analysis {
 			// Iterate through the definitions which reach this entry
 			const std::set<const IR::Entry*> &defs = mReachingDefs.defs(entry);
 			for(const IR::Entry *defEntry : defs) {
-				IR::Symbol *symbol = defEntry->assign();
+				const IR::Symbol *symbol = defEntry->assign();
 				if(entry->uses(symbol)) {
 					// If the entry uses the symbol from this definition, then add it to the
 					// appropriate use-def and def-use chains
@@ -97,7 +97,7 @@ namespace Analysis {
 		// Construct new def-use information for the new entry from the reaching def information
 		const std::set<const IR::Entry*> &newDefs = mReachingDefs.defs(oldEntry);
 		for(const IR::Entry *def : newDefs) {
-			IR::Symbol *symbol = def->assign();
+			const IR::Symbol *symbol = def->assign();
 			if(newEntry->uses(symbol)) {
 				mDefines[newEntry][symbol].insert(def);
 				mUses[def].insert(newEntry);
@@ -124,7 +124,7 @@ namespace Analysis {
 		// If the entry both uses and defines the same symbol, use-def information
 		// needs to be propagated downward from the entry's own use-def chains
 		if(entry->uses(entry->assign())) {
-			IR::Symbol *symbol = entry->assign();
+			const IR::Symbol *symbol = entry->assign();
 			std::set<const IR::Entry*> &defs = mDefines[entry][symbol];
 			std::set<const IR::Entry*> &uses = mUses[entry];
 			for(const IR::Entry *use : uses) {

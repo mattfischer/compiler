@@ -43,7 +43,7 @@ namespace Transform {
 
 		// Construct a set of entries which are invariant in the loop
 		std::set<const IR::Entry*> invariants;
-		std::map<IR::Symbol *, std::set<const IR::Entry*>> defs;
+		std::map<const IR::Symbol *, std::set<const IR::Entry*>> defs;
 
 		for(const Analysis::FlowGraph::Block *block : loop.blocks) {
 			for(const IR::Entry *entry : block->entries) {

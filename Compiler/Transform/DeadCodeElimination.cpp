@@ -100,9 +100,9 @@ namespace Transform {
 		deleted.clear();
 
 		// Count the number of assignments to each symbol in the procedure
-		std::map<IR::Symbol*, int> symbolCount;
+		std::map<const IR::Symbol*, int> symbolCount;
 		for(IR::Entry *entry : procedure.entries()) {
-			IR::Symbol *assign = entry->assign();
+			const IR::Symbol *assign = entry->assign();
 			if(assign) {
 				symbolCount[assign]++;
 			}

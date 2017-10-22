@@ -48,7 +48,7 @@ namespace Back {
 	 */
 	void CodeGenerator::generateProcedure(IR::Procedure &procedure, std::ostream &stream)
 	{
-		std::map<IR::Symbol*, int> regMap;
+		std::map<const IR::Symbol*, int> regMap;
 		std::map<std::string, std::string> strings;
 		std::string savedRegs;
 

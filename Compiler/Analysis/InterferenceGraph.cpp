@@ -7,7 +7,7 @@
 
 namespace Analysis {
 
-std::set<IR::Symbol*> emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
+std::set<const IR::Symbol*> emptySymbolSet; //!< Empty set, to use when a symbol lookup fails
 
 /*!
  * \brief Constructor
@@ -22,14 +22,14 @@ InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariabl
 
 	// Walk through the procedure.  For each entry, add graph edges between all variables live at that point
 	for(const IR::Entry *entry : procedure.entries()) {
-		std::set<IR::Symbol*> &symbols = liveVariables->variables(entry);
+		std::set<const IR::Symbol*> &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges
 		for(auto symbolIt1 = symbols.begin(); symbolIt1 != symbols.end(); symbolIt1++) {
-			IR::Symbol *symbol1 = *symbolIt1;
+			const IR::Symbol *symbol1 = *symbolIt1;
 
 			for(auto symbolIt2 = symbolIt1; symbolIt2 != symbols.end(); symbolIt2++) {
-				IR::Symbol *symbol2 = *symbolIt2;
+				const IR::Symbol *symbol2 = *symbolIt2;
 
 				addEdge(symbol1, symbol2);
 			}
@@ -41,7 +41,7 @@ InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariabl
  * \brief Add a symbol to the graph
  * \param symbol Symbol to add
  */
-void InterferenceGraph::addSymbol(IR::Symbol *symbol)
+void InterferenceGraph::addSymbol(const IR::Symbol *symbol)
 {
 	if(mGraph.find(symbol) == mGraph.end()) {
 		mGraph[symbol] = emptySymbolSet;
@@ -54,7 +54,7 @@ void InterferenceGraph::addSymbol(IR::Symbol *symbol)
  * \param symbol1 First symbol
  * \param symbol2 Second symbol
  */
-void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
+void InterferenceGraph::addEdge(const IR::Symbol *symbol1, const IR::Symbol *symbol2)
 {
 	if(symbol1 != symbol2) {
 		// Add symbol1 -> symbol2
@@ -75,7 +75,7 @@ void InterferenceGraph::addEdge(IR::Symbol *symbol1, IR::Symbol *symbol2)
  * \brief Remove a symbol from the graph
  * \param symbol Symbol to remove
  */
-void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
+void InterferenceGraph::removeSymbol(const IR::Symbol *symbol)
 {
 	// Remove the symbol from the graph and symbol list
 	mGraph.erase(mGraph.find(symbol));
@@ -83,7 +83,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
 
 	// Loop through the rest of the symbol sets, removing the symbol from any which contain it
 	for(auto &edge : mGraph) {
-		std::set<IR::Symbol*> &set = edge.second;
+		std::set<const IR::Symbol*> &set = edge.second;
 		if(set.find(symbol) != set.end()) {
 			set.erase(set.find(symbol));
 		}
@@ -95,7 +95,7 @@ void InterferenceGraph::removeSymbol(IR::Symbol *symbol)
  * \param symbol Symbol to examine
  * \return Set of interfering symbols
  */
-const std::set<IR::Symbol*> &InterferenceGraph::interferences(IR::Symbol *symbol)
+const std::set<const IR::Symbol*> &InterferenceGraph::interferences(const IR::Symbol *symbol)
 {
 	auto it = mGraph.find(symbol);
 
@@ -110,7 +110,7 @@ const std::set<IR::Symbol*> &InterferenceGraph::interferences(IR::Symbol *symbol
  * \brief Return the set of symbols in use in the graph
  * \return Symbols
  */
-const std::set<IR::Symbol*> &InterferenceGraph::symbols()
+const std::set<const IR::Symbol*> &InterferenceGraph::symbols()
 {
 	return mSymbols;
 }

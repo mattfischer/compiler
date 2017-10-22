@@ -87,37 +87,37 @@ namespace IR {
 		 * \brief Symbol that entry assigns to
 		 * \return Assignment symbol, or 0 if none
 		 */
-		virtual Symbol *assign() const { return 0; }
+		virtual const Symbol *assign() const { return 0; }
 
 		/*!
 		 * \brief Check if an entry uses a given symbol
 		 * \param symbol Symbol to check for
 		 * \return True if entry uses symbol
 		 */
-		virtual bool uses(Symbol *symbol) const { return false; }
+		virtual bool uses(const Symbol *symbol) const { return false; }
 
 		/*!
 		 * \brief Replace the assignment of a symbol with another symbol
 		 * \param symbol Original symbol
 		 * \param newSymbol New symbol
 		 */
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol) {}
+		virtual void replaceAssign(const Symbol *symbol, const Symbol *newSymbol) {}
 
 		/*!
 		 * \brief Replace all uses of a symbol with another symbol
 		 * \param symbol Original symbol
 		 * \param newSymbol New symbol
 		 */
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol) {}
+		virtual void replaceUse(const Symbol *symbol, const Symbol *newSymbol) {}
 	};
 
 	/*!
 	 * \brief Three-address entry: one assignment symbol and two arguments
 	 */
 	struct EntryThreeAddr : public Entry {
-		Symbol *lhs; //!< Left-hand side
-		Symbol *rhs1; //!< Right-hand side 1
-		Symbol *rhs2; //!< Right-hand side 2
+		const Symbol *lhs; //!< Left-hand side
+		const Symbol *rhs1; //!< Right-hand side 1
+		const Symbol *rhs2; //!< Right-hand side 2
 		int    imm; //!< Immediate value
 
 		/*!
@@ -127,15 +127,15 @@ namespace IR {
 		 * \param _rhs1 Right-hand side 1, or 0
 		 * \param _rhs2 Right-hand side 2, or 0
 		 */
-		EntryThreeAddr(Type _type, Symbol *_lhs = 0, Symbol *_rhs1 = 0, Symbol *_rhs2 = 0, int _imm = 0);
+		EntryThreeAddr(Type _type, const Symbol *_lhs = 0, const Symbol *_rhs1 = 0, const Symbol *_rhs2 = 0, int _imm = 0);
 		virtual ~EntryThreeAddr();
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign() const;
-		virtual bool uses(Symbol *symbol) const;
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+		virtual const Symbol *assign() const;
+		virtual bool uses(const Symbol *symbol) const;
+		virtual void replaceAssign(const Symbol *symbol, const Symbol *newSymbol);
+		virtual void replaceUse(const Symbol *symbol, const Symbol *newSymbol);
 	};
 
 	/*!
@@ -172,7 +172,7 @@ namespace IR {
 	 * \brief Conditional jump entry
 	 */
 	struct EntryCJump : public Entry {
-		Symbol *pred; //!< Conditional predicate
+		const Symbol *pred; //!< Conditional predicate
 		EntryLabel *trueTarget; //!< Label to jump to if true
 		EntryLabel *falseTarget; //!< Label to jump to if false
 
@@ -182,23 +182,23 @@ namespace IR {
 		 * \param _trueTarget Label to jump to if true
 		 * \param _falseTarget Label to jump to if false
 		 */
-		EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget);
+		EntryCJump(const Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget);
 		virtual ~EntryCJump();
 
 		virtual void print(std::ostream &o) const;
 
-		virtual bool uses(Symbol *symbol) const;
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+		virtual bool uses(const Symbol *symbol) const;
+		virtual void replaceUse(const Symbol *symbol, const Symbol *newSymbol);
 	};
 
 	/*!
 	 * \brief SSA Phi function entry
 	 */
 	struct EntryPhi : public Entry {
-		Symbol *base; //!< Symbol that phi function derives from
-		Symbol *lhs; //!< Left-hand side
+		const Symbol *base; //!< Symbol that phi function derives from
+		const Symbol *lhs; //!< Left-hand side
 		int numArgs; //!< Number of arguments
-		Symbol **args; //!< Arguments to function
+		const Symbol **args; //!< Arguments to function
 
 		/*!
 		 * \brief Constructor
@@ -206,7 +206,7 @@ namespace IR {
 		 * \param _lhs Left-hand side
 		 * \param _numArgs Number of arguments
 		 */
-		EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs);
+		EntryPhi(const Symbol *_base, const Symbol *_lhs, int _numArgs);
 		virtual ~EntryPhi();
 
 		/*!
@@ -214,7 +214,7 @@ namespace IR {
 		 * \param num Argument number
 		 * \param symbol Symbol to assign to argument
 		 */
-		void setArg(int num, Symbol *symbol);
+		void setArg(int num, const Symbol *symbol);
 
 		/*!
 		 * \brief Remove an argument
@@ -224,10 +224,10 @@ namespace IR {
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign() const;
-		virtual bool uses(Symbol *symbol) const;
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
-		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
+		virtual const Symbol *assign() const;
+		virtual bool uses(const Symbol *symbol) const;
+		virtual void replaceAssign(const Symbol *symbol, const Symbol *newSymbol);
+		virtual void replaceUse(const Symbol *symbol, const Symbol *newSymbol);
 	};
 
 	/*!
@@ -246,15 +246,15 @@ namespace IR {
 	};
 
 	struct EntryString : public Entry {
-		Symbol *lhs;
+		const Symbol *lhs;
 		std::string string;
 
-		EntryString(Type _type, Symbol *_lhs, const std::string &_string);
+		EntryString(Type _type, const Symbol *_lhs, const std::string &_string);
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign() const;
-		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
+		virtual const Symbol *assign() const;
+		virtual void replaceAssign(const Symbol *symbol, const Symbol *newSymbol);
 	};
 
 	std::ostream &operator<<(std::ostream &o, const Entry &entry);

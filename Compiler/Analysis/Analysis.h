@@ -23,7 +23,7 @@ namespace Analysis {
 		void invalidate();
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
-		void replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol);
+		void replaceUse(IR::Entry *entry, const IR::Symbol *oldSymbol, const IR::Symbol *newSymbol);
 		void remove(IR::Entry *entry);
 
 	private:

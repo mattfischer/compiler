@@ -53,7 +53,7 @@ namespace IR {
 		}
 	}
 
-	EntryThreeAddr::EntryThreeAddr(Type _type, Symbol *_lhs, Symbol *_rhs1, Symbol *_rhs2, int _imm)
+	EntryThreeAddr::EntryThreeAddr(Type _type, const Symbol *_lhs, const Symbol *_rhs1, const Symbol *_rhs2, int _imm)
 		: Entry(_type), lhs(_lhs), rhs1(_rhs1),	rhs2(_rhs2), imm(_imm)
 	{
 	}
@@ -87,24 +87,24 @@ namespace IR {
 		}
 	}
 
-	void EntryThreeAddr::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	void EntryThreeAddr::replaceAssign(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		if(lhsAssign(type)) {
 			lhs = newSymbol;
 		}
 	}
 
-	Symbol *EntryThreeAddr::assign() const
+	const Symbol *EntryThreeAddr::assign() const
 	{
 		return lhsAssign(type) ? lhs : 0;
 	}
 
-	bool EntryThreeAddr::uses(Symbol *symbol) const
+	bool EntryThreeAddr::uses(const Symbol *symbol) const
 	{
 		return (rhs1 == symbol || rhs2 == symbol || (!lhsAssign(type) && lhs == symbol));
 	}
 
-	void EntryThreeAddr::replaceUse(Symbol *symbol, Symbol *newSymbol)
+	void EntryThreeAddr::replaceUse(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		if(rhs1 == symbol) {
 			rhs1 = newSymbol;
@@ -139,7 +139,7 @@ namespace IR {
 		o << "  " << names[(int)type] << target->name;
 	}
 
-	EntryCJump::EntryCJump(Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
+	EntryCJump::EntryCJump(const Symbol *_pred, EntryLabel *_trueTarget, EntryLabel *_falseTarget)
 		: Entry(Type::CJump), pred(_pred), trueTarget(_trueTarget), falseTarget(_falseTarget)
 	{
 	}
@@ -153,21 +153,21 @@ namespace IR {
 		o << "  " << names[(int)type] << pred->name << ", " << trueTarget->name << ", " << falseTarget->name;
 	}
 
-	bool EntryCJump::uses(Symbol *symbol) const
+	bool EntryCJump::uses(const Symbol *symbol) const
 	{
 		return (pred == symbol);
 	}
 
-	void EntryCJump::replaceUse(Symbol *symbol, Symbol *newSymbol)
+	void EntryCJump::replaceUse(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		pred = newSymbol;
 	}
 
-	EntryPhi::EntryPhi(Symbol *_base, Symbol *_lhs, int _numArgs)
+	EntryPhi::EntryPhi(const Symbol *_base, const Symbol *_lhs, int _numArgs)
 		: Entry(Type::Phi), base(_base), lhs(_lhs), numArgs(_numArgs)
 	{
-		args = new Symbol*[numArgs];
-		memset(args, 0, numArgs * sizeof(Symbol*));
+		args = new const Symbol*[numArgs];
+		memset(args, 0, numArgs * sizeof(const Symbol*));
 	}
 
 	EntryPhi::~EntryPhi()
@@ -175,7 +175,7 @@ namespace IR {
 		delete[] args;
 	}
 
-	void EntryPhi::setArg(int num, Symbol *symbol)
+	void EntryPhi::setArg(int num, const Symbol *symbol)
 	{
 		args[num] = symbol;
 	}
@@ -198,12 +198,12 @@ namespace IR {
 		o << ")";
 	}
 
-	void EntryPhi::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	void EntryPhi::replaceAssign(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		lhs = newSymbol;
 	}
 
-	bool EntryPhi::uses(Symbol *symbol) const
+	bool EntryPhi::uses(const Symbol *symbol) const
 	{
 		for(int i=0; i<numArgs; i++) {
 			if(args[i] == symbol)
@@ -213,7 +213,7 @@ namespace IR {
 		return false;
 	}
 
-	void EntryPhi::replaceUse(Symbol *symbol, Symbol *newSymbol)
+	void EntryPhi::replaceUse(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		for(int i=0; i<numArgs; i++) {
 			if(args[i] == symbol)
@@ -224,7 +224,7 @@ namespace IR {
 		}
 	}
 
-	Symbol *EntryPhi::assign() const
+	const Symbol *EntryPhi::assign() const
 	{
 		return lhs;
 	}
@@ -239,7 +239,7 @@ namespace IR {
 		o << "  " << names[(int)type] << target;
 	}
 
-	EntryString::EntryString(Type _type, Symbol *_lhs, const std::string &_string)
+	EntryString::EntryString(Type _type, const Symbol *_lhs, const std::string &_string)
 		: Entry(_type), lhs(_lhs), string(_string)
 	{
 	}
@@ -249,12 +249,12 @@ namespace IR {
 		o << "  " << names[(int)type] << lhs->name << ", \"" << string << "\"";
 	}
 
-	Symbol *EntryString::assign() const
+	const Symbol *EntryString::assign() const
 	{
 		return lhs;
 	}
 
-	void EntryString::replaceAssign(Symbol *symbol, Symbol *newSymbol)
+	void EntryString::replaceAssign(const Symbol *symbol, const Symbol *newSymbol)
 	{
 		if(lhs == symbol) {
 			lhs = newSymbol;
