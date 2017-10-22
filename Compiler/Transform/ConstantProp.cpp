@@ -230,7 +230,7 @@ namespace Transform {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them
 							for(const IR::Entry *entry : useDefs.uses(entry)) {
-								queue.push(const_cast<IR::Entry*>(entry));
+								queue.push(procedure.entries().entry(entry));
 							}
 
 							// Update the useDef chains to reflect the new entry
@@ -268,7 +268,7 @@ namespace Transform {
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
 								for(const IR::Entry *entry : useDefs.uses(call)) {
-									queue.push(const_cast<IR::Entry*>(entry));
+									queue.push(procedure.entries().entry(entry));
 								}
 
 								// Update the useDef chains to reflect the new entry
@@ -306,7 +306,7 @@ namespace Transform {
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
 								for(const IR::Entry *entry : useDefs.uses(call)) {
-									queue.push(const_cast<IR::Entry*>(entry));
+									queue.push(procedure.entries().entry(entry));
 								}
 
 								// Update the useDef chains to reflect the new entry

@@ -78,7 +78,7 @@ namespace Transform {
 				IR::Symbol *active = activeList[block.get()];
 
 				for(const IR::Entry *constEntry : block->entries) {
-					IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
+					IR::Entry *entry = proc.entries().entry(constEntry);
 					if(entry->uses(symbol.get())) {
 						entry->replaceUse(symbol.get(), active);
 					}

@@ -24,8 +24,7 @@ namespace Transform {
 				for(IR::EntryList::const_iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
 					itNext = itEntry;
 					itNext++;
-					const IR::Entry *constEntry = *itEntry;
-					IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
+					IR::Entry *entry = procedure.entries().entry(itEntry);
 					if(entry->type == IR::Entry::Type::Label) {
 						continue;
 					}

@@ -128,6 +128,10 @@ namespace IR {
 		iterator find(Entry *entry) { return iterator(entry); }
 		iterator erase(iterator position) { return erase(*position); }
 		iterator erase(Entry *entry);
+
+		Entry *entry(const Entry *entry);
+		Entry *entry(const_iterator position);
+
 	private:
 		Entry mHead;
 		Entry mTail;

@@ -25,4 +25,14 @@ namespace IR {
 
 		return iterator(entry->next);
 	}
+
+	Entry *EntryList::entry(const Entry *entry)
+	{
+		return const_cast<Entry*>(entry);
+	}
+
+	Entry *EntryList::entry(const_iterator position)
+	{
+		return entry(*position);
+	}
 }

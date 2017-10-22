@@ -18,7 +18,7 @@ namespace Transform {
  * \param newSymbol Symbol to rename to
  * \param useDefs Use-def chains for the procedure
  */
-void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs &useDefs)
+void renameSymbol(IR::Procedure &procedure, IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, Analysis::UseDefs &useDefs)
 {
 	std::queue<IR::Entry*> entries;
 
@@ -35,7 +35,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// to the queue for further processing
 			entry->replaceAssign(symbol, newSymbol);
 			for(const IR::Entry *use : useDefs.uses(entry)) {
-				entries.push(const_cast<IR::Entry*>(use));
+				entries.push(procedure.entries().entry(use));
 			}
 		}
 
@@ -44,7 +44,7 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// to the queue for further processing
 			entry->replaceUse(symbol, newSymbol);
 			for(const IR::Entry *def : useDefs.defines(entry, symbol)) {
-				entries.push(const_cast<IR::Entry*>(def));
+				entries.push(procedure.entries().entry(def));
 			}
 		}
 	}
@@ -82,7 +82,7 @@ bool LiveRangeRenaming::transform(IR::Procedure &procedure, Analysis::Analysis &
 
 				// Rename the symbol
 				std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newName, symbol->size, symbol->symbol);
-				renameSymbol(entry, symbol.get(), newSymbol.get(), useDefs);
+				renameSymbol(procedure, entry, symbol.get(), newSymbol.get(), useDefs);
 				newSymbols.push_back(std::move(newSymbol));
 			}
 		}

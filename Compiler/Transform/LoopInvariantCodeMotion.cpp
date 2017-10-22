@@ -62,7 +62,7 @@ namespace Transform {
 
 		// Iterate through the invariant entries discovered above
 		for(const IR::Entry *constEntry : invariants) {
-			IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
+			IR::Entry *entry = procedure.entries().entry(constEntry);
 			// TODO: Test for use outside of loops
 			if(defs[entry->assign()].size() != 1) {
 				continue;

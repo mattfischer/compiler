@@ -82,7 +82,7 @@ namespace Transform {
 				// Add all uses of the entry into the queue, it may now be possible
 				// to do further subexpression elimination on them
 				for(const IR::Entry *entry : useDefs.uses(entry)) {
-					queue.push(const_cast<IR::Entry*>(entry));
+					queue.push(procedure.entries().entry(entry));
 				}
 
 				// Update the useDef chains to reflect the new entry
