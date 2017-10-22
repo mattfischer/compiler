@@ -42,11 +42,11 @@ namespace Transform {
 		}
 
 		// Construct a set of entries which are invariant in the loop
-		std::set<IR::Entry*> invariants;
-		std::map<IR::Symbol *, std::set<IR::Entry*>> defs;
+		std::set<const IR::Entry*> invariants;
+		std::map<IR::Symbol *, std::set<const IR::Entry*>> defs;
 
 		for(Analysis::FlowGraph::Block *block : loop.blocks) {
-			for(IR::Entry *entry : block->entries) {
+			for(const IR::Entry *entry : block->entries) {
 				if(entry->assign()) {
 					// Record all definitions which take place inside of the loop
 					defs[entry->assign()].insert(entry);
@@ -61,7 +61,8 @@ namespace Transform {
 		}
 
 		// Iterate through the invariant entries discovered above
-		for(IR::Entry *entry : invariants) {
+		for(const IR::Entry *constEntry : invariants) {
+			IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
 			// TODO: Test for use outside of loops
 			if(defs[entry->assign()].size() != 1) {
 				continue;

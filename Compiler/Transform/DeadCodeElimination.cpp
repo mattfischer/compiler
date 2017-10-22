@@ -20,11 +20,12 @@ namespace Transform {
 		for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block.get() != flowGraph.start()) {
-				IR::EntryList::iterator itNext;
-				for(IR::EntryList::iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
+				IR::EntryList::const_iterator itNext;
+				for(IR::EntryList::const_iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
 					itNext = itEntry;
 					itNext++;
-					IR::Entry *entry = *itEntry;
+					const IR::Entry *constEntry = *itEntry;
+					IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
 					if(entry->type == IR::Entry::Type::Label) {
 						continue;
 					}

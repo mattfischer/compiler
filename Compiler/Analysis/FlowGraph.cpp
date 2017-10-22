@@ -10,12 +10,12 @@ namespace Analysis {
 	FlowGraph::FlowGraph(const IR::Procedure &procedure)
 	{
 		std::unique_ptr<Block> block;
-		IR::EntrySubList::iterator begin;
-		IR::EntrySubList::iterator end;
+		IR::EntrySubList::const_iterator begin;
+		IR::EntrySubList::const_iterator end;
 
 		// First, break up the procedure into blocks
-		for(IR::EntryList::iterator itEntry = const_cast<IR::Procedure&>(procedure).entries().begin(); itEntry != const_cast<IR::Procedure&>(procedure).entries().end(); itEntry++) {
-			IR::Entry *entry = *itEntry;
+		for(IR::EntryList::const_iterator itEntry = procedure.entries().begin(); itEntry != procedure.entries().end(); itEntry++) {
+			const IR::Entry *entry = *itEntry;
 
 			switch(entry->type) {
 				case IR::Entry::Type::Label:
@@ -50,7 +50,7 @@ namespace Analysis {
 
 		// Add the final block, if present
 		if(block) {
-			end = const_cast<IR::Procedure&>(procedure).entries().end();
+			end = procedure.entries().end();
 			block->entries = IR::EntrySubList(begin, end);
 			mFrontMap[block->entries.front()] = block.get();
 			mBlocks.push_back(std::move(block));
@@ -71,7 +71,7 @@ namespace Analysis {
 	 * \param block Block to link
 	 * \param back Back entry of the block
 	 */
-	void FlowGraph::linkBlock(Block *block, IR::Entry *back)
+	void FlowGraph::linkBlock(Block *block, const IR::Entry *back)
 	{
 		// Examine the back entry in the block to determine which blocks it links to
 		mBackMap[back] = block;
@@ -101,7 +101,7 @@ namespace Analysis {
 				{
 					// The block ended with a non-jump instruction.  Link the block to the
 					// block started by the next entry
-					IR::Entry *nextLabel = *block->entries.end();
+					const IR::Entry *nextLabel = *block->entries.end();
 					Block *succ = mFrontMap[nextLabel];
 					if(succ) {
 						block->succ.insert(succ);

@@ -44,7 +44,7 @@ namespace Transform {
 
 			// Initialize queue with variable assignments
 			for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
-				for(IR::Entry *entry : block->entries) {
+				for(const IR::Entry *entry : block->entries) {
 					if(entry->assign() == symbol.get()) {
 						blocks.push(block.get());
 					}
@@ -57,7 +57,7 @@ namespace Transform {
 				blocks.pop();
 
 				for(Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
-					IR::Entry *head = *(frontier->entries.begin()++);
+					const IR::Entry *head = *(frontier->entries.begin()++);
 
 					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol.get()) {
 						proc.entries().insert(head, new IR::EntryPhi(symbol.get(), symbol.get(), (int)frontier->pred.size()));
@@ -77,7 +77,8 @@ namespace Transform {
 					activeList[block.get()] = activeList[dominatorTree.idom(block.get())];
 				IR::Symbol *active = activeList[block.get()];
 
-				for(IR::Entry *entry : block->entries) {
+				for(const IR::Entry *constEntry : block->entries) {
+					IR::Entry *entry = const_cast<IR::Entry*>(constEntry);
 					if(entry->uses(symbol.get())) {
 						entry->replaceUse(symbol.get(), active);
 					}
@@ -94,7 +95,7 @@ namespace Transform {
 
 				// Propagate variable uses into Phi functions
 				for(Analysis::FlowGraph::Block *succ : block->succ) {
-					IR::Entry *head = *(succ->entries.begin()++);
+					const IR::Entry *head = *(succ->entries.begin()++);
 
 					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol.get()) {
 						int l = 0;

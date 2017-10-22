@@ -47,7 +47,7 @@ std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysi
 		}
 
 		// Iterate through the block's entries
-		for(IR::Entry *entry : block->entries) {
+		for(const IR::Entry *entry : block->entries) {
 			// Iterate through the symbols in the procedure
 			for(const std::unique_ptr<IR::Symbol> &symbol : procedure.symbols()) {
 				// Any assignment to the variable adds to its cost

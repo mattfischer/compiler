@@ -189,7 +189,7 @@ namespace Analysis {
 				std::set<T> set = states[block.get()].in;
 				switch(direction) {
 					case Direction::Forward:
-						for(IR::Entry *entry : block->entries) {
+						for(const IR::Entry *entry : block->entries) {
 							map[entry] = set;
 							set = transfer(set, gen[entry], kill[entry]);
 						}
@@ -197,7 +197,7 @@ namespace Analysis {
 
 					case Direction::Backward:
 						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
-							IR::Entry *entry = *itEntry;
+							const IR::Entry *entry = *itEntry;
 							map[entry] = set;
 							set = transfer(set, gen[entry], kill[entry]);
 						}

@@ -14,23 +14,23 @@ namespace IR {
 	 */
 	class EntrySubList {
 	public:
-		typedef EntryList::iterator iterator;
-		typedef EntryList::reverse_iterator reverse_iterator;
+		typedef EntryList::const_iterator const_iterator;
+		typedef EntryList::const_reverse_iterator const_reverse_iterator;
 
-		EntrySubList(iterator begin, iterator end) : mBegin(begin), mEnd(end) {}
+		EntrySubList(const_iterator begin, const_iterator end) : mBegin(begin), mEnd(end) {}
 		EntrySubList() {}
 
-		iterator begin() { return mBegin; }
-		iterator end() { return mEnd; }
-		reverse_iterator rbegin() { return reverse_iterator(*--end()); }
-		reverse_iterator rend() { return reverse_iterator(*--begin()); }
+		const_iterator begin() { return mBegin; }
+		const_iterator end() { return mEnd; }
+		const_reverse_iterator rbegin() { return const_reverse_iterator(*--end()); }
+		const_reverse_iterator rend() { return const_reverse_iterator(*--begin()); }
 
-		Entry *front() { return *begin(); }
-		Entry *back() { return *(--end()); }
+		const Entry *front() { return *begin(); }
+		const Entry *back() { return *(--end()); }
 
 	private:
-		iterator mBegin;
-		iterator mEnd;
+		const_iterator mBegin;
+		const_iterator mEnd;
 	};
 };
 #endif

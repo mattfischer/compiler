@@ -123,7 +123,7 @@ namespace IR {
 
 		iterator push_back(Entry* entry) { return insert(end(), entry); }
 		iterator push_front(Entry* entry) { return insert(begin(), entry); }
-		iterator insert(Entry *position, Entry *entry);
+		iterator insert(const Entry *position, Entry *entry);
 		iterator insert(iterator position, Entry *entry) { return insert(*position, entry); }
 		iterator find(Entry *entry) { return iterator(entry); }
 		iterator erase(iterator position) { return erase(*position); }

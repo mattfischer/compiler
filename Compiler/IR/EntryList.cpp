@@ -8,12 +8,12 @@ namespace IR {
 		mTail.prev = &mHead;
 	}
 
-	EntryList::iterator EntryList::insert(Entry *pos, Entry* entry)
+	EntryList::iterator EntryList::insert(const Entry *pos, Entry* entry)
 	{
 		entry->prev = pos->prev;
 		pos->prev->next = entry;
-		entry->next = pos;
-		pos->prev = entry;
+		entry->next = const_cast<Entry*>(pos);
+		const_cast<Entry*>(pos)->prev = entry;
 
 		return iterator(entry);
 	}

@@ -43,11 +43,11 @@ namespace Analysis {
 		std::vector<std::unique_ptr<Block>> &blocks() { return mBlocks; } //!< Set of all blocks
 
 	private:
-		void linkBlock(Block *block, IR::Entry *back);
+		void linkBlock(Block *block, const IR::Entry *back);
 
 		std::vector<std::unique_ptr<Block>> mBlocks; //!< Set of all blocks
-		std::map<IR::Entry*, Block*> mFrontMap; //!< Map of entries to the block that they are the front of
-		std::map<IR::Entry*, Block*> mBackMap; //!< Map of entries to the block that they are the back of
+		std::map<const IR::Entry*, Block*> mFrontMap; //!< Map of entries to the block that they are the front of
+		std::map<const IR::Entry*, Block*> mBackMap; //!< Map of entries to the block that they are the back of
 		Block *mStart; //!< Start block
 		Block *mEnd; //!< End block
 	};
