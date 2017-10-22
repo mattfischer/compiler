@@ -16,7 +16,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedur to analyze
 	 */
-	UseDefs::UseDefs(const IR::Procedure &procedure, ReachingDefs &reachingDefs)
+	UseDefs::UseDefs(const IR::Procedure &procedure, const ReachingDefs &reachingDefs)
 	: mProcedure(procedure), mReachingDefs(reachingDefs)
 	{
 		Util::Timer timer;
@@ -60,11 +60,11 @@ namespace Analysis {
 	 * \param symbol Symbol to search for definitions of
 	 * \return All definitions of the given symbol which reach the given entry
 	 */
-	const std::set<const IR::Entry*> &UseDefs::defines(const IR::Entry *use, IR::Symbol *symbol) const
+	const std::set<const IR::Entry*> &UseDefs::defines(const IR::Entry *use, const IR::Symbol *symbol) const
 	{
 		auto it = mDefines.find(use);
 		if(it != mDefines.end()) {
-			const std::map<IR::Symbol*, std::set<const IR::Entry*>> &map = it->second;
+			const std::map<const IR::Symbol*, std::set<const IR::Entry*>> &map = it->second;
 			auto it2 = map.find(symbol);
 			if(it2 != map.end()) {
 				return it2->second;
@@ -81,10 +81,10 @@ namespace Analysis {
 	 * \param oldEntry Existing entry
 	 * \param newEntry New entry
 	 */
-	void UseDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	void UseDefs::replace(const IR::Entry *oldEntry, const IR::Entry *newEntry)
 	{
 		// Remove oldEntry from the def-use chains
-		std::map<IR::Symbol*, std::set<const IR::Entry*>> &map = mDefines[oldEntry];
+		std::map<const IR::Symbol*, std::set<const IR::Entry*>> &map = mDefines[oldEntry];
 		for(auto &def : map) {
 			std::set<const IR::Entry*> &defs = def.second;
 			for(const IR::Entry *use : defs) {
@@ -119,7 +119,7 @@ namespace Analysis {
 	 * \brief Remove an entry from the chains
 	 * \param entry Entry to remove
 	 */
-	void UseDefs::remove(IR::Entry *entry)
+	void UseDefs::remove(const IR::Entry *entry)
 	{
 		// If the entry both uses and defines the same symbol, use-def information
 		// needs to be propagated downward from the entry's own use-def chains
@@ -136,7 +136,7 @@ namespace Analysis {
 		}
 
 		// Remove the entry from the use-def chains
-		std::map<IR::Symbol*, std::set<const IR::Entry*>> &map = mDefines[entry];
+		std::map<const IR::Symbol*, std::set<const IR::Entry*>> &map = mDefines[entry];
 		for(auto &defs : map) {
 			for(const IR::Entry *def : defs.second) {
 				mUses[def].erase(entry);
@@ -158,7 +158,7 @@ namespace Analysis {
 	 * \param oldSymbol Existing symbol
 	 * \param newSymbol New symbol
 	 */
-	void UseDefs::replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol)
+	void UseDefs::replaceUse(const IR::Entry *entry, const IR::Symbol *oldSymbol, const IR::Symbol *newSymbol)
 	{
 		// Remove the existing def-use and use-def information
 		std::set<const IR::Entry*> &oldDefs = mDefines[entry][oldSymbol];
@@ -212,7 +212,7 @@ namespace Analysis {
 			{
 				auto it = mDefines.find(entry);
 				if(it != mDefines.end()) {
-					const std::map<IR::Symbol*, std::set<const IR::Entry*>> &defs = it->second;
+					const std::map<const IR::Symbol*, std::set<const IR::Entry*>> &defs = it->second;
 					for(auto &def : defs) {
 						if(printedOpen) {
 							o << "| ";

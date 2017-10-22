@@ -10,7 +10,7 @@ namespace Analysis {
 	 * \param procedure Procedure to analyze
 	 * \param flowGraph Flow graph of procedure
 	 */
-	AvailableExpressions::AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph)
+	AvailableExpressions::AvailableExpressions(const IR::Procedure &procedure, const FlowGraph &flowGraph)
 		: mProcedure(procedure)
 	{
 		std::set<const IR::Entry*> all;

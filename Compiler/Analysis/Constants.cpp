@@ -1,7 +1,7 @@
 #include "Analysis/Constants.h"
 
 namespace Analysis {
-	Constants::Constants(const IR::Procedure &procedure, UseDefs &useDefs)
+	Constants::Constants(const IR::Procedure &procedure, const UseDefs &useDefs)
 		: mUseDefs(useDefs)
 	{
 	}
@@ -13,7 +13,7 @@ namespace Analysis {
 	 * \param isConstant [out] True if symbol has a constant value, false otherwise
 	 * \return Value of symbol
 	 */
-	int Constants::getIntValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
+	int Constants::getIntValue(const IR::Entry *entry, const IR::Symbol *symbol, bool &isConstant) const
 	{
 		isConstant = false;
 		int ret = 0;
@@ -53,7 +53,7 @@ namespace Analysis {
 	 * \param isConstant [out] True if symbol has a constant value, false otherwise
 	 * \return Value of symbol
 	 */
-	std::string Constants::getStringValue(IR::Entry *entry, IR::Symbol *symbol, bool &isConstant)
+	std::string Constants::getStringValue(const IR::Entry *entry, const IR::Symbol *symbol, bool &isConstant) const
 	{
 		isConstant = false;
 		std::string ret;

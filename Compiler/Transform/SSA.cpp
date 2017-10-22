@@ -34,16 +34,16 @@ namespace Transform {
 		std::vector<std::unique_ptr<IR::Symbol>> newSymbols;
 
 		// Perform flow graph and dominance analysis on the procedure
-		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
+		const Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		Analysis::DominatorTree dominatorTree(proc, flowGraph);
 		Analysis::DominanceFrontiers dominanceFrontiers(dominatorTree);
 
 		// Iterate through the list of symbols in the procedure
 		for(std::unique_ptr<IR::Symbol> &symbol : proc.symbols()) {
-			Util::UniqueQueue<Analysis::FlowGraph::Block*> blocks;
+			Util::UniqueQueue<const Analysis::FlowGraph::Block*> blocks;
 
 			// Initialize queue with variable assignments
-			for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
+			for(const std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 				for(const IR::Entry *entry : block->entries) {
 					if(entry->assign() == symbol.get()) {
 						blocks.push(block.get());
@@ -53,10 +53,10 @@ namespace Transform {
 
 			// Insert Phi functions at each dominance frontier for the block
 			while(!blocks.empty()) {
-				Analysis::FlowGraph::Block *block = blocks.front();
+				const Analysis::FlowGraph::Block *block = blocks.front();
 				blocks.pop();
 
-				for(Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
+				for(const Analysis::FlowGraph::Block *frontier : dominanceFrontiers.frontiers(block)) {
 					const IR::Entry *head = *(frontier->entries.begin()++);
 
 					if(head->type != IR::Entry::Type::Phi || ((IR::EntryPhi*)head)->lhs != symbol.get()) {
@@ -68,11 +68,11 @@ namespace Transform {
 
 			// Rename variables
 			int nextVersion = 0;
-			std::map<Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
+			std::map<const Analysis::FlowGraph::Block*, IR::Symbol*> activeList;
 			std::unique_ptr<IR::Symbol> newSymbol = std::make_unique<IR::Symbol>(newSymbolName(symbol.get(), nextVersion++), symbol->size, symbol->symbol);
 			activeList[flowGraph.start()] = newSymbol.get();
 			newSymbols.push_back(std::move(newSymbol));
-			for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
+			for(const std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 				if(activeList.find(block.get()) == activeList.end())
 					activeList[block.get()] = activeList[dominatorTree.idom(block.get())];
 				IR::Symbol *active = activeList[block.get()];
@@ -94,12 +94,12 @@ namespace Transform {
 				}
 
 				// Propagate variable uses into Phi functions
-				for(Analysis::FlowGraph::Block *succ : block->succ) {
+				for(const Analysis::FlowGraph::Block *succ : block->succ) {
 					const IR::Entry *head = *(succ->entries.begin()++);
 
 					if(head->type == IR::Entry::Type::Phi && ((IR::EntryPhi*)head)->base == symbol.get()) {
 						int l = 0;
-						for(Analysis::FlowGraph::Block *pred : succ->pred) {
+						for(const Analysis::FlowGraph::Block *pred : succ->pred) {
 							if(pred == block.get()) {
 								((IR::EntryPhi*)head)->setArg(l, active);
 								break;

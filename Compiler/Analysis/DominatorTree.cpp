@@ -10,7 +10,7 @@ namespace Analysis {
 	 * \param procedure Procedure to analyze
 	 * \param flowGraph Flow graph for procedure
 	 */
-	DominatorTree::DominatorTree(const IR::Procedure &procedure, FlowGraph &flowGraph)
+	DominatorTree::DominatorTree(const IR::Procedure &procedure, const FlowGraph &flowGraph)
 	{
 		// Assign an order to the blocks
 		BlockSort sort(flowGraph);
@@ -22,16 +22,16 @@ namespace Analysis {
 		do {
 			changed = false;
 			for(unsigned int i=1; i<mBlocks.size(); i++) {
-				FlowGraph::Block *block = mBlocks[i];
-				FlowGraph::Block *newDom = 0;
-				for(FlowGraph::Block *pred : block->pred) {
+				const FlowGraph::Block *block = mBlocks[i];
+				const FlowGraph::Block *newDom = 0;
+				for(const FlowGraph::Block *pred : block->pred) {
 					if(mIDoms[pred] == 0) {
 						continue;
 					}
 
 					if(newDom) {
-						FlowGraph::Block *a = pred;
-						FlowGraph::Block *b = newDom;
+						const FlowGraph::Block *a = pred;
+						const FlowGraph::Block *b = newDom;
 						while(a != b) {
 							while(sort.position(a) > sort.position(b))
 								a = mIDoms[a];
@@ -57,16 +57,22 @@ namespace Analysis {
 	 * \param block Block to search for
 	 * \return Immediate dominator for block
 	 */
-	FlowGraph::Block *DominatorTree::idom(FlowGraph::Block *block)
+	const FlowGraph::Block *DominatorTree::idom(const FlowGraph::Block *block) const
 	{
-		return mIDoms[block];
+		auto it = mIDoms.find(block);
+		if (it == mIDoms.end()) {
+			return 0;
+		}
+		else {
+			return it->second;
+		}
 	}
 
 	/*!
 	 * \brief Return list of all blocks
 	 * \return List of blocks
 	 */
-	const std::vector<FlowGraph::Block*> &DominatorTree::blocks() const
+	const std::vector<const FlowGraph::Block*> &DominatorTree::blocks() const
 	{
 		return mBlocks;
 	}
@@ -77,10 +83,10 @@ namespace Analysis {
 	 * \param dominator Block which may dominate the given block
 	 * \return True if dominator dominates block, otherwise false
 	 */
-	bool DominatorTree::dominates(FlowGraph::Block *block, FlowGraph::Block *dominator)
+	bool DominatorTree::dominates(const FlowGraph::Block *block, const FlowGraph::Block *dominator) const
 	{
-		FlowGraph::Block *cursor = block;
-		FlowGraph::Block *id = idom(cursor);
+		const FlowGraph::Block *cursor = block;
+		const FlowGraph::Block *id = idom(cursor);
 
 		// Iterate upwards through the dominator tree, looking for dominance
 		while(id != cursor) {

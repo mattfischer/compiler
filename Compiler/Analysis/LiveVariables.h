@@ -22,7 +22,7 @@ namespace Analysis {
 	 */
 	class LiveVariables {
 	public:
-		LiveVariables(const IR::Procedure &procedure, FlowGraph &flowGraph);
+		LiveVariables(const IR::Procedure &procedure, const FlowGraph &flowGraph);
 
 		std::set<IR::Symbol*> &variables(const IR::Entry *entry);
 		void print(std::ostream &o);

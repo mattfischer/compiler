@@ -19,7 +19,7 @@ namespace Analysis {
 	 */
 	class AvailableExpressions {
 	public:
-		AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph);
+		AvailableExpressions(const IR::Procedure &procedure, const FlowGraph &flowGraph);
 
 		const std::set<const IR::Entry*> &expressions(const IR::Entry *entry) const;
 

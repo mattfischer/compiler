@@ -16,12 +16,12 @@ namespace Analysis {
 	 */
 	class DominanceFrontiers {
 	public:
-		DominanceFrontiers(DominatorTree &tree);
+		DominanceFrontiers(const DominatorTree &tree);
 
-		const std::set<FlowGraph::Block*> &frontiers(FlowGraph::Block *block) const;
+		const std::set<const FlowGraph::Block*> &frontiers(const FlowGraph::Block *block) const;
 
 	private:
-		std::map<FlowGraph::Block*, std::set<FlowGraph::Block*>> mFrontiers; //!< List of frontiers
+		std::map<const FlowGraph::Block*, std::set<const FlowGraph::Block*>> mFrontiers; //!< List of frontiers
 	};
 }
 #endif

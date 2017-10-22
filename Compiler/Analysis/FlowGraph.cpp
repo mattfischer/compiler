@@ -115,14 +115,14 @@ namespace Analysis {
 	 * \param oldEntry Entry to replace
 	 * \param newEntry Entry to replace with
 	 */
-	void FlowGraph::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	void FlowGraph::replace(const IR::Entry *oldEntry, const IR::Entry *newEntry)
 	{
 		// Check if entry was the back of a block
 		Block *block = mBackMap[oldEntry];
 		if(block) {
 			// Break links with all successor blocks
-			for(Block *succ : block->succ) {
-				succ->pred.erase(block);
+			for(const Block *succ : block->succ) {
+				const_cast<Block*>(succ)->pred.erase(block);
 			}
 			block->succ.clear();
 			mBackMap.erase(oldEntry);

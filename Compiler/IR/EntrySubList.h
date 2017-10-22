@@ -19,27 +19,27 @@ namespace IR {
 
 		class reverse_list {
 		public:
-			reverse_list(EntrySubList &list) : mList(list) {}
+			reverse_list(const EntrySubList &list) : mList(list) {}
 
-			EntrySubList::const_reverse_iterator begin() { return mList.rbegin(); }
-			EntrySubList::const_reverse_iterator end() { return mList.rend(); }
+			EntrySubList::const_reverse_iterator begin() const { return mList.rbegin(); }
+			EntrySubList::const_reverse_iterator end() const { return mList.rend(); }
 
 		private:
-			EntrySubList &mList;
+			const EntrySubList &mList;
 		};
 
 		EntrySubList(const_iterator begin, const_iterator end) : mBegin(begin), mEnd(end) {}
 		EntrySubList() {}
 
-		const_iterator begin() { return mBegin; }
-		const_iterator end() { return mEnd; }
-		const_reverse_iterator rbegin() { return const_reverse_iterator(*--end()); }
-		const_reverse_iterator rend() { return const_reverse_iterator(*--begin()); }
+		const_iterator begin() const { return mBegin; }
+		const_iterator end() const { return mEnd; }
+		const_reverse_iterator rbegin() const { return const_reverse_iterator(*--end()); }
+		const_reverse_iterator rend() const { return const_reverse_iterator(*--begin()); }
 
-		const Entry *front() { return *begin(); }
-		const Entry *back() { return *(--end()); }
+		const Entry *front() const { return *begin(); }
+		const Entry *back() const { return *(--end()); }
 
-		reverse_list reversed() { return reverse_list(*this); }
+		reverse_list reversed() const { return reverse_list(*this); }
 
 	private:
 		const_iterator mBegin;

@@ -45,7 +45,7 @@ namespace Transform {
 		std::set<const IR::Entry*> invariants;
 		std::map<IR::Symbol *, std::set<const IR::Entry*>> defs;
 
-		for(Analysis::FlowGraph::Block *block : loop.blocks) {
+		for(const Analysis::FlowGraph::Block *block : loop.blocks) {
 			for(const IR::Entry *entry : block->entries) {
 				if(entry->assign()) {
 					// Record all definitions which take place inside of the loop

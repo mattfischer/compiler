@@ -17,7 +17,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	ReachingDefs::ReachingDefs(const IR::Procedure &procedure, FlowGraph &flowGraph)
+	ReachingDefs::ReachingDefs(const IR::Procedure &procedure, const FlowGraph &flowGraph)
 		: mFlowGraph(flowGraph),
 		mProcedure(procedure)
 	{
@@ -80,7 +80,7 @@ namespace Analysis {
 	 * \param symbol Symbol to search for
 	 * \return All reaching definitions which assign to the given symbol
 	 */
-	const std::set<const IR::Entry*> ReachingDefs::defsForSymbol(const IR::Entry *entry, IR::Symbol *symbol) const
+	const std::set<const IR::Entry*> ReachingDefs::defsForSymbol(const IR::Entry *entry, const IR::Symbol *symbol) const
 	{
 		std::set<const IR::Entry*> result;
 		const std::set<const IR::Entry*> &all = defs(entry);
@@ -98,7 +98,7 @@ namespace Analysis {
 	 * \param oldEntry Existing entry
 	 * \param newEntry Entry to replace it with
 	 */
-	void ReachingDefs::replace(IR::Entry *oldEntry, IR::Entry *newEntry)
+	void ReachingDefs::replace(const IR::Entry *oldEntry, const IR::Entry *newEntry)
 	{
 		// Assign the reaching definitions from the old entry to the new one, and remove
 		// the old one from the set
@@ -120,7 +120,7 @@ namespace Analysis {
 	 * \brief Remove an entry
 	 * \param entry Entry to remove
 	 */
-	void ReachingDefs::remove(IR::Entry *entry)
+	void ReachingDefs::remove(const IR::Entry *entry)
 	{
 		// Remove all references to the given entry
 		for(auto &def : mDefs) {

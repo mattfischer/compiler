@@ -28,7 +28,7 @@ static const int CallerSavedRegisters = 4;
  * \param procedure Procedure to analyze
  * \return Map from symbol to its spill cost
  */
-std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysis::FlowGraph &flowGraph)
+std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, const Analysis::FlowGraph &flowGraph)
 {
 	std::map<IR::Symbol*, int> costs;
 
@@ -37,7 +37,7 @@ std::map<IR::Symbol*, int> getSpillCosts(const IR::Procedure &procedure, Analysi
 	Analysis::Loops::Loop *rootLoop = loops.rootLoop();
 
 	// Iterate through the blocks of the procedure
-	for(Analysis::FlowGraph::Block *block : rootLoop->blocks) {
+	for(const Analysis::FlowGraph::Block *block : rootLoop->blocks) {
 		// Determine the cost of a variable use in this block, based on its loop depth.
 		int cost = 1;
 		for(std::unique_ptr<Analysis::Loops::Loop> &loop : loops.loops()) {
@@ -208,8 +208,8 @@ void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveV
 	std::set<const IR::Entry*> neededDefs;
 	std::set<IR::Entry*> spillLoads;
 
-	Analysis::UseDefs &useDefs = analysis.useDefs();
-	Analysis::Constants &constants = analysis.constants();
+	const Analysis::UseDefs &useDefs = analysis.useDefs();
+	const Analysis::Constants &constants = analysis.constants();
 
 	// Iterate through the entries in the procedure
 	for(IR::Entry *entry : procedure.entries()) {
@@ -337,7 +337,7 @@ std::map<IR::Symbol*, int> RegisterAllocator::tryAllocate(IR::Procedure &procedu
 	// Construct an interference graph, live variable list, and use-def chains for the procedure
 	Analysis::LiveVariables liveVariables(procedure, analysis.flowGraph());
 	Analysis::InterferenceGraph graph(procedure, &liveVariables);
-	Analysis::UseDefs &useDefs = analysis.useDefs();
+	const Analysis::UseDefs &useDefs = analysis.useDefs();
 
 	// Construct artificial graph nodes for each register which is not preserved across procedure calls
 	std::vector<IR::Symbol*> callerSavedRegisters;

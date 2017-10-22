@@ -6,7 +6,7 @@ namespace Analysis {
 	{
 	}
 
-	FlowGraph &Analysis::flowGraph()
+	const FlowGraph &Analysis::flowGraph()
 	{
 		if(!mFlowGraph) {
 			mFlowGraph = std::make_unique<FlowGraph>(mProcedure);
@@ -15,7 +15,7 @@ namespace Analysis {
 		return *mFlowGraph;
 	}
 
-	ReachingDefs &Analysis::reachingDefs()
+	const ReachingDefs &Analysis::reachingDefs()
 	{
 		if(!mReachingDefs) {
 			mReachingDefs = std::make_unique<ReachingDefs>(mProcedure, flowGraph());
@@ -24,7 +24,7 @@ namespace Analysis {
 		return *mReachingDefs;
 	}
 
-	UseDefs &Analysis::useDefs()
+	const UseDefs &Analysis::useDefs()
 	{
 		if(!mUseDefs) {
 			mUseDefs = std::make_unique<UseDefs>(mProcedure, reachingDefs());
@@ -33,7 +33,7 @@ namespace Analysis {
 		return *mUseDefs;
 	}
 
-	Constants &Analysis::constants()
+	const Constants &Analysis::constants()
 	{
 		if(!mConstants) {
 			mConstants = std::make_unique<Constants>(mProcedure, useDefs());

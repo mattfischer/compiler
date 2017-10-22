@@ -65,14 +65,14 @@ namespace Analysis {
 		 * \param direction Direction of data flow
 		 * \return Set of Ts attached to each entry of the graph
 		 */
-		std::map<const IR::Entry*, std::set<T>> analyze(FlowGraph &graph, std::map<const IR::Entry*, std::set<T>> &gen, std::map<const IR::Entry*, std::set<T>> &kill, std::set<T> &all, Meet meetType, Direction direction)
+		std::map<const IR::Entry*, std::set<T>> analyze(const FlowGraph &graph, std::map<const IR::Entry*, std::set<T>> &gen, std::map<const IR::Entry*, std::set<T>> &kill, std::set<T> &all, Meet meetType, Direction direction)
 		{
 			std::map<const IR::Entry*, std::set<T>> map;
-			std::map<FlowGraph::Block*, std::set<T>> genBlock;
-			std::map<FlowGraph::Block*, std::set<T>> killBlock;
+			std::map<const FlowGraph::Block*, std::set<T>> genBlock;
+			std::map<const FlowGraph::Block*, std::set<T>> killBlock;
 
 			// Aggregate the gen/kill sets from each entry into gen/kill sets for each block
-			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
+			for(const std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
 				std::set<T> g;
 				std::set<T> k;
 				switch(direction) {
@@ -100,11 +100,11 @@ namespace Analysis {
 				std::set<T> out;
 			};
 
-			std::map<FlowGraph::Block*, InOut> states;
-			Util::UniqueQueue<FlowGraph::Block*> blockQueue;
+			std::map<const FlowGraph::Block*, InOut> states;
+			Util::UniqueQueue<const FlowGraph::Block*> blockQueue;
 
 			// Populate the initial states of each block, based on meet type
-			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
+			for(const std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
 				blockQueue.push(block.get());
 
 				switch(meetType) {
@@ -121,7 +121,7 @@ namespace Analysis {
 			// The core of the algorithm.  Process blocks until there are no more to process
 			while(!blockQueue.empty()) {
 				// Grab front block from queue
-				FlowGraph::Block *block = blockQueue.front();
+				const FlowGraph::Block *block = blockQueue.front();
 				blockQueue.pop();
 
 				// Construct the results of the meet operation.  First, initialize state
@@ -143,14 +143,14 @@ namespace Analysis {
 				// current block's state
 				switch(direction) {
 					case Direction::Forward:
-						for(FlowGraph::Block *pred : block->pred) {
+						for(const FlowGraph::Block *pred : block->pred) {
 							std::set<T> &out = states[pred].out;
 							states[block].in = meet(states[block].in, states[pred].out, meetType);
 						}
 						break;
 
 					case Direction::Backward:
-						for(FlowGraph::Block *succ : block->succ) {
+						for(const FlowGraph::Block *succ : block->succ) {
 							std::set<T> &out = states[succ].out;
 							states[block].in = meet(states[block].in, states[succ].out, meetType);
 						}
@@ -167,13 +167,13 @@ namespace Analysis {
 					states[block].out = out;
 					switch(direction) {
 						case Direction::Forward:
-							for(FlowGraph::Block *succ : block->succ) {
+							for(const FlowGraph::Block *succ : block->succ) {
 								blockQueue.push(succ);
 							}
 							break;
 
 						case Direction::Backward:
-							for(FlowGraph::Block *pred : block->pred) {
+							for(const FlowGraph::Block *pred : block->pred) {
 								blockQueue.push(pred);
 							}
 							break;
@@ -184,7 +184,7 @@ namespace Analysis {
 			// The core algorithm is now complete--each block has information about its starting set
 			// of Ts.  Now proceed through each block, using the state information and the gen/kill
 			// sets to assign an T set to each entry within the block
-			for(std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
+			for(const std::unique_ptr<FlowGraph::Block> &block : graph.blocks()) {
 				std::set<T> set = states[block.get()].in;
 				switch(direction) {
 					case Direction::Forward:

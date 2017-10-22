@@ -15,10 +15,10 @@ namespace Analysis {
 	public:
 		Analysis(const IR::Procedure &procedure);
 
-		FlowGraph &flowGraph();
-		ReachingDefs &reachingDefs();
-		UseDefs &useDefs();
-		Constants &constants();
+		const FlowGraph &flowGraph();
+		const ReachingDefs &reachingDefs();
+		const UseDefs &useDefs();
+		const Constants &constants();
 
 		void invalidate();
 

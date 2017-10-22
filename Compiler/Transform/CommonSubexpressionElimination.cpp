@@ -53,7 +53,7 @@ namespace Transform {
 	bool CommonSubexpressionElimination::transform(IR::Procedure &procedure, Analysis::Analysis &analysis)
 	{
 		Analysis::AvailableExpressions availableExpressions(procedure, analysis.flowGraph());
-		Analysis::UseDefs &useDefs = analysis.useDefs();
+		const Analysis::UseDefs &useDefs = analysis.useDefs();
 
 		Util::UniqueQueue<IR::Entry*> queue;
 

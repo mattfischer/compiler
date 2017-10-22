@@ -25,14 +25,14 @@ namespace Analysis {
 		 * \brief Represents a single loop
 		 */
 		struct Loop {
-			FlowGraph::Block *header; //!< First block in the loop
-			FlowGraph::Block *preheader; //!< Block preceeding the first block in the loop
-			std::set<FlowGraph::Block*> blocks; //!< Set of blocks in the loop
+			const FlowGraph::Block *header; //!< First block in the loop
+			const FlowGraph::Block *preheader; //!< Block preceeding the first block in the loop
+			std::set<const FlowGraph::Block*> blocks; //!< Set of blocks in the loop
 			Loop *parent; //!< Loop which contains this loop
 			std::set<Loop*> children; //!< Loops inside of this loop
 		};
 
-		Loops(const IR::Procedure &procedure, FlowGraph &flowGraph);
+		Loops(const IR::Procedure &procedure, const FlowGraph &flowGraph);
 
 		std::list<std::unique_ptr<Loop>> &loops();
 		Loop *rootLoop() { return &mRootLoop; } //!< Loop representing the entire procedure
@@ -40,13 +40,13 @@ namespace Analysis {
 		void print(std::ostream &o);
 
 	private:
-		bool isDominator(FlowGraph::Block *block, FlowGraph::Block *test, DominatorTree &doms);
-		std::unique_ptr<Loop> buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header);
+		bool isDominator(const FlowGraph::Block *block, const FlowGraph::Block *test, const DominatorTree &doms);
+		std::unique_ptr<Loop> buildLoop(const FlowGraph::Block *bottom, const FlowGraph::Block *header);
 		void findParents(DominatorTree &doms);
-		FlowGraph::Block *findPreheader(Loop &loop);
+		const FlowGraph::Block *findPreheader(Loop &loop);
 
 		std::list<std::unique_ptr<Loop>> mLoops; //!< List of all loops
-		std::map<FlowGraph::Block*, Loop*> mLoopMap; //!< Map from blocks to the loop they are the header of
+		std::map<const FlowGraph::Block*, Loop*> mLoopMap; //!< Map from blocks to the loop they are the header of
 		Loop mRootLoop; //!< Root loop of the procedure
 	};
 }

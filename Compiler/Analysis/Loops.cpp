@@ -7,7 +7,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	Loops::Loops(const IR::Procedure &procedure, FlowGraph &flowGraph)
+	Loops::Loops(const IR::Procedure &procedure, const FlowGraph &flowGraph)
 	{
 		// Construct a dominator tree for the procedure
 		DominatorTree dominatorTree(procedure, flowGraph);
@@ -15,19 +15,19 @@ namespace Analysis {
 		// Construct the root loop
 		mRootLoop.parent = &mRootLoop;
 		mRootLoop.header = flowGraph.start();
-		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
+		for(const std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
 			mRootLoop.blocks.insert(block.get());
 		}
 		mLoopMap[mRootLoop.header] = &mRootLoop;
 
 		// Iterate through the graph, looking for loops
-		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
-			for(FlowGraph::Block *succ : block->succ) {
+		for(const std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
+			for(const FlowGraph::Block *succ : block->succ) {
 				// If a block's successor dominates the block, then the successor is the head of a loop
 				if(dominatorTree.dominates(block.get(), succ)) {
 					// Build a new loop out of the blocks found
-					FlowGraph::Block *header = succ;
-					FlowGraph::Block *bottom = block.get();
+					const FlowGraph::Block *header = succ;
+					const FlowGraph::Block *bottom = block.get();
 					std::unique_ptr<Loop> loop = buildLoop(bottom, header);
 					mLoopMap[header] = loop.get();
 					mLoops.push_back(std::move(loop));
@@ -54,7 +54,7 @@ namespace Analysis {
 	 * \param header Top block in the loop
 	 * \return Newly-constructed loop
 	 */
-	std::unique_ptr<Loops::Loop> Loops::buildLoop(FlowGraph::Block *bottom, FlowGraph::Block *header)
+	std::unique_ptr<Loops::Loop> Loops::buildLoop(const FlowGraph::Block *bottom, const FlowGraph::Block *header)
 	{
 		// Construct the new loop
 		std::unique_ptr<Loop> loop = std::make_unique<Loop>();
@@ -62,10 +62,10 @@ namespace Analysis {
 		loop->parent = 0;
 
 		// Populate the loop's block list, starting from the bottom
-		std::queue<FlowGraph::Block*> queue;
+		std::queue<const FlowGraph::Block*> queue;
 		queue.push(bottom);
 		while(!queue.empty()) {
-			FlowGraph::Block *block = queue.front();
+			const FlowGraph::Block *block = queue.front();
 			queue.pop();
 
 			// If the block is either the loop header, or is already in the loop, then it
@@ -77,7 +77,7 @@ namespace Analysis {
 			loop->blocks.insert(block);
 
 			// Continue following the block's predecessors
-			for(FlowGraph::Block *pred : block->pred) {
+			for(const FlowGraph::Block *pred : block->pred) {
 				queue.push(pred);
 			}
 		}
@@ -99,8 +99,8 @@ namespace Analysis {
 	{
 		// Iterate through the list of loops
 		for(std::unique_ptr<Loop> &loop : mLoops) {
-			FlowGraph::Block *block = loop->header;
-			FlowGraph::Block *idom = doms.idom(block);
+			const FlowGraph::Block *block = loop->header;
+			const FlowGraph::Block *idom = doms.idom(block);
 
 			// Seach upward through the dominator tree, looking for a block which is
 			// the header of a loop
@@ -124,12 +124,12 @@ namespace Analysis {
 	 * \param loop Loop to examine
 	 * \return Loop preheader, or 0 if there is no unique preheader block
 	 */
-	FlowGraph::Block *Loops::findPreheader(Loop &loop)
+	const FlowGraph::Block *Loops::findPreheader(Loop &loop)
 	{
-		FlowGraph::Block *preheader = 0;
+		const FlowGraph::Block *preheader = 0;
 
 		// Search through the predecessors of the header block
-		for(FlowGraph::Block *block : loop.header->pred) {
+		for(const FlowGraph::Block *block : loop.header->pred) {
 			if(loop.blocks.find(block) != loop.blocks.end()) {
 				// This block is still in the loop, so it can't be the preheader
 				continue;
@@ -176,7 +176,7 @@ namespace Analysis {
 				o << "preheader: " << ((IR::EntryLabel*)loop->preheader->entries.front())->name << " | ";
 			}
 			o << "blocks: ";
-			for(FlowGraph::Block *block : loop->blocks) {
+			for(const FlowGraph::Block *block : loop->blocks) {
 				o << ((IR::EntryLabel*)block->entries.front())->name << " ";
 			}
 			o << std::endl;

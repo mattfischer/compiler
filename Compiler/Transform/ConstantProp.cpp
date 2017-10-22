@@ -75,8 +75,8 @@ namespace Transform {
 	{
 		bool changed = false;
 		bool invalidate = false;
-		Analysis::UseDefs &useDefs = analysis.useDefs();
-		Analysis::Constants &constants = analysis.constants();
+		const Analysis::UseDefs &useDefs = analysis.useDefs();
+		const Analysis::Constants &constants = analysis.constants();
 
 		Util::UniqueQueue<IR::Entry*> queue;
 

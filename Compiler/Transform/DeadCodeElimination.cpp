@@ -13,12 +13,12 @@ namespace Transform {
 		bool changed = false;
 
 		// Construct a flow graph and use-def chains for the procedure
-		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
-		Analysis::UseDefs &useDefs = analysis.useDefs();
+		const Analysis::FlowGraph &flowGraph = analysis.flowGraph();
+		const Analysis::UseDefs &useDefs = analysis.useDefs();
 		std::set<IR::Entry*> deleted;
 
 		// Iterate through the blocks of the graph
-		for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
+		for(const std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block.get() != flowGraph.start()) {
 				for(IR::Entry *entry : procedure.entries()) {

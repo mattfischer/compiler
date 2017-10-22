@@ -22,22 +22,22 @@ namespace Analysis {
 	class UseDefs
 	{
 	public:
-		UseDefs(const IR::Procedure &procedure, ReachingDefs &reachingDefs);
+		UseDefs(const IR::Procedure &procedure, const ReachingDefs &reachingDefs);
 
 		const std::set<const IR::Entry*> &uses(const IR::Entry *def) const;
-		const std::set<const IR::Entry*> &defines(const IR::Entry *use, IR::Symbol *symbol) const;
+		const std::set<const IR::Entry*> &defines(const IR::Entry *use, const IR::Symbol *symbol) const;
 
-		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
-		void replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol);
-		void remove(IR::Entry *entry);
+		void replace(const IR::Entry *oldEntry, const IR::Entry *newEntry);
+		void replaceUse(const IR::Entry *entry, const IR::Symbol *oldSymbol, const IR::Symbol *newSymbol);
+		void remove(const IR::Entry *entry);
 
 		void print(std::ostream &o) const;
 
 	private:
 		std::map<const IR::Entry*, std::set<const IR::Entry*>> mUses; //!< List of all uses
-		std::map<const IR::Entry*, std::map<IR::Symbol*, std::set<const IR::Entry*>>> mDefines; //!< List of all defines
+		std::map<const IR::Entry*, std::map<const IR::Symbol*, std::set<const IR::Entry*>>> mDefines; //!< List of all defines
 		const IR::Procedure &mProcedure; //!< Procedure being analyzed
-		ReachingDefs &mReachingDefs; //!< Reaching def information for the procedure
+		const ReachingDefs &mReachingDefs; //!< Reaching def information for the procedure
 	};
 }
 #endif

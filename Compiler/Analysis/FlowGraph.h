@@ -28,19 +28,20 @@ namespace Analysis {
 		 * \brief Block structure
 		 */
 		struct Block {
-			std::set<Block*> pred; //!< Predecessor blocks
-			std::set<Block*> succ; //!< Successor blocks
+			std::set<const Block*> pred; //!< Predecessor blocks
+			std::set<const Block*> succ; //!< Successor blocks
 			IR::EntrySubList entries; //!< Entries in the block
 		};
 
 		FlowGraph(const IR::Procedure &procedure);
 
-		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
+		void replace(const IR::Entry *oldEntry, const IR::Entry *newEntry);
 
 		Block *start() const { return mStart; } //!< Start block
 		Block *end() const { return mEnd; } //!< End block
 
 		std::vector<std::unique_ptr<Block>> &blocks() { return mBlocks; } //!< Set of all blocks
+		const std::vector<std::unique_ptr<Block>> &blocks() const { return mBlocks; } //!< Set of all blocks
 
 	private:
 		void linkBlock(Block *block, const IR::Entry *back);

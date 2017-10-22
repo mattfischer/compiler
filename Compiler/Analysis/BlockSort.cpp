@@ -9,7 +9,7 @@ namespace Analysis {
 	 * \param blocks Block list under construction
 	 * \param seenBlocks Blocks already encountered
 	 */
-	void BlockSort::sortRecurse(FlowGraph::Block *block, std::vector<FlowGraph::Block*> &blocks, std::set<FlowGraph::Block*> &seenBlocks)
+	void BlockSort::sortRecurse(const FlowGraph::Block *block, std::vector<const FlowGraph::Block*> &blocks, std::set<const FlowGraph::Block*> &seenBlocks)
 	{
 		// Skip block if already seen
 		if(seenBlocks.find(block) != seenBlocks.end()) {
@@ -19,7 +19,7 @@ namespace Analysis {
 		seenBlocks.insert(block);
 
 		// Add all successors of this block into the list
-		for(FlowGraph::Block *succ : block->succ) {
+		for(const FlowGraph::Block *succ : block->succ) {
 			sortRecurse(succ, blocks, seenBlocks);
 		}
 
@@ -31,12 +31,12 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param flowGraph Control flow graph to sort
 	 */
-	BlockSort::BlockSort(FlowGraph &flowGraph)
+	BlockSort::BlockSort(const FlowGraph &flowGraph)
 	{
-		std::set<FlowGraph::Block*> seenBlocks;
+		std::set<const FlowGraph::Block*> seenBlocks;
 
 		// Add each block into the list in sequence
-		for(std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
+		for(const std::unique_ptr<FlowGraph::Block> &block : flowGraph.blocks()) {
 			sortRecurse(block.get(), mSorted, seenBlocks);
 		}
 
@@ -51,7 +51,7 @@ namespace Analysis {
 	 * \brief Return a sorted list of blocks
 	 * \return List of blocks
 	 */
-	const std::vector<FlowGraph::Block*> &BlockSort::sorted() const
+	const std::vector<const FlowGraph::Block*> &BlockSort::sorted() const
 	{
 		return mSorted;
 	}
@@ -61,7 +61,7 @@ namespace Analysis {
 	 * \param block Block to examine
 	 * \return Block's index in list, or -1 if not in list
 	 */
-	int BlockSort::position(FlowGraph::Block *block) const
+	int BlockSort::position(const FlowGraph::Block *block) const
 	{
 		auto it = mOrder.find(block);
 		if(it != mOrder.end()) {

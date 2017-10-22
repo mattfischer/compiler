@@ -3,19 +3,19 @@
 #include "Analysis/DominatorTree.h"
 
 namespace Analysis {
-	static std::set<FlowGraph::Block*> emptyBlockSet; //!< Empty block set, used when block lookup fails
+	static std::set<const FlowGraph::Block*> emptyBlockSet; //!< Empty block set, used when block lookup fails
 
 	/*!
 	 * \brief Constructor
 	 * \param tree Dominator tree to analyze
 	 */
-	DominanceFrontiers::DominanceFrontiers(DominatorTree &tree)
+	DominanceFrontiers::DominanceFrontiers(const DominatorTree &tree)
 	{
-		for(FlowGraph::Block *block : tree.blocks()) {
+		for(const FlowGraph::Block *block : tree.blocks()) {
 			if(block->pred.size() < 2)
 				continue;
 
-			for(FlowGraph::Block *runner : block->pred) {
+			for(const FlowGraph::Block *runner : block->pred) {
 				while(runner != tree.idom(block)) {
 					mFrontiers[runner].insert(block);
 					runner = tree.idom(runner);
@@ -29,7 +29,7 @@ namespace Analysis {
 	 * \param block Block to analyze
 	 * \return Dominance frontiers for block
 	 */
-	const std::set<FlowGraph::Block*> &DominanceFrontiers::frontiers(FlowGraph::Block *block) const
+	const std::set<const FlowGraph::Block*> &DominanceFrontiers::frontiers(const FlowGraph::Block *block) const
 	{
 		auto it = mFrontiers.find(block);
 		if(it != mFrontiers.end()) {

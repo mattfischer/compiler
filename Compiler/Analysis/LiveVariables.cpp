@@ -13,7 +13,7 @@ namespace Analysis {
 	 * \brief Constructor
 	 * \param procedure Procedure to analyze
 	 */
-	LiveVariables::LiveVariables(const IR::Procedure &procedure, FlowGraph &flowGraph)
+	LiveVariables::LiveVariables(const IR::Procedure &procedure, const FlowGraph &flowGraph)
 		: mProcedure(procedure)
 	{
 		Util::Timer timer;
