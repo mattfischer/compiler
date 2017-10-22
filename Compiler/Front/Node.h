@@ -72,7 +72,7 @@ namespace Front {
 		Node::Type nodeType; //!< Node type
 		Node::Subtype nodeSubtype; //!< Node subtype
 		int line; //!< Line in source file corresponding to node
-		std::vector<Node*> children; //!< Children of node
+		std::vector<std::unique_ptr<Node>> children; //!< Children of node
 		std::shared_ptr<Front::Type> type; //!< Assigned type of language element represented by node
 
 		/*!
@@ -87,7 +87,7 @@ namespace Front {
 		Symbol *symbol; //!< Symbol the node corresponds to
 	};
 
-	std::ostream &operator<<(std::ostream &o, Node *node);
+	std::ostream &operator<<(std::ostream &o, const Node &node);
 }
 
 #endif

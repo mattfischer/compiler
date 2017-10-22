@@ -26,8 +26,8 @@ namespace Front {
 			IR::Symbol *object;
 		};
 
-		void processNode(Node *node, Context &context);
-		IR::Symbol *processRValue(Node *node, Context &context);
+		void processNode(Node &node, Context &context);
+		IR::Symbol *processRValue(Node &node, Context &context);
 	};
 }
 

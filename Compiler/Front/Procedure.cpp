@@ -3,11 +3,11 @@
 #include <iostream>
 
 namespace Front {
-	void printNode(Node *node, std::ostream &o, std::string prefix)
+	void printNode(Node &node, std::ostream &o, std::string prefix)
 	{
 		o << prefix << node << std::endl;
-		for(Node *child : node->children) {
-			printNode(child, o, prefix + "  ");
+		for(std::unique_ptr<Node> &child : node.children) {
+			printNode(*child, o, prefix + "  ");
 		}
 	}
 
@@ -19,6 +19,6 @@ namespace Front {
 			o << "    " << argument->type->name << " " << argument->name << std::endl;
 		}
 		o << "  Body:" << std::endl;
-		printNode(body, o, "    ");
+		printNode(*body, o, "    ");
 	}
 }

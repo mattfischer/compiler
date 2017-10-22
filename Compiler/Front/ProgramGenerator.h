@@ -13,7 +13,7 @@ namespace Front {
 	class ProgramGenerator
 	{
 	public:
-		ProgramGenerator(Node *tree, std::unique_ptr<Types> types, std::unique_ptr<Scope> scope);
+		ProgramGenerator(Node &tree, std::unique_ptr<Types> types, std::unique_ptr<Scope> scope);
 
 		std::unique_ptr<Program> generate();
 
@@ -21,7 +21,7 @@ namespace Front {
 		int errorLine() { return mErrorLine; } //!< Error line
 
 	private:
-		Node *mTree; //!< Abstract syntax tree
+		Node &mTree; //!< Abstract syntax tree
 		std::unique_ptr<Types> mTypes;
 		std::unique_ptr<Scope> mScope;
 
@@ -35,10 +35,10 @@ namespace Front {
 			bool inLoop;
 		};
 
-		void checkType(Node *node, Context &context);
-		void checkChildren(Node *node, Context &context);
-		std::shared_ptr<Type> createType(Node *node, Types *types);
-		void addProcedure(Node *node, Program &program, Scope &scope, bool instanceMethod);
+		void checkType(Node &node, Context &context);
+		void checkChildren(Node &node, Context &context);
+		std::shared_ptr<Type> createType(Node &node, Types *types);
+		void addProcedure(Node &node, Program &program, Scope &scope, bool instanceMethod);
 	};
 }
 #endif

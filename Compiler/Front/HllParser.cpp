@@ -6,6 +6,7 @@
 #include <cctype>
 
 namespace Front {
+
 /*!
  * \brief Constructor
  * \param tokenizer Tokenizer
@@ -23,18 +24,15 @@ HllParser::HllParser(HllTokenizer &tokenizer)
  * \param nodeSubtype Subtype for new node
  * \return Newly constructed node
  */
-Node *HllParser::newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtype)
+std::unique_ptr<Node> HllParser::newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtype)
 {
 	// Construct the new node
-	Node *node = new Node;
+	std::unique_ptr<Node> node = std::make_unique<Node>();
 	node->nodeType = nodeType;
 	node->nodeSubtype = nodeSubtype;
 	node->type = 0;
 	node->line = line;
 	node->symbol = 0;
-
-	// Add the node to the list of nodes, so that they can all be deleted if an error occurs
-	mNodes.push_back(node);
 
 	return node;
 }
@@ -43,7 +41,7 @@ Node *HllParser::newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtyp
  * \brief Parse the input stream
  * \return Abstract syntax tree representing parse, or 0 if an error occurred
  */
-Node *HllParser::parse()
+std::unique_ptr<Node> HllParser::parse()
 {
 	try {
 		// Parse the stream
@@ -51,25 +49,20 @@ Node *HllParser::parse()
 	} catch(Input::Parser::ParseException parseException) {
 		// Collect the error information from the exception
 		setError(parseException.message(), parseException.line(), parseException.column());
-
-		// Delete all nodes created along the way
-		for(unsigned int i=0; i<mNodes.size(); i++) {
-			delete mNodes[i];
-		}
 		return 0;
 	}
 }
 
-Node *HllParser::parseProgram()
+std::unique_ptr<Node> HllParser::parseProgram()
 {
 	// <Program> := { [ <Procedure> | <Struct> ] }* END
-	Node *list = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> list = newNode(Node::Type::List, next().line);
 	while(true) {
-		Node *node;
+		std::unique_ptr<Node> node;
 		if(node = parseProcedure()) {
-			list->children.push_back(node);
+			list->children.push_back(std::move(node));
 		} else if((node = parseStruct()) || (node = parseClass())) {
-			list->children.push_back(node);
+			list->children.push_back(std::move(node));
 		} else {
 			break;
 		}
@@ -79,14 +72,14 @@ Node *HllParser::parseProgram()
 	return list;
 }
 
-Node *HllParser::parseProcedure()
+std::unique_ptr<Node> HllParser::parseProcedure()
 {
 	// <Procedure> := <Type> IDENTIFIER '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}'
-	Node *returnType = parseType();
+	std::unique_ptr<Node> returnType = parseType();
 	if(!returnType)	return 0;
 
-	Node *node = newNode(Node::Type::ProcedureDef, returnType->line);
-	node->children.push_back(returnType);
+	std::unique_ptr<Node> node = newNode(Node::Type::ProcedureDef, returnType->line);
+	node->children.push_back(std::move(returnType));
 	node->lexVal.s = next().text;
 	expect(HllTokenizer::TypeIdentifier);
 
@@ -101,40 +94,40 @@ Node *HllParser::parseProcedure()
 	return node;
 }
 
-Node *HllParser::parseStruct()
+std::unique_ptr<Node> HllParser::parseStruct()
 {
 	// <Struct> := 'struct' IDENTIFIER '{' { <VariableDeclaration> ';' }* '}'
 	if(!matchLiteral("struct")) {
 		return 0;
 	}
 
-	Node *node = newNode(Node::Type::StructDef, next().line);
+	std::unique_ptr<Node> node = newNode(Node::Type::StructDef, next().line);
 	consume();
 
 	node->lexVal.s = next().text;
 	expect(HllTokenizer::TypeIdentifier);
 
 	expectLiteral("{");
-	Node *membersNode = newNode(Node::Type::List, next().line);
-	Node *member;
+	std::unique_ptr<Node> membersNode = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> member;
 	while(member = parseVariableDeclaration()) {
-		membersNode->children.push_back(member);
+		membersNode->children.push_back(std::move(member));
 		expectLiteral(";");
 	}
-	node->children.push_back(membersNode);
+	node->children.push_back(std::move(membersNode));
 	expectLiteral("}");
 
 	return node;
 }
 
-Node *HllParser::parseClass()
+std::unique_ptr<Node> HllParser::parseClass()
 {
 	// <Struct> := 'class' IDENTIFIER { ':' IDENTIFIER }? '{' <ClassMember>* '}'
 	if(!matchLiteral("class")) {
 		return 0;
 	}
 
-	Node *node = newNode(Node::Type::ClassDef, next().line);
+	std::unique_ptr<Node> node = newNode(Node::Type::ClassDef, next().line);
 	consume();
 
 	node->lexVal.s = next().text;
@@ -144,30 +137,30 @@ Node *HllParser::parseClass()
 		consume();
 		std::string parent = next().text;
 		expect(HllTokenizer::TypeIdentifier);
-		Node *parentNode = newNode(Node::Type::Id, next().line);
+		std::unique_ptr<Node> parentNode = newNode(Node::Type::Id, next().line);
 		parentNode->lexVal.s = parent;
-		node->children.push_back(parentNode);
+		node->children.push_back(std::move(parentNode));
 	}
 
 	expectLiteral("{");
-	Node *membersNode = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> membersNode = newNode(Node::Type::List, next().line);
 
-	Node *member;
+	std::unique_ptr<Node> member;
 	while(member = parseClassMember()) {
-		membersNode->children.push_back(member);
+		membersNode->children.push_back(std::move(member));
 	}
 
-	node->children.push_back(membersNode);
+	node->children.push_back(std::move(membersNode));
 	expectLiteral("}");
 
 	return node;
 }
 
-Node *HllParser::parseClassMember()
+std::unique_ptr<Node> HllParser::parseClassMember()
 {
 	// <ClassMember> := { <Type> }? IDENTIFIER '(' <ArgumentDeclarationList> ')' '{' <StatementList> '}' | <Type> IDENTIFIER ';'
-	Node *type;
-	std::vector<Node*> qualifiers;
+	std::unique_ptr<Node> type;
+	std::vector<std::unique_ptr<Node>> qualifiers;
 
 	if(match(HllTokenizer::TypeIdentifier) && matchLiteral("(", 1)) {
 		type = 0;
@@ -196,16 +189,16 @@ Node *HllParser::parseClassMember()
 	std::string name = next().text;
 	expect(HllTokenizer::TypeIdentifier);
 
-	Node *node = newNode(Node::Type::ClassMember, next().line);
-	Node *qualifiersNode = newNode(Node::Type::List, next().line);
-	qualifiersNode->children = qualifiers;
-	node->children.push_back(qualifiersNode);
+	std::unique_ptr<Node> node = newNode(Node::Type::ClassMember, next().line);
+	std::unique_ptr<Node> qualifiersNode = newNode(Node::Type::List, next().line);
+	qualifiersNode->children = std::move(qualifiers);
+	node->children.push_back(std::move(qualifiersNode));
 
-	Node *memberNode;
+	std::unique_ptr<Node> memberNode;
 	if(matchLiteral("(")) {
 		consume();
 		memberNode = newNode(Node::Type::ProcedureDef, next().line);
-		memberNode->children.push_back(type);
+		memberNode->children.push_back(std::move(type));
 		memberNode->lexVal.s = name;
 
 		memberNode->children.push_back(parseArgumentList());
@@ -225,16 +218,16 @@ Node *HllParser::parseClassMember()
 
 		memberNode = newNode(Node::Type::VarDecl, type->line);
 		memberNode->lexVal.s = name;
-		memberNode->children.push_back(type);
+		memberNode->children.push_back(std::move(type));
 		expectLiteral(";");
 	}
 
-	node->children.push_back(memberNode);
+	node->children.push_back(std::move(memberNode));
 
 	return node;
 }
 
-Node *HllParser::parseVariableDeclaration()
+std::unique_ptr<Node> HllParser::parseVariableDeclaration()
 {
 	// <VariableDeclaration> := <Type> IDENTIFIER
 	if(match(HllTokenizer::TypeIdentifier)) {
@@ -247,25 +240,25 @@ Node *HllParser::parseVariableDeclaration()
 		}
 	}
 
-	Node *type = parseType();
+	std::unique_ptr<Node> type = parseType();
 	if(!type) return 0;
 
-	Node *node = newNode(Node::Type::VarDecl, type->line);
+	std::unique_ptr<Node> node = newNode(Node::Type::VarDecl, type->line);
 	node->lexVal.s = next().text;
 	expect(HllTokenizer::TypeIdentifier);
 
-	node->children.push_back(type);
+	node->children.push_back(std::move(type));
 
 	return node;
 }
 
-Node *HllParser::parseArgumentList()
+std::unique_ptr<Node> HllParser::parseArgumentList()
 {
 	// <ArgumentList> := { <VariableDeclaration> ',' }*
-	Node *node = newNode(Node::Type::List, next().line);
-	Node *argument;
+	std::unique_ptr<Node> node = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> argument;
 	while(argument = parseVariableDeclaration()) {
-		node->children.push_back(argument);
+		node->children.push_back(std::move(argument));
 		if(!matchLiteral(",")) {
 			break;
 		}
@@ -275,10 +268,10 @@ Node *HllParser::parseArgumentList()
 	return node;
 }
 
-Node *HllParser::parseType(bool required)
+std::unique_ptr<Node> HllParser::parseType(bool required)
 {
 	// <Type> := IDENTIFIER { '[' ']' }*
-	Node *node;
+	std::unique_ptr<Node> node;
 
 	if(match(HllTokenizer::TypeIdentifier)) {
 		node = newNode(Node::Type::Id, next().line);
@@ -287,9 +280,9 @@ Node *HllParser::parseType(bool required)
 
 		while(matchLiteral("[") && matchLiteral("]", 1)) {
 			consume(2);
-			Node *arrayNode = newNode(Node::Type::Array, node->line);
-			arrayNode->children.push_back(node);
-			node = arrayNode;
+			std::unique_ptr<Node> arrayNode = newNode(Node::Type::Array, node->line);
+			arrayNode->children.push_back(std::move(node));
+			node = std::move(arrayNode);
 		}
 		return node;
 	}
@@ -302,31 +295,31 @@ Node *HllParser::parseType(bool required)
 	return 0;
 }
 
-Node *HllParser::parseStatementList()
+std::unique_ptr<Node> HllParser::parseStatementList()
 {
 	// <StatementList> := { <Statement> }*
-	Node *node = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> node = newNode(Node::Type::List, next().line);
 
-	Node *statement;
+	std::unique_ptr<Node> statement;
 	while(statement = parseStatement()) {
-		node->children.push_back(statement);
+		node->children.push_back(std::move(statement));
 	}
 
 	return node;
 }
 
-Node *HllParser::parseStatement(bool required)
+std::unique_ptr<Node> HllParser::parseStatement(bool required)
 {
-	Node *node;
+	std::unique_ptr<Node> node;
 
 	if(node = parseVariableDeclaration()) {
 		// <Statement> := <VariableDeclaration> { = <Expression> ';' }?
 		if(matchLiteral("=")) {
 			consume();
-			Node *assign = newNode(Node::Type::Assign, node->line);
-			assign->children.push_back(node);
+			std::unique_ptr<Node> assign = newNode(Node::Type::Assign, node->line);
+			assign->children.push_back(std::move(node));
 			assign->children.push_back(parseExpression(true));
-			node = assign;
+			node = std::move(assign);
 		}
 		expectLiteral(";");
 
@@ -379,14 +372,14 @@ Node *HllParser::parseStatement(bool required)
 		consume();
 
 		expectLiteral("(");
-		Node *varDecl = parseVariableDeclaration();
+		std::unique_ptr<Node> varDecl = parseVariableDeclaration();
 		if(varDecl) {
-			Node *assign = newNode(Node::Type::Assign, varDecl->line);
-			assign->children.push_back(varDecl);
+			std::unique_ptr<Node> assign = newNode(Node::Type::Assign, varDecl->line);
+			assign->children.push_back(std::move(varDecl));
 
 			expectLiteral("=");
 			assign->children.push_back(parseExpression(true));
-			node->children.push_back(assign);
+			node->children.push_back(std::move(assign));
 		} else {
 			node->children.push_back(parseExpression(true));
 		}
@@ -423,13 +416,13 @@ Node *HllParser::parseStatement(bool required)
 	return 0;
 }
 
-Node *HllParser::parseClause(bool required)
+std::unique_ptr<Node> HllParser::parseClause(bool required)
 {
 	if(matchLiteral("{")) {
 		// <Clause> := '{' <StatementList> '}'
 		consume();
 
-		Node *node = parseStatementList();
+		std::unique_ptr<Node> node = parseStatementList();
 		expectLiteral("}");
 
 		return node;
@@ -439,10 +432,10 @@ Node *HllParser::parseClause(bool required)
 	}
 }
 
-Node *HllParser::parseExpression(bool required)
+std::unique_ptr<Node> HllParser::parseExpression(bool required)
 {
 	// <Expression> := <OrExpression> { '=' <OrExpression> }*
-	Node *node = parseOrExpression(required);
+	std::unique_ptr<Node> node = parseOrExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -450,19 +443,19 @@ Node *HllParser::parseExpression(bool required)
 	if(matchLiteral("=")) {
 		consume();
 
-		Node *assignNode = newNode(Node::Type::Assign, node->line);
-		assignNode->children.push_back(node);
+		std::unique_ptr<Node> assignNode = newNode(Node::Type::Assign, node->line);
+		assignNode->children.push_back(std::move(node));
 		assignNode->children.push_back(parseExpression(true));
-		node = assignNode;
+		node = std::move(assignNode);
 	}
 
 	return node;
 }
 
-Node *HllParser::parseOrExpression(bool required)
+std::unique_ptr<Node> HllParser::parseOrExpression(bool required)
 {
 	// <OrExpression> := <AndExpression> { '||' <AndExpression> }*
-	Node *node = parseAndExpression(required);
+	std::unique_ptr<Node> node = parseAndExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -471,10 +464,10 @@ Node *HllParser::parseOrExpression(bool required)
 		if(matchLiteral("||")) {
 			consume();
 
-			Node *orNode = newNode(Node::Type::Compare, node->line, Node::Subtype::Or);
-			orNode->children.push_back(node);
+			std::unique_ptr<Node> orNode = newNode(Node::Type::Compare, node->line, Node::Subtype::Or);
+			orNode->children.push_back(std::move(node));
 			orNode->children.push_back(parseAndExpression(true));
-			node = orNode;
+			node = std::move(orNode);
 			continue;
 		}
 		break;
@@ -483,10 +476,10 @@ Node *HllParser::parseOrExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseAndExpression(bool required)
+std::unique_ptr<Node> HllParser::parseAndExpression(bool required)
 {
 	// <AndExpression> := <CompareExpression> { '&&' <CompareExpression> }*
-	Node *node = parseCompareExpression(required);
+	std::unique_ptr<Node> node = parseCompareExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -495,10 +488,10 @@ Node *HllParser::parseAndExpression(bool required)
 		if(matchLiteral("&&")) {
 			consume();
 
-			Node *andNode = newNode(Node::Type::Compare, node->line, Node::Subtype::And);
-			andNode->children.push_back(node);
+			std::unique_ptr<Node> andNode = newNode(Node::Type::Compare, node->line, Node::Subtype::And);
+			andNode->children.push_back(std::move(node));
 			andNode->children.push_back(parseCompareExpression(true));
-			node = andNode;
+			node = std::move(andNode);
 			continue;
 		}
 		break;
@@ -507,10 +500,10 @@ Node *HllParser::parseAndExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseCompareExpression(bool required)
+std::unique_ptr<Node> HllParser::parseCompareExpression(bool required)
 {
 	// <CompareExpression> := <AddExpression> { [ '==' | '!=' | '<' | '<=' | '>' | '>=' ] <AddExpression> }*
-	Node *node = parseAddExpression(required);
+	std::unique_ptr<Node> node = parseAddExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -526,10 +519,10 @@ Node *HllParser::parseCompareExpression(bool required)
 			else if(matchLiteral(">=")) subtype = Node::Subtype::GreaterThanEqual;
 			consume();
 
-			Node *compareNode = newNode(Node::Type::Compare, node->line, subtype);
-			compareNode->children.push_back(node);
+			std::unique_ptr<Node> compareNode = newNode(Node::Type::Compare, node->line, subtype);
+			compareNode->children.push_back(std::move(node));
 			compareNode->children.push_back(parseAddExpression(true));
-			node = compareNode;
+			node = std::move(compareNode);
 			continue;
 		}
 		break;
@@ -538,10 +531,10 @@ Node *HllParser::parseCompareExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseAddExpression(bool required)
+std::unique_ptr<Node> HllParser::parseAddExpression(bool required)
 {
 	// <AddExpression> := <MultiplyExpression> { [ '+' | '-' ] <MultiplyExpression> }*
-	Node *node = parseMultiplyExpression(required);
+	std::unique_ptr<Node> node = parseMultiplyExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -553,10 +546,10 @@ Node *HllParser::parseAddExpression(bool required)
 			else if(matchLiteral("-")) subtype = Node::Subtype::Subtract;
 			consume();
 
-			Node *addNode = newNode(Node::Type::Arith, node->line, subtype);
-			addNode->children.push_back(node);
+			std::unique_ptr<Node> addNode = newNode(Node::Type::Arith, node->line, subtype);
+			addNode->children.push_back(std::move(node));
 			addNode->children.push_back(parseMultiplyExpression(true));
-			node = addNode;
+			node = std::move(addNode);
 			continue;
 		}
 		break;
@@ -565,10 +558,10 @@ Node *HllParser::parseAddExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseMultiplyExpression(bool required)
+std::unique_ptr<Node> HllParser::parseMultiplyExpression(bool required)
 {
 	// <MultiplyExpression> := <SuffixExpression> { '*' <SuffixExpression> }*
-	Node *node = parseSuffixExpression(required);
+	std::unique_ptr<Node> node = parseSuffixExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -581,10 +574,10 @@ Node *HllParser::parseMultiplyExpression(bool required)
 			else if(matchLiteral("%")) subtype = Node::Subtype::Modulo;
 			consume();
 
-			Node *multiplyNode = newNode(Node::Type::Arith, node->line, subtype);
-			multiplyNode->children.push_back(node);
+			std::unique_ptr<Node> multiplyNode = newNode(Node::Type::Arith, node->line, subtype);
+			multiplyNode->children.push_back(std::move(node));
 			multiplyNode->children.push_back(parseSuffixExpression(true));
-			node = multiplyNode;
+			node = std::move(multiplyNode);
 			continue;
 		}
 		break;
@@ -593,10 +586,10 @@ Node *HllParser::parseMultiplyExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseSuffixExpression(bool required)
+std::unique_ptr<Node> HllParser::parseSuffixExpression(bool required)
 {
 	// <SuffixExpression> := <BaseExpression> ...
-	Node *node = parseBaseExpression(required);
+	std::unique_ptr<Node> node = parseBaseExpression(required);
 	if(!node) {
 		return 0;
 	}
@@ -607,21 +600,21 @@ Node *HllParser::parseSuffixExpression(bool required)
 			// '(' <ExpressionList> ')'
 			consume();
 
-			Node *callNode = newNode(Node::Type::Call, node->line);
-			callNode->children.push_back(node);
+			std::unique_ptr<Node> callNode = newNode(Node::Type::Call, node->line);
+			callNode->children.push_back(std::move(node));
 			callNode->children.push_back(parseExpressionList());
 			expectLiteral(")");
 
-			node = callNode;
+			node = std::move(callNode);
 		} else if(matchLiteral("[")) {
 			// '[' <Expression> ']'
 			consume();
 
-			Node *arrayNode = newNode(Node::Type::Array, node->line);
-			arrayNode->children.push_back(node);
+			std::unique_ptr<Node> arrayNode = newNode(Node::Type::Array, node->line);
+			arrayNode->children.push_back(std::move(node));
 			arrayNode->children.push_back(parseExpression(true));
 			expectLiteral("]");
-			node = arrayNode;
+			node = std::move(arrayNode);
 		} else if(matchLiteral("++") || matchLiteral("--")) {
 			// [ '++' | '--' ]
 			Node::Subtype subtype;
@@ -629,17 +622,17 @@ Node *HllParser::parseSuffixExpression(bool required)
 			else if(matchLiteral("--")) subtype = Node::Subtype::Decrement;
 			consume();
 
-			Node *incrementNode = newNode(Node::Type::Arith, node->line, subtype);
-			incrementNode->children.push_back(node);
-			node = incrementNode;
+			std::unique_ptr<Node> incrementNode = newNode(Node::Type::Arith, node->line, subtype);
+			incrementNode->children.push_back(std::move(node));
+			node = std::move(incrementNode);
 		} else if(matchLiteral(".")) {
-			Node *memberNode = newNode(Node::Type::Member, next().line);
+			std::unique_ptr<Node> memberNode = newNode(Node::Type::Member, next().line);
 			consume();
 
 			memberNode->lexVal.s = next().text;
 			expect(HllTokenizer::TypeIdentifier);
-			memberNode->children.push_back(node);
-			node = memberNode;
+			memberNode->children.push_back(std::move(node));
+			node = std::move(memberNode);
 		} else {
 			break;
 		}
@@ -648,13 +641,13 @@ Node *HllParser::parseSuffixExpression(bool required)
 	return node;
 }
 
-Node *HllParser::parseExpressionList()
+std::unique_ptr<Node> HllParser::parseExpressionList()
 {
 	// <ExpressionList> := { <Expression> ',' }*
-	Node *list = newNode(Node::Type::List, next().line);
-	Node *expression;
+	std::unique_ptr<Node> list = newNode(Node::Type::List, next().line);
+	std::unique_ptr<Node> expression;
 	while(expression = parseExpression()) {
-		list->children.push_back(expression);
+		list->children.push_back(std::move(expression));
 		if(!matchLiteral(",")) {
 			break;
 		}
@@ -664,9 +657,9 @@ Node *HllParser::parseExpressionList()
 	return list;
 }
 
-Node *HllParser::parseBaseExpression(bool required)
+std::unique_ptr<Node> HllParser::parseBaseExpression(bool required)
 {
-	Node *node;
+	std::unique_ptr<Node> node;
 
 	if(match(HllTokenizer::TypeNumber)) {
 		// <BaseExpression> := NUMBER
@@ -723,17 +716,17 @@ Node *HllParser::parseBaseExpression(bool required)
 		node = newNode(Node::Type::New, next().line);
 		consume();
 
-		Node *type = parseType(true);
-		Node *args = 0;
+		std::unique_ptr<Node> type = parseType(true);
+		std::unique_ptr<Node> args;
 		if(matchLiteral("[")) {
 			consume();
 
-			Node *count = parseExpression(true);
+			std::unique_ptr<Node> count = parseExpression(true);
 			expectLiteral("]");
-			Node *arrayType = newNode(Node::Type::Array, type->line);
-			arrayType->children.push_back(type);
-			arrayType->children.push_back(count);
-			type = arrayType;
+			std::unique_ptr<Node> arrayType = newNode(Node::Type::Array, type->line);
+			arrayType->children.push_back(std::move(type));
+			arrayType->children.push_back(std::move(count));
+			type = std::move(arrayType);
 		} else if(matchLiteral("(")) {
 			consume();
 
@@ -743,9 +736,9 @@ Node *HllParser::parseBaseExpression(bool required)
 			args = newNode(Node::Type::List, node->line);
 		}
 
-		node->children.push_back(type);
+		node->children.push_back(std::move(type));
 		if(args) {
-			node->children.push_back(args);
+			node->children.push_back(std::move(args));
 		}
 
 		return node;

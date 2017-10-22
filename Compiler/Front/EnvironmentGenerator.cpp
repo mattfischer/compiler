@@ -22,11 +22,11 @@ public:
 		: mLocation(location), mMessage(message)
 	{}
 
-	EnvironmentError(Node *node, const std::string &message)
+	EnvironmentError(Node &node, const std::string &message)
 		: mMessage(message)
 	{
 		std::stringstream s;
-		s << "Line " << node->line;
+		s << "Line " << node.line;
 		mLocation = s.str();
 	}
 
@@ -42,23 +42,23 @@ private:
  * \brief Constructor
  * \param tree Parse tree
  */
-EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports)
+EnvironmentGenerator::EnvironmentGenerator(Node &tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports)
 {
 	try {
 		mTypes = std::make_unique<Types>();
 		mScope = std::make_unique<Scope>();
 
 		// Loop through the tree and pre-populate all declared type names
-		for(Node *node : tree->children) {
+		for(std::unique_ptr<Node> &node : tree.children) {
 			std::stringstream s;
 
 			switch(node->nodeType) {
 				case Node::Type::StructDef:
-					addStruct(node);
+					addStruct(*node);
 					break;
 
 				case Node::Type::ClassDef:
-					addClass(node);
+					addClass(*node);
 					break;
 			}
 		}
@@ -78,9 +78,9 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
 		}
 
 		// Iterate through the tree, and construct symbols for each procedure
-		for(Node *node : tree->children) {
+		for(std::unique_ptr<Node> &node : tree.children) {
 			if(node->nodeType == Node::Type::ProcedureDef) {
-				std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(createType(node, false), node->lexVal.s);
+				std::unique_ptr<Symbol> symbol = std::make_unique<Symbol>(createType(*node, false), node->lexVal.s);
 				mScope->addSymbol(std::move(symbol));
 			}
 		}
@@ -95,10 +95,10 @@ EnvironmentGenerator::EnvironmentGenerator(Node *tree, const std::vector<std::re
  * \brief Add a structure to the type list
  * \param node Node describing structure
  */
-void EnvironmentGenerator::addStruct(Node *node)
+void EnvironmentGenerator::addStruct(Node &node)
 {
 	// Create the type
-	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Struct, node->lexVal.s);
+	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Struct, node.lexVal.s);
 	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of structure " << type->name;
@@ -111,8 +111,8 @@ void EnvironmentGenerator::addStruct(Node *node)
 	type->constructor = 0;
 
 	// Iterate through the member nodes, and create type members for each
-	for(Node *memberNode : node->children[0]->children) {
-		std::shared_ptr<Type> memberType = createType(memberNode->children[0], true);
+	for(std::unique_ptr<Node> &memberNode : node.children[0]->children) {
+		std::shared_ptr<Type> memberType = createType(*memberNode->children[0], true);
 		type->addMember(memberType, memberNode->lexVal.s, false);
 	}
 }
@@ -122,10 +122,10 @@ void EnvironmentGenerator::addStruct(Node *node)
  * \param node Node describing structure
  * \param program Program to add to
  */
-void EnvironmentGenerator::addClass(Node *node)
+void EnvironmentGenerator::addClass(Node &node)
 {
 	// Create the type
-	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Class, node->lexVal.s);
+	std::shared_ptr<TypeStruct> type = std::make_shared<TypeStruct>(Type::Kind::Class, node.lexVal.s);
 	if(!mTypes->registerType(type)) {
 		std::stringstream s;
 		s << "Redefinition of class " << type->name;
@@ -135,32 +135,32 @@ void EnvironmentGenerator::addClass(Node *node)
 	type->scope = 0;
 	type->constructor = 0;
 
-	if(node->children.size() == 2) {
+	if(node.children.size() == 2) {
 		std::stringstream s;
-		s << "Line " << node->line;
-		type->parent = std::static_pointer_cast<TypeStruct>(std::static_pointer_cast<Type>(std::make_shared<TypeDummy>(node->children[0]->lexVal.s, s.str())));
+		s << "Line " << node.line;
+		type->parent = std::static_pointer_cast<TypeStruct>(std::static_pointer_cast<Type>(std::make_shared<TypeDummy>(node.children[0]->lexVal.s, s.str())));
 	} else {
 		type->parent = 0;
 	}
 
 	// Iterate through the member nodes, and create type members for each
-	Node *members = node->children[node->children.size() - 1];
-	for(Node *child : members->children) {
-		Node *qualifiersNode = child->children[0];
-		Node *memberNode = child->children[1];
+	std::unique_ptr<Node> &members = node.children[node.children.size() - 1];
+	for(std::unique_ptr<Node> &child : members->children) {
+		Node &qualifiersNode = *child->children[0];
+		Node &memberNode = *child->children[1];
 
-		switch(memberNode->nodeType) {
+		switch(memberNode.nodeType) {
 			case Node::Type::VarDecl:
 			{
-				std::shared_ptr<Type> memberType = createType(memberNode->children[0], true);
-				type->addMember(memberType, memberNode->lexVal.s, 0);
+				std::shared_ptr<Type> memberType = createType(*memberNode.children[0], true);
+				type->addMember(memberType, memberNode.lexVal.s, 0);
 				break;
 			}
 
 			case Node::Type::ProcedureDef:
 			{
 				unsigned int qualifiers = 0;
-				for(Node *qualifierNode : qualifiersNode->children) {
+				for(std::unique_ptr<Node> &qualifierNode : qualifiersNode.children) {
 					switch(qualifierNode->nodeSubtype) {
 						case Node::Subtype::Virtual:
 							qualifiers |= TypeStruct::Member::QualifierVirtual;
@@ -181,8 +181,8 @@ void EnvironmentGenerator::addClass(Node *node)
 				}
 
 				std::shared_ptr<TypeProcedure> procedureType = std::static_pointer_cast<TypeProcedure>(createType(memberNode, true));
-				type->addMember(procedureType, memberNode->lexVal.s, qualifiers);
-				if(memberNode->lexVal.s == type->name) {
+				type->addMember(procedureType, memberNode.lexVal.s, qualifiers);
+				if(memberNode.lexVal.s == type->name) {
 					type->constructor = procedureType;
 				}
 
@@ -198,12 +198,12 @@ void EnvironmentGenerator::addClass(Node *node)
  * \param dummy Whether to create a dummy type if not found
  * \return Type
  */
-std::shared_ptr<Type> EnvironmentGenerator::createType(Node *node, bool dummy)
+std::shared_ptr<Type> EnvironmentGenerator::createType(Node &node, bool dummy)
 {
 	std::shared_ptr<Type> type;
-	switch(node->nodeType) {
+	switch(node.nodeType) {
 		case Node::Type::Array:
-			type = createType(node->children[0], dummy);
+			type = createType(*node.children[0], dummy);
 			if(Type::equals(*type, *Types::intrinsic(Types::Void))) {
 				throw EnvironmentError(node, "Cannot declare array of voids");
 			}
@@ -213,33 +213,33 @@ std::shared_ptr<Type> EnvironmentGenerator::createType(Node *node, bool dummy)
 		case Node::Type::ProcedureDef:
 			{
 				// Iterate the tree's argument items
-				Node *argumentList = node->children[1];
+				Node &argumentList = *node.children[1];
 				std::vector<std::shared_ptr<Type>> argumentTypes;
-				for(Node *argumentNode : argumentList->children) {
+				for(std::unique_ptr<Node> &argumentNode : argumentList.children) {
 					// Construct the argument type, and add it to the list of types
-					std::shared_ptr<Type> argumentType = createType(argumentNode->children[0], dummy);
+					std::shared_ptr<Type> argumentType = createType(*argumentNode->children[0], dummy);
 					if(Type::equals(*argumentType, *Types::intrinsic(Types::Void))) {
-						throw EnvironmentError(argumentNode, "Cannot declare procedure argument of type void");
+						throw EnvironmentError(*argumentNode, "Cannot declare procedure argument of type void");
 					}
 					argumentTypes.push_back(argumentType);
 				}
 
 				// Construct the procedure type
-				std::shared_ptr<Type> returnType = node->children[0] ? createType(node->children[0], dummy) : Types::intrinsic(Types::Void);
+				std::shared_ptr<Type> returnType = node.children[0] ? createType(*node.children[0], dummy) : Types::intrinsic(Types::Void);
 				type = std::make_shared<TypeProcedure>(returnType, argumentTypes);
 				break;
 			}
 
 		default:
-			type = mTypes->findType(node->lexVal.s);
+			type = mTypes->findType(node.lexVal.s);
 			if(!type) {
 				if(dummy) {
 					std::stringstream s;
-					s << "Line " << node->line;
-					type = std::make_shared<TypeDummy>(node->lexVal.s, s.str());
+					s << "Line " << node.line;
+					type = std::make_shared<TypeDummy>(node.lexVal.s, s.str());
 				} else {
 					std::stringstream s;
-					s << "Type '" << node->lexVal.s << "' not found";
+					s << "Type '" << node.lexVal.s << "' not found";
 					throw EnvironmentError(node, s.str());
 				}
 			}

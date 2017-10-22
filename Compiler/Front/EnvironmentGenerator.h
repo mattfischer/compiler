@@ -16,7 +16,7 @@ namespace Front {
  */
 class EnvironmentGenerator {
 public:
-	EnvironmentGenerator(Node *tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports);
+	EnvironmentGenerator(Node &tree, const std::vector<std::reference_wrapper<ExportInfo>> &imports);
 
 	Types &types() { return *mTypes; } //!< Types in environment
 	Scope &scope() { return *mScope; } //!< Global scope of environment
@@ -35,9 +35,9 @@ private:
 	std::string mErrorMessage; //!< Error message
 	std::string mErrorLocation; //!< Error location
 
-	void addStruct(Node *node);
-	void addClass(Node *node);
-	std::shared_ptr<Type> createType(Node *node, bool dummy);
+	void addStruct(Node &node);
+	void addClass(Node &node);
+	std::shared_ptr<Type> createType(Node &node, bool dummy);
 	std::shared_ptr<Type> completeType(std::shared_ptr<Type> type);
 	void completeTypes();
 	void constructScope(std::shared_ptr<TypeStruct> &typeStruct, Scope &scope);

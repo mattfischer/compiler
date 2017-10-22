@@ -17,34 +17,33 @@ class HllParser : public Input::Parser {
 public:
 	HllParser(HllTokenizer &tokenizer);
 
-	Node *parse();
+	std::unique_ptr<Node> parse();
 
 private:
-	std::vector<Node*> mNodes; //!< List of all nodes created so far
 	HllTokenizer &mHllTokenizer; //!< Reference to the tokenizer being used
 
-	Node *newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtype = Node::Subtype::None);
+	std::unique_ptr<Node> newNode(Node::Type nodeType, int line, Node::Subtype nodeSubtype = Node::Subtype::None);
 
-	Node *parseProgram();
-	Node *parseProcedure();
-	Node *parseStruct();
-	Node *parseClass();
-	Node *parseClassMember();
-	Node *parseVariableDeclaration();
-	Node *parseArgumentList();
-	Node *parseType(bool required = false);
-	Node *parseStatementList();
-	Node *parseStatement(bool required = false);
-	Node *parseClause(bool required = false);
-	Node *parseExpression(bool required = false);
-	Node *parseOrExpression(bool required = false);
-	Node *parseAndExpression(bool required = false);
-	Node *parseCompareExpression(bool required = false);
-	Node *parseAddExpression(bool required = false);
-	Node *parseMultiplyExpression(bool required = false);
-	Node *parseSuffixExpression(bool required = false);
-	Node *parseBaseExpression(bool required = false);
-	Node *parseExpressionList();
+	std::unique_ptr<Node> parseProgram();
+	std::unique_ptr<Node> parseProcedure();
+	std::unique_ptr<Node> parseStruct();
+	std::unique_ptr<Node> parseClass();
+	std::unique_ptr<Node> parseClassMember();
+	std::unique_ptr<Node> parseVariableDeclaration();
+	std::unique_ptr<Node> parseArgumentList();
+	std::unique_ptr<Node> parseType(bool required = false);
+	std::unique_ptr<Node> parseStatementList();
+	std::unique_ptr<Node> parseStatement(bool required = false);
+	std::unique_ptr<Node> parseClause(bool required = false);
+	std::unique_ptr<Node> parseExpression(bool required = false);
+	std::unique_ptr<Node> parseOrExpression(bool required = false);
+	std::unique_ptr<Node> parseAndExpression(bool required = false);
+	std::unique_ptr<Node> parseCompareExpression(bool required = false);
+	std::unique_ptr<Node> parseAddExpression(bool required = false);
+	std::unique_ptr<Node> parseMultiplyExpression(bool required = false);
+	std::unique_ptr<Node> parseSuffixExpression(bool required = false);
+	std::unique_ptr<Node> parseBaseExpression(bool required = false);
+	std::unique_ptr<Node> parseExpressionList();
 };
 }
 #endif

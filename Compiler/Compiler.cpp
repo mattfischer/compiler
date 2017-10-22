@@ -48,7 +48,7 @@ std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, cons
 	Front::HllTokenizer tokenizer(hllIn);
 	Front::HllParser parser(tokenizer);
 
-	Front::Node *node = parser.parse();
+	std::unique_ptr<Front::Node> node = parser.parse();
 	if(!node) {
 		std::stringstream s;
 		s << "line " << parser.errorLine() << " column " << parser.errorColumn() << ": " << parser.errorMessage() << std::endl;
@@ -67,7 +67,7 @@ std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, cons
 		imports.push_back(std::move(exportInfo));
 	}
 
-	Front::EnvironmentGenerator environmentGenerator(node, importList);
+	Front::EnvironmentGenerator environmentGenerator(*node, importList);
 	if(environmentGenerator.errorMessage() != "") {
 		std::stringstream s;
 		s << environmentGenerator.errorLocation() << ": " << environmentGenerator.errorMessage() << std::endl;
@@ -75,7 +75,7 @@ std::unique_ptr<VM::Program> Compiler::compile(const std::string &filename, cons
 		return 0;
 	}
 
-	Front::ProgramGenerator programGenerator(node, environmentGenerator.releaseTypes(), environmentGenerator.releaseScope());
+	Front::ProgramGenerator programGenerator(*node, environmentGenerator.releaseTypes(), environmentGenerator.releaseScope());
 	std::unique_ptr<Front::Program> program = programGenerator.generate();
 	if(!program) {
 		std::stringstream s;
