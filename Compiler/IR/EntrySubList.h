@@ -17,6 +17,17 @@ namespace IR {
 		typedef EntryList::const_iterator const_iterator;
 		typedef EntryList::const_reverse_iterator const_reverse_iterator;
 
+		class reverse_list {
+		public:
+			reverse_list(EntrySubList &list) : mList(list) {}
+
+			EntrySubList::const_reverse_iterator begin() { return mList.rbegin(); }
+			EntrySubList::const_reverse_iterator end() { return mList.rend(); }
+
+		private:
+			EntrySubList &mList;
+		};
+
 		EntrySubList(const_iterator begin, const_iterator end) : mBegin(begin), mEnd(end) {}
 		EntrySubList() {}
 
@@ -28,9 +39,11 @@ namespace IR {
 		const Entry *front() { return *begin(); }
 		const Entry *back() { return *(--end()); }
 
+		reverse_list reversed() { return reverse_list(*this); }
+
 	private:
 		const_iterator mBegin;
 		const_iterator mEnd;
 	};
-};
+}
 #endif

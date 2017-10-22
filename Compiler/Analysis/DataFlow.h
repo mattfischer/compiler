@@ -84,8 +84,7 @@ namespace Analysis {
 						break;
 
 					case Direction::Backward:
-						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
-							const IR::Entry *entry = *itEntry;
+						for(const IR::Entry *entry : block->entries.reversed()) {
 							g = transfer(g, gen[entry], kill[entry]);
 							k = transfer(k, kill[entry], gen[entry]);
 						}
@@ -196,8 +195,7 @@ namespace Analysis {
 						break;
 
 					case Direction::Backward:
-						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
-							const IR::Entry *entry = *itEntry;
+						for(const IR::Entry *entry : block->entries.reversed()) {
 							map[entry] = set;
 							set = transfer(set, gen[entry], kill[entry]);
 						}

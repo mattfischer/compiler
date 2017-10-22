@@ -15,43 +15,41 @@ namespace Transform {
 		// Construct a flow graph and use-def chains for the procedure
 		Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		Analysis::UseDefs &useDefs = analysis.useDefs();
+		std::set<IR::Entry*> deleted;
 
 		// Iterate through the blocks of the graph
 		for(std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block.get() != flowGraph.start()) {
-				IR::EntryList::const_iterator itNext;
-				for(IR::EntryList::const_iterator itEntry = block->entries.begin(); itEntry != block->entries.end(); itEntry = itNext) {
-					itNext = itEntry;
-					itNext++;
-					IR::Entry *entry = procedure.entries().entry(itEntry);
+				for(IR::Entry *entry : procedure.entries()) {
 					if(entry->type == IR::Entry::Type::Label) {
 						continue;
 					}
 
-					procedure.entries().erase(entry);
+					deleted.insert(entry);
 					analysis.remove(entry);
-					delete entry;
 				}
 				changed = true;
 			}
 		}
 
+		for (IR::Entry *entry : deleted) {
+			procedure.entries().erase(entry);
+			delete entry;
+		}
+		deleted.clear();
+
 		// Iterate backwards through the procedure's entries
 		IR::EntryList::reverse_iterator itNext;
-		for(IR::EntryList::reverse_iterator itEntry = procedure.entries().rbegin(); itEntry != procedure.entries().rend(); itEntry = itNext) {
-			itNext = itEntry;
-			itNext++;
-			IR::Entry *entry = *itEntry;
+		for(IR::Entry *entry : procedure.entries().reversed()) {
 			switch(entry->type) {
 				case IR::Entry::Type::Move:
 					{
 						// If the move's LHS and RHS are the same, the move is unnecessary
 						IR::EntryThreeAddr *load = (IR::EntryThreeAddr*)entry;
 						if(load->lhs == load->rhs1) {
-							procedure.entries().erase(entry);
+							deleted.insert(entry);
 							analysis.remove(entry);
-							delete entry;
 							break;
 						}
 					}
@@ -67,9 +65,8 @@ namespace Transform {
 						// If an assignment has no uses, it is unnecessary
 						const std::set<const IR::Entry*> &uses = useDefs.uses(entry);
 						if(uses.empty()) {
-							procedure.entries().erase(entry);
+							deleted.insert(entry);
 							analysis.remove(entry);
-							delete entry;
 							changed = true;
 						}
 						break;
@@ -85,9 +82,8 @@ namespace Transform {
 							}
 
 							if(jump->target == label) {
-								procedure.entries().erase(jump);
+								deleted.insert(entry);
 								analysis.remove(entry);
-								delete entry;
 								changed = true;
 								break;
 							}
@@ -96,6 +92,12 @@ namespace Transform {
 					}
 			}
 		}
+
+		for (IR::Entry *entry : deleted) {
+			procedure.entries().erase(entry);
+			delete entry;
+		}
+		deleted.clear();
 
 		// Count the number of assignments to each symbol in the procedure
 		std::map<IR::Symbol*, int> symbolCount;

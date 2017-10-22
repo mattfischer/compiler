@@ -106,6 +106,28 @@ namespace IR {
 			const Entry *mEntry;
 		};
 
+		class reverse_list {
+		public:
+			reverse_list(EntryList &list) : mList(list) {}
+
+			EntryList::reverse_iterator begin() { return mList.rbegin(); }
+			EntryList::reverse_iterator end() { return mList.rend(); }
+
+		private:
+			EntryList &mList;
+		};
+
+		class const_reverse_list {
+		public:
+			const_reverse_list(const EntryList &list) : mList(list) {}
+
+			EntryList::const_reverse_iterator begin() const { return mList.rbegin(); }
+			EntryList::const_reverse_iterator end() const { return mList.rend(); }
+
+		private:
+			const EntryList &mList;
+		};
+
 		EntryList();
 
 		iterator begin() { return iterator(mHead.next); }
@@ -126,11 +148,15 @@ namespace IR {
 		iterator insert(const Entry *position, Entry *entry);
 		iterator insert(iterator position, Entry *entry) { return insert(*position, entry); }
 		iterator find(Entry *entry) { return iterator(entry); }
+		const_iterator find(const Entry *entry) const { return const_iterator(entry); }
 		iterator erase(iterator position) { return erase(*position); }
 		iterator erase(Entry *entry);
 
 		Entry *entry(const Entry *entry);
 		Entry *entry(const_iterator position);
+
+		reverse_list reversed() { return reverse_list(*this); }
+		const_reverse_list reversed() const { return const_reverse_list(*this); }
 
 	private:
 		Entry mHead;

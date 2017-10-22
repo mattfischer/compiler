@@ -14,9 +14,7 @@ namespace Analysis {
 		IR::EntrySubList::const_iterator end;
 
 		// First, break up the procedure into blocks
-		for(IR::EntryList::const_iterator itEntry = procedure.entries().begin(); itEntry != procedure.entries().end(); itEntry++) {
-			const IR::Entry *entry = *itEntry;
-
+		for(const IR::Entry *entry : procedure.entries()) {
 			switch(entry->type) {
 				case IR::Entry::Type::Label:
 					// A label forces the start of a new block
@@ -24,21 +22,21 @@ namespace Analysis {
 						// If a previous block was under construction, it is now complete.
 						// Construct its entry list, now that we know its endpoint, and add
 						// it to the list.
-						end = itEntry;
+						end = procedure.entries().find(entry);
 						block->entries = IR::EntrySubList(begin, end);
 						mFrontMap[block->entries.front()] = block.get();
 						mBlocks.push_back(std::move(block));
 					}
 					// Start a new block, beginning with the label just encountered
 					block = std::make_unique<Block>();
-					begin = itEntry;
+					begin = procedure.entries().find(entry);
 					break;
 
 				case IR::Entry::Type::Jump:
 				case IR::Entry::Type::CJump:
 					// A jump instruction forces the end of the current block.  Construct
 					// its entry list now that we know its endpoint, and add it to the list.
-					end = itEntry;
+					end = procedure.entries().find(entry);
 					end++;
 					block->entries = IR::EntrySubList(begin, end);
 					mFrontMap[block->entries.front()] = block.get();
