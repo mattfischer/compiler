@@ -229,8 +229,8 @@ namespace Transform {
 						if(newEntry) {
 							// Add all uses of the entry into the queue, it may now be possible
 							// to do further constant propagation on them
-							for(IR::Entry *entry : useDefs.uses(entry)) {
-								queue.push(entry);
+							for(const IR::Entry *entry : useDefs.uses(entry)) {
+								queue.push(const_cast<IR::Entry*>(entry));
 							}
 
 							// Update the useDef chains to reflect the new entry
@@ -267,8 +267,8 @@ namespace Transform {
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								for(IR::Entry *entry : useDefs.uses(call)) {
-									queue.push(entry);
+								for(const IR::Entry *entry : useDefs.uses(call)) {
+									queue.push(const_cast<IR::Entry*>(entry));
 								}
 
 								// Update the useDef chains to reflect the new entry
@@ -305,8 +305,8 @@ namespace Transform {
 
 								// Add all uses of the entry into the queue, it may now be possible
 								// to do further constant propagation on them
-								for(IR::Entry *entry : useDefs.uses(call)) {
-									queue.push(entry);
+								for(const IR::Entry *entry : useDefs.uses(call)) {
+									queue.push(const_cast<IR::Entry*>(entry));
 								}
 
 								// Update the useDef chains to reflect the new entry
@@ -337,9 +337,9 @@ namespace Transform {
 							threeAddr->imm = value;
 							changed = true;
 						} else {
-							const std::set<IR::Entry*> &defs = useDefs.defines(entry, threeAddr->rhs2);
+							const std::set<const IR::Entry*> &defs = useDefs.defines(entry, threeAddr->rhs2);
 							if(defs.size() == 1) {
-								IR::Entry *def = *(defs.begin());
+								const IR::Entry *def = *(defs.begin());
 								IR::EntryThreeAddr *defThreeAddr = (IR::EntryThreeAddr*)def;
 								if(def->type == IR::Entry::Type::Mult && !defThreeAddr->rhs2 && isPowerOfTwo(defThreeAddr->imm)) {
 									analysis.replaceUse(threeAddr, threeAddr->rhs2, defThreeAddr->rhs1);

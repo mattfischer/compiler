@@ -94,12 +94,12 @@ namespace IR {
 		}
 	}
 
-	Symbol *EntryThreeAddr::assign()
+	Symbol *EntryThreeAddr::assign() const
 	{
 		return lhsAssign(type) ? lhs : 0;
 	}
 
-	bool EntryThreeAddr::uses(Symbol *symbol)
+	bool EntryThreeAddr::uses(Symbol *symbol) const
 	{
 		return (rhs1 == symbol || rhs2 == symbol || (!lhsAssign(type) && lhs == symbol));
 	}
@@ -153,7 +153,7 @@ namespace IR {
 		o << "  " << names[(int)type] << pred->name << ", " << trueTarget->name << ", " << falseTarget->name;
 	}
 
-	bool EntryCJump::uses(Symbol *symbol)
+	bool EntryCJump::uses(Symbol *symbol) const
 	{
 		return (pred == symbol);
 	}
@@ -203,7 +203,7 @@ namespace IR {
 		lhs = newSymbol;
 	}
 
-	bool EntryPhi::uses(Symbol *symbol)
+	bool EntryPhi::uses(Symbol *symbol) const
 	{
 		for(int i=0; i<numArgs; i++) {
 			if(args[i] == symbol)
@@ -224,7 +224,7 @@ namespace IR {
 		}
 	}
 
-	Symbol *EntryPhi::assign()
+	Symbol *EntryPhi::assign() const
 	{
 		return lhs;
 	}
@@ -249,7 +249,7 @@ namespace IR {
 		o << "  " << names[(int)type] << lhs->name << ", \"" << string << "\"";
 	}
 
-	Symbol *EntryString::assign()
+	Symbol *EntryString::assign() const
 	{
 		return lhs;
 	}

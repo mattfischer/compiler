@@ -34,8 +34,8 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry assigns to the symbol, rename it and add all uses of the assignment
 			// to the queue for further processing
 			entry->replaceAssign(symbol, newSymbol);
-			for(IR::Entry *use : useDefs.uses(entry)) {
-				entries.push(use);
+			for(const IR::Entry *use : useDefs.uses(entry)) {
+				entries.push(const_cast<IR::Entry*>(use));
 			}
 		}
 
@@ -43,8 +43,8 @@ void renameSymbol(IR::Entry *entry, IR::Symbol *symbol, IR::Symbol *newSymbol, A
 			// If the entry uses the symbol, rename it and add all definitions of the symbol
 			// to the queue for further processing
 			entry->replaceUse(symbol, newSymbol);
-			for(IR::Entry *def : useDefs.defines(entry, symbol)) {
-				entries.push(def);
+			for(const IR::Entry *def : useDefs.defines(entry, symbol)) {
+				entries.push(const_cast<IR::Entry*>(def));
 			}
 		}
 	}

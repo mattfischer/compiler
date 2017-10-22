@@ -41,6 +41,28 @@ namespace IR {
 		};
 
 		/*!
+		* \brief Const Iterator class
+		*/
+		class const_iterator {
+			friend class EntryList;
+			friend class EntrySubList;
+
+		public:
+			const_iterator() : mEntry(0) {}
+			const Entry *operator*() { return mEntry; }
+			const_iterator operator++(int) { const_iterator ret(mEntry); mEntry = mEntry->next; return ret; }
+			const_iterator &operator++() { mEntry = mEntry->next; return *this; }
+			const_iterator operator--(int) { const_iterator ret(mEntry); mEntry = mEntry->prev; return ret; }
+			const_iterator &operator--() { mEntry = mEntry->prev; return *this; }
+			bool operator==(const const_iterator &other) const { return mEntry == other.mEntry; }
+			bool operator!=(const const_iterator &other) const { return mEntry != other.mEntry; }
+
+		private:
+			const_iterator(const Entry *entry) : mEntry(entry) {}
+			const Entry *mEntry;
+		};
+
+		/*!
 		 * \brief Reverse iterator class
 		 */
 		class reverse_iterator {
@@ -62,12 +84,39 @@ namespace IR {
 			Entry *mEntry;
 		};
 
+		/*!
+		* \brief Reverse iterator class
+		*/
+		class const_reverse_iterator {
+			friend class EntryList;
+			friend class EntrySubList;
+
+		public:
+			const_reverse_iterator() : mEntry(0) {}
+			const Entry *operator*() { return mEntry; }
+			const_reverse_iterator operator++(int) { const_reverse_iterator ret(mEntry); mEntry = mEntry->prev; return ret; }
+			const_reverse_iterator &operator++() { mEntry = mEntry->prev; return *this; }
+			const_reverse_iterator operator--(int) { const_reverse_iterator ret(mEntry); mEntry = mEntry->next; return ret; }
+			const_reverse_iterator &operator--() { mEntry = mEntry->next; return *this; }
+			bool operator==(const const_reverse_iterator &other) const { return mEntry == other.mEntry; }
+			bool operator!=(const const_reverse_iterator &other) const { return mEntry != other.mEntry; }
+
+		private:
+			const_reverse_iterator(const Entry *entry) : mEntry(entry) {}
+			const Entry *mEntry;
+		};
+
 		EntryList();
 
 		iterator begin() { return iterator(mHead.next); }
 		iterator end() { return iterator(&mTail); }
+		const_iterator begin() const { return const_iterator(mHead.next); }
+		const_iterator end() const { return const_iterator(&mTail); }
+
 		reverse_iterator rbegin() { return reverse_iterator(mTail.prev); }
 		reverse_iterator rend() { return reverse_iterator(&mHead); }
+		const_reverse_iterator rbegin() const { return const_reverse_iterator(mTail.prev); }
+		const_reverse_iterator rend() const { return const_reverse_iterator(&mHead); }
 
 		Entry *front() { return *begin(); }
 		Entry *back() { return *(--end()); }

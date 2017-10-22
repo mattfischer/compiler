@@ -21,16 +21,16 @@ namespace Analysis {
 	public:
 		AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
-		const std::set<IR::Entry*> &expressions(IR::Entry *entry) const;
+		const std::set<const IR::Entry*> &expressions(const IR::Entry *entry) const;
 
 		void print(std::ostream &o) const;
 
-		static bool isExpression(IR::Entry *entry);
+		static bool isExpression(const IR::Entry *entry);
 
 	private:
-		IR::Procedure &mProcedure;
+		const IR::Procedure &mProcedure;
 
-		std::map<IR::Entry*, std::set<IR::Entry*>> mExpressions;
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> mExpressions;
 	};
 }
 

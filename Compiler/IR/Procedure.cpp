@@ -29,7 +29,7 @@ namespace IR {
 	 */
 	void Procedure::print(std::ostream &o, const std::string &prefix) const
 	{
-		for(Entry *entry : const_cast<EntryList&>(mEntries)) {
+		for(const Entry *entry : mEntries) {
 			o << prefix << *entry << std::endl;
 		}
 		o << prefix << std::endl;

@@ -26,9 +26,9 @@ namespace Analysis {
 		}
 
 		// Construct gen/kill sets for data flow analysis.
-		std::map<IR::Entry*, std::set<IR::Symbol*>> gen;
-		std::map<IR::Entry*, std::set<IR::Symbol*>> kill;
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		std::map<const IR::Entry*, std::set<IR::Symbol*>> gen;
+		std::map<const IR::Entry*, std::set<IR::Symbol*>> kill;
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			for(IR::Symbol *symbol : all) {
 				std::set<IR::Symbol*> &g = gen[entry];
 				if(entry->uses(symbol)) {
@@ -58,7 +58,7 @@ namespace Analysis {
 	 * \param entry Entry to return information for
 	 * \return Set of live symbols
 	 */
-	std::set<IR::Symbol*> &LiveVariables::variables(IR::Entry *entry)
+	std::set<IR::Symbol*> &LiveVariables::variables(const IR::Entry *entry)
 	{
 		return mMap[entry];
 	}
@@ -69,7 +69,7 @@ namespace Analysis {
 	void LiveVariables::print(std::ostream &o)
 	{
 		// Loop through the procedure, printing out each entry along with the variables live at that point
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			o << *entry << " | ";
 			std::set<IR::Symbol*> &symbols = variables(entry);
 			for(IR::Symbol *symbol : symbols) {

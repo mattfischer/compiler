@@ -24,8 +24,8 @@ namespace Analysis {
 	public:
 		UseDefs(const IR::Procedure &procedure, ReachingDefs &reachingDefs);
 
-		const std::set<IR::Entry*> &uses(IR::Entry *def) const;
-		const std::set<IR::Entry*> &defines(IR::Entry *use, IR::Symbol *symbol) const;
+		const std::set<const IR::Entry*> &uses(const IR::Entry *def) const;
+		const std::set<const IR::Entry*> &defines(const IR::Entry *use, IR::Symbol *symbol) const;
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void replaceUse(IR::Entry *entry, IR::Symbol *oldSymbol, IR::Symbol *newSymbol);
@@ -34,8 +34,8 @@ namespace Analysis {
 		void print(std::ostream &o) const;
 
 	private:
-		std::map<IR::Entry*, std::set<IR::Entry*>> mUses; //!< List of all uses
-		std::map<IR::Entry*, std::map<IR::Symbol*, std::set<IR::Entry*>>> mDefines; //!< List of all defines
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> mUses; //!< List of all uses
+		std::map<const IR::Entry*, std::map<IR::Symbol*, std::set<const IR::Entry*>>> mDefines; //!< List of all defines
 		const IR::Procedure &mProcedure; //!< Procedure being analyzed
 		ReachingDefs &mReachingDefs; //!< Reaching def information for the procedure
 	};

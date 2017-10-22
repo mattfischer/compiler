@@ -205,7 +205,7 @@ void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveV
 	int idx = 0;
 	bool live = false;
 	std::set<IR::Symbol*> liveSet;
-	std::set<IR::Entry*> neededDefs;
+	std::set<const IR::Entry*> neededDefs;
 	std::set<IR::Entry*> spillLoads;
 
 	Analysis::UseDefs &useDefs = analysis.useDefs();
@@ -226,7 +226,7 @@ void spillVariable(IR::Procedure &procedure, IR::Symbol *symbol, Analysis::LiveV
 			} else {
 				// Otherwise, load it from its stack location
 				def = new IR::EntryThreeAddr(IR::Entry::Type::LoadStack, symbol, 0, 0, idx);
-				const std::set<IR::Entry*> &defs = useDefs.defines(entry, symbol);
+				const std::set<const IR::Entry*> &defs = useDefs.defines(entry, symbol);
 				neededDefs.insert(defs.begin(), defs.end());
 			}
 

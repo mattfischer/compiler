@@ -21,7 +21,7 @@ InterferenceGraph::InterferenceGraph(const IR::Procedure &procedure, LiveVariabl
 	}
 
 	// Walk through the procedure.  For each entry, add graph edges between all variables live at that point
-	for(IR::Entry *entry : const_cast<IR::Procedure&>(procedure).entries()) {
+	for(const IR::Entry *entry : procedure.entries()) {
 		std::set<IR::Symbol*> &symbols = liveVariables->variables(entry);
 
 		// Loop through the symbol set, adding edges

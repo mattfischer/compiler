@@ -27,15 +27,15 @@ namespace Analysis {
 	public:
 		ReachingDefs(const IR::Procedure &procedure, FlowGraph &flowGraph);
 
-		const std::set<IR::Entry*> &defs(IR::Entry* entry) const;
-		const std::set<IR::Entry*> defsForSymbol(IR::Entry* entry, IR::Symbol *symbol) const;
+		const std::set<const IR::Entry*> &defs(const IR::Entry* entry) const;
+		const std::set<const IR::Entry*> defsForSymbol(const IR::Entry* entry, IR::Symbol *symbol) const;
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void remove(IR::Entry *entry);
 		void print(std::ostream &o) const;
 
 	private:
 		FlowGraph &mFlowGraph; //<! Flow graph being analyzed
-		std::map<IR::Entry*, std::set<IR::Entry*>> mDefs; //!< List of definitions
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> mDefs; //!< List of definitions
 		const IR::Procedure &mProcedure; //!< Procedure being analyzed
 	};
 }

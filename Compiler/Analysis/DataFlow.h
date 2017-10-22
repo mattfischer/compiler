@@ -65,9 +65,9 @@ namespace Analysis {
 		 * \param direction Direction of data flow
 		 * \return Set of Ts attached to each entry of the graph
 		 */
-		std::map<IR::Entry*, std::set<T>> analyze(FlowGraph &graph, std::map<IR::Entry*, std::set<T>> &gen, std::map<IR::Entry*, std::set<T>> &kill, std::set<T> &all, Meet meetType, Direction direction)
+		std::map<const IR::Entry*, std::set<T>> analyze(FlowGraph &graph, std::map<const IR::Entry*, std::set<T>> &gen, std::map<const IR::Entry*, std::set<T>> &kill, std::set<T> &all, Meet meetType, Direction direction)
 		{
-			std::map<IR::Entry*, std::set<T>> map;
+			std::map<const IR::Entry*, std::set<T>> map;
 			std::map<FlowGraph::Block*, std::set<T>> genBlock;
 			std::map<FlowGraph::Block*, std::set<T>> killBlock;
 
@@ -77,7 +77,7 @@ namespace Analysis {
 				std::set<T> k;
 				switch(direction) {
 					case Direction::Forward:
-						for(IR::Entry *entry : block->entries) {
+						for(const IR::Entry *entry : block->entries) {
 							g = transfer(g, gen[entry], kill[entry]);
 							k = transfer(k, kill[entry], gen[entry]);
 						}
@@ -85,7 +85,7 @@ namespace Analysis {
 
 					case Direction::Backward:
 						for(auto itEntry = block->entries.rbegin(); itEntry != block->entries.rend(); itEntry++) {
-							IR::Entry *entry = *itEntry;
+							const IR::Entry *entry = *itEntry;
 							g = transfer(g, gen[entry], kill[entry]);
 							k = transfer(k, kill[entry], gen[entry]);
 						}

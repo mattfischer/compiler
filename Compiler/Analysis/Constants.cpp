@@ -19,8 +19,8 @@ namespace Analysis {
 		int ret = 0;
 
 		// Check each definition that reaches this entry
-		const std::set<IR::Entry*> &set = mUseDefs.defines(entry, symbol);
-		for(IR::Entry *def : set) {
+		const std::set<const IR::Entry*> &set = mUseDefs.defines(entry, symbol);
+		for(const IR::Entry *def : set) {
 			IR::EntryThreeAddr *threeAddr = (IR::EntryThreeAddr*)def;
 
 			if(def->type != IR::Entry::Type::Move || threeAddr->rhs1) {
@@ -59,8 +59,8 @@ namespace Analysis {
 		std::string ret;
 
 		// Check each definition that reaches this entry
-		const std::set<IR::Entry*> &set = mUseDefs.defines(entry, symbol);
-		for(IR::Entry *def : set) {
+		const std::set<const IR::Entry*> &set = mUseDefs.defines(entry, symbol);
+		for(const IR::Entry *def : set) {
 			IR::EntryString *string = (IR::EntryString*)def;
 
 			if(def->type != IR::Entry::Type::LoadString) {

@@ -11,8 +11,8 @@ namespace Transform {
 	 * \param exps Expressions
 	 * \return Symbol containing entry's value
 	 */
-	IR::Symbol *findMatch(IR::Entry *entry, const std::set<IR::Entry*> &exps) {
-		for(IR::Entry *exp : exps) {
+	IR::Symbol *findMatch(const IR::Entry *entry, const std::set<const IR::Entry*> &exps) {
+		for(const IR::Entry *exp : exps) {
 			// Reject the expression if it is of a different type than the entry, with the
 			// special exception that a memory store expression can be used to satisfy a
 			// memory load entry
@@ -73,7 +73,7 @@ namespace Transform {
 			}
 
 			// Search through all available expressions, looking for a match
-			const std::set<IR::Entry*> &exps = availableExpressions.expressions(entry);
+			const std::set<const IR::Entry*> &exps = availableExpressions.expressions(entry);
 			IR::Symbol *expTarget = findMatch(entry, exps);
 			if(expTarget) {
 				// Replace the expression with a direct assignment to the available expression's target
@@ -81,8 +81,8 @@ namespace Transform {
 
 				// Add all uses of the entry into the queue, it may now be possible
 				// to do further subexpression elimination on them
-				for(IR::Entry *entry : useDefs.uses(entry)) {
-					queue.push(entry);
+				for(const IR::Entry *entry : useDefs.uses(entry)) {
+					queue.push(const_cast<IR::Entry*>(entry));
 				}
 
 				// Update the useDef chains to reflect the new entry

@@ -87,14 +87,14 @@ namespace IR {
 		 * \brief Symbol that entry assigns to
 		 * \return Assignment symbol, or 0 if none
 		 */
-		virtual Symbol *assign() { return 0; }
+		virtual Symbol *assign() const { return 0; }
 
 		/*!
 		 * \brief Check if an entry uses a given symbol
 		 * \param symbol Symbol to check for
 		 * \return True if entry uses symbol
 		 */
-		virtual bool uses(Symbol *symbol) { return false; }
+		virtual bool uses(Symbol *symbol) const { return false; }
 
 		/*!
 		 * \brief Replace the assignment of a symbol with another symbol
@@ -132,8 +132,8 @@ namespace IR {
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign();
-		virtual bool uses(Symbol *symbol);
+		virtual Symbol *assign() const;
+		virtual bool uses(Symbol *symbol) const;
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
@@ -187,7 +187,7 @@ namespace IR {
 
 		virtual void print(std::ostream &o) const;
 
-		virtual bool uses(Symbol *symbol);
+		virtual bool uses(Symbol *symbol) const;
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
 
@@ -224,8 +224,8 @@ namespace IR {
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign();
-		virtual bool uses(Symbol *symbol);
+		virtual Symbol *assign() const;
+		virtual bool uses(Symbol *symbol) const;
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 		virtual void replaceUse(Symbol *symbol, Symbol *newSymbol);
 	};
@@ -253,7 +253,7 @@ namespace IR {
 
 		virtual void print(std::ostream &o) const;
 
-		virtual Symbol *assign();
+		virtual Symbol *assign() const;
 		virtual void replaceAssign(Symbol *symbol, Symbol *newSymbol);
 	};
 

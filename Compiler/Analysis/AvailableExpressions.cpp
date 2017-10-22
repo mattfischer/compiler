@@ -3,7 +3,7 @@
 #include "Analysis/DataFlow.h"
 
 namespace Analysis {
-	static std::set<IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
+	static std::set<const IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -11,19 +11,19 @@ namespace Analysis {
 	 * \param flowGraph Flow graph of procedure
 	 */
 	AvailableExpressions::AvailableExpressions(const IR::Procedure &procedure, FlowGraph &flowGraph)
-		: mProcedure(const_cast<IR::Procedure&>(procedure))
+		: mProcedure(procedure)
 	{
-		std::set<IR::Entry*> all;
-		for(IR::Entry *entry : mProcedure.entries()) {
+		std::set<const IR::Entry*> all;
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			if(isExpression(entry)) {
 				all.insert(entry);
 			}
 		}
 
-		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
-		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> gen;
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> kill;
 
-		for(IR::Entry *entry : mProcedure.entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			if(all.find(entry) == all.end()) {
 				continue;
 			}
@@ -31,7 +31,7 @@ namespace Analysis {
 			gen[entry].insert(entry);
 
 			if(entry->assign()) {
-				for(IR::Entry *exp : all) {
+				for(const IR::Entry *exp : all) {
 					if(exp->uses(entry->assign()) || exp->assign() == entry->assign()) {
 						kill[entry].insert(exp);
 					}
@@ -39,8 +39,8 @@ namespace Analysis {
 			}
 		}
 
-		DataFlow<IR::Entry*> dataFlow;
-		mExpressions = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<IR::Entry*>::Meet::Intersect, DataFlow<IR::Entry*>::Direction::Forward);
+		DataFlow<const IR::Entry*> dataFlow;
+		mExpressions = dataFlow.analyze(flowGraph, gen, kill, all, DataFlow<const IR::Entry*>::Meet::Intersect, DataFlow<const IR::Entry*>::Direction::Forward);
 	}
 
 	/*!
@@ -48,9 +48,9 @@ namespace Analysis {
 	 * \param entry Entry in procedure
 	 * \return List of available expressions
 	 */
-	const std::set<IR::Entry*> &AvailableExpressions::expressions(IR::Entry *entry) const
+	const std::set<const IR::Entry*> &AvailableExpressions::expressions(const IR::Entry *entry) const
 	{
-		auto it = mExpressions.find(entry);
+		const auto it = mExpressions.find(entry);
 		if(it != mExpressions.end()) {
 			return it->second;
 		} else {
@@ -58,7 +58,7 @@ namespace Analysis {
 		}
 	}
 
-	bool AvailableExpressions::isExpression(IR::Entry *entry)
+	bool AvailableExpressions::isExpression(const IR::Entry *entry)
 	{
 		switch(entry->type) {
 			case IR::Entry::Type::Add:
@@ -84,18 +84,18 @@ namespace Analysis {
 	void AvailableExpressions::print(std::ostream &o) const
 	{
 		int line = 1;
-		std::map<IR::Entry*, int> lineMap;
+		std::map<const IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::Entry *entry : mProcedure.entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::Entry *entry : mProcedure.entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
-			std::set<IR::Entry*> exps = expressions(entry);
-			for(IR::Entry *e : exps) {
+			std::set<const IR::Entry*> exps = expressions(entry);
+			for(const IR::Entry *e : exps) {
 				o << lineMap[e] << " ";
 			}
 			o << std::endl;

@@ -11,7 +11,7 @@
 #include "Util/Log.h"
 
 namespace Analysis {
-	static std::set<IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
+	static std::set<const IR::Entry*> emptyEntrySet; //!< Empty entry set, used when an entry lookup fails
 
 	/*!
 	 * \brief Constructor
@@ -25,17 +25,17 @@ namespace Analysis {
 		timer.start();
 
 		// Find all definitions in the procedure
-		std::set<IR::Entry*> allDefs;
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		std::set<const IR::Entry*> allDefs;
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			if(entry->assign()) {
 				allDefs.insert(entry);
 			}
 		}
 
 		// Construct gen and kill sets for data flow analysis
-		std::map<IR::Entry*, std::set<IR::Entry*>> gen;
-		std::map<IR::Entry*, std::set<IR::Entry*>> kill;
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> gen;
+		std::map<const IR::Entry*, std::set<const IR::Entry*>> kill;
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			if(!entry->assign()) {
 				continue;
 			}
@@ -46,7 +46,7 @@ namespace Analysis {
 			}
 
 			// An assignment also kills any other assignment to the same variable
-			for(IR::Entry *def : allDefs) {
+			for(const IR::Entry *def : allDefs) {
 				if(def->assign() == entry->assign() && def != entry) {
 					kill[entry].insert(def);
 				}
@@ -54,8 +54,8 @@ namespace Analysis {
 		}
 
 		// Perform a forward data flow analysis using the gen/kill sets constructed above
-		DataFlow<IR::Entry*> dataFlow;
-		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<IR::Entry*>::Meet::Union, DataFlow<IR::Entry*>::Direction::Forward);
+		DataFlow<const IR::Entry*> dataFlow;
+		mDefs = dataFlow.analyze(mFlowGraph, gen, kill, allDefs, DataFlow<const IR::Entry*>::Meet::Union, DataFlow<const IR::Entry*>::Direction::Forward);
 		Util::log("opt.time") << "  ReachingDefs(" << procedure.name() << "): " << timer.stop() << "ms" << std::endl;
 	}
 
@@ -64,7 +64,7 @@ namespace Analysis {
 	 * \param entry Entry to examine
 	 * \return Reaching definitions for that entry
 	 */
-	const std::set<IR::Entry*> &ReachingDefs::defs(IR::Entry *entry) const
+	const std::set<const IR::Entry*> &ReachingDefs::defs(const IR::Entry *entry) const
 	{
 		auto it = mDefs.find(entry);
 		if(it != mDefs.end()) {
@@ -80,11 +80,11 @@ namespace Analysis {
 	 * \param symbol Symbol to search for
 	 * \return All reaching definitions which assign to the given symbol
 	 */
-	const std::set<IR::Entry*> ReachingDefs::defsForSymbol(IR::Entry *entry, IR::Symbol *symbol) const
+	const std::set<const IR::Entry*> ReachingDefs::defsForSymbol(const IR::Entry *entry, IR::Symbol *symbol) const
 	{
-		std::set<IR::Entry*> result;
-		const std::set<IR::Entry*> &all = defs(entry);
-		for(IR::Entry *def : all) {
+		std::set<const IR::Entry*> result;
+		const std::set<const IR::Entry*> &all = defs(entry);
+		for(const IR::Entry *def : all) {
 			if(def->assign() == symbol) {
 				result.insert(def);
 			}
@@ -107,7 +107,7 @@ namespace Analysis {
 
 		// Search through all reaching definitions, and replace the old entry with the new one
 		for(auto &def : mDefs) {
-			std::set<IR::Entry*> &set = def.second;
+			std::set<const IR::Entry*> &set = def.second;
 			auto setIt = set.find(oldEntry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
@@ -124,7 +124,7 @@ namespace Analysis {
 	{
 		// Remove all references to the given entry
 		for(auto &def : mDefs) {
-			std::set<IR::Entry*> &set = def.second;
+			std::set<const IR::Entry*> &set = def.second;
 			auto setIt = set.find(entry);
 			if(setIt != set.end()) {
 				set.erase(setIt);
@@ -139,18 +139,18 @@ namespace Analysis {
 	void ReachingDefs::print(std::ostream &o) const
 	{
 		int line = 1;
-		std::map<IR::Entry*, int> lineMap;
+		std::map<const IR::Entry*, int> lineMap;
 
 		// Assign a line number to each entry
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			lineMap[entry] = line++;
 		}
 
 		// Iterate through the procedure, printing out each entry, along with all definitions which reach it
-		for(IR::Entry *entry : const_cast<IR::Procedure&>(mProcedure).entries()) {
+		for(const IR::Entry *entry : mProcedure.entries()) {
 			o << lineMap[entry] << ": " << *entry << " -> ";
-			std::set<IR::Entry*> d = defs(entry);
-			for(IR::Entry *e : d) {
+			std::set<const IR::Entry*> d = defs(entry);
+			for(const IR::Entry *e : d) {
 				o << lineMap[e] << " ";
 			}
 			o << std::endl;

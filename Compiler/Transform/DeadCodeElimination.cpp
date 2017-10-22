@@ -65,7 +65,7 @@ namespace Transform {
 				case IR::Entry::Type::LoadString:
 					{
 						// If an assignment has no uses, it is unnecessary
-						const std::set<IR::Entry*> &uses = useDefs.uses(entry);
+						const std::set<const IR::Entry*> &uses = useDefs.uses(entry);
 						if(uses.empty()) {
 							procedure.entries().erase(entry);
 							analysis.remove(entry);
