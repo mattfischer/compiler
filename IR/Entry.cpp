@@ -4,7 +4,7 @@
 #include "IR/Procedure.h"
 
 namespace IR {
-	static char* names[] = {
+	static const char* names[] = {
 		/* TypeNone		  */ "none	   ",
 		/* TypeMove		  */ "move     ",
 		/* TypeAdd		  */ "add      ",

@@ -1,8 +1,5 @@
-*.suo
-*.ncb
-*.user
-debug
-release
+.vscode/
+build/
 
 # Cached runtime library
-Compiler/*.orc
+*.orc

@@ -3,12 +3,12 @@
 namespace Back {
 
 struct NameInt {
-	char *name;
+	const char *name;
 	int value;
 };
 
 struct NameTwoInt {
-	char *name;
+	const char *name;
 	int value1;
 	int value2;
 };

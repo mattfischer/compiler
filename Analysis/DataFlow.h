@@ -247,9 +247,9 @@ namespace Analysis {
 					break;
 
 				case Meet::Intersect:
-					for(T T : a) {
-						if(b.find(T) != b.end()) {
-							out.insert(T);
+					for(T t : a) {
+						if(b.find(t) != b.end()) {
+							out.insert(t);
 						}
 					}
 					break;

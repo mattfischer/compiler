@@ -73,7 +73,8 @@ EnvironmentGenerator::EnvironmentGenerator(Node &tree, const std::vector<std::re
 		for(std::shared_ptr<Type> &type : mTypes->types()) {
 			completeType(type);
 			if(type->kind == Type::Kind::Class) {
-				constructScope(std::static_pointer_cast<TypeStruct>(type), *mScope);
+				std::shared_ptr<TypeStruct> typeStruct = std::static_pointer_cast<TypeStruct>(type);
+				constructScope(typeStruct, *mScope);
 			}
 		}
 

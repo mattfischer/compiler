@@ -68,7 +68,7 @@ namespace Analysis {
 		}
 	}
 
-	void Analysis::remove(IR::Entry *entry)
+	void Analysis::remove(const IR::Entry *entry)
 	{
 		if(mUseDefs) {
 			mUseDefs->remove(entry);

@@ -15,13 +15,13 @@ namespace Transform {
 		// Construct a flow graph and use-def chains for the procedure
 		const Analysis::FlowGraph &flowGraph = analysis.flowGraph();
 		const Analysis::UseDefs &useDefs = analysis.useDefs();
-		std::set<IR::Entry*> deleted;
+		std::set<const IR::Entry*> deleted;
 
 		// Iterate through the blocks of the graph
 		for(const std::unique_ptr<Analysis::FlowGraph::Block> &block : flowGraph.blocks()) {
 			// If no control path leads to the block, it can be removed from the graph
 			if(block->pred.size() == 0 && block.get() != flowGraph.start()) {
-				for(IR::Entry *entry : procedure.entries()) {
+				for(const IR::Entry *entry : block->entries) {
 					if(entry->type == IR::Entry::Type::Label) {
 						continue;
 					}
@@ -33,7 +33,7 @@ namespace Transform {
 			}
 		}
 
-		for (IR::Entry *entry : deleted) {
+		for (const IR::Entry *entry : deleted) {
 			procedure.entries().erase(entry);
 			delete entry;
 		}
@@ -93,7 +93,7 @@ namespace Transform {
 			}
 		}
 
-		for (IR::Entry *entry : deleted) {
+		for (const IR::Entry *entry : deleted) {
 			procedure.entries().erase(entry);
 			delete entry;
 		}
@@ -108,18 +108,12 @@ namespace Transform {
 			}
 		}
 
-		// Iterate through the procedure's symbols
-		std::vector<std::unique_ptr<IR::Symbol>>::iterator itSymbolNext;
-		for(auto itSymbol = procedure.symbols().begin(); itSymbol != procedure.symbols().end(); itSymbol = itSymbolNext) {
-			std::unique_ptr<IR::Symbol> &symbol = *itSymbol;
-			itSymbolNext = itSymbol;
-			itSymbolNext++;
-
-			if(symbolCount[symbol.get()] == 0) {
-				// If there are no assignments to the symbol, it can be removed from the procedure
-				procedure.symbols().erase(itSymbol);
-				changed = true;
-			}
+		auto it = std::remove_if(procedure.symbols().begin(), procedure.symbols().end(), [&](auto &symbol) {
+			return symbolCount[symbol.get()] == 0;
+		});
+		if(it != procedure.symbols().end()) {
+			changed = true;
+			procedure.symbols().erase(it, procedure.symbols().end());
 		}
 
 		return changed;

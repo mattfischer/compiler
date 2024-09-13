@@ -18,7 +18,7 @@ namespace IR {
 		return iterator(entry);
 	}
 
-	EntryList::iterator EntryList::erase(Entry *entry)
+	EntryList::iterator EntryList::erase(const Entry *entry)
 	{
 		entry->next->prev = entry->prev;
 		entry->prev->next = entry->next;

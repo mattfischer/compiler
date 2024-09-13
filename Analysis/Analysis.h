@@ -24,7 +24,7 @@ namespace Analysis {
 
 		void replace(IR::Entry *oldEntry, IR::Entry *newEntry);
 		void replaceUse(IR::Entry *entry, const IR::Symbol *oldSymbol, const IR::Symbol *newSymbol);
-		void remove(IR::Entry *entry);
+		void remove(const IR::Entry *entry);
 
 	private:
 		std::unique_ptr<FlowGraph> mFlowGraph;
