@@ -29,6 +29,10 @@ namespace VM {
 	}
 
 	typedef void (*NativeCallback)(Context&);
+	struct NativeFunction {
+		std::string name;
+		NativeCallback callback;
+	};
 
 	/*!
 	 * \brief Run a VM program
@@ -50,30 +54,33 @@ namespace VM {
 			return;
 		}
 
-		std::map<std::string, NativeCallback> nativeCallbacks;
-		nativeCallbacks["System.print"] = SystemPrint;
-		std::unique_ptr<Program> nativeSymbols = std::make_unique<Program>();
-		unsigned int offset = 0;
-		std::map<unsigned int, NativeCallback> callbackAddrs;
-		nativeSymbols->symbols["$$nativeStart"] = 0;
-		for(auto &callback : nativeCallbacks) {
-			nativeSymbols->symbols[callback.first] = offset;
-			callbackAddrs[offset] = callback.second;
-			offset += 4;
+		std::vector<NativeFunction> nativeFunctions;
+		nativeFunctions.push_back(NativeFunction{"System.print", SystemPrint});
+		
+		// Construct a set of thunks, one for each native function
+		std::unique_ptr<Program> nativeThunks = std::make_unique<Program>();
+		nativeThunks->instructions.resize(nativeFunctions.size() * 2 * sizeof(VM::Instruction));
+		for(unsigned int i=0; i<nativeFunctions.size(); i++) {
+			unsigned int offset = i * 2 * sizeof(VM::Instruction);
+			nativeThunks->symbols[nativeFunctions[i].name] = offset;
+			VM::Instruction callInstr = VM::Instruction::makeOneAddr(VM::OneAddrNativeCall, VM::RegPC, i);
+			VM::Instruction retInstr = VM::Instruction::makeTwoAddr(VM::TwoAddrAddImm, VM::RegPC, VM::RegLR, 0);
+			
+			std::memcpy(&nativeThunks->instructions[offset + 0], &callInstr, sizeof(callInstr));
+			std::memcpy(&nativeThunks->instructions[offset + sizeof(callInstr)], &retInstr, sizeof(retInstr));
 		}
 
+		// Link the native thunks into the program
 		Linker linker;
 		std::vector<std::reference_wrapper<const Program>> programs;
 		programs.push_back(program);
-		programs.push_back(*nativeSymbols);
+		programs.push_back(*nativeThunks);
 		std::unique_ptr<Program> linked = linker.link(programs);
 
 		if(linked->relocations.size() > 0) {
 			std::cerr << "Error: Program has unresolved relocations" << std::endl;
 			return;
 		}
-
-		unsigned int nativeStart = linked->symbols["$$nativeStart"];
 
 		// Initialize all registers to 0
 		memset(regs, 0, 16 * sizeof(int));
@@ -111,13 +118,16 @@ namespace VM {
 						case VM::OneAddrCall:
 							{
 								unsigned int addr = regs[instr.one.reg] + 4 * instr.one.imm;
-								if(addr >= nativeStart) {
-									Context context(o, addressSpace, regs);
-									callbackAddrs[addr - nativeStart](context);
-								} else {
-									regs[VM::RegLR] = regs[VM::RegPC] + 4;
-									regs[VM::RegPC] = addr;
-								}
+								regs[VM::RegLR] = regs[VM::RegPC] + 4;
+								regs[VM::RegPC] = addr;
+								break;
+							}
+						
+						case VM::OneAddrNativeCall:
+							{
+								unsigned int index = instr.one.imm;
+								Context context(o, addressSpace, regs);
+								nativeFunctions[index].callback(context);
 								break;
 							}
 					}

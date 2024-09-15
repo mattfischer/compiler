@@ -103,6 +103,7 @@ namespace VM {
 
 	const int OneAddrLoadImm = 0x0; //!< Load constant into register
 	const int OneAddrCall = 0x1; //!< Call procedure: Save next address into LR and jump to location in register
+	const int OneAddrNativeCall = 0x2; //!< Native call: Call native function
 
 	const int MultRegStore = 0x0; //!< Store multiple registers to stack
 	const int MultRegLoad = 0x1; //!< Load multiple registers from stack
