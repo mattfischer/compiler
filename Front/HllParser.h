@@ -36,11 +36,7 @@ private:
 	std::unique_ptr<Node> parseStatement(bool required = false);
 	std::unique_ptr<Node> parseClause(bool required = false);
 	std::unique_ptr<Node> parseExpression(bool required = false);
-	std::unique_ptr<Node> parseOrExpression(bool required = false);
-	std::unique_ptr<Node> parseAndExpression(bool required = false);
-	std::unique_ptr<Node> parseCompareExpression(bool required = false);
-	std::unique_ptr<Node> parseAddExpression(bool required = false);
-	std::unique_ptr<Node> parseMultiplyExpression(bool required = false);
+	std::unique_ptr<Node> parseOperatorExpression(int precedence, bool required = false);
 	std::unique_ptr<Node> parseSuffixExpression(bool required = false);
 	std::unique_ptr<Node> parseBaseExpression(bool required = false);
 	std::unique_ptr<Node> parseExpressionList();
