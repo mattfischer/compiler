@@ -434,8 +434,8 @@ std::unique_ptr<Node> HllParser::parseClause(bool required)
 
 std::unique_ptr<Node> HllParser::parseExpression(bool required)
 {
-	// <Expression> := <OrExpression> { '=' <OrExpression> }*
-	std::unique_ptr<Node> node = parseOrExpression(required);
+	// <Expression> := <OperatorExpression> { '=' <Expression> }*
+	std::unique_ptr<Node> node = parseOperatorExpression(0, required);
 	if(!node) {
 		return 0;
 	}
@@ -452,143 +452,73 @@ std::unique_ptr<Node> HllParser::parseExpression(bool required)
 	return node;
 }
 
-std::unique_ptr<Node> HllParser::parseOrExpression(bool required)
+std::unique_ptr<Node> HllParser::parseOperatorExpression(int precedence, bool required)
 {
-	// <OrExpression> := <AndExpression> { '||' <AndExpression> }*
-	std::unique_ptr<Node> node = parseAndExpression(required);
+	struct Operator {
+		const char *literal;
+		int precedence;
+		Node::Type nodeType;
+		Node::Subtype nodeSubtype;
+	};
+
+	static const Operator operators[] = {
+		{"||", 1, Node::Type::Compare, Node::Subtype::Or},
+		{"&&", 2, Node::Type::Compare, Node::Subtype::And},
+		{"==", 3, Node::Type::Compare, Node::Subtype::Equal},
+		{"!=", 3, Node::Type::Compare, Node::Subtype::Nequal},
+		{"<",  3, Node::Type::Compare, Node::Subtype::LessThan},
+		{"<=", 3, Node::Type::Compare, Node::Subtype::LessThanEqual},
+		{">",  3, Node::Type::Compare, Node::Subtype::GreaterThan},
+		{">=", 3, Node::Type::Compare, Node::Subtype::GreaterThanEqual},
+		{"+",  4, Node::Type::Arith,   Node::Subtype::Add},
+		{"-",  4, Node::Type::Arith,   Node::Subtype::Subtract},
+		{"*",  5, Node::Type::Arith,   Node::Subtype::Multiply},
+		{"/",  5, Node::Type::Arith,   Node::Subtype::Divide},
+		{"%",  5, Node::Type::Arith,   Node::Subtype::Modulo},
+	};
+
+	// <OperatorExpression> := <PrimaryExpression> { <Operator> <OperatorExpression> }*
+	std::unique_ptr<Node> node = parsePrimaryExpression(required);
 	if(!node) {
 		return 0;
 	}
 
 	while(true) {
-		if(matchLiteral("||")) {
-			consume();
-
-			std::unique_ptr<Node> orNode = newNode(Node::Type::Compare, node->line, Node::Subtype::Or);
-			orNode->children.push_back(std::move(node));
-			orNode->children.push_back(parseAndExpression(true));
-			node = std::move(orNode);
-			continue;
+		auto it = std::find_if(std::begin(operators), std::end(operators), [&](const auto &o) { return matchLiteral(o.literal); });
+		if(it == std::end(operators)) {
+			break;
 		}
-		break;
+
+		const Operator &op = *it;
+		if(op.precedence <= precedence) {
+			break;
+		}
+
+		consume();
+
+		std::unique_ptr<Node> opNode = newNode(op.nodeType, node->line, op.nodeSubtype);
+		opNode->children.push_back(std::move(node));
+		opNode->children.push_back(parseOperatorExpression(op.precedence, true));
+		node = std::move(opNode);
 	}
 
 	return node;
 }
 
-std::unique_ptr<Node> HllParser::parseAndExpression(bool required)
+std::unique_ptr<Node> HllParser::parsePrimaryExpression(bool required)
 {
-	// <AndExpression> := <CompareExpression> { '&&' <CompareExpression> }*
-	std::unique_ptr<Node> node = parseCompareExpression(required);
-	if(!node) {
-		return 0;
-	}
+	struct Operator {
+		const char *literal;
+		Node::Type nodeType;
+		Node::Subtype nodeSubtype;
+	};
 
-	while(true) {
-		if(matchLiteral("&&")) {
-			consume();
+	static const Operator suffixOperators[] = {
+		{"++", Node::Type::Arith, Node::Subtype::Increment},
+		{"--", Node::Type::Arith, Node::Subtype::Decrement}
+	};
 
-			std::unique_ptr<Node> andNode = newNode(Node::Type::Compare, node->line, Node::Subtype::And);
-			andNode->children.push_back(std::move(node));
-			andNode->children.push_back(parseCompareExpression(true));
-			node = std::move(andNode);
-			continue;
-		}
-		break;
-	}
-
-	return node;
-}
-
-std::unique_ptr<Node> HllParser::parseCompareExpression(bool required)
-{
-	// <CompareExpression> := <AddExpression> { [ '==' | '!=' | '<' | '<=' | '>' | '>=' ] <AddExpression> }*
-	std::unique_ptr<Node> node = parseAddExpression(required);
-	if(!node) {
-		return 0;
-	}
-
-	while(true) {
-		if(matchLiteral("==") || matchLiteral("!=") || matchLiteral("<") || matchLiteral(">") || matchLiteral("<=") || matchLiteral(">=")) {
-			Node::Subtype subtype;
-			if(matchLiteral("==")) subtype = Node::Subtype::Equal;
-			else if(matchLiteral("!=")) subtype = Node::Subtype::Nequal;
-			else if(matchLiteral("<")) subtype = Node::Subtype::LessThan;
-			else if(matchLiteral("<=")) subtype = Node::Subtype::LessThanEqual;
-			else if(matchLiteral(">")) subtype = Node::Subtype::GreaterThan;
-			else if(matchLiteral(">=")) subtype = Node::Subtype::GreaterThanEqual;
-			consume();
-
-			std::unique_ptr<Node> compareNode = newNode(Node::Type::Compare, node->line, subtype);
-			compareNode->children.push_back(std::move(node));
-			compareNode->children.push_back(parseAddExpression(true));
-			node = std::move(compareNode);
-			continue;
-		}
-		break;
-	}
-
-	return node;
-}
-
-std::unique_ptr<Node> HllParser::parseAddExpression(bool required)
-{
-	// <AddExpression> := <MultiplyExpression> { [ '+' | '-' ] <MultiplyExpression> }*
-	std::unique_ptr<Node> node = parseMultiplyExpression(required);
-	if(!node) {
-		return 0;
-	}
-
-	while(true) {
-		if(matchLiteral("+") || matchLiteral("-")) {
-			Node::Subtype subtype;
-			if(matchLiteral("+")) subtype = Node::Subtype::Add;
-			else if(matchLiteral("-")) subtype = Node::Subtype::Subtract;
-			consume();
-
-			std::unique_ptr<Node> addNode = newNode(Node::Type::Arith, node->line, subtype);
-			addNode->children.push_back(std::move(node));
-			addNode->children.push_back(parseMultiplyExpression(true));
-			node = std::move(addNode);
-			continue;
-		}
-		break;
-	}
-
-	return node;
-}
-
-std::unique_ptr<Node> HllParser::parseMultiplyExpression(bool required)
-{
-	// <MultiplyExpression> := <SuffixExpression> { '*' <SuffixExpression> }*
-	std::unique_ptr<Node> node = parseSuffixExpression(required);
-	if(!node) {
-		return 0;
-	}
-
-	while(true) {
-		if(matchLiteral("*") || matchLiteral("/") || matchLiteral("%")) {
-			Node::Subtype subtype;
-			if(matchLiteral("*")) subtype = Node::Subtype::Multiply;
-			else if(matchLiteral("/")) subtype = Node::Subtype::Divide;
-			else if(matchLiteral("%")) subtype = Node::Subtype::Modulo;
-			consume();
-
-			std::unique_ptr<Node> multiplyNode = newNode(Node::Type::Arith, node->line, subtype);
-			multiplyNode->children.push_back(std::move(node));
-			multiplyNode->children.push_back(parseSuffixExpression(true));
-			node = std::move(multiplyNode);
-			continue;
-		}
-		break;
-	}
-
-	return node;
-}
-
-std::unique_ptr<Node> HllParser::parseSuffixExpression(bool required)
-{
-	// <SuffixExpression> := <BaseExpression> ...
+	// <PrimaryExpression> := <BaseExpression> ...
 	std::unique_ptr<Node> node = parseBaseExpression(required);
 	if(!node) {
 		return 0;
@@ -615,17 +545,8 @@ std::unique_ptr<Node> HllParser::parseSuffixExpression(bool required)
 			arrayNode->children.push_back(parseExpression(true));
 			expectLiteral("]");
 			node = std::move(arrayNode);
-		} else if(matchLiteral("++") || matchLiteral("--")) {
-			// [ '++' | '--' ]
-			Node::Subtype subtype;
-			if(matchLiteral("++")) subtype = Node::Subtype::Increment;
-			else if(matchLiteral("--")) subtype = Node::Subtype::Decrement;
-			consume();
-
-			std::unique_ptr<Node> incrementNode = newNode(Node::Type::Arith, node->line, subtype);
-			incrementNode->children.push_back(std::move(node));
-			node = std::move(incrementNode);
 		} else if(matchLiteral(".")) {
+			// '.' <Identifier>
 			std::unique_ptr<Node> memberNode = newNode(Node::Type::Member, next().line);
 			consume();
 
@@ -634,7 +555,19 @@ std::unique_ptr<Node> HllParser::parseSuffixExpression(bool required)
 			memberNode->children.push_back(std::move(node));
 			node = std::move(memberNode);
 		} else {
-			break;
+			// <SuffixOperator>
+			auto it = std::find_if(std::begin(suffixOperators), std::end(suffixOperators), [&](const auto &o) { return matchLiteral(o.literal); });
+			if(it == std::end(suffixOperators)) {
+				break;
+			}
+
+			const Operator &op = *it;
+
+			consume();
+
+			std::unique_ptr<Node> opNode = newNode(op.nodeType, node->line, op.nodeSubtype);
+			opNode->children.push_back(std::move(node));
+			node = std::move(opNode);
 		}
 	}
 
