@@ -43,9 +43,17 @@ string __string_char(char c)
 string __string_int(int x)
 {
   string result = "";
+  bool negative = false;
+  if(x < 0) {
+    x = -x;
+    negative = true;
+  }
   while(x > 0) {
     result = ('0' + x % 10) + result;
     x = x / 10;
+  }
+  if(negative) {
+    result = '-' + result;
   }
   return result;
 }

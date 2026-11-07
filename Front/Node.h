@@ -54,6 +54,7 @@ namespace Front {
 			Modulo, //!< Modulo operator
 			Increment, //!< Increment operator
 			Decrement, //!< Decrement operator
+			Negate, //!< Negate operator
 
 			Equal, //!< Equality comparison
 			Nequal, //!< Inequality comparison

@@ -480,6 +480,10 @@ namespace Front {
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Move, result, arguments[0]));
 							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Add, arguments[0], arguments[0], 0, -1));
 							break;
+						
+						case Node::Subtype::Negate:
+							procedure.emit(new IR::EntryThreeAddr(IR::Entry::Type::Mult, result, arguments[0], 0, -1));
+							break;
 					}
 					break;
 				}

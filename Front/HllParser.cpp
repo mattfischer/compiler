@@ -513,13 +513,31 @@ std::unique_ptr<Node> HllParser::parsePrimaryExpression(bool required)
 		Node::Subtype nodeSubtype;
 	};
 
+	static const Operator prefixOperators[] = {
+		{"-", Node::Type::Arith, Node::Subtype::Negate},
+	};
+
 	static const Operator suffixOperators[] = {
 		{"++", Node::Type::Arith, Node::Subtype::Increment},
 		{"--", Node::Type::Arith, Node::Subtype::Decrement}
 	};
 
-	// <PrimaryExpression> := <BaseExpression> ...
-	std::unique_ptr<Node> node = parseBaseExpression(required);
+	std::unique_ptr<Node> node;
+
+	// <PrimaryExpression> := <PrefixOperator>* <BaseExpression> ...
+	auto it = std::find_if(std::begin(prefixOperators), std::end(prefixOperators), [&](const auto &o) { return matchLiteral(o.literal); });
+	if(it == std::end(prefixOperators)) {
+		node = parseBaseExpression(required);
+	} else {
+		const Operator &op = *it;
+
+		consume();
+
+		std::unique_ptr<Node> argNode = parsePrimaryExpression(true);
+		node = newNode(op.nodeType, argNode->line, op.nodeSubtype);
+		node->children.push_back(std::move(argNode));
+	}
+
 	if(!node) {
 		return 0;
 	}

@@ -271,7 +271,14 @@ bool AsmParser::parseImmInstr(VM::Instruction &instr)
 
 			if(matchLiteral("#")) {
 				consume();
-				int imm = std::atoi(next().text.c_str());
+
+				bool negative = false;
+				if(matchLiteral("-")) {
+					negative = true;
+					consume();
+				}
+				
+				int imm = std::atoi(next().text.c_str()) * (negative ? -1 : 1);
 				expect(AsmTokenizer::TypeNumber);
 				instr = VM::Instruction::makeTwoAddr(op.value1, lhs, rhs1, imm);
 			} else {
